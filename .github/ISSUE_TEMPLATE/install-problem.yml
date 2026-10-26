@@ -1,0 +1,83 @@
+name: Install problem
+description: Stuck, unsure or surprised while installing a house. Every step counts, a confusing word too.
+title: "Install: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for trying it. Before you paste anything: **leave out your house's address with its long key, your recovery code, your setup key and any Spotify or OpenAI key**, and crop them out of screenshots. Any one of them lets someone run your house.
+
+        A security problem goes to the repository's **Security** tab instead (see SECURITY.md), never here.
+  - type: dropdown
+    id: step
+    attributes:
+      label: Where were you?
+      description: The step in START-HERE.md or on the setup page's checklist.
+      options:
+        - Getting the code (the ZIP)
+        - The install command
+        - Claiming the house
+        - Spotify (the app or the sign-in)
+        - Speakers
+        - Time zone
+        - Claude or ChatGPT
+        - On your phone
+        - Requests preset
+        - Saving a preset on the WiiM
+        - Curator
+        - DJ presets
+        - Home helper
+        - Using it afterwards
+        - An update
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: What you did, what you saw, and the words on the screen. A screenshot helps (cropped).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+  - type: dropdown
+    id: computer
+    attributes:
+      label: The computer you installed from
+      options:
+        - Windows
+        - Mac
+        - Linux
+        - Chromebook (Linux)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: assistant
+    attributes:
+      label: Your Claude or ChatGPT plan
+      options:
+        - Claude Pro
+        - Claude Max
+        - Claude Team or Enterprise
+        - ChatGPT Plus
+        - ChatGPT Pro
+        - ChatGPT Business or Enterprise
+        - Other, or not sure
+    validations:
+      required: true
+  - type: input
+    id: speakers
+    attributes:
+      label: Your speakers
+      description: Which WiiMs (or others), and your phone, for example "WiiM Pro Plus and Ultra, iPhone".
+  - type: checkboxes
+    id: nothing-secret
+    attributes:
+      label: Before you send it
+      options:
+        - label: Nothing above shows my house's address with its key, my recovery code, my setup key or another key.
+          required: true

@@ -21,8 +21,11 @@ What is here:
   House rules page.
 - `art/covers/` — the DJs' faces.
 
+Stuck while installing? Open an issue with the **Install problem** form, or
+send a message as `docs/install/tester-note.md` says. A security problem is
+reported privately: [`.github/SECURITY.md`](.github/SECURITY.md).
+
 This copy is made by a script from the author's own repository, so a change
-made here is not kept: say what you would change instead
-(`docs/install/tester-note.md`).
+made here is not kept: say what you would change instead.
 
 MIT licence: [`LICENSE`](LICENSE).
