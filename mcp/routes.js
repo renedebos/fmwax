@@ -160,6 +160,16 @@ function talkStarted(name, args, out) {
   if (name === "play_archive") return out?.started === true;
   return false;
 }
+// What a caught error may say back to Talk's page (2026-10-25, CodeQL on the
+// public copy): a refusal the house wrote (an Error, said aloud by the desk)
+// as written; a fault in the code (a TypeError and its kin) or anything
+// thrown that is not an Error, only that something went wrong. The log
+// keeps the detail either way.
+const FAULTS = [TypeError, ReferenceError, SyntaxError, RangeError, EvalError, URIError];
+export function talkErrorWords(err) {
+  if (err instanceof Error && !FAULTS.some((F) => err instanceof F)) return String(err.message).slice(0, 2000);
+  return "Something went wrong in the house. Try again in a moment.";
+}
 // The archive preset, for Talk's prompts (2026-10-10), or null in a house
 // without one.
 // Its WiiMs are where the home helper can start it.
@@ -1928,7 +1938,10 @@ export async function handleRequest(request, env, ctx) {
         // The house's day first: a misconfigured zone is refused in words
         // before a cent is reserved.
         let day;
-        try { day = houseDay(env); } catch (err) { return say(500, { error: String(err.message) }); }
+        try { day = houseDay(env); } catch (err) {
+          console.log(`talk:session ${String(err?.message).slice(0, 200)}`);
+          return say(500, { error: "HOUSE_TZ is not a timezone: set it to one (such as America/Los_Angeles) and deploy." });
+        }
         const sdp = await readBounded(request, 64 * 1024);
         if (sdp === null) return say(413, { error: "The offer is too large." });
         if (!/^v=0\r?\n/.test(sdp)) return say(400, { error: "The body must be an SDP offer." });
@@ -2062,7 +2075,7 @@ export async function handleRequest(request, env, ctx) {
       // door === "tool"
       let parsed;
       try { parsed = parseToolCall(body, VOICE_TOOLS); }
-      catch (err) { return say(400, { error: String(err.message) }); }
+      catch (err) { return say(400, { error: talkErrorWords(err) }); }
       const refusal = speakerRule(parsed.name, parsed.args, devices);
       if (refusal) {
         console.log(`talk:tool cap=${cap.slice(0, 8)} ${parsed.name} refused: ${refusal}`);
@@ -2076,7 +2089,7 @@ export async function handleRequest(request, env, ctx) {
       const argsIn = canon ? { ...voiceArgs, device: canon } : voiceArgs;
       let call;
       try { call = voiceWriterCall(parsed.name, argsIn); }
-      catch (err) { return say(200, { error: String(err.message) }); }
+      catch (err) { return say(200, { error: talkErrorWords(err) }); }
       try {
         // Marked as Talk on its own copy of env (MC-18), as the voice role is
         // at /mcp: a guest's record says "talk" whatever the arguments claim.
@@ -2091,7 +2104,7 @@ export async function handleRequest(request, env, ctx) {
       } catch (err) {
         // The tool's own refusal is an answer the desk can say aloud.
         console.log(`talk:tool cap=${cap.slice(0, 8)} ${call.name} error: ${String(err?.message ?? err).slice(0, 200)}`);
-        return say(200, { error: String(err?.message ?? err).slice(0, 2000) });
+        return say(200, { error: talkErrorWords(err) });
       }
     }
     // WHAT IS PLAYING, FOR A PAGE THAT WENT OUT WITHOUT IT (2026-09-12). The

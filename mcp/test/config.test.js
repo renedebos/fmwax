@@ -62,6 +62,14 @@ test("a house with no domain gets no routes block, and the workers.dev address i
   assert.ok(out.includes("workers_dev = true"), "and the free hostname stays on");
 });
 
+test("a house names its Cloudflare account only when house.json does, and only a real account id (2026-10-25)", () => {
+  assert.ok(!render(plain(), TEMPLATE).includes("account_id"), "no account, no line: a deploy uses the sign-in's one account");
+  const named = render({ ...plain(), worker: { ...plain().worker, accountId: "0123456789abcdef0123456789abcdef" } }, TEMPLATE);
+  assert.match(named, /^account_id = "0123456789abcdef0123456789abcdef"$/m);
+  assert.throws(() => render({ ...plain(), worker: { ...plain().worker, accountId: "my-account@example.com" } }, TEMPLATE),
+    /worker\.accountId is not a Cloudflare account id/);
+});
+
 test("MC-29's switch: the kept player answer is on unless house.json says player.reuse: false", () => {
   assert.ok(!render(plain(), TEMPLATE).includes("PLAYER_REUSE"), "on by saying nothing");
   assert.match(render({ ...plain(), player: { reuse: false } }, TEMPLATE), /\nPLAYER_REUSE = "off"\n/);
@@ -385,7 +393,8 @@ test("the sample house a copy carries renders, and is none of this house", () =>
   assert.match(out, /name = "fmwax-house"/);
   // In a copy the sample is the house: there is nobody else to keep out.
   if (HOUSE.site.baseUrl === blank.site.baseUrl) return;
-  for (const v of [HOUSE.site.baseUrl, ...Object.values(HOUSE.kv), ...HOUSE.buttons.map((b) => b.playlist).filter(Boolean)]) {
+  assert.ok(!out.includes("account_id"), "a copy's own sign-in chooses its account");
+  for (const v of [HOUSE.site.baseUrl, ...Object.values(HOUSE.kv), HOUSE.worker.accountId, ...HOUSE.buttons.map((b) => b.playlist)].filter(Boolean)) {
     assert.ok(!out.includes(v), `the sample says ${v}`);
   }
 });

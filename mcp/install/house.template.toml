@@ -11,6 +11,13 @@
 name = {{worker.name}}
 main = "worker.js"
 compatibility_date = {{worker.compatibilityDate}}
+#{{if account}}
+# The Cloudflare account this house lives in. Named because one sign-in can
+# see more than one account (a practice house's, say), and a deploy cannot
+# ask which: it stops. A sign-in that sees only this house's account needs
+# no line.
+account_id = {{worker.accountId}}
+#{{end}}
 
 #{{if routes}}
 # The hostname a shared link says. The Worker's name is machinery, and it reads

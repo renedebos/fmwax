@@ -60,7 +60,8 @@ test("the pairing door gives the key for the page's code, and nothing for anythi
   assert.ok(code, "the command carries a code");
   let r = await go(e, "/helper/pair", { method: "POST", json: { code } });
   assert.deepEqual([r.status, await r.json()], [200, { ok: true, key: SECRET }]);
-  r = await go(e, "/helper/pair", { method: "POST", json: { code: `${code.slice(0, -1)}x` } });
+  // Its last letter changed (to y if it was already x: 1 run in 64 failed).
+  r = await go(e, "/helper/pair", { method: "POST", json: { code: `${code.slice(0, -1)}${code.endsWith("x") ? "y" : "x"}` } });
   assert.deepEqual([r.status, await r.json()], [403, { ok: false, code: "bad" }]);
   r = await go(e, "/helper/pair", { method: "POST", json: { code: await helperPairCode(SECRET, Date.now() - 2 * 3600_000) } });
   assert.deepEqual([r.status, await r.json()], [410, { ok: false, code: "expired" }]);

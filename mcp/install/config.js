@@ -120,10 +120,17 @@ function renderButtons(buttons) {
 // than rendering a config with `{{tidal.country}}` in it.
 export function viewOf(house) {
   const routes = house.site?.routes ?? [];
+  // The Cloudflare account, when named: 32 hex characters, or wrangler would
+  // be handed something it cannot deploy to.
+  const accountId = house.worker?.accountId ?? null;
+  if (accountId != null && !/^[0-9a-f]{32}$/.test(String(accountId))) {
+    throw new Error(`worker.accountId is not a Cloudflare account id (32 hex characters): "${String(accountId).slice(0, 40)}"`);
+  }
   const devices = house.devices?.default ? house.devices : null;
   const requests = house.requests ?? { enabled: false, autofulfill: false };
   return {
     when: {
+      account: Boolean(accountId),
       routes: routes.length > 0,
       devices: Boolean(devices),
       speakers: Boolean(devices?.speakers && Object.keys(devices.speakers).length),
@@ -152,6 +159,7 @@ export function viewOf(house) {
     values: {
       "worker.name": house.worker.name,
       "worker.compatibilityDate": house.worker.compatibilityDate,
+      "worker.accountId": accountId ?? "",
       "site.baseUrl": house.site.baseUrl,
       "site.timezone": house.site?.timezone ?? "",
       "kv.TOKENS": house.kv.TOKENS,

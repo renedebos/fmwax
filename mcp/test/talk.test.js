@@ -14,6 +14,7 @@ import { VOICE_PROMPT, CAP_MINUTES, backendPrompt, voicePrompt } from "../voice.
 import { makeEnv, installFetch, track, buttons, PID } from "./harness.js";
 import { ARCHIVE } from "../archive-identity.js";
 import { spkWords } from "../programs.js";
+import { talkErrorWords } from "../routes.js";
 
 const KEY = "abcdefabcdefabcdefabcdef";
 const P = (n) => `00000000000000000000${String(n).padStart(2, "0")}`;
@@ -49,9 +50,12 @@ const closedReq = (cap, _seconds, over = {}) =>
 const beatReq = (cap, over = {}) => req("beat", { type: "application/json", body: "{}", cap, ...over });
 const MIN = 60_000;
 // A day already spent to `minutes`, as a settled row in the fake's ledger.
-const spend = (e, minutes, over = {}) => e.STATION.sessions.set("9".repeat(32), {
-  cap: "9".repeat(32), day: today(), created_at: Date.now() - 200 * MIN, last_beat: Date.now() - 200 * MIN + minutes * MIN, cap_sec: 3600,
-  reserved_min: 0, settled_sec: Math.round(minutes * 60), settled_at: Date.now() - 200 * MIN + minutes * MIN, session_id: "live_old", closed_by: "server",
+// One clock reading: three Date.now() calls a millisecond apart made a
+// 3-minute session 3 minutes and 1 ms, which the page rounds up to 4
+// (1 run in 20 failed, 2026-10-25).
+const spend = (e, minutes, over = {}, at = Date.now()) => e.STATION.sessions.set("9".repeat(32), {
+  cap: "9".repeat(32), day: today(), created_at: at - 200 * MIN, last_beat: at - 200 * MIN + minutes * MIN, cap_sec: 3600,
+  reserved_min: 0, settled_sec: Math.round(minutes * 60), settled_at: at - 200 * MIN + minutes * MIN, session_id: "live_old", closed_by: "server",
   close_tries: 0, retry_after: null, ...over });
 const get = (path) => new Request(`https://x.test${path}`);
 async function openSession(e) {
@@ -274,8 +278,21 @@ test("the day's cap: no line inside the last minute; a refusal costs nothing, an
     e.HOUSE_TZ = "Europe/Amsterdamn";
     const res = await worker.fetch(sess(), e);
     assert.equal(res.status, 500);
-    assert.match((await res.json()).error, /HOUSE_TZ is not a timezone/);
+    const said = (await res.json()).error;
+    assert.match(said, /HOUSE_TZ is not a timezone/);
+    assert.ok(!said.includes("Amsterdamn"), "the setting's words stay in the log");
   } finally { f.restore(); }
+});
+
+test("Talk says the house's own refusals aloud, never a fault in the code (2026-10-25, CodeQL)", () => {
+  assert.equal(talkErrorWords(new Error("No playlist named \"x\".")), "No playlist named \"x\".");
+  for (const fault of [new TypeError("Cannot read properties of undefined (reading 'items')"),
+    new ReferenceError("tracks is not defined"), new RangeError("Invalid time value"), "a bare string", { stack: "at x" }]) {
+    const said = talkErrorWords(fault);
+    assert.match(said, /^Something went wrong in the house/);
+    assert.ok(!/items|tracks|Invalid|bare|stack/.test(said), said);
+  }
+  assert.equal(talkErrorWords(new Error("x".repeat(5000))).length, 2000);
 });
 
 test("the bridge's checks, in their order: origin, media type, capability shape, capability live, allowlist and parse, speaker", async () => {
