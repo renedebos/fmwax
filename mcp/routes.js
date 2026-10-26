@@ -13,6 +13,7 @@ import {
   speakerRule, canonicalDevice, voicePrompt, backendPrompt,
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
+import { githubRepo, updateFacts } from "./updates.js";
 import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, renewHouseKey } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
@@ -545,7 +546,7 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/rooms" || url.pathname === "/setup/backup" ||
       url.pathname === "/setup/restore" || url.pathname === "/setup/check" || url.pathname === "/setup/name" || url.pathname === "/setup/identify" ||
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
-      url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" ||
+      url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" || url.pathname === "/setup/updates" ||
       url.pathname === "/setup/endless") {
       // A SETUP KEY TOO SHORT (MC-34): the Deploy button's form takes any
       // password, and one under 24 characters keeps the door shut. Said
@@ -718,6 +719,16 @@ export async function handleRequest(request, env, ctx) {
           keys: MADE_KEYS.map((name) => ({ name, held: !!env[name], stored: (env.__keys ?? []).includes(name) })),
           browsers: Number(s.browsers) || 1, renewed, signedOut: /^[0-9]{1,2}$/.test(out ?? "") ? Number(out) : null } });
       }
+      // UPDATES (MC-34 stage 2, updates.js): a house made by the Deploy
+      // button, its version and the newest, its owner's GitHub copy, the
+      // link that turns updates on and the one that runs one.
+      if (url.pathname === "/setup/updates" && request.method === "GET") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const up = await updateFacts(env);
+        if (!up) return Response.redirect(new URL("/setup", url).toString(), 303);
+        return setupPage({ state: "updates", updates: up,
+          flash: url.searchParams.get("saved") ? "Kept. Now turn updates on, once, below." : null });
+      }
       // BACKUP AND REPAIR (backup.js): the owner's only, every one.
       if (["/setup/backup", "/setup/restore", "/setup/check"].includes(url.pathname) && request.method === "GET") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
@@ -887,6 +898,18 @@ export async function handleRequest(request, env, ctx) {
       // REMOVE THE HOME HELPER (the owner, 2026-10-21: "an easy button"): sent
       // down its line, and the helper takes itself off its computer. Only a
       // helper the install made can; one set up by hand says so.
+      if (url.pathname === "/setup/updates") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const up = await updateFacts(env);
+        if (!up) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const own = githubRepo(form?.get("repo"));
+        if (!own) {
+          return setupPage({ state: "updates", updates: up,
+            flash: "That is not a GitHub repository's address. It looks like github.com/your-name/your-house." }, 400);
+        }
+        await choosePageSetting(env, "UPDATE_REPO", own.web);
+        return new Response(null, { status: 303, headers: { location: "/setup/updates?saved=1#turn-on", "cache-control": "no-store" } });
+      }
       if (url.pathname === "/setup/keys") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
         const what = String(form?.get("key") ?? "");

@@ -6343,6 +6343,39 @@ function setupKeysHtml({ keys = [], browsers = 1, renewed = null, signedOut = nu
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
+// UPDATES (MC-34 stage 2): a house made by the Deploy button, its owner's
+// GitHub copy given once, the workflow committed once from GitHub's own
+// page, then each update a Run workflow there.
+function setupUpdatesHtml(up) {
+  const where = up.newer ? "A newer version is out."
+    : up.latest && up.current ? "This house has the latest version."
+    : "This house's version is not known yet: it is said after its first update.";
+  const askCopy = (open) => `<form class="setform" method="post" action="/setup/updates">
+      <label for="srepo">Your copy's address on GitHub</label>
+      <input type="text" id="srepo" name="repo" required autocomplete="off" autocapitalize="off" spellcheck="false"
+        placeholder="github.com/your-name/your-house"${up.own ? ` value="${esc(up.own.replace(/^https:\/\//, ""))}"` : ""}>
+      <button class="sgo" type="submit" data-busy="Keeping…">${open ? "Keep" : "Change"}</button>
+    </form>`;
+  return `<section class="ucard setsec" aria-labelledby="scard">
+    <div class="sethead"><h2 id="scard">Updates</h2><span>${up.newer ? "One is out" : up.own ? "On" : "Off"}</span></div>
+    <p class="setsub">New versions of the house come from ${esc(up.source.replace(/^https:\/\//, ""))}, and reach it through
+      your own copy on GitHub, which Cloudflare deploys whenever it changes.</p>
+    <p class="setsaid" role="status">${esc(where)}</p>
+    ${!up.own ? `<p class="sgntext">First, where your copy is. The Deploy button made it in your GitHub, with the house's
+      name. Cloudflare shows it under the house's Settings, Builds.</p>
+    ${askCopy(true)}` : `
+    <ol class="setsteps" id="turn-on">
+      <li><b>Turn updates on, once.</b> GitHub opens a new file, already written: press <b>Commit changes</b>, then
+        <b>Commit changes</b> again.<br>
+        <a class="sgo" href="${esc(up.turnOn)}" target="_blank" rel="noopener">Turn updates on (GitHub)</a></li>
+      <li><b>Get the latest version, whenever one is out.</b> Press <b>Run workflow</b>, then <b>Run workflow</b> again.
+        A minute or two later Cloudflare has deployed it, and this page says the house has the latest version.<br>
+        <a class="sgo" href="${esc(up.run)}" target="_blank" rel="noopener">Get the latest version (GitHub)</a></li>
+    </ol>
+    <details class="setkey"><summary>A different copy</summary>${askCopy(false)}</details>`}
+  </section>
+  <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+}
 function setupCheckHtml(rows) {
   const bad = rows.filter((r) => r.state === "todo").length, look = rows.filter((r) => r.state === "due").length;
   return `<section class="ucard setsec" aria-labelledby="scard">
@@ -6410,7 +6443,7 @@ function setupTimezoneHtml({ current, fileSays }) {
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
-export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null, keys = null }) {
+export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null, keys = null, updates = null }) {
   const flashHtml = flash ? `<div class="flash" role="status"><p>${esc(flash)}</p></div>` : "";
   const card = (title, sub, body) => `<section class="ucard" aria-labelledby="scard">
     <h2 id="scard">${esc(title)}<span class="usub">${esc(sub)}</span></h2>
@@ -6447,6 +6480,7 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     : state === "endless" ? setupEndlessHtml(endless)
     : state === "check" ? setupCheckHtml(rows)
     : state === "keys" ? setupKeysHtml(keys)
+    : state === "updates" ? setupUpdatesHtml(updates)
     : card("This house has an owner", "Sign in with the recovery code", `
     <div id="signin">
     <p class="sgntext">If it is yours and this is a new phone or browser, enter the recovery code you were given

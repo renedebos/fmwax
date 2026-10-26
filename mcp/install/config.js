@@ -145,6 +145,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       // from its owner's first visit to the setup page (MC-34 1a).
       kvIds: Boolean(house.kv?.TOKENS && house.kv?.PROGRAMS),
       baseUrl: Boolean(house.site?.baseUrl),
+      source: Boolean(house.site?.source),
       routes: routes.length > 0,
       devices: Boolean(devices),
       speakers: Boolean(devices?.speakers && Object.keys(devices.speakers).length),
@@ -177,6 +178,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       "paths.main": paths.main,
       "paths.covers": paths.covers,
       "site.baseUrl": house.site?.baseUrl ?? "",
+      "site.source": house.site?.source ?? "",
       "site.timezone": house.site?.timezone ?? "",
       "kv.TOKENS": house.kv?.TOKENS ?? "",
       "kv.PROGRAMS": house.kv?.PROGRAMS ?? "",
@@ -374,10 +376,11 @@ export function renderBlankHouse({ name, baseUrl, tokensId, programsId, compatib
 // root, with no address and no store ids (Cloudflare makes the stores; the
 // house learns its address at its owner's first visit) and its one secret,
 // SETUP_KEY, asked for by the button's form (.dev.vars.example).
-export function renderButtonHouse({ name, compatibilityDate }, templateFile = TEMPLATE_FILE) {
+export function renderButtonHouse({ name, compatibilityDate, source = null }, templateFile = TEMPLATE_FILE) {
   const house = {
     worker: { name, compatibilityDate },
-    site: {},
+    // The public repository it is copied from, for its updates (MC-34 stage 2).
+    site: source ? { source } : {},
     kv: {},
     requests: { enabled: false, autofulfill: false },
     buttons: [],

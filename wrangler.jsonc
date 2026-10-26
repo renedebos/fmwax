@@ -53,6 +53,7 @@
     "run_worker_first": true
   },
   "vars": {
+    "SOURCE_REPO": "https://github.com/renedebos/fmwax",
     "REQUESTS_ENABLED": "false",
     "AUTOFULFILL_ENABLED": "false",
     "PROGRAM_REPLAY_PLAYLIST": "replay",

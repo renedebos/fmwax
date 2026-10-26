@@ -20,7 +20,7 @@ export const SETTING_NAMES = [
   "DEFAULT_DEVICE", "ROOM_DEVICES", "WIIM_SPEAKERS", "PROGRAM_BASE_URL",
   "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "REQUEST_ROUTINE_ID", "REQUEST_NOTES", "TIDAL_COUNTRY", "HOUSE_TZ", "PLAYER_REUSE", "RULES_HISTORY", "ENDLESS",
   "ARCHIVE_SITE_URL", "ARCHIVE_OCCURRENCES_URL", "ARCHIVE_TRACKS_URL", "ARCHIVE_MEDIA_URL",
-  "PROGRAM_REPLAY_PLAYLIST", "BUTTONS", "PLAYLIST_ALIASES",
+  "PROGRAM_REPLAY_PLAYLIST", "BUTTONS", "PLAYLIST_ALIASES", "SOURCE_REPO",
 ];
 
 // THE HOUSE'S KEYS (the keys design, 2026-10-17). A new house is deployed
@@ -48,7 +48,9 @@ function newKey() {
 // PROGRAM_BASE_URL: the house's own address, learned from its owner's setup
 // page where no file sets it (MC-34 1a, the Deploy button's house has no
 // address until it is visited).
-export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL"];
+// UPDATE_REPO: the owner's own GitHub copy of a house made by the Deploy
+// button, for its Updates step (MC-34 stage 2, updates.js).
+export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL", "UPDATE_REPO"];
 
 // The settings as this deploy's vars have them: the names present, values as
 // Wrangler hands them over (a string, or BUTTONS' array of tables).

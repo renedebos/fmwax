@@ -158,6 +158,14 @@ WIIM_SPEAKERS = {{devices.speakersJson}}
 #{{if baseUrl}}
 PROGRAM_BASE_URL = {{site.baseUrl}}
 #{{end}}
+#{{if source}}
+
+# Where this house's updates come from (MC-34): the public repository the
+# Deploy button copied it from. The setup page's Updates step reads its
+# newest version there and gives the owner's own copy the workflow that
+# fetches it (mcp/updates.js). Only a house made by the button has one.
+SOURCE_REPO = {{site.source}}
+#{{end}}
 
 # The composer's kill switch. "false" keeps the request form off every DJ page
 # and its POST target answering 404. A string because [vars] only carries

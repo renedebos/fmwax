@@ -18,6 +18,7 @@ import { curatorKind, workSubscriptions } from "./curator-events.js";
 import { readSeen } from "./settings.js";
 import { sameName } from "./programs.js";
 import { helperSaw } from "./setup-watch.js";
+import { updateFacts } from "./updates.js";
 
 const when = (env, iso) => atWords(houseClockWords(env, iso)) ?? "at a time not known";
 function dateWords(env, ms) {
@@ -254,6 +255,14 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
           detail: "Not set up: the preset names on your WiiMs, the radio on the bar and presses from the app, from a computer at home that is often on" }]
         : [];
   const talk = env.OPENAI_API_KEY ? [{ title: "OpenAI", state: "done", detail: `On · ${CAP_MINUTES} minutes a day` }] : [];
+  // UPDATES (MC-34 stage 2): only a house made by the Deploy button has a
+  // source to update from; turned on from its owner's own GitHub copy.
+  const up = await updateFacts(env, now).catch(() => null);
+  const updates = !up ? [] : !up.own
+    ? [{ title: "Updates", state: "offer", href: "/setup/updates", label: "Turn on updates",
+      detail: "New versions with a click, from your own GitHub copy of the house" }]
+    : [{ title: "Updates", state: up.newer ? "due" : "done", href: "/setup/updates", label: up.newer ? "Get the latest version" : "Open", always: true,
+      detail: up.newer ? "A newer version is out" : up.latest && up.current ? "This house has the latest version" : `From ${up.ownSlug}` }];
 
   // ONE RULE FOR DONE (Codex, 2026-10-17: a section said 5 of 5 while Core
   // said 4 of 5): "due" is done, with something to look at, counted apart.
@@ -269,6 +278,7 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
       : "DJs that keep playing, and requests from the DJ pages: after Core", endless),
     section("helper", "Home helper", "Optional: for a computer at home that stays on", helper, true),
     section("talk", "Talk", "Optional: voice in the house's app, with OpenAI", talk, true),
+    ...(updates.length ? [section("updates", "Updates", "New versions of the house, from your GitHub copy", updates, true)] : []),
   ];
   // A row the house cannot see from here (a preset with no home helper) is
   // shown with its "?" but neither counts for nor against (Codex,
