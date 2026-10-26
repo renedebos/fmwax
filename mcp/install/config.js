@@ -118,7 +118,16 @@ function renderButtons(buttons) {
 // Every value the template may name, and every block it may drop. Built in one
 // place so a missing answer fails here — with the key in the message — rather
 // than rendering a config with `{{tidal.country}}` in it.
-export function viewOf(house) {
+// WHERE THE HOUSE SITS (MC-34 1b): the terminal door's config is mcp/'s own;
+// the Deploy button's sits at the public repo's root, so the Worker and the
+// covers are named from there.
+const PATHS = {
+  mcp: { main: "worker.js", covers: "../art/covers" },
+  root: { main: "mcp/worker.js", covers: "art/covers" },
+};
+export function viewOf(house, { at = "mcp" } = {}) {
+  const paths = PATHS[at];
+  if (!paths) throw new Error(`no config is rendered for "${at}"`);
   const routes = house.site?.routes ?? [];
   // The Cloudflare account, when named: 32 hex characters, or wrangler would
   // be handed something it cannot deploy to.
@@ -131,6 +140,11 @@ export function viewOf(house) {
   return {
     when: {
       account: Boolean(accountId),
+      // The Deploy button's house: Cloudflare makes the stores and writes
+      // their ids into the newcomer's copy, and the house learns its address
+      // from its owner's first visit to the setup page (MC-34 1a).
+      kvIds: Boolean(house.kv?.TOKENS && house.kv?.PROGRAMS),
+      baseUrl: Boolean(house.site?.baseUrl),
       routes: routes.length > 0,
       devices: Boolean(devices),
       speakers: Boolean(devices?.speakers && Object.keys(devices.speakers).length),
@@ -160,10 +174,12 @@ export function viewOf(house) {
       "worker.name": house.worker.name,
       "worker.compatibilityDate": house.worker.compatibilityDate,
       "worker.accountId": accountId ?? "",
-      "site.baseUrl": house.site.baseUrl,
+      "paths.main": paths.main,
+      "paths.covers": paths.covers,
+      "site.baseUrl": house.site?.baseUrl ?? "",
       "site.timezone": house.site?.timezone ?? "",
-      "kv.TOKENS": house.kv.TOKENS,
-      "kv.PROGRAMS": house.kv.PROGRAMS,
+      "kv.TOKENS": house.kv?.TOKENS ?? "",
+      "kv.PROGRAMS": house.kv?.PROGRAMS ?? "",
       "devices.default": devices?.default ?? "",
       "devices.roomsJson": jsonInToml(devices?.rooms ?? []),
       "devices.speakersJson": jsonInToml(devices?.speakers ?? {}),
@@ -215,6 +231,14 @@ export function viewOf(house) {
 // parser's rules — worker.js checks the shape of every button on the first
 // request — but the two things that are legal there and useless here, caught
 // while somebody is still sitting in front of the installer.
+// A house from house.json has its address and its two stores; only the
+// Deploy button's (renderButtonHouse, not strict) leaves them to Cloudflare
+// and its first visit. Asked after the presets' checks, which say more.
+function checkPlace(house) {
+  for (const [k, v] of [["site.baseUrl", house.site?.baseUrl], ["kv.TOKENS", house.kv?.TOKENS], ["kv.PROGRAMS", house.kv?.PROGRAMS]]) {
+    if (!v) throw new Error(`house.json has no value for ${k}`);
+  }
+}
 function check(house) {
   const buttons = house.buttons ?? [];
   // A slot somebody can curate into: a DJ's preset, or a guest preset (MC-18),
@@ -286,14 +310,15 @@ function checkEndless(house) {
   if (new Set(ids).size !== ids.length) throw new Error("two endless presets share one playlist.");
 }
 
-export function render(house, template, { strict = true } = {}) {
+export function render(house, template, { strict = true, at = "mcp" } = {}) {
   // The terminal door's blank house (door.js) has no presets yet: its owner
   // makes them on the setup page, so the checks that want one are not asked.
   if (strict) {
     check(house);
     checkEndless(house);
+    checkPlace(house);
   }
-  const view = viewOf(house);
+  const view = viewOf(house, { at });
 
   // Blocks first: a placeholder inside a dropped block must never be asked
   // for, or a Tidal-less house would fail on {{tidal.country}}.
@@ -343,6 +368,23 @@ export function renderBlankHouse({ name, baseUrl, tokensId, programsId, compatib
     schedule: true,
   };
   return render(house, readFileSync(templateFile, "utf8"), { strict: false });
+}
+
+// THE DEPLOY BUTTON'S HOUSE (MC-34 1b): a blank house at the public repo's
+// root, with no address and no store ids (Cloudflare makes the stores; the
+// house learns its address at its owner's first visit) and its one secret,
+// SETUP_KEY, asked for by the button's form (.dev.vars.example).
+export function renderButtonHouse({ name, compatibilityDate }, templateFile = TEMPLATE_FILE) {
+  const house = {
+    worker: { name, compatibilityDate },
+    site: {},
+    kv: {},
+    requests: { enabled: false, autofulfill: false },
+    buttons: [],
+    aliases: {},
+    schedule: true,
+  };
+  return render(house, readFileSync(templateFile, "utf8"), { strict: false, at: "root" });
 }
 
 export function renderHouse(houseFile = HOUSE_FILE, templateFile = TEMPLATE_FILE) {

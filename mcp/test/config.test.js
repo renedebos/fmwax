@@ -11,7 +11,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 import {
-  render, renderHouse, viewOf, HOUSE_FILE, TEMPLATE_FILE, CONFIG_FILE,
+  render, renderBlankHouse, renderButtonHouse, renderHouse, viewOf, HOUSE_FILE, TEMPLATE_FILE, CONFIG_FILE,
 } from "../install/config.js";
 
 const HOUSE = JSON.parse(readFileSync(HOUSE_FILE, "utf8"));
@@ -172,6 +172,29 @@ test("a missing answer fails loudly rather than rendering a hole", () => {
   const h = plain();
   delete h.site.baseUrl;
   assert.throws(() => render(h, TEMPLATE), /site\.baseUrl/);
+  const k = plain();
+  delete k.kv.PROGRAMS;
+  assert.throws(() => render(k, TEMPLATE), /kv\.PROGRAMS/);
+});
+
+test("the Deploy button's house: at the repo's root, no store ids, no address, the setup door and the cron (MC-34 1b)", () => {
+  const out = renderButtonHouse({ name: "fmwax-house", compatibilityDate: "2025-06-01" });
+  assert.match(out, /^name = "fmwax-house"$/m);
+  assert.match(out, /^main = "mcp\/worker\.js"$/m, "the Worker named from the root");
+  assert.match(out, /^directory = "art\/covers"$/m, "and the covers");
+  assert.match(out, /\[\[kv_namespaces\]\]\nbinding = "TOKENS"\n\n/, "TOKENS with no id: Cloudflare makes it");
+  assert.match(out, /\[\[kv_namespaces\]\]\nbinding = "PROGRAMS"\n\n/);
+  assert.ok(!/^id = /m.test(out), "no store id at all");
+  assert.ok(!/^PROGRAM_BASE_URL/m.test(out), "the address is learned at the first visit");
+  assert.ok(!/^routes|^account_id/m.test(out));
+  for (const s of ['class_name = "StationLedger"', 'class_name = "HouseSettings"', 'tag = "v1"', 'tag = "v2"', 'crons = ["*/10 * * * *"]']) {
+    assert.ok(out.includes(s), s);
+  }
+  // The same template as the terminal door's: every line of one is in the
+  // other, but for the paths, the ids and the address.
+  const door = renderBlankHouse({ name: "fmwax-house", baseUrl: "https://fmwax-house.example.workers.dev", tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" });
+  const strip = (t) => t.split("\n").filter((l) => !/^(main|directory|id|PROGRAM_BASE_URL|name|BUTTONS|PLAYLIST_ALIASES|DEFAULT_DEVICE|ROOM_DEVICES|ENDLESS|REQUESTS_ENABLED|AUTOFULFILL_ENABLED|crons) = /.test(l));
+  assert.deepEqual(strip(out).filter((l) => !strip(door).includes(l)), [], "nothing the door's lacks");
 });
 
 test("the template may only name blocks the view knows", () => {

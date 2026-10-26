@@ -9,7 +9,7 @@
 # the meantime — it compares this file to what the template renders, byte for
 # byte, so the two cannot drift apart in silence.
 name = {{worker.name}}
-main = "worker.js"
+main = {{paths.main}}
 compatibility_date = {{worker.compatibilityDate}}
 #{{if account}}
 # The Cloudflare account this house lives in. Named because one sign-in can
@@ -76,7 +76,9 @@ enabled = true
 #   npx wrangler kv namespace create TOKENS
 [[kv_namespaces]]
 binding = "TOKENS"
+#{{if kvIds}}
 id = {{kv.TOKENS}}
+#{{end}}
 
 # Playlist backups, and the program articles. Deliberately NOT the namespace
 # above: rollback data and public article bodies have no business sharing a
@@ -85,7 +87,9 @@ id = {{kv.TOKENS}}
 #   npx wrangler kv namespace create PROGRAMS
 [[kv_namespaces]]
 binding = "PROGRAMS"
+#{{if kvIds}}
 id = {{kv.PROGRAMS}}
+#{{end}}
 
 # The request claim ledger: ONE SQLite-backed Durable Object for the whole
 # household, holding claims, leases and request state ONLY — records, caches,
@@ -123,7 +127,7 @@ new_sqlite_classes = ["HouseSettings"]
 # off the root: nothing is served by path, so a file in the directory is not
 # a page.
 [assets]
-directory = "../art/covers"
+directory = {{paths.covers}}
 binding = "COVERS"
 run_worker_first = true
 
@@ -151,7 +155,9 @@ WIIM_SPEAKERS = {{devices.speakersJson}}
 # Every programme URL is built at read time from this value and never stored in
 # a record, so changing it re-points the links already sent as well as future
 # ones. The Worker still answers on workers.dev; it just stops SAYING so.
+#{{if baseUrl}}
 PROGRAM_BASE_URL = {{site.baseUrl}}
+#{{end}}
 
 # The composer's kill switch. "false" keeps the request form off every DJ page
 # and its POST target answering 404. A string because [vars] only carries

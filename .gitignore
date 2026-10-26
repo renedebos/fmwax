@@ -33,3 +33,6 @@ tidal/.env
 
 # A captured deploy log: namespace ids, LAN addresses, env values. Never the repo's.
 mcp/deploy.txt
+
+# A local secret file at the repo root, as the Deploy button names it (MC-34).
+/.dev.vars

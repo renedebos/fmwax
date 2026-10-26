@@ -14,7 +14,7 @@ import {
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
 import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, renewHouseKey } from "./settings.js";
-import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, setupOpen, signOutOthers } from "./claim.js";
+import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
 import { READ_ENVELOPE, READ_ACTION, CONTROL_PORT, CONTROL_PATH } from "./keymap.js";
@@ -547,6 +547,14 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
       url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" ||
       url.pathname === "/setup/endless") {
+      // A SETUP KEY TOO SHORT (MC-34): the Deploy button's form takes any
+      // password, and one under 24 characters keeps the door shut. Said
+      // here, with the way out, rather than a bare 404 on a new house.
+      if (!setupOpen(env) && env.HOUSE && typeof env.SETUP_KEY === "string" && env.SETUP_KEY.trim()) {
+        return roomPage(renderRefusal({ why: `This house's setup key is shorter than ${SETUP_KEY_MIN} characters, the least a setup key ` +
+          "may be, so the setup page stays shut. In Cloudflare, open Workers, this house, Settings, " +
+          "Variables and Secrets: set SETUP_KEY again, longer, and come back here." }), { status: 503, headers: { "cache-control": "no-store" } });
+      }
       if (!setupOpen(env)) return notFound();
       // same-origin, not the room pages' no-referrer: under no-referrer a
       // browser sends "Origin: null" with a form's POST, and the check below
@@ -568,6 +576,17 @@ export async function handleRequest(request, env, ctx) {
         if (!s.claimed) return setupPage({ state: "open" });
         if (!s.owner) return setupPage({ state: "owned" });
         await ensureClaimMark(env, s.claimed_at);
+        // THE HOUSE'S OWN ADDRESS (MC-34 1a): where no file sets one (a house
+        // from the Deploy button), the address its owner opens this page at,
+        // kept for the links that go out and the cron that writes them; a new
+        // domain is learned the first time the owner comes in by it. A file's
+        // address always wins, and a page copy of it is dropped.
+        const fileBase = (env.__vars ?? {}).PROGRAM_BASE_URL ?? null;
+        const pageBase = (env.__page ?? {}).PROGRAM_BASE_URL ?? null;
+        if (fileBase ? pageBase : pageBase !== url.origin) {
+          try { await choosePageSetting(env, "PROGRAM_BASE_URL", fileBase ?? url.origin); env = { ...env, PROGRAM_BASE_URL: fileBase ?? url.origin }; }
+          catch { /* the next visit tries again */ }
+        }
         // The house's own keys, if the claim's making of them was lost: made
         // now, and read on the next look.
         if (MADE_KEYS.some((n) => !env[n])) await ensureHouseKeys(env);

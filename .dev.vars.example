@@ -1,0 +1,4 @@
+# The one secret the Deploy to Cloudflare button asks for. Make up a long
+# password (24 characters or more) and keep it until your house is claimed:
+# you type it once, on the house's setup page.
+SETUP_KEY=

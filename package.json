@@ -1,0 +1,15 @@
+{
+  "name": "fmwax-house",
+  "private": true,
+  "description": "fmwax: a house of radio DJs on the presets of a WiiM. This file is for the Deploy to Cloudflare button; the house itself is in mcp/.",
+  "scripts": {
+    "deploy": "npx wrangler@4.129.1 deploy"
+  },
+  "cloudflare": {
+    "bindings": {
+      "SETUP_KEY": {
+        "description": "**Make up a password of 24 characters or more** and keep it for a few minutes: you type it once, on your house's setup page, to claim the house. Letters and numbers are enough."
+      }
+    }
+  }
+}

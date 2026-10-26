@@ -45,7 +45,10 @@ function newKey() {
 // (MC-31 stage 5, the /helper/speakers door); the owner's are in its file.
 // DJ_TUNING: the DJs' dials as the household moved them (MC-32, tuning.js),
 // chosen on a DJ's page, never in a file.
-export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING"];
+// PROGRAM_BASE_URL: the house's own address, learned from its owner's setup
+// page where no file sets it (MC-34 1a, the Deploy button's house has no
+// address until it is visited).
+export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL"];
 
 // The settings as this deploy's vars have them: the names present, values as
 // Wrangler hands them over (a string, or BUTTONS' array of tables).

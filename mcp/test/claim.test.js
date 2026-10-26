@@ -27,10 +27,17 @@ const cookieOf = (r) => (r.headers.get("set-cookie") ?? "").split(";")[0];
 const codeOf = (html) => html.match(/class="setcode"[^>]*>([0-9A-Z-]+)</)?.[1];
 
 test("no setup key, or one short enough to guess: no door", async () => {
-  for (const key of [null, "short-key"]) {
-    const { e } = await house(key);
-    assert.equal((await send(e, "/setup")).status, 404);
-    assert.equal((await send(e, "/setup/claim", { method: "POST", form: { key: key ?? "" } })).status, 404);
+  const { e } = await house(null);
+  assert.equal((await send(e, "/setup")).status, 404);
+  assert.equal((await send(e, "/setup/claim", { method: "POST", form: { key: "" } })).status, 404);
+  // One too short is said, with the way out (MC-34: the Deploy button's form
+  // takes any password), and still opens nothing.
+  const { e: s } = await house("short-key");
+  for (const r of [await send(s, "/setup"), await send(s, "/setup/claim", { method: "POST", form: { key: "short-key" } })]) {
+    assert.equal(r.status, 503);
+    const html = await r.text();
+    assert.match(html, /shorter than 24 characters/);
+    assert.ok(!/Claim this house/.test(html), "no claim form");
   }
 });
 
