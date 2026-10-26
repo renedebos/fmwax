@@ -606,11 +606,12 @@ and cap near 38, and this resolves nothing (tasks/done/mc08-write-it-up.md).
     cd mcp && npm test
 
 The station ledger has a second, deliberately small suite that runs the
-real Durable Object in workerd: `npm run test:workerd` (vitest + the
-Cloudflare pool, pinned to the vitest-3 line because the vitest-4 pool
-ships a wrangler that refuses this machine's Node 20).
+real Durable Object in workerd: `npm run test:workerd` (vitest 4 and
+Cloudflare's `@cloudflare/vitest-plugin`; package.json's `overrides` lift
+three of the plugin's pinned dependencies past known advisories).
 
-`node --test`, no dependencies. It stubs `globalThis.fetch` and KV rather than
+`node --test`, no dependencies beyond two dev tools: esbuild (pinned to the
+deploy's wrangler's version, to bundle as the deploy does) and acorn. It stubs `globalThis.fetch` and KV rather than
 injecting a client, so the code under test builds its own URLs and refreshes its
 own token exactly as it does in production. The cases that matter are the ones
 that cannot be produced on demand against the real API: a failure after the

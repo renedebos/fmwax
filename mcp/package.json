@@ -13,7 +13,14 @@
     "deploy": "node install/config.js --check && node install/rules.js --check && node dev/pagecheck.mjs && npx wrangler@4.129.1 deploy"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.9.12",
-    "vitest": "~3.2.0"
+    "@cloudflare/vitest-plugin": "^1.4.7",
+    "acorn": "^8.19.0",
+    "esbuild": "0.28.1",
+    "vitest": "~4.1.12"
+  },
+  "overrides": {
+    "zod": "^4.6.7",
+    "sharp": "^0.35.5",
+    "undici": "^7.30.1"
   }
 }

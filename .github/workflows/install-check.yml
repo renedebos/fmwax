@@ -16,6 +16,10 @@ on:
       - "mcp/keymap.js"
       - ".github/workflows/install-check.yml"
   workflow_dispatch:
+# It only reads the code; pinned actions, by commit (2026-10-25: CodeQL and
+# GitHub's Node 20 notice on the public copy).
+permissions:
+  contents: read
 jobs:
   door:
     # Node 22, the oldest the guide allows, and 24, what nodejs.org's LTS
@@ -29,8 +33,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node }}
       - name: The install command, against the stand-in
