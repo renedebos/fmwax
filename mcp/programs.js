@@ -6424,9 +6424,11 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
       <input type="text" id="skey" name="key" required autocomplete="off" autocapitalize="off" spellcheck="false">
       <button class="sgo" type="submit" data-busy="Claiming…">Claim this house</button>
     </form>
-    <p class="unote">The setup key is the one given when the house was deployed. The installer opens this page with
-      it already filled in. Claimed it before? Open this page in the browser you claimed it with, and it is yours
-      again; or run the install command once more with <b>--new-key</b>.</p>`)
+    <p class="unote">The setup key is the one given when the house was deployed: the password you made up in
+      Cloudflare's form, if you used the Deploy button; the install command opens this page with it already filled
+      in. Not taken? Set <b>SETUP_KEY</b> again in Cloudflare (Workers, this house, Settings, Variables and Secrets),
+      or run the install command once more with <b>--new-key</b>.
+      Claimed it before? Open this page in the browser you claimed it with, and it is yours again.</p>`)
     : state === "claimed" ? card("This house is yours", "Claimed just now, on this browser", `
     <p class="sgntext">Your recovery code. It signs you in again on a new phone or another browser. Save it in your
       password manager or your notes, or write it down: <b>this is the only time it is shown</b>.</p>
@@ -6459,8 +6461,9 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
       <summary>Claim it again with a new setup key</summary>
       <p class="sgntext" id="rekeysaid" hidden>The install made a new setup key and filled it in below: tap
         <b>Claim this house</b>. <a href="#" id="rekeyback">Have the recovery code? Sign in with it instead.</a></p>
-      <p class="unote">Only if the recovery code and every signed-in browser are lost. The installer makes a new key
-        when it is run again with <b>--new-key</b> added, and opens this page with it. Every old sign-in and the old
+      <p class="unote">Only if the recovery code and every signed-in browser are lost. A new key is set in
+        Cloudflare (Workers, this house, Settings, Variables and Secrets: <b>SETUP_KEY</b>), or made by the install
+        command run again with <b>--new-key</b> added, which opens this page with it. Every old sign-in and the old
         recovery code stop working.</p>
       <form class="setform" method="post" action="/setup/claim">
         <label for="skey">Setup key</label>
