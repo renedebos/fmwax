@@ -1,0 +1,42 @@
+# THE INSTALLERS' CHECK (MC-31, 2026-10-19): the terminal door,
+# mcp/install/door.js, and the home helper's install, mcp/install/helper.js,
+# run as a household runs them on Windows, macOS and Linux, against stand-ins
+# for Cloudflare's tool and for the house (mcp/dev/stand-in/), so nothing is
+# deployed and no account is used. The same checks run on any computer with
+# `node dev/door-check.mjs` and `node dev/helper-check.mjs` from mcp/.
+name: Install check
+on:
+  push:
+    paths:
+      - "mcp/install/**"
+      - "mcp/dev/door-check.mjs"
+      - "mcp/dev/helper-check.mjs"
+      - "mcp/dev/stand-in/**"
+      - "helper/**"
+      - "mcp/keymap.js"
+      - ".github/workflows/install-check.yml"
+  workflow_dispatch:
+jobs:
+  door:
+    # Node 22, the oldest the guide allows, and 24, what nodejs.org's LTS
+    # button gave the first Windows laptop (2026-10-21), where it warned about
+    # how door.js started Cloudflare's tool and Node 22 never had.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node: [22, 24]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: The install command, against the stand-in
+        working-directory: mcp
+        run: node dev/door-check.mjs
+      - name: The home helper's install, against a stand-in house
+        if: always()
+        working-directory: mcp
+        run: node dev/helper-check.mjs

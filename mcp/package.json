@@ -1,0 +1,19 @@
+{
+  "name": "music-control-mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "test:workerd": "vitest run --config test-workerd/vitest.config.js",
+    "config": "node install/config.js",
+    "rules": "node install/rules.js",
+    "login": "node install/login.js",
+    "check:pages": "node dev/pagecheck.mjs",
+    "check:door": "node dev/door-check.mjs",
+    "deploy": "node install/config.js --check && node install/rules.js --check && node dev/pagecheck.mjs && npx wrangler@4.129.1 deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.9.12",
+    "vitest": "~3.2.0"
+  }
+}

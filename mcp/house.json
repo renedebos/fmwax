@@ -1,0 +1,12 @@
+{
+  "_": "A SAMPLE HOUSE (2026-10-25). A copy of the app (made by the author's copy script) carries this as mcp/house.json, so its tests and its config check have a house to read; its wrangler.toml is what this renders. Nobody deploys it: the install command (install/door.js) renders its own config, and the setup page chooses the rest. The ids are placeholders.",
+  "worker": { "name": "fmwax-house", "compatibilityDate": "2025-06-01" },
+  "site": { "baseUrl": "https://fmwax-house.example.workers.dev", "timezone": "America/New_York" },
+  "kv": { "TOKENS": "00000000000000000000000000000001", "PROGRAMS": "00000000000000000000000000000002" },
+  "devices": { "default": "Living Room", "rooms": ["Living Room", "Kitchen"], "speakers": { "Living Room": "192.168.1.20" } },
+  "buttons": [
+    { "button": 1, "guest": true, "live": true, "name": "Requests · Spotify", "playlist": "SAMPLEPLAYLIST00000001", "catalog": "spotify" }
+  ],
+  "aliases": { "replay": "SAMPLEPLAYLIST00000002" },
+  "requests": { "enabled": false, "autofulfill": false }
+}

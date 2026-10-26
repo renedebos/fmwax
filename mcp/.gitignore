@@ -1,0 +1,3 @@
+
+# The terminal door's rendered config for each house it makes (install/door.js).
+.door-*.toml

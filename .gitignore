@@ -1,0 +1,35 @@
+__pycache__/
+*.pyc
+
+# wrangler local secrets — never commit
+mcp/.dev.vars
+
+# What the installer writes on the machine it is run from: the browser
+# logins' tokens, and the only local copy of MCP_SECRET and
+# PROGRAM_LIBRARY_KEY. Ignored before either file can exist, so a house
+# cannot commit its own credentials on its first run.
+mcp/.tokens/
+mcp/.secrets.json
+# The copy setup keeps before it starts a house from nothing. It holds the
+# PREVIOUS household's answers, which is exactly what must not be committed
+# by whoever tripped the guard.
+mcp/house.json.*.bak
+.wrangler/
+node_modules/
+
+# Claude Code local settings — machine-specific paths, not the team's
+.claude/settings.local.json
+
+# Tidal user token from tidal/probe.py — a real account credential
+tidal/.token.json
+
+# Playwright MCP scratch — console logs and page snapshots, written into
+# whatever directory the browser tool happens to run from. Regenerated on
+# demand and nothing here reads them.
+.playwright-mcp/
+
+# Tidal client id (PKCE public client) for tidal/probe*.py
+tidal/.env
+
+# A captured deploy log: namespace ids, LAN addresses, env values. Never the repo's.
+mcp/deploy.txt
