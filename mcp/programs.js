@@ -5711,6 +5711,7 @@ const SETUP_CSS = `
 .use .setrows{list-style:none;margin:0;padding:0}
 .use .setrows li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;padding:12px 0;border-top:1px solid var(--rule-soft)}
 .use .setrows li svg{margin-top:1px}
+.use .setrows li.plain{grid-template-columns:minmax(0,1fr)}
 .use .setrows b{display:block;font-size:var(--fs-16);font-weight:600;color:var(--ink)}
 .use .setrows span{display:block;font-size:var(--fs-14);line-height:1.4;color:var(--ink-2);overflow-wrap:anywhere}
 .use .setrows li.due span,.use .setrows li.todo span{color:var(--ink)}
@@ -5802,7 +5803,7 @@ function setupChecklistHtml(list) {
   ${list.home ? `<p class="setnext"><a href="${esc(list.home)}" target="_blank" rel="noopener">Open the house (a new tab)</a></p>` : ""}
   <p class="setfoot">Signed in as the owner on this browser. On a new phone, sign in here with the recovery code.</p>
   <form method="post" action="/setup/code" class="setnext"><button class="setcopy" type="submit" data-busy="Making…">Make a new recovery code</button></form>
-  <p class="setnext"><a href="/setup/check">Check the house</a><a href="/setup/backup">Download a backup</a><a href="/setup/restore">Restore from a backup</a></p>`;
+  <p class="setnext"><a href="/setup/check">Check the house</a><a href="/setup/backup">Download a backup</a><a href="/setup/restore">Restore from a backup</a><a href="/setup/keys">Keys and signed-in browsers</a></p>`;
 }
 // One setting chosen on the page (stage 6's actions): the default speaker
 // for now, the house's rooms as choices, the file's own value marked.
@@ -6295,6 +6296,53 @@ function setupRestoreHtml() {
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
+// THE HOUSE'S KEYS (the locks review, 2026-10-25): what each opens, and a
+// new one in its place, behind a fold that says what stops working; and the
+// other signed-in browsers, signed out from this one.
+const KEY_WORDS = {
+  PROGRAM_LIBRARY_KEY: { title: "The household's pages", what: "The link to the house's pages, and every home-screen icon made from it.",
+    after: "Every saved link and home-screen icon stops working. Open the house from the checklist and send the new link to the household." },
+  MCP_SECRET: { title: "Claude or ChatGPT", what: "The address the Claude app or ChatGPT reaches the house by.",
+    after: "Claude or ChatGPT stops reaching the house until it has the new address: remove the connector there and add it again.", href: "/setup/app", go: "Claude or ChatGPT step" },
+  AGENT_SECRET: { title: "The curator", what: "The address the curator works through.",
+    after: "The curator stops until its task, or ChatGPT's Work chat, has the new address.", href: "/setup/curator", go: "Curator step" },
+  HELPER_SECRET: { title: "The home helper", what: "The key the home helper on your computer signs in with.",
+    after: "The helper is cut off at once. Run its install command again on that computer.", href: "/setup/helper", go: "Home helper step" },
+};
+function setupKeysHtml({ keys = [], browsers = 1, renewed = null, signedOut = null }) {
+  const said = renewed && KEY_WORDS[renewed] ? `<p class="setsaid" id="done" role="status">A new key for ${esc(KEY_WORDS[renewed].title.toLowerCase())}.
+      ${esc(KEY_WORDS[renewed].after)}${KEY_WORDS[renewed].href ? ` <a href="${KEY_WORDS[renewed].href}">The ${esc(KEY_WORDS[renewed].go)}</a>.` : ""}
+      A backup downloaded before now holds the old key: download a new one.</p>` : "";
+  const row = (k) => {
+    const w = KEY_WORDS[k.name];
+    const how = !k.held ? `<span class="setnote">Not made yet: the checklist makes it.</span>`
+      : !k.stored ? `<span class="setnote">Set in the house's files, as a Worker secret: change it with <code>npx wrangler secret put ${esc(k.name)}</code>, then deploy.</span>`
+      : `<details class="setkey"><summary>Make a new one</summary>
+          <p class="unote">${esc(w.after)}</p>
+          <form method="post" action="/setup/keys"><input type="hidden" name="key" value="${esc(k.name)}">
+            <button class="sgo" type="submit" data-busy="Making…">Make a new key for ${esc(w.title.toLowerCase())}</button></form>
+        </details>`;
+    return `<li class="plain"><div><b>${esc(w.title)}</b><span>${esc(w.what)}</span>${how}</div></li>`;
+  };
+  const out = signedOut != null ? `<p class="setsaid" role="status">${signedOut ? `Signed out of ${signedOut} other browser${signedOut === 1 ? "" : "s"}.` : "No other browser was signed in."} This one stays signed in.</p>` : "";
+  return `<section class="ucard setsec" aria-labelledby="scard">
+    <div class="sethead"><h2 id="scard">The house's keys</h2></div>
+    <p class="setsub">Lost a phone or a laptop, or sent a link by mistake? Make a new key for what it held, and sign
+      out the other browsers below. The old key stops at once.</p>
+    ${said}
+    <ul class="setrows">${keys.map(row).join("")}
+    </ul>
+  </section>
+  <section class="ucard setsec" aria-labelledby="sbrow" id="browsers">
+    <div class="sethead"><h2 id="sbrow">Signed-in browsers</h2><span>${browsers === 1 ? "This one only" : `${browsers}, this one included`}</span></div>
+    ${out}
+    ${browsers > 1 ? `<form method="post" action="/setup/keys" class="setnext"><input type="hidden" name="key" value="browsers">
+      <button class="setcopy" type="submit" data-busy="Signing out…">Sign out every other browser</button></form>` : ""}
+    <p class="unote">The recovery code still signs in a new browser. If it was saved on what was lost, make a new
+      one from the checklist.</p>
+  </section>
+  <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+}
 function setupCheckHtml(rows) {
   const bad = rows.filter((r) => r.state === "todo").length, look = rows.filter((r) => r.state === "due").length;
   return `<section class="ucard setsec" aria-labelledby="scard">
@@ -6362,7 +6410,7 @@ function setupTimezoneHtml({ current, fileSays }) {
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
-export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null }) {
+export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null, keys = null }) {
   const flashHtml = flash ? `<div class="flash" role="status"><p>${esc(flash)}</p></div>` : "";
   const card = (title, sub, body) => `<section class="ucard" aria-labelledby="scard">
     <h2 id="scard">${esc(title)}<span class="usub">${esc(sub)}</span></h2>
@@ -6396,6 +6444,7 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     : state === "curator" ? setupCuratorHtml(curator)
     : state === "endless" ? setupEndlessHtml(endless)
     : state === "check" ? setupCheckHtml(rows)
+    : state === "keys" ? setupKeysHtml(keys)
     : card("This house has an owner", "Sign in with the recovery code", `
     <div id="signin">
     <p class="sgntext">If it is yours and this is a new phone or browser, enter the recovery code you were given

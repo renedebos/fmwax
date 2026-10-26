@@ -32,6 +32,18 @@ async function sameKey(a, b) {
   return x === y;
 }
 
+// A SECRET HELD AGAINST ONE GIVEN, in the same time whatever they share (the
+// locks review, 2026-10-25: the keys were compared with !==, which stops at
+// the first difference). Its length may show; a key's length is no secret.
+export function sameSecret(given, held) {
+  if (typeof given !== "string" || typeof held !== "string" || !held) return false;
+  const a = new TextEncoder().encode(given), b = new TextEncoder().encode(held);
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i];
+  return d === 0;
+}
+
 // The sign-in token (the cookie) and the recovery code (for a person: 16
 // letters and digits in fours, Crockford's alphabet, so 0/O and 1/I/L are
 // one character each).
@@ -115,6 +127,13 @@ export async function newRecoveryCode(env, request) {
   return out.ok ? { ok: true, recovery } : out;
 }
 
+// Every browser but this one signed out; { ok, signed_out } or not-owner.
+export async function signOutOthers(env, request) {
+  const t = cookieToken(request);
+  if (!t) return { ok: false, code: "not-owner" };
+  return ownerCall(env, { op: "sign-out-others", token: await sha(t) });
+}
+
 // Another browser, signed in by the recovery code; the others stay signed in.
 export async function recoverOwner(env, code) {
   const token = newToken();
@@ -139,6 +158,17 @@ async function pairMac(secret, exp) {
 export async function helperPairCode(secret, now = Date.now()) {
   const exp = Math.floor(now / 1000) + HELPER_PAIR_S;
   return `${exp.toString(36)}-${await pairMac(secret, exp)}`;
+}
+// Whether this is the first time the code is traded (the house's store
+// keeps each one's hash until its hour is out). A store that does not
+// answer refuses: the owner's page makes another code.
+export async function helperPairFirst(env, code) {
+  const exp = parseInt(String(code).split("-")[0], 36) * 1000;
+  try {
+    const r = await houseStub(env).fetch("https://house/pair-used", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ hash: await sha(`helper-pair:${code}`), exp }) });
+    return (await r.json())?.first === true;
+  } catch { return false; }
 }
 // "ok", "expired" or "bad"; an hour ahead at most, so no code outlives one.
 export async function helperPairCheck(secret, code, now = Date.now()) {

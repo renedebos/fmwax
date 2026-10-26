@@ -82,6 +82,24 @@ export class HouseSettings {
       this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "seen", JSON.stringify(seen));
       return Response.json({ ok: true });
     }
+    // A HELPER PAIRING CODE, USED ONCE (the locks review, 2026-10-25): it
+    // was good for its whole hour, as often as it was sent. { hash, exp }:
+    // first is true the first time a code's hash is seen; kept until its
+    // hour is out, here where two installs at once cannot both be first.
+    if (new URL(request.url).pathname === "/pair-used") {
+      if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
+      let body = null;
+      try { body = await request.json(); } catch { body = {}; }
+      const hash = String(body?.hash ?? ""), exp = Number(body?.exp);
+      if (!/^[0-9a-f]{64}$/.test(hash) || !Number.isFinite(exp)) return Response.json({ ok: false, code: "bad" }, { status: 400 });
+      const row = this.sql.exec("SELECT v FROM doc WHERE k = ?", "pair_used").toArray()[0];
+      const now = Date.now();
+      const used = Object.fromEntries(Object.entries(row ? JSON.parse(row.v) : {}).filter(([, e]) => e > now));
+      const first = !(hash in used);
+      used[hash] = exp;
+      this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "pair_used", JSON.stringify(used));
+      return Response.json({ ok: true, first });
+    }
     // The owner (step 3, claim.js): who claimed the house, by hashes only.
     if (new URL(request.url).pathname === "/owner") {
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
@@ -133,15 +151,17 @@ export class HouseSettings {
     }
     // THE HOUSE'S KEYS (the keys design, 2026-10-17): { make: [names] } makes
     // each one missing, once, here, where two claims cannot both make one;
-    // { set: { name: value } } keeps one the owner gave. Answers with the
-    // names held, never a value.
+    // { set: { name: value } } keeps one the owner gave; { renew: [names] }
+    // replaces a made one the store holds (the locks review, 2026-10-25: a
+    // leaked key had no way out). Answers with the names held, never a value.
     if (new URL(request.url).pathname === "/keys") {
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       let body;
       try { body = await request.json(); } catch { body = {}; }
       const make = Array.isArray(body?.make) ? body.make : [];
+      const renew = Array.isArray(body?.renew) ? body.renew : [];
       const set = body?.set && typeof body.set === "object" ? body.set : {};
-      if (make.some((n) => !MADE_KEYS.includes(n)) || Object.keys(set).some((n) => !GIVEN_KEYS.includes(n)) ||
+      if ([...make, ...renew].some((n) => !MADE_KEYS.includes(n)) || Object.keys(set).some((n) => !GIVEN_KEYS.includes(n)) ||
         Object.values(set).some((v) => v !== null && (typeof v !== "string" || !v || v.length > 300))) {
         return Response.json({ ok: false, code: "bad-keys" }, { status: 400 });
       }
@@ -149,9 +169,11 @@ export class HouseSettings {
       const doc = row ? JSON.parse(row.v) : { settings: {}, from: "keys", vars_fp: null, page: {} };
       doc.keys = { ...(doc.keys ?? {}) };
       for (const n of make) if (!doc.keys[n]) doc.keys[n] = newKey();
+      const renewed = renew.filter((n) => doc.keys[n]);
+      for (const n of renewed) doc.keys[n] = newKey();
       for (const [n, v] of Object.entries(set)) { if (v === null) delete doc.keys[n]; else doc.keys[n] = v; }
       this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "settings", JSON.stringify(doc));
-      return Response.json({ ok: true, held: Object.keys(doc.keys) });
+      return Response.json({ ok: true, held: Object.keys(doc.keys), renewed });
     }
     // A BACKUP PUT BACK (backup.js): the page's settings replaced whole, the
     // keys given set by name; checked by the Worker before it comes here.
@@ -209,7 +231,17 @@ export function ownerOp(sql, { op, token = null, recovery = null, key_hash = nul
   const row = sql.exec("SELECT v FROM doc WHERE k = ?", "owner").toArray()[0];
   const o = row ? JSON.parse(row.v) : null;
   if (op === "look") {
-    return { claimed: !!o, claimed_at: o?.claimed_at ?? null, owner: !!o && HASH.test(String(token)) && o.tokens.includes(token) };
+    const owner = !!o && HASH.test(String(token)) && o.tokens.includes(token);
+    return { claimed: !!o, claimed_at: o?.claimed_at ?? null, owner, ...(owner ? { browsers: o.tokens.length } : {}) };
+  }
+  // EVERY OTHER BROWSER SIGNED OUT (the locks review, 2026-10-25): a lost
+  // phone's sign-in ended from the one in hand, which stays.
+  if (op === "sign-out-others") {
+    if (!o || !HASH.test(String(token)) || !o.tokens.includes(token)) return { ok: false, code: "not-owner" };
+    const gone = o.tokens.length - 1;
+    o.tokens = [token];
+    sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "owner", JSON.stringify(o));
+    return { ok: true, signed_out: gone };
   }
   if (op === "claim") {
     if (!HASH.test(String(token)) || !HASH.test(String(recovery))) return { ok: false, code: "bad" };
@@ -424,6 +456,18 @@ export async function makeHouseKeys(env) {
   const said = await r.json().catch(() => null);
   if (!r.ok || !said?.ok) throw new Error(`the house could not make its keys (${r.status})`);
   return said.held;
+}
+// A NEW KEY IN PLACE OF A MADE ONE (the locks review, 2026-10-25), only
+// where the store holds it: a Worker secret of the name wins, and is changed
+// with wrangler instead. The old one stops on the next request.
+export async function renewHouseKey(env, name) {
+  if (!MADE_KEYS.includes(name) || !(env.__keys ?? []).includes(name)) return false;
+  const r = await houseStub(env).fetch("https://house/keys", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ renew: [name] }) });
+  const said = await r.json().catch(() => null);
+  if (!r.ok || !said?.ok) throw new Error(`the house could not make a new ${name} (${r.status})`);
+  if (typeof env.HOUSE === "object") LAST_PAGE.delete(env.HOUSE);
+  return said.renewed.includes(name);
 }
 // Forget this isolate's last known page and keys (a restore just wrote them).
 export function forgetLastKnown(env) {

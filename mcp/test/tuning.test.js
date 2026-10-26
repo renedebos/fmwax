@@ -213,6 +213,9 @@ test("the bar's panel fetches the form, to Apply, with the day's runs", async ()
   const e = await claimedHouse();
   const r = await worker.fetch(new Request(`https://x.test/buttons/${KEY}/vibe/tune?view=1&mode=apply`), e, { waitUntil() {} });
   assert.equal(r.status, 200);
+  // Held to the room's CSP if opened on its own (the locks review, 2026-10-25).
+  assert.match(r.headers.get("content-security-policy") ?? "", /default-src 'none'.*frame-ancestors 'none'/);
+  assert.equal(r.headers.get("referrer-policy"), "no-referrer");
   const html = await r.text();
   assert.match(html, /^<form class="tv" method="post" action="\/buttons\/abcdefabcdefabcdefabcdef\/vibe\/tune" style="--tvc:#[0-9A-Fa-f]{6}" data-tv-fetch>/);
   assert.match(html, /<button type="submit" class="tvapply">Apply after this song<\/button>/);

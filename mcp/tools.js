@@ -53,6 +53,25 @@ import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
 import { ARCHIVE } from "./archive-identity.js";
 
+// TALK WRITES ONLY THE HOUSE'S OWN PLAYLISTS (the locks review, 2026-10-25).
+// Talk is opened with the household's page key, and its playlist tools took
+// any playlist the Spotify account owns: a guest with the link could rewrite
+// the account holder's own. A preset's, an alias's (the replay and scratch
+// ones), a guest's or an endless slot's it may write; any other it may still
+// read and play. The connector, the owner's, is not asked.
+export function talkMayWrite(env, pl) {
+  if (env?.__via !== "talk") return;
+  const id = pl?.id;
+  let own = !!(id && (aliasForPlaylistId(env, id) || guestForPlaylistId(env, id) || djForPlaylistId(env, id)));
+  if (!own && id) {
+    try { own = house(env).buttons.some((b) => b.playlist === id) || !!parseEndless(env)?.presets?.some((p) => p.playlist === id); } catch { own = false; }
+  }
+  if (!own) {
+    throw new Error(`"${pl?.name ?? id}" is not one of this house's playlists, and Talk changes only the house's own ` +
+      "(its presets' and the ones it keeps). It can still play it or say what is on it. Nothing was changed.");
+  }
+}
+
 // THE RULES THE HOUSE COUNTS (setcheck.js, 2026-10-18): the set as the
 // ledger saw it in search_tracks, checked; sent back if it breaks one and
 // was not sent back already. A ledger that cannot answer counts nothing.
@@ -2028,6 +2047,7 @@ export async function callTool(env, name, args, budget) {
           "make this call on its own");
       }
       const pl = await resolvePlaylist(env, args.playlist, budget);
+      talkMayWrite(env, pl);
       // AN ENDLESS PRESET'S OWN LIST IS NOT FOR A SET (MC-31 stage 2b). The
       // house tops it up itself, keeps what is unplayed and counts what was
       // used; a set written over it is lost to all three. Refused, saying what
@@ -2137,6 +2157,7 @@ export async function callTool(env, name, args, budget) {
 
     case "restore_playlist": {
       const pl = await resolvePlaylist(env, args.playlist, budget);
+      talkMayWrite(env, pl);
       const keys = await listSnapshots(env, pl.id);
       if (!keys.length) {
         throw new Error(
@@ -2227,6 +2248,7 @@ export async function callTool(env, name, args, budget) {
           `${budget.remaining} are left in this request — append in smaller blocks`);
       }
       const pl = await resolvePlaylist(env, args.playlist, budget);
+      talkMayWrite(env, pl);
       const cat = catalogOf(env, pl);
       // This tool writes OUTSIDE the safe door — batch by batch, no backup —
       // so it makes the door's two refusals itself (MC-18). A guest preset

@@ -15,6 +15,7 @@ import { makeEnv, installFetch, track, buttons, PID } from "./harness.js";
 import { ARCHIVE } from "../archive-identity.js";
 import { spkWords } from "../programs.js";
 import { talkErrorWords } from "../routes.js";
+import { talkMayWrite } from "../tools.js";
 
 const KEY = "abcdefabcdefabcdefabcdef";
 const P = (n) => `00000000000000000000${String(n).padStart(2, "0")}`;
@@ -281,6 +282,27 @@ test("the day's cap: no line inside the last minute; a refusal costs nothing, an
     const said = (await res.json()).error;
     assert.match(said, /HOUSE_TZ is not a timezone/);
     assert.ok(!said.includes("Amsterdamn"), "the setting's words stay in the log");
+  } finally { f.restore(); }
+});
+
+test("Talk writes only the house's own playlists; the owner's connector is not asked (the locks review, 2026-10-25)", async () => {
+  const talk = { ...env(), __via: "talk" };
+  for (const id of [P(1), P(4), "0000000000000000000001"]) assert.doesNotThrow(() => talkMayWrite(talk, { id, name: "x" }), id);
+  assert.throws(() => talkMayWrite(talk, { id: "6".repeat(22), name: "Sunday Morning" }),
+    /"Sunday Morning" is not one of this house's playlists, and Talk changes only the house's own .* It can still play it .* Nothing was changed\./);
+  assert.doesNotThrow(() => talkMayWrite(env(), { id: "6".repeat(22) }), "the connector's write is the owner's");
+  // Through the door: a direct id the house does not keep is refused in words, and nothing is written.
+  const f = installFetch({ openai: okOpenAI() });
+  try {
+    const e = env();
+    const { cap } = await openSession(e);
+    for (const name of ["replace_playlist", "append_to_playlist", "restore_playlist"]) {
+      const res = await worker.fetch(toolReq(cap, { name, arguments: JSON.stringify({ playlist: `spotify:playlist:${PID.replace(/1$/, "9")}`, uris: ["spotify:track:t9"] }) }), e);
+      const said = await res.json();
+      assert.equal(res.status, 200, name);
+      assert.match(said.error ?? "", /not one of this house's playlists|no playlist|not found/i, `${name}: ${JSON.stringify(said).slice(0, 200)}`);
+      assert.ok(!f.calls.some((c) => /^(PUT|POST) \/playlists\/0000000000000000000009\/items/.test(c)), `${name} wrote nothing`);
+    }
   } finally { f.restore(); }
 });
 

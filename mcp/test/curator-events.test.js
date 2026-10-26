@@ -10,7 +10,7 @@ import { createHmac } from "node:crypto";
 import worker from "../worker.js";
 import { makeEnv, installFetch } from "./harness.js";
 import { emitRequestEvent } from "../writes.js";
-import { SUBS_KEY } from "../curator-events.js";
+import { SUBS_KEY, SUBS_MAX } from "../curator-events.js";
 
 const OWNER = "owner-secret-owner-secret-owner-1";
 const AGENT = "agent-secret-agent-secret-agent-1";
@@ -84,6 +84,20 @@ test("subscribing: the callback proves itself first, the same subscription is on
       assert.equal(JSON.parse(text).event_subscriptions.count, 1);
       assert.ok(!text.includes(SECRET) && !text.includes("connectors.example.test"), "never the secret or the callback");
     } finally { f.restore(); }
+  } finally { rx.restore(); }
+});
+
+test("the newest few subscriptions only: a flood of callbacks keeps SUBS_MAX, the oldest dropped (the locks review, 2026-10-25)", async () => {
+  const e = house();
+  const rx = receiver();
+  try {
+    for (let i = 1; i <= 6; i++) assert.ok((await subscribe(e, { url: `https://connectors.example.test/mcp-events/cb_${i}` })).result.id, `cb_${i}`);
+    const kept = JSON.parse(await e.PROGRAMS.get(SUBS_KEY)).map((x) => x.url.split("/").pop());
+    assert.equal(SUBS_MAX, 2);
+    assert.deepEqual(kept, ["cb_5", "cb_6"]);
+    // The real chat's refresh puts it back last, and it stays.
+    await subscribe(e, { url: "https://connectors.example.test/mcp-events/cb_5" });
+    assert.deepEqual(JSON.parse(await e.PROGRAMS.get(SUBS_KEY)).map((x) => x.url.split("/").pop()), ["cb_6", "cb_5"]);
   } finally { rx.restore(); }
 });
 

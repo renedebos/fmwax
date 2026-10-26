@@ -1322,6 +1322,13 @@ export class StationLedger {
       return Response.json({ ok: true, doc: this.#stateDoc("helper"), hands: !!this.#helperSocket(),
         player: keptPlayerOut(this.#stateDoc("player")) });
     }
+    // The helper's key made new (the locks review, 2026-10-25): its line,
+    // opened with the old one, is closed; it comes back only with the new.
+    if (op === "helper-drop") {
+      const lines = this.state.getWebSockets("helper");
+      for (const ws of lines) { try { ws.close(1008, "the house has a new helper key"); } catch { /* gone */ } }
+      return Response.json({ ok: true, dropped: lines.length });
+    }
     // A helper taken away (2026-10-21): what it last read goes with it.
     if (op === "helper-forget") {
       this.sql.exec("DELETE FROM endless_state WHERE k = 'helper'");

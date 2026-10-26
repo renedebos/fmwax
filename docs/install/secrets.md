@@ -120,6 +120,16 @@ with only `SETUP_KEY` makes `MCP_SECRET`, `AGENT_SECRET`,
 house installed from a terminal, like the owner's, keeps its own. The
 connector's address is on the owner's checklist, with Copy.
 
+**A new key, and the other browsers signed out** (since 2026-10-25, the
+locks review): the checklist's *Keys and signed-in browsers* page makes a
+new key in place of any of the four the house keeps itself; the old one
+stops at once (a new helper key also closes the helper's line), and the
+page says what has to be given the new one (the household's links, the
+connector, the curator, the helper's install command). A key held as a
+Worker secret is changed with `npx wrangler secret put` instead. The same
+page signs out every browser but the one in hand. A backup made before a
+new key holds the old one.
+
 **Backup** (since 2026-10-17): the setup page's Download a backup is a
 small .json of the settings chosen on the page and the keys the house keeps
 itself. It holds keys: keep it like a password. Restore from a backup puts

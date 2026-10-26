@@ -15,8 +15,11 @@
 // the household: a new login is kept only when it is the account the house
 // already plays through (the one recorded at the last Reconnect, or else the
 // one the current login answers for). A house whose login is gone and was
-// never recorded takes whoever signs in.
+// never recorded takes whoever signs in, only behind a setup door, where that
+// is the owner; one without signs in again from its files (the locks review,
+// 2026-10-25).
 import { SPOTIFY_SCOPES } from "./spotify.js";
+import { setupOpen } from "./claim.js";
 import {
   SPOTIFY_API, SPOTIFY_TOKEN, cachedAccess, clearSignedOut, getAccessToken, loginEnds, subrequest, tokensKV,
 } from "./services.js";
@@ -124,6 +127,14 @@ async function spend(env, params, origin, pending, said) {
     // Never recorded (a login from the terminal): ask the one in use now, if
     // it still answers. A login Spotify has ended answers nothing.
     try { held = await whoIs(env, await getAccessToken(env, "spotify")); } catch { held = null; }
+  }
+  // NO ACCOUNT TO HOLD IT TO, AND NO OWNER (the locks review, 2026-10-25): a
+  // house with no setup door lets anyone with its page key reconnect, so a
+  // login made in the terminal, never recorded and now ended, would be
+  // replaced by whoever signs in. Such a house signs in again from its files.
+  if (!held && cur?.refresh_token && !setupOpen(env)) {
+    return { ok: false, why: "This house's Spotify sign-in was made from its files and the page cannot tell whose it was. " +
+      "Nothing changed. Sign in again from the house's files (npm run login in mcp/, docs/install/secrets.md)." };
   }
   if (held && held.id !== me.id) {
     return { ok: false, why: `This house plays through the Spotify account "${held.name}", and this sign-in was ` +

@@ -183,6 +183,7 @@ async function pairedKey(code) {
   const said = r ? await r.json().catch(() => null) : null;
   if (said?.ok && typeof said.key === "string") return said.key;
   if (said?.code === "expired") fail("This command's code has run out: it works for an hour. Open the setup page's Home helper step again and copy the command from there.");
+  if (said?.code === "used") fail("This command's code has been used already: each one works once. Open the setup page's Home helper step again and copy the command from there.");
   if (said?.code === "bad") fail("This command's code is not this house's. Copy the command again from the setup page's Home helper step.");
   if (!r) fail(`The house did not answer at ${house}. Is this computer online? Try again in a minute.`);
   say("   This house does not give the key by code yet: paste it instead (the setup page's Home helper step, If it asks for a key).");

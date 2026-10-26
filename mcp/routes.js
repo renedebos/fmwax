@@ -13,8 +13,8 @@ import {
   speakerRule, canonicalDevice, voicePrompt, backendPrompt,
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
-import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen } from "./settings.js";
-import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, setupOpen } from "./claim.js";
+import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, renewHouseKey } from "./settings.js";
+import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
 import { READ_ENVELOPE, READ_ACTION, CONTROL_PORT, CONTROL_PATH } from "./keymap.js";
@@ -209,7 +209,7 @@ export async function handleRequest(request, env, ctx) {
     // reading and stores it; it answers nothing about the house.
     if (url.pathname === "/helper/reading") {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       let body = null;
       try { body = await request.json(); } catch { body = null; }
@@ -223,7 +223,7 @@ export async function handleRequest(request, env, ctx) {
     const helperPresets = url.pathname.match(/^\/helper\/presets\/([a-z0-9-]{1,40})$/);
     if (helperPresets) {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       const box = parseSpeakers(env).find((sp) => sp.slug === helperPresets[1]);
       if (!box) return Response.json({ ok: false, code: "no-speaker" }, { status: 404 });
@@ -241,7 +241,7 @@ export async function handleRequest(request, env, ctx) {
     // by the WiiMs' own names. The owner's house keeps its file's.
     if (url.pathname === "/helper/speakers") {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       const learns = setupOpen(env);
       if (request.method === "GET") {
         return Response.json({ ok: true, names: wiimNames(env), learns,
@@ -270,7 +270,7 @@ export async function handleRequest(request, env, ctx) {
     // socket believes. The same secret; it says nothing else about the house.
     if (url.pathname === "/helper/status") {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       let hands = false, read = null;
       try {
         const h = await station(env, "helper-get", {});
@@ -289,17 +289,20 @@ export async function handleRequest(request, env, ctx) {
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       let body = null;
       try { body = await request.json(); } catch { body = null; }
-      const said = await helperPairCheck(env.HELPER_SECRET, body?.code);
+      // Once only (the locks review, 2026-10-25): a code copied from a
+      // terminal's history, or sent twice, gives the key the first time.
+      let said = await helperPairCheck(env.HELPER_SECRET, body?.code);
+      if (said === "ok" && !(await helperPairFirst(env, body.code))) said = "used";
       return said === "ok"
         ? Response.json({ ok: true, key: env.HELPER_SECRET }, { headers: { "cache-control": "no-store" } })
-        : Response.json({ ok: false, code: said }, { status: said === "expired" ? 410 : 403, headers: { "cache-control": "no-store" } });
+        : Response.json({ ok: false, code: said }, { status: said === "expired" || said === "used" ? 410 : 403, headers: { "cache-control": "no-store" } });
     }
     // A HELPER TAKEN AWAY (2026-10-21): its remover says so, and the house
     // forgets what it last read, so no page goes on saying "helper off" for
     // a helper that is gone, and the setup page offers it again.
     if (url.pathname === "/helper/forget") {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       await station(env, "helper-forget", {});
       return Response.json({ ok: true });
@@ -308,7 +311,7 @@ export async function handleRequest(request, env, ctx) {
     // to the ledger, which holds the socket.
     if (url.pathname === "/helper/socket") {
       const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-      if (!env.HELPER_SECRET || bearer !== env.HELPER_SECRET) return new Response("not found", { status: 404 });
+      if (!env.HELPER_SECRET || !sameSecret(bearer, env.HELPER_SECRET)) return new Response("not found", { status: 404 });
       if (request.headers.get("upgrade") !== "websocket") return new Response("upgrade required", { status: 426 });
       return stationStub(env).fetch(request);
     }
@@ -542,7 +545,7 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/rooms" || url.pathname === "/setup/backup" ||
       url.pathname === "/setup/restore" || url.pathname === "/setup/check" || url.pathname === "/setup/name" || url.pathname === "/setup/identify" ||
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
-      url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" ||
+      url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" ||
       url.pathname === "/setup/endless") {
       if (!setupOpen(env)) return notFound();
       // same-origin, not the room pages' no-referrer: under no-referrer a
@@ -681,6 +684,20 @@ export async function handleRequest(request, env, ctx) {
         return setupPage({ state: "endless", endless: { ...info, failed: !!asked && asked !== "asked", first: info.made ? await firstSet(env) : null },
           flash: asked === "asked" ? "Made. The house DJ's first set is being written." :
             asked ? "Made. The first set could not be asked for just now: open the DJ's page, below, and tap Start fresh." : null });
+      }
+      // THE HOUSE'S KEYS AND ITS SIGNED-IN BROWSERS (the locks review,
+      // 2026-10-25: a leaked key or a lost phone had no way out but a
+      // hand-edited backup or wrangler). Each made key the store holds can be
+      // made new; one a Worker secret holds is wrangler's to change. The
+      // owner's only.
+      if (url.pathname === "/setup/keys" && request.method === "GET") {
+        const s = await ownerState(env, request);
+        if (!s.owner) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const renewed = MADE_KEYS.includes(url.searchParams.get("renewed")) ? url.searchParams.get("renewed") : null;
+        const out = url.searchParams.get("out");
+        return setupPage({ state: "keys", keys: {
+          keys: MADE_KEYS.map((name) => ({ name, held: !!env[name], stored: (env.__keys ?? []).includes(name) })),
+          browsers: Number(s.browsers) || 1, renewed, signedOut: /^[0-9]{1,2}$/.test(out ?? "") ? Number(out) : null } });
       }
       // BACKUP AND REPAIR (backup.js): the owner's only, every one.
       if (["/setup/backup", "/setup/restore", "/setup/check"].includes(url.pathname) && request.method === "GET") {
@@ -851,6 +868,19 @@ export async function handleRequest(request, env, ctx) {
       // REMOVE THE HOME HELPER (the owner, 2026-10-21: "an easy button"): sent
       // down its line, and the helper takes itself off its computer. Only a
       // helper the install made can; one set up by hand says so.
+      if (url.pathname === "/setup/keys") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const what = String(form?.get("key") ?? "");
+        if (what === "browsers") {
+          const out = await signOutOthers(env, request);
+          return new Response(null, { status: 303, headers: { location: `/setup/keys?out=${out?.ok ? Number(out.signed_out) || 0 : 0}#browsers`, "cache-control": "no-store" } });
+        }
+        if (!MADE_KEYS.includes(what)) return Response.redirect(new URL("/setup/keys", url).toString(), 303);
+        const made = await renewHouseKey(env, what);
+        // The helper's line, opened with the old key, is closed at once.
+        if (made && what === "HELPER_SECRET") { try { await station(env, "helper-drop", {}); } catch { /* it fails its next sign-in */ } }
+        return new Response(null, { status: 303, headers: { location: made ? `/setup/keys?renewed=${what}#done` : "/setup/keys", "cache-control": "no-store" } });
+      }
       if (url.pathname === "/setup/helper/remove") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
         let out = null;
@@ -1035,7 +1065,7 @@ export async function handleRequest(request, env, ctx) {
     const room = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})$/);
     if (room) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || room[1] !== key) return notFound();
+      if (!key || !sameSecret(room[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The presets page only answers GET.");
       const base = `/buttons/${key}`;
       const budget = { remaining: 40 };
@@ -1353,7 +1383,7 @@ export async function handleRequest(request, env, ctx) {
     const speakersPage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/wiim(\/.*)?$/);
     if (speakersPage) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || speakersPage[1] !== key) return notFound();
+      if (!key || !sameSecret(speakersPage[1], key)) return notFound();
       const base = `/buttons/${key}`;
       const sub = speakersPage[2] ?? "";
       // THE PAUSE (MC-20, moved onto the now bar by MC-21 — tasks/done/mc20-speaker-pause.md,
@@ -1757,7 +1787,7 @@ export async function handleRequest(request, env, ctx) {
     const readingsRoute = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/readings(?:\/(ask\.xml|[a-z0-9-]{1,40}))?$/);
     if (readingsRoute) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || readingsRoute[1] !== key) return notFound();
+      if (!key || !sameSecret(readingsRoute[1], key)) return notFound();
       const base = `/buttons/${key}`;
       const what = readingsRoute[2] ?? null;
       const boxes = parseSpeakers(env);
@@ -1813,7 +1843,7 @@ export async function handleRequest(request, env, ctx) {
     const usePage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/use$/);
     if (usePage) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || usePage[1] !== key) return notFound();
+      if (!key || !sameSecret(usePage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The use page only answers GET.");
       return roomPage(renderUse({ base: `/buttons/${key}`, calls: await spotifyCalls(env),
         kv: await kvOps(env), ...(await tabState(env)) }));
@@ -1824,7 +1854,7 @@ export async function handleRequest(request, env, ctx) {
     const rulesPage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/rules$/);
     if (rulesPage) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || rulesPage[1] !== key) return notFound();
+      if (!key || !sameSecret(rulesPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The house rules page only answers GET.");
       return roomPage(renderRules({ base: `/buttons/${key}`, md: RULES_MD, facts: await rulesFacts(env), ...(await tabState(env)) }));
     }
@@ -1844,7 +1874,7 @@ export async function handleRequest(request, env, ctx) {
     const reconnectOk = async () => !setupOpen(env) || await isOwner(env, request);
     if (spotifyPage) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || spotifyPage[1] !== key) return notFound();
+      if (!key || !sameSecret(spotifyPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The Spotify page only answers GET.");
       const mine = await reconnectOk();
       if (spotifyPage[2]) {
@@ -1904,7 +1934,7 @@ export async function handleRequest(request, env, ctx) {
     const talk = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/talk(?:\/(session|tool|beat|closed))?$/);
     if (talk) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || talk[1] !== key || !talkOn(env)) return notFound();
+      if (!key || !sameSecret(talk[1], key) || !talkOn(env)) return notFound();
       const base = `/buttons/${key}`;
       const door = talk[2] ?? null;
       const say = (status, body, extra = {}) => new Response(JSON.stringify(body), {
@@ -2115,7 +2145,7 @@ export async function handleRequest(request, env, ctx) {
     const nowRoute = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/playing$/);
     if (nowRoute) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || nowRoute[1] !== key) return notFound();
+      if (!key || !sameSecret(nowRoute[1], key)) return notFound();
       const say = (status, body) => new Response(JSON.stringify(body), {
         status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
           "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow" } });
@@ -2153,7 +2183,7 @@ export async function handleRequest(request, env, ctx) {
     const djMap = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/djs\/map$/);
     if (djMap) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || djMap[1] !== key) return notFound();
+      if (!key || !sameSecret(djMap[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "This page only answers GET.");
       // In the page's own order (WHICH's), not the roster's.
       const order = Object.keys(WHICH);
@@ -2181,7 +2211,7 @@ export async function handleRequest(request, env, ctx) {
     const deck = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/djs$/);
     if (deck) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || deck[1] !== key) return notFound();
+      if (!key || !sameSecret(deck[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The DJs page only answers GET.");
       const show = url.searchParams.get("show");
       // Whose set is on each live guest, by DJ (the owner, 2026-09-13): a KV
@@ -2218,7 +2248,7 @@ export async function handleRequest(request, env, ctx) {
     const manifest = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/manifest\.webmanifest$/);
     if (manifest) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || manifest[1] !== key) return notFound();
+      if (!key || !sameSecret(manifest[1], key)) return notFound();
       return new Response(JSON.stringify({
         name: "fmwax", short_name: "fmwax",
         description: "The house's presets, DJs, shelf and speakers.",
@@ -2239,7 +2269,7 @@ export async function handleRequest(request, env, ctx) {
     const keyedProg = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/programs\/([a-z0-9-]{1,64})$/);
     if (keyedProg) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || keyedProg[1] !== key) return notFound();
+      if (!key || !sameSecret(keyedProg[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "A program page only answers GET.");
       const rec = await env.PROGRAMS?.get(`program:${keyedProg[2]}`, { type: "json" });
       if (!rec) {
@@ -2293,7 +2323,7 @@ export async function handleRequest(request, env, ctx) {
     const roomDj = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})$/);
     if (roomDj) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomDj[1] !== key) return notFound();
+      if (!key || !sameSecret(roomDj[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "A DJ's page only answers GET.");
       const base = `/buttons/${key}`;
       const slugKey = roomDj[2];
@@ -3390,7 +3420,7 @@ export async function handleRequest(request, env, ctx) {
     const roomTune = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})\/tune$/);
     if (roomTune) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomTune[1] !== key) return notFound();
+      if (!key || !sameSecret(roomTune[1], key)) return notFound();
       const slugKey = house(env).djs[roomTune[2]]?.key ?? roomTune[2];
       const who = house(env).djs[slugKey];
       // THE FORM, FOR THE BAR'S PANEL (2b): fetched when Tune is tapped there,
@@ -3402,7 +3432,10 @@ export async function handleRequest(request, env, ctx) {
         const runsLeft = cfgV ? (stV?.day === houseDay(env, Date.now()) ? Math.max(0, cfgV.dailyRuns - (stV.runs ?? 0)) : cfgV.dailyRuns) : 0;
         return new Response(tuneForm({ action: `/buttons/${key}/${slugKey}/tune`, name: who.name, field: who.colour?.field ?? null,
           mode: url.searchParams.get("mode") === "save" ? "save" : "apply", runsLeft, dials: tuneDials(env, slugKey) }, { panel: true }), {
-          headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+          // The room's headers (the locks review, 2026-10-25): the panel's
+          // script inserts this, and opened on its own it is held to the
+          // room's CSP and frames like any page.
+          headers: roomHeaders });
       }
       if (request.method !== "POST") return roomRefuse(405, "This is the Tune form's target and only accepts POST.");
       const origin = request.headers.get("origin");
@@ -3456,7 +3489,7 @@ export async function handleRequest(request, env, ctx) {
     const roomEndless = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})\/endless$/);
     if (roomEndless) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomEndless[1] !== key) return notFound();
+      if (!key || !sameSecret(roomEndless[1], key)) return notFound();
       // An old key (the merges, 2026-10-13: "sunny") is its DJ's key here, as
       // the ledger has it.
       roomEndless[2] = house(env).djs[roomEndless[2]]?.key ?? roomEndless[2];
@@ -3682,7 +3715,7 @@ export async function handleRequest(request, env, ctx) {
     const roomAsk = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})\/request$/);
     if (roomAsk) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomAsk[1] !== key) return notFound();
+      if (!key || !sameSecret(roomAsk[1], key)) return notFound();
       if (env.REQUESTS_ENABLED !== "true") return notFound();
       const base = `/buttons/${key}`;
       if (request.method !== "POST") {
@@ -3858,7 +3891,7 @@ export async function handleRequest(request, env, ctx) {
     const roomAskExit = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})\/request\/(dismiss|ack)$/);
     if (roomAskExit) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomAskExit[1] !== key) return notFound();
+      if (!key || !sameSecret(roomAskExit[1], key)) return notFound();
       const base = `/buttons/${key}`;
       if (request.method !== "POST") {
         return roomRefuse(405,
@@ -3911,7 +3944,7 @@ export async function handleRequest(request, env, ctx) {
     const roomPlay = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})\/play$/);
     if (roomPlay) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || roomPlay[1] !== key) return notFound();
+      if (!key || !sameSecret(roomPlay[1], key)) return notFound();
       const base = `/buttons/${key}`;
       if (request.method !== "POST") {
         return roomRefuse(405,
@@ -4181,7 +4214,7 @@ export async function handleRequest(request, env, ctx) {
     const libPlay = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})\/play$/);
     if (libPlay) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || libPlay[2] !== key) return notFound();
+      if (!key || !sameSecret(libPlay[2], key)) return notFound();
       const base = `/${libPlay[1]}/${key}`;
       // The way home is the SHELF, and it says so. `roomRefuse` offers the
       // presets page, which is somewhere this reader was not — and every
@@ -4324,7 +4357,7 @@ export async function handleRequest(request, env, ctx) {
     const lib = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})$/);
     if (lib) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || lib[2] !== key) return notFound();
+      if (!key || !sameSecret(lib[2], key)) return notFound();
       const base = `/${lib[1]}/${key}`;
       const { rows: filed, unreadable, onAir, open } = await shelfState(env);
       // A MERGED DJ'S PROGRAMS ARE THE NEW DJ'S (the merges, 2026-10-13): a
@@ -4414,7 +4447,7 @@ export async function handleRequest(request, env, ctx) {
       const key = env.PROGRAM_LIBRARY_KEY;
       // The key is the only thing that stays a bare 404. A wrong key must not
       // learn anything from the reply, including that the route exists.
-      if (!key || act[2] !== key) return notFound();
+      if (!key || !sameSecret(act[2], key)) return notFound();
       const base = `/${act[1]}/${key}`;
 
       // Past the key, say what went wrong. These four failures all answered
@@ -4529,7 +4562,7 @@ export async function handleRequest(request, env, ctx) {
     const unkeep = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})\/unkeep$/);
     if (unkeep) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || unkeep[2] !== key) return notFound();
+      if (!key || !sameSecret(unkeep[2], key)) return notFound();
       const base = `/${unkeep[1]}/${key}`;
       const refuse = (status, why) => new Response(`${why}\n`, {
         status,
@@ -4629,7 +4662,7 @@ export async function handleRequest(request, env, ctx) {
     const undo = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})\/undo$/);
     if (undo) {
       const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || undo[2] !== key) return notFound();
+      if (!key || !sameSecret(undo[2], key)) return notFound();
       const base = `/${undo[1]}/${key}`;
       if (request.method !== "POST") {
         return new Response("This is the undo form's target and only accepts POST.\n", {
@@ -4706,16 +4739,16 @@ export async function handleRequest(request, env, ctx) {
     // 404 as a wrong guess.
     if (!expected) return notFound();
     const bearer = (request.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
-    const ownerOk = url.pathname === `/mcp/${expected}` ||
-      (url.pathname === "/mcp" && bearer === expected);
+    const ownerOk = sameSecret(url.pathname, `/mcp/${expected}`) ||
+      (url.pathname === "/mcp" && sameSecret(bearer, expected));
     // The agent's key opens the same door onto a smaller room. Checked after
     // the owner's so a misconfigured AGENT_SECRET equal to MCP_SECRET reads
     // as the owner, never the other way; absent means the agent path simply
     // does not exist, same 404 as any wrong guess.
     const agentKey = env.AGENT_SECRET;
     const agentOk = !ownerOk && !!agentKey &&
-      (url.pathname === `/mcp/${agentKey}` ||
-        (url.pathname === "/mcp" && bearer === agentKey));
+      (sameSecret(url.pathname, `/mcp/${agentKey}`) ||
+        (url.pathname === "/mcp" && sameSecret(bearer, agentKey)));
     if (!ownerOk && !agentOk) return notFound();
     const role = ownerOk ? "owner" : "agent";
 

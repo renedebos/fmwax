@@ -489,6 +489,7 @@ export function makeStation() {
     if (op === "helper-get") return { ok: true, doc: endless.helper ? JSON.parse(endless.helper) : null, hands: !!endless.hands,
       player: keptPlayerOut(endless.player ? JSON.parse(endless.player) : null) };
     if (op === "helper-forget") { delete endless.helper; return { ok: true }; }
+    if (op === "helper-drop") { const n = endless.hands ? 1 : 0; endless.hands = null; endless.dropped = (endless.dropped ?? 0) + n; return { ok: true, dropped: n }; }
     // The kept Spotify answer (MC-29), on the object's own rules.
     if (op === "player-put") {
       const next = playerPutDoc(endless.player ? JSON.parse(endless.player) : null, args.at, args.st);

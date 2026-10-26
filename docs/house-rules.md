@@ -437,6 +437,10 @@ even in silence.**
   is finished first. If the phone stops the page altogether, the house
   hangs up within a minute and a half (since 2026-10-24).
 
+**Talk changes only the house's own playlists** (since 2026-10-25): its
+presets', its DJs' and the ones it keeps. Any other playlist on the
+Spotify account it can play or read out, never change.
+
 {if archive} **The archive by voice** (since 2026-10-10): ask Talk for
 {archive asks}. It loads the takes onto **preset {archive
 preset}** and, when the speaker is a WiiM and the **home helper** is on, has

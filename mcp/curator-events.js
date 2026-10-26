@@ -31,6 +31,9 @@ export const SUBS_KEY = "events:subs";
 const VERIFIED_PREFIX = "events:verified:";
 const SUB_MAX_MS = 7 * 24 * 3600e3;
 const SUB_MIN_MS = 3600e3;
+// How many callbacks are kept: the Work chat's, and one more for a chat made
+// again while the old one's has not run out.
+export const SUBS_MAX = 2;
 const SEND_TIMEOUT_MS = 5000;
 
 export const EVENTS = [{
@@ -146,7 +149,11 @@ export async function subscribeWork(env, params) {
   const was = all.find((s) => s.id === id);
   const subs = all.filter((s) => s.id !== id);
   subs.push({ id, name, url: url.href, secret: delivery.secret, refreshBefore, since: was?.since ?? new Date().toISOString() });
-  await writeSubs(env, subs);
+  // The newest SUBS_MAX only (the locks review, 2026-10-25): with no cap, the
+  // curator's key could add callbacks without end, each one written and each
+  // one posted to on every ring. The Work chat refreshes its own, so it is
+  // never the oldest for long.
+  await writeSubs(env, subs.slice(-SUBS_MAX));
   return { body: { id, refreshBefore, cursor: null, truncated: false } };
 }
 

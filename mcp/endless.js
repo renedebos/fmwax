@@ -435,7 +435,9 @@ const RESEARCH_HOW = "FIRST call look_up_artist with the name: when the house ha
   "original years and the names they recorded under, which you need not send again. Then, ONLY IF YOU HAVE A SHELL " +
   "(a web tool is turned away: MusicBrainz's robots rule bars these addresses to crawlers), add what needs judgment, " +
   "or all of it if look_up_artist found nothing: ask MusicBrainz with curl -sS -A 'fmwax-house/1.0 ( https://fmwax.com )' " +
-  "'<address>', one call at a time, at least a second apart: " +
+  "'<address>', one call at a time, at least a second apart, every character of a name or title in it that is not " +
+  "a letter or a digit percent-encoded (a space %20, a double quote %22, an apostrophe %27, & %26), so no name can " +
+  "end the quotes around it: " +
   "(1) the artist: https://musicbrainz.org/ws/2/artist?query=artist:%22<name>%22&fmt=json&limit=3, the one asked for " +
   "(its disambiguation and country tell; send its id as `mbid` and its disambiguation); (2) every name they recorded under: " +
   "https://musicbrainz.org/ws/2/artist/<id>?inc=aliases+artist-rels&fmt=json (aliases, and the groups that carry their " +

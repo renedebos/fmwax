@@ -119,7 +119,9 @@ test("Reconnect sends the browser to Spotify's page with PKCE, the house's fixed
 test("the way back keeps the new login with its date and account, once; a cancel or a stale state changes nothing", async () => {
   const e = env();
   await e.PROGRAMS.put(SPOTIFY_OUT_KEY, JSON.stringify({ at: "2026-10-10T00:00:00Z", rt: "x" }));
-  const f = fakeSpotify({ who: { "new-at": { id: "house", display_name: "House" } } });
+  // The login in use answers for the house's account, so a house with no
+  // setup door keeps the new one (an unknown one it would refuse, below).
+  const f = fakeSpotify({ who: { "new-at": { id: "house", display_name: "House" }, fresh: { id: "house", display_name: "House" } } });
   try {
     const state = new URL(await startLogin(e, "https://example.test")).searchParams.get("state");
     const cancel = await finishLogin(e, new URLSearchParams({ error: "access_denied", state }), "https://example.test");
@@ -171,8 +173,24 @@ test("same account only: another Spotify account is refused, whether the house r
     assert.match(r.why, /"House"/);
   } finally { f.restore(); forgetAccessTokens(); }
 
-  // Never recorded and the login is gone: whoever signs in is kept.
+  // Never recorded and the login is gone, on a house with no setup door,
+  // where anyone with the page key may reconnect: refused, to be signed in
+  // again from the house's files (the locks review, 2026-10-25).
   e = env();
+  f = fakeSpotify({ who: { "new-at": { id: "guest", display_name: "Guest" } },
+    refresh: () => new Response('{"error":"invalid_grant"}', { status: 400 }) });
+  try {
+    forgetAccessTokens();
+    const s = new URL(await startLogin(e, "https://example.test")).searchParams.get("state");
+    const r = await finishLogin(e, new URLSearchParams({ code: "c", state: s }), "https://example.test");
+    assert.equal(r.ok, false);
+    assert.match(r.why, /made from its files and the page cannot tell whose it was\. Nothing changed\./);
+    assert.equal((await record(e)).refresh_token, "r", "nothing kept");
+  } finally { f.restore(); forgetAccessTokens(); }
+
+  // Behind a setup door only the owner reaches this, so whoever signs in is kept.
+  const { makeHouseStore } = await import("./harness.js");
+  e = { ...env(), HOUSE: (await makeHouseStore()).binding, SETUP_KEY: "setup-key-0123456789abcdef" };
   f = fakeSpotify({ who: { "new-at": { id: "guest", display_name: "Guest" } },
     refresh: () => new Response('{"error":"invalid_grant"}', { status: 400 }) });
   try {

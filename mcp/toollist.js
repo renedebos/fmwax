@@ -589,7 +589,9 @@ export const TOOLS = [
       // THE LONG READ (the owner, 2026-10-15: the writers always write it;
       // since 2026-10-18 the asker chooses, short notes or the long read) and
       // its research, moved from the routine's prompt, KEEPING A SET (MC-31
-      // stage 0). The MusicBrainz call is curl because WebFetch gets a 503.
+      // stage 0). The MusicBrainz call is curl because WebFetch gets a 503;
+      // every name in its address percent-encoded (the locks review,
+      // 2026-10-25: an apostrophe in a title could end the shell's quotes).
       "\n\nTHE TWO WRITERS' NOTES are what the listener chose on the form, the " +
       "request's `notes` in list_requests, whatever the ask's words. \"long\" " +
       "is the long read: every step below. \"short\" is the brief's own short " +
@@ -617,7 +619,11 @@ export const TOOLS = [
       "apart, with curl where you have a shell (or your web tool where you do not):\n" +
       "curl -sS -A 'fmwax-house/1.0 ( https://fmwax.com )' " +
       "'https://musicbrainz.org/ws/2/release-group?query=releasegroup:%22<title>%22%20AND%20artist:%22<artist>%22&fmt=json&limit=3'\n" +
-      "and read first-release-date (spaces as %20, quotes as %22). If it " +
+      "and read first-release-date. In the address, percent-encode every " +
+      "character of a title or name that is not a letter or a digit (a space " +
+      "%20, a double quote %22, an apostrophe %27, & %26): the address then " +
+      "holds no quote mark of its own, so no title can end the quotes around " +
+      "it. If it " +
       "answers busy, wait five seconds and try once more, then use the " +
       "discography. A chart position belongs only to the song the page gives " +
       "it for. WebSearch for what neither has: a quote with who said it, a " +
