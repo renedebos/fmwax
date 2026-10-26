@@ -9,6 +9,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { parse as parseToml } from "smol-toml";
 
 import {
   render, renderBlankHouse, renderButtonHouse, renderHouse, viewOf, HOUSE_FILE, TEMPLATE_FILE, CONFIG_FILE,
@@ -190,11 +191,19 @@ test("the Deploy button's house: at the repo's root, no store ids, no address, t
   for (const s of ['class_name = "StationLedger"', 'class_name = "HouseSettings"', 'tag = "v1"', 'tag = "v2"', 'crons = ["*/10 * * * *"]']) {
     assert.ok(out.includes(s), s);
   }
-  // The same template as the terminal door's: every line of one is in the
-  // other, but for the paths, the ids and the address.
-  const door = renderBlankHouse({ name: "fmwax-house", baseUrl: "https://fmwax-house.example.workers.dev", tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" });
-  const strip = (t) => t.split("\n").filter((l) => !/^(main|directory|id|PROGRAM_BASE_URL|name|BUTTONS|PLAYLIST_ALIASES|DEFAULT_DEVICE|ROOM_DEVICES|ENDLESS|REQUESTS_ENABLED|AUTOFULFILL_ENABLED|crons) = /.test(l));
-  assert.deepEqual(strip(out).filter((l) => !strip(door).includes(l)), [], "nothing the door's lacks");
+  // As the copy script writes it, JSON: the same house as the terminal
+  // door's blank one, but for the paths, the store ids and the address.
+  // Plain objects, as the copy script's JSON.stringify leaves them.
+  const plainOf = (t) => JSON.parse(JSON.stringify(parseToml(t)));
+  const button = plainOf(out);
+  const door = plainOf(renderBlankHouse({ name: "fmwax-house", baseUrl: "https://fmwax-house.example.workers.dev", tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" }));
+  assert.deepEqual(button.kv_namespaces, [{ binding: "TOKENS" }, { binding: "PROGRAMS" }]);
+  assert.deepEqual(door.kv_namespaces.map((k) => k.binding), ["TOKENS", "PROGRAMS"]);
+  for (const k of ["durable_objects", "migrations", "triggers", "compatibility_date", "workers_dev"]) assert.deepEqual(button[k], door[k], k);
+  assert.deepEqual({ ...button.assets, directory: null }, { ...door.assets, directory: null });
+  const { PROGRAM_BASE_URL, ...doorVars } = door.vars;
+  assert.equal(PROGRAM_BASE_URL, "https://fmwax-house.example.workers.dev");
+  assert.deepEqual(button.vars, doorVars);
 });
 
 test("the template may only name blocks the view knows", () => {

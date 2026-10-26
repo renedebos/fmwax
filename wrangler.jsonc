@@ -1,0 +1,67 @@
+// The Deploy to Cloudflare button's config, made by the author's copy script
+// from mcp/install/house.template.toml, where each line is explained. The
+// house itself is in mcp/; the terminal install uses mcp/wrangler.toml.
+{
+  "name": "fmwax-house",
+  "main": "mcp/worker.js",
+  "compatibility_date": "2025-06-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "dependencies_instrumentation": {
+    "enabled": false
+  },
+  "observability": {
+    "enabled": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "TOKENS"
+    },
+    {
+      "binding": "PROGRAMS"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "STATION",
+        "class_name": "StationLedger"
+      },
+      {
+        "name": "HOUSE",
+        "class_name": "HouseSettings"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "StationLedger"
+      ]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": [
+        "HouseSettings"
+      ]
+    }
+  ],
+  "assets": {
+    "directory": "art/covers",
+    "binding": "COVERS",
+    "run_worker_first": true
+  },
+  "vars": {
+    "REQUESTS_ENABLED": "false",
+    "AUTOFULFILL_ENABLED": "false",
+    "PROGRAM_REPLAY_PLAYLIST": "replay",
+    "BUTTONS": [],
+    "PLAYLIST_ALIASES": "{}"
+  },
+  "triggers": {
+    "crons": [
+      "*/10 * * * *"
+    ]
+  }
+}
