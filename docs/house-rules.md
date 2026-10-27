@@ -192,8 +192,8 @@ come back.
 - **The house counts the rules it can** before a set lands: never the same
   recording twice, never one act's song twice (a remaster or another take
   is that song), never the same song back to back, and the DJ's own
-  spacing: Genre never plays an act twice in a row or three times an hour,
-  Soul never three in a row from one act, Vibe one song an act, Deep Dive
+  spacing: Genre and Sessions never play an act twice in a row or three
+  times an hour, Soul never three in a row from one act, Vibe one song an act, Deep Dive
   never two from one album in a row. A set that breaks one goes back to be
   fixed, once; then it plays as sent, and the log says what it held. A set
   of one song's versions isn't counted against it, nor an hour of one
@@ -265,8 +265,13 @@ come back.
   **Genre has one for jazz** (since 2026-10-18): 4,505 acts, given to any
   Genre ask that names jazz or a jazz style ("piano jazz", "bebop", "bossa
   nova"). Not smooth, acid or nu jazz, which it never held: those, and every
-  other genre, work from the brief alone. The other DJs work from their
-  briefs alone until they get one. [tasks/rollcalls/]
+  other genre, work from the brief alone. **Sessions has one too** (since
+  2026-10-26): 2,543 session releases by series (Peel and BBC, MTV
+  Unplugged, Tiny Desk, 2 Meter Sessions, Spotify Sessions, Audiotree Live,
+  Austin City Limits, Like A Version, VH1 Storytellers), gathered from
+  MusicBrainz and not read one by one; a slice of it crosses the series.
+  The other DJs work from their briefs alone until they get one.
+  [tasks/rollcalls/]
 - A set you ask for (a length, a mood, a subject) goes on **{requests
   presets}**, and replaces what was there.
 - **Three dates, kept apart** (since 2026-10-18): when a recording was
@@ -322,7 +327,20 @@ come back.
   cut. Prince's own records are Deep Dive's; jazz, reggae and hip-hop are
   Genre's. Two DJs write a page with their set now, the Librarian and
   Gatefold. Their sets on the Shelf and asks already made still show, under
-  the old name.
+  the old name. **Eleven since 2026-10-26**, with Sessions.
+- **Sessions plays bands live in a small room** (since 2026-10-26): radio
+  and TV sessions, never the studio record. John Peel's and the BBC's, MTV
+  Unplugged, NPR's Tiny Desk, 2 Meter Sessions, Spotify Sessions, Audiotree
+  Live, Austin City Limits, triple j's Like A Version and VH1 Storytellers;
+  never a karaoke or tribute version, a contest entry, a festival stage or
+  a concert album from a hall. A set crosses the series and the decades (at
+  least four series an hour, Audiotree at most a quarter), about half of it
+  songs you know in their session version, and every set looks for a
+  session out in the last month. Name a series to keep to it ("Peel
+  sessions from the eighties", "only unplugged").
+- {if guest} **Anything live asked for endless** ("something unplugged",
+  "Tiny Desk all night") is **Sessions**, the guest DJ on {guest preset}
+  (since 2026-10-26).
 - {if guest} **An artist or a style asked for endless** goes to a DJ, never
   to a one-off list that stops. **One artist by name** ("Michael Jackson,
   endless", "change to the Jayhawks") is **Deep Dive**, the guest DJ on

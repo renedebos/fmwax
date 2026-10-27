@@ -20,7 +20,9 @@ const STOP = new Set(("a an and the of for in on to my me i it its is be with wh
   "set sets songs song music some more less please give play just about like want hear minutes minute hour hours " +
   // "jazz" and "monk" were here for Monk, whose whole field was jazz, until
   // he was cut (2026-10-15).
-  "night tonight morning evening long short dj pub rock circuit band bands records record").split(" "));
+  "night tonight morning evening long short dj pub rock circuit band bands records record " +
+  // "Something unplugged" matched Something for Kate (Sessions, 2026-10-26).
+  "something anything").split(" "));
 // A DJ's own field said in an ask ("1 hour of funk" to Dr. Funkenstein)
 // names his whole crate, not a corner of it. Without this the word matched
 // band NAMES (2026-10-13: Sons Of Funk, Funk Machine, Funk Inc. — a dozen
@@ -198,7 +200,8 @@ export function rollCallSlice(djKey, { words = "", recent = [], seed = "", brief
   return {
     fits: fits.map(line),
     not: not.map((e) => `Not ${e.name}: ${e.reason || e.why}`),
-    note: `From ${rc.genre ? `the house's ${rc.genre} roll call` : "this DJ's roll call"} (${rc.in.length} acts, reviewed by the household ${rc.made}): acts that fit ` +
+    note: `From ${rc.genre ? `the house's ${rc.genre} roll call` : "this DJ's roll call"} (${rc.in.length} ` +
+      `${rc.gathered ? `lines, gathered from MusicBrainz ${rc.made}, not read one by one` : `acts, reviewed by the household ${rc.made}`}): acts that fit ` +
       "this ask. A guide, not a whitelist and not a must-play list; anything inside the brief's field may play. " +
       "Stay out of the acts under not." +
       // Dr. Funkenstein's lines (2026-10-13) end on the act's hits, which his

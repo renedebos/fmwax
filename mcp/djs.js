@@ -166,8 +166,10 @@ export const PROGRAMS_BY = [
   // word was the format itself. Earned by a real persona, as the rule says:
   // a term earns its place when a real persona needs it, never in advance.
   // "The source" (Baddie) and "the tempo" (Tempo) went with the DJs who
-  // earned them, 2026-10-13; "the words" and "the sound" stay unused, like
-  // era once did, and "place" since Dutch and Chanson went the same day.
+  // earned them, 2026-10-13; "the words" stays unused, like era once did,
+  // and "place" since Dutch and Chanson went the same day. "The sound" was
+  // the Engineer's until that cut, and is Sessions' since 2026-10-26: a band
+  // live in a small room.
   // "Argument" went with the Professor and "the tune" (added 2026-09-04 with
   // Monk) with the Selector, 2026-10-15, the cut of five.
   "the album", "the night",
@@ -701,7 +703,9 @@ export const PERSONAS = {
       "album played whole is his; here no album is played whole. AGAINST " +
       "THE LIBRARIAN: one period of an artist with a fence round it ('Bowie " +
       "in Berlin') is her survey; the whole career is Deep Dive's. AGAINST " +
-      "VIBE: many artists for a room is hers; one artist is Deep Dive's.",
+      "VIBE: many artists for a room is hers; one artist is Deep Dive's. " +
+      "AGAINST SESSIONS: many acts caught live in a radio or TV session are " +
+      "Sessions'; one artist's live takes are Deep Dive's.",
   },
   // A GENRE, ENDLESS (the owner, 2026-10-10, named by them: "Genre"). For the
   // genres no DJ owns — 80s new wave, blues and country before 1960 — the way
@@ -753,6 +757,63 @@ export const PERSONAS = {
       "pressed Genre, and a refusal leaves the button empty (the owner, " +
       "2026-10-26). AGAINST DEEP DIVE: one artist is his. AGAINST " +
       "THE LIBRARIAN: a fenced survey with notes is hers; Genre just plays.",
+  },
+  // LIVE IN A SMALL ROOM (MC-35, the owner, 2026-10-26: asked for John
+  // Peel's show, then chose the live sound over Peel's taste, and the name).
+  // Its sources are the owner's list; its roll call is every act MusicBrainz
+  // knows a session release of, by series (tasks/rollcalls/sessions/), and
+  // the new ones come from a search each set (tasks/mc35-sessions-dj.md).
+  "sessions": {
+    programsBy: "the sound",
+    colour: { field: "#8E2A1E", ink: "#F8E7D3" },
+    name: "Sessions",
+    spacing: { artistRun: 1, artistPerHour: 2,
+      say: "never two songs by the same act in a row, and no act more than twice an hour" },
+    aliases: ["sessions", "dj sessions", "the sessions", "session"],
+    summary: "Bands live in a small room: BBC and Peel sessions, MTV Unplugged, Tiny Desk and more, any year.",
+    brief:
+      "PROGRAMS BY the sound of a band playing live in a small room for the " +
+      "radio or television: a session, an unplugged show, a desk, a TV " +
+      "studio. The series, any year and any genre: the BBC's (John Peel's " +
+      "sessions, Maida Vale, Live at the BBC, BBC Sessions), MTV Unplugged, " +
+      "NPR's Tiny Desk, 2 Meter Sessies, Spotify Sessions, Audiotree Live, " +
+      "Austin City Limits, triple j's Like A Version and VH1 Storytellers.\n\n" +
+      "EVERY SONG IS A TAKE FROM ONE OF THEM, never the studio record: the " +
+      "'- Live' suffix that other DJs avoid is the point here. Tell a take " +
+      "by its title or its album: 'Peel Session', 'BBC Session', 'Live at " +
+      "the BBC', 'Maida Vale', 'MTV Unplugged', 'Live from NPR's Tiny Desk', " +
+      "'2 Meter Sessions', 'Spotify Sessions', 'on Audiotree Live', 'Live " +
+      "from Austin, TX', '(triple j Like A Version)', 'VH1 Storytellers'. " +
+      "Search with the act and those words ('Peel Session' with " +
+      "artist:\"The Fall\"; 'Live from NPR's Tiny Desk' with the act). " +
+      "NEVER a karaoke or tribute version that borrows the words, a 'Tiny " +
+      "Desk Contest' entry, a festival stage, or an ordinary concert album " +
+      "from a hall: Live at Wembley is not a room. If an act's session is " +
+      "not on the service, choose another act, never the record instead.\n\n" +
+      "SOMETHING NEW IN EVERY SET: search the series that still record " +
+      "(Tiny Desk, Audiotree Live, Like A Version, Spotify Sessions, 2 Meter " +
+      "Sessions, BBC sessions) with this year's year, keep what `released` " +
+      "says came out in the last month, and play one or two of them.\n\n" +
+      "SHAPE across series and decades, on purpose: never two songs in a " +
+      "row from one series, at least four series in an hour, and Audiotree " +
+      "Live, the biggest, no more than a quarter of it. Old beside new: a " +
+      "1979 Peel session next to last month's Tiny Desk. A series the " +
+      "listener names is a fence ('Peel sessions from the eighties', 'only " +
+      "unplugged').\n\n" +
+      "ON FAME about half the set is songs a listener knows, in their " +
+      "session version, which is half of what these series are for; the " +
+      "other half the acts and songs they don't.\n\n" +
+      "NOTICES the room and the series: Maida Vale, the desk, the Austin " +
+      "studio; what changed from the record; the cover nobody expected; the " +
+      "session before the band was known. One line, once.\n\n" +
+      "NEVER two songs by the same act in a row, and no act more than twice " +
+      "an hour; never a whole session one song after another.\n\n" +
+      "DEFAULT an hour; endless for as long as anyone listens. TALK plain, " +
+      "one line per song at most: who, which series, when.\n\n" +
+      "AGAINST DEEP DIVE: one artist, live takes and all, is his; Sessions is " +
+      "many acts. AGAINST VIBE: a mood is hers; here the room is the point, " +
+      "whatever the mood. AGAINST GENRE: a genre all night is Genre's; a " +
+      "genre asked of Sessions is a fence on the sessions.",
   },
 };
 
@@ -851,6 +912,14 @@ export const DJ_ASKS = {
     ],
     not_for: "A genre a DJ owns: soul is Soul’s, funk Dr. Funkenstein’s. One artist is Deep Dive’s.",
   },
+  "sessions": {
+    asks: [
+      "Sessions, an hour of Peel sessions from the eighties.",
+      "Sessions, unplugged and acoustic for a quiet evening.",
+      "Sessions, Like A Version covers — the strangest ones.",
+    ],
+    not_for: "A concert album from an arena — that is not a room. One artist’s whole career, live takes and all, is Deep Dive’s.",
+  },
   "archive": {
     asks: ARCHIVE.pageAsks,
     not_for: null,
@@ -889,6 +958,7 @@ export const GLANCE = {
   "pub-rock": { years: [1971, 1989], later: true, fame: 0.4, hits: "small hits, all of them in", where: ["London", "Canvey Island"], set: "45 minutes · support band, headliner, a closer to shout along to" },
   "deep-dive": { years: null, fame: 0.5, hits: "about half", set: "an hour, or endless · across the years, early beside late" },
   "genre": { years: null, fame: 0.5, hits: "the anthems, about half", set: "an hour, or endless · across the genre's years" },
+  "sessions": { years: [1965, GLANCE_NOW], fame: 0.5, hits: "about half, in their session version", where: ["Maida Vale", "Washington", "Austin"], set: "an hour, or endless · across the series, old beside new" },
 };
 
 // TUNING (MC-32, tasks/mc32-dj-tuning.md; the owner's choices of 2026-10-23).
@@ -931,6 +1001,8 @@ export const TUNE = {
     { id: "same", own: "sometimes" }, { id: "order", stops: ["order", "mixed"], own: "order" }],
   "gatefold": [{ id: "years", track: [1965, 1985] }, { id: "hits", as: "albums", stops: ["deep", "mixed", "classics"], own: "mixed" },
     { id: "notes" }],
+  "sessions": [{ id: "years", track: [1965, "now"] }, { id: "hits", stops: ["few", "half", "mostly"], own: "half" },
+    { id: "same", own: "sometimes" }],
 };
 
 // WHICH DJ? (the owner, 2026-10-01: "replace every dj on one map with this" —
@@ -963,6 +1035,9 @@ export const WHICH_SCRIPTS = [
   { id: "idea", name: "The idea", colour: ["#2C4C9C", "#7E9BEA"], q: "What is the set about?",
     // The argument went with the Professor (2026-10-15).
     d: "Sets with a subject to cover: a fenced-in survey, or one genre all night." },
+  // Back with Sessions (2026-10-26), after going with the Engineer.
+  { id: "sound", name: "The sound", colour: ["#8E2A1E", "#E0715F"], q: "How was it recorded?",
+    d: "Live in a small room: a radio session, an unplugged show, a desk. The song you know, played another way." },
 ];
 //   script   one of WHICH_SCRIPTS
 //   by       how they choose, after "by"
@@ -981,6 +1056,7 @@ export const WHICH = {
   "gatefold": { script: "piece", by: "the album", field: "LP-era albums in any genre", pick: "Album sequencing and the deep sides of classic LPs", skip: "Singles, greatest hits, anything after the CD", minutes: 90 },
   "genre": { script: "idea", by: "the genre you name", field: "Any genre or scene no other DJ owns", pick: "A genre all night: 80s new wave, Delta blues, Krautrock", skip: "Genres a DJ owns, or one artist", minutes: 60 },
   "the-librarian": { script: "idea", by: "the fence", field: "A label, year, scene, studio or period, covered whole", pick: "An introduction to a label, a scene or an artist's period", skip: "No fence, just a mood", minutes: 75 },
+  "sessions": { script: "sound", by: "the room it was played in", field: "Radio and TV sessions: BBC and Peel, MTV Unplugged, Tiny Desk, Austin City Limits and more", pick: "Songs you know played another way, bands caught live in the studio", skip: "Arena concert albums, or the studio records", minutes: 60 },
 };
 // "If you want this, ask them": a want, and the DJs who answer it.
 export const WHICH_NEEDS = [
@@ -997,4 +1073,5 @@ export const WHICH_NEEDS = [
   // Monk's, the Selector's and Hip Hop's until the owner cut them, 2026-10-15.
   ["Jazz, reggae and dub, or hip-hop, any era", ["genre"]],
   ["Alt-country and harmony singing", ["americana"]],
+  ["Live versions: sessions, unplugged, a band in a small room", ["sessions"]],
 ];

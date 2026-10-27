@@ -69678,5 +69678,17777 @@ export const ROLL_CALLS = {
     "owner": true
    }
   ]
+ },
+ "sessions": {
+  "made": "2026-10-26",
+  "spread": true,
+  "gathered": true,
+  "in": [
+   {
+    "name": "2/5 BZ",
+    "years": "2003-2006",
+    "reason": "Peel Session: 'Peel Session'; 'Militant Oriental: Peel Session II'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "23 Skidoo",
+    "years": "2012",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "3 Mustaphas 3",
+    "years": "1983-1987",
+    "reason": "Peel Session: '2nd Peel Session'; '3rd Peel Session' and 2 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "7 Year Bitch",
+    "years": "1993",
+    "reason": "Peel Session: '1993 Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "70 Gwen Party",
+    "years": "1995",
+    "reason": "Peel Session: 'John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "A Certain Ratio",
+    "reason": "Peel Session: 'Peel Sessions & Live 79-82'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "A Guy Called Gerald",
+    "years": "1991-1999",
+    "reason": "Peel Session: 'Peel Sessions'; 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "A Witness",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "AC Acoustics",
+    "years": "2002",
+    "reason": "Peel Session: 'Peel Sessions 03-03-2002'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Adam and the Ants",
+    "years": "1990",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Aereogramme",
+    "years": "2003",
+    "reason": "Peel Session: '2003-02-xx: Peel Session, Maida Vale, London, UK'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Aerial M",
+    "years": "2024",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Agathocles",
+    "years": "1997",
+    "reason": "Peel Session: 'Peel Sessions 1997'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Aina",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Session EP'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "An Albatross",
+    "years": "2018",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Angelic Upstarts",
+    "years": "1980-1981",
+    "reason": "Peel Session: 'John Peel session 23rd June 1981'; 'John Peel session 17th September 1980'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Aphex Twin",
+    "years": "2019",
+    "reason": "Peel Session: 'Peel Session 2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Appliance",
+    "years": "1998",
+    "reason": "Peel Session: 'Peel Sessions 06/09/1998'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Atari Teenage Riot",
+    "years": "1999",
+    "reason": "Peel Session: 'The Peel Sessions: 1999-03-19: The Queen Elizabeth Hall, London, UK'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Autechre",
+    "years": "1999-2000",
+    "reason": "Peel Session: 'Peel Session'; 'Peel Session 2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Autechre / Boards of Canada / The Black Dog",
+    "years": "1999",
+    "reason": "Peel Session: 'Warp Peel Sessions, Vol 1'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Babes in Toyland",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The BBC John Peel Sessions 1990-92'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bad Religion",
+    "years": "1993",
+    "reason": "Peel Session: '1993 Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Band of Susans",
+    "years": "1994",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bardo Pond",
+    "years": "2023",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bearsuit",
+    "reason": "Peel Session: 'Peel Session 01-Aug-02'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Big Black",
+    "years": "1988",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bikini Kill",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bill Nelson’s Red Noise",
+    "years": "1979",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Billy Bragg",
+    "years": "1988-1991",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Peel Session Album'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Black Sabbath",
+    "years": "1970",
+    "reason": "Peel Session: 'Walpurgis: The Peel Session 1970'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Blonde Redhead",
+    "years": "2016",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Blur",
+    "years": "1997",
+    "reason": "Peel Session: 'BBC Radio 1 Broadcast John Peel Sessions 5th May 1997'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Boards of Canada",
+    "years": "1998",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bolt Thrower",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Peel Sessions 1988–90'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bongwater",
+    "years": "1992",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bong‐Ra",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bow Wow Wow",
+    "years": "2011",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Bratmobile",
+    "years": "1994-2025",
+    "reason": "Peel Session: 'Peel Session'; 'The Real Janelle + The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Butthole Surfers",
+    "years": "2024",
+    "reason": "Peel Session: 'Gary Floyd (Peel Session)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Buzzcocks",
+    "years": "1977-1979",
+    "reason": "Peel Session: 'Peel Sessions'; 'The Peel Sessions' and 4 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "CAN",
+    "years": "1995",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "CUD",
+    "years": "1988-2013",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Complete BBC John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Carcass",
+    "years": "1989-2011",
+    "reason": "Peel Session: 'Peel Sessions'; 'The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Carcass / Godflesh",
+    "years": "2014",
+    "reason": "Peel Session: 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cat Power",
+    "years": "2001",
+    "reason": "Peel Session: '2001: Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cay",
+    "years": "1998-2000",
+    "reason": "Peel Session: 'Peel Session Nov 11 1998'; 'Peel Session Dec 5th 2000'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cinerama",
+    "years": "2001-2007",
+    "reason": "Peel Session: 'John Peel Sessions'; 'John Peel Sessions: Season 2' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Clan of Xymox",
+    "years": "2001-2021",
+    "reason": "Peel Session: 'The John Peel Sessions'; 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Close Lobsters",
+    "years": "2024",
+    "reason": "Peel Session: 'John Peel Session 04.01.88'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Come",
+    "years": "2022",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cop Shoot Cop",
+    "years": "1992",
+    "reason": "Peel Session: 'Peel Sessions (1992)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cornershop",
+    "years": "1993",
+    "reason": "Peel Session: 'NME Peel Sessions Singles Club'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Cranes",
+    "years": "1989-1990",
+    "reason": "Peel Session: 'John Peel Sessions (1989-1990)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Crass",
+    "years": "1979",
+    "reason": "Peel Session: '1979 John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "DJ John Lemon",
+    "years": "2020",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "DJ Rozwell",
+    "years": "2014",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "David Bowie",
+    "years": "1972",
+    "reason": "Peel Session: 'Original John Peel Session: 23rd May 1972'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Dead Can Dance",
+    "years": "1983-1984",
+    "reason": "Peel Session: 'John Peel Session 2.6.1984'; 'John Peel Session 19.11.1983' and 2 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Dead Meadow",
+    "years": "2011",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Deep Turtle",
+    "years": "1995",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Die Toten Hosen",
+    "years": "1984",
+    "reason": "Peel Session: 'Liebesspieler / John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Directional Force",
+    "years": "1995",
+    "reason": "Peel Session: 'The John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Doom",
+    "years": "1998",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Dream City Film Club",
+    "years": "1998",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Eat Static",
+    "years": "2013",
+    "reason": "Peel Session: 'The Peel Sessions: Peel Your Head'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Echo & the Bunnymen",
+    "years": "1979-1983",
+    "reason": "Peel Session: 'The John Peel Sessions 1979–1983'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Echo and the Bunnymen",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Eek‐A‐Mouse",
+    "years": "1983-1984",
+    "reason": "Peel Session: 'Peel Session 1983 / 1984'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Electro Hippies",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Essential Logic",
+    "years": "2024",
+    "reason": "Peel Session: 'John Peel Session 21.02.79'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Even as We Speak",
+    "years": "2014",
+    "reason": "Peel Session: 'Yellow Food: The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Everything but the Girl",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Extreme Noise Terror",
+    "years": "1990-1998",
+    "reason": "Peel Session: 'The Peel Sessions ’87–’90'; 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Family",
+    "years": "1988-2000",
+    "reason": "Peel Session: 'The Peel Sessions'; 'It's Only a Movie / The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Finitribe",
+    "years": "1985",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Fluke",
+    "years": "1994",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Frank Black",
+    "years": "1996",
+    "reason": "Peel Session: 'Peel Session (1996‐02‐17)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Frank Black & Teenage Fanclub",
+    "years": "1995",
+    "reason": "Peel Session: 'The John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Frank Black and the Catholics",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Session ’99'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Frankie Miller",
+    "years": "1976-1977",
+    "reason": "Peel Session: 'John Peel Session (10th June 1976)'; 'John Peel Session (16th May 1977)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Fugazi",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Further",
+    "years": "1995",
+    "reason": "Peel Session: 'The Further John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Galaxie 500",
+    "years": "2005-2010",
+    "reason": "Peel Session: 'Peel Sessions'; 'On Fire / Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gallon Drunk",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gallon Drunk / Breed",
+    "years": "1992",
+    "reason": "Peel Session: 'Clawfist - The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gang of Four",
+    "years": "1986-1990",
+    "reason": "Peel Session: 'The Peel Sessions EP'; 'The Peel Sessions Album'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gary Numan",
+    "years": "2007",
+    "reason": "Peel Session: 'The Complete John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gary Numan / Tubeway Army",
+    "years": "1989",
+    "reason": "Peel Session: 'Double Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gene",
+    "years": "2006",
+    "reason": "Peel Session: 'John Peel Sessions 95-99'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Girls at Our Best!",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "God Is My Co-Pilot",
+    "years": "1997",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Godflesh",
+    "years": "1989-2014",
+    "reason": "Peel Session: 'Peel Session'; 'The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Gong",
+    "years": "1995",
+    "reason": "Peel Session: 'Pre-Modernist Wireless: The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Graham Coxon",
+    "years": "2004",
+    "reason": "Peel Session: 'BBC John Peel Session (Rec 19/08/2004)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Grandaddy",
+    "years": "1998",
+    "reason": "Peel Session: 'Peel Session 1998'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Guana Batz",
+    "years": "1998",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Guided by Voices",
+    "years": "1996",
+    "reason": "Peel Session: 'Peel Session: July 28 1996'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Half Man Half Biscuit",
+    "years": "1985-2004",
+    "reason": "Peel Session: 'The Peel Sessions: 1985-11-20'; 'The Peel Sessions: 1986-03-03' and 11 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Happy Flowers",
+    "years": "1991",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Happy Mondays",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions: 1989'; 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hatfield and the North",
+    "years": "1973",
+    "reason": "Peel Session: 'John Peel Session (12th January 1973)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Headcleaner",
+    "years": "1992",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Heavenly",
+    "years": "2022",
+    "reason": "Peel Session: 'John Peel Session 14.04.91'; 'John Peel Session 07.05.94'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Here",
+    "years": "1995",
+    "reason": "Peel Session: 'Sikusaq: John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Heresy",
+    "years": "2015",
+    "reason": "Peel Session: 'The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Heresy / Unseen Terror / Intense Degree",
+    "years": "2015",
+    "reason": "Peel Session: 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hood",
+    "years": "1995",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hot Snakes",
+    "years": "2005",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hula",
+    "years": "1985",
+    "reason": "Peel Session: 'The John Peel Sessions 1985'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hula Hoop",
+    "years": "2024",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Hyper Kinako",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "I Am Kloot",
+    "years": "2006",
+    "reason": "Peel Session: 'BBC Radio 1 John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "ISAN",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Ian Dury & the Blockheads",
+    "years": "2008",
+    "reason": "Peel Session: 'The Stiff Singles / The Promo Videos / The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Inspiral Carpets",
+    "years": "1989-1992",
+    "reason": "Peel Session: 'The Peel Sessions'; 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Intense Degree",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Interpol",
+    "years": "1998-2001",
+    "reason": "Peel Session: 'Demos 1998–2001 / John Peel Session 18.04.01'; 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "I’m So Hollow",
+    "years": "1980",
+    "reason": "Peel Session: 'Peel Session, Aug. 13, 1980'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "J Mascis",
+    "years": "2003",
+    "reason": "Peel Session: 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "James",
+    "years": "1983",
+    "reason": "Peel Session: 'Peel Sessions 1983-87'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Jeffrey Lewis",
+    "reason": "Peel Session: 'Peel Sessions 7-31-02'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Jethro Tull",
+    "years": "1968",
+    "reason": "Peel Session: 'Original John Peel Session: 5th November 1968'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Jim O’Rourke",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Joy Division",
+    "years": "1986-1988",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Kenickie",
+    "years": "1999",
+    "reason": "Peel Session: 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Kevin Coyne",
+    "years": "1990",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Killing Joke",
+    "years": "1979-1981",
+    "reason": "Peel Session: 'The Peel Sessions 1979 - 1981'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "LFO",
+    "years": "2019",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Laibach",
+    "years": "2002",
+    "reason": "Peel Session: 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Leatherface",
+    "years": "2025",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Liars",
+    "years": "2002",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Liberator DJs",
+    "years": "1999",
+    "reason": "Peel Session: 'Radio on One: The John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Lightnin' Guy & The Mighty Gators feat. Guy Forsyth",
+    "years": "2010",
+    "reason": "Peel Session: 'The Banana Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Lightning Bolt",
+    "years": "2004",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Limpspork",
+    "years": "2021",
+    "reason": "Peel Session: 'The John Emerson Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Lindisfarne",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Locus",
+    "years": "2003",
+    "reason": "Peel Session: 'The John Peel Session 2003'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Lolita Storm",
+    "reason": "Peel Session: 'Peel Session #2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "MC 900 Ft Jesus",
+    "years": "1990",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Mackenzies",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Madness",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Magazine",
+    "years": "2008",
+    "reason": "Peel Session: 'The Complete John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Man or Astro‐Man?",
+    "years": "1993-1997",
+    "reason": "Peel Session: 'Peel Session 1993'; 'Peel Session 1995' and 2 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Masonna",
+    "years": "1999",
+    "reason": "Peel Session: 'John Peel Sessions Live'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Meat Beat Manifesto",
+    "years": "1993",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Mega City Four",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Melys",
+    "years": "2024",
+    "reason": "Peel Session: 'BBC Sessions Vol. 1 (John Peel Sessions & Other Selected Rarities)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Mercury Rev",
+    "years": "2009",
+    "reason": "Peel Session: 'The Peel Sessions'; 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Microdisney",
+    "years": "1985-1989",
+    "reason": "Peel Session: 'John Peel Session'; 'The Peel Sessions Album'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Mile 97",
+    "years": "2007",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Mira Calix",
+    "years": "2000",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Misty in Roots",
+    "years": "1995",
+    "reason": "Peel Session: 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Modern English",
+    "reason": "Peel Session: 'Drowning Man (Demos & Peel Sessions)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Movietone",
+    "years": "1996-2022",
+    "reason": "Peel Session: 'Peel Session 2'; 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "My Bloody Valentine",
+    "years": "1988",
+    "reason": "Peel Session: '1988: Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Napalm Death",
+    "years": "1988-2014",
+    "reason": "Peel Session: 'The Peel Sessions'; 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Nebula",
+    "years": "2001-2008",
+    "reason": "Peel Session: 'Peel Session'; 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "New Bomb Turks",
+    "years": "1993",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "New Fast Automatic Daffodils",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "New Order",
+    "years": "1986-1990",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Peel Sessions (26.1.81)' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Nick Drake",
+    "years": "2014",
+    "reason": "Peel Session: 'The John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Nico",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Nirvana",
+    "years": "1995",
+    "reason": "Peel Session: 'Peel Sessions'; 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "NoMeansNo",
+    "years": "1988",
+    "reason": "Peel Session: 'Peel Session 17/05/1988'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Orange Juice",
+    "years": "1980-1981",
+    "reason": "Peel Session: 'Peel Sessions 1980–1981'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Orbital",
+    "years": "2004",
+    "reason": "Peel Session: 'Peel Session'; 'Peel Session: Last Gig at BBC Maida Vale Studios 2004'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Orchestral Manoeuvres in the Dark",
+    "years": "1979-1983",
+    "reason": "Peel Session: 'Peel Sessions 1979–1983'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "PJ Harvey",
+    "years": "1991-2004",
+    "reason": "Peel Session: 'The Peel Sessions: 1991–2004'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "POLYSICS",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pavement",
+    "years": "1994",
+    "reason": "Peel Session: 'Peel Sessions (February 1994)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Peter Hammill",
+    "years": "1995",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Piano Magic",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pitchshifter",
+    "years": "1991",
+    "reason": "Peel Session: 'Peel Sessions 1991-93'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pixies",
+    "years": "1988-1991",
+    "reason": "Peel Session: 'Doolittle 25: B-Sides, Peel Sessions And Demos'; 'John Peel Sessions 1988-1991'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Plaid",
+    "years": "1999-2019",
+    "reason": "Peel Session: 'Peel Session'; 'Peel Session 2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Play Dead",
+    "years": "2023",
+    "reason": "Peel Session: 'John Peel Sessions At The BBC'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Plummet Airlines",
+    "years": "2020",
+    "reason": "Peel Session: 'Guildford and Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pluto Monkey",
+    "years": "2000",
+    "reason": "Peel Session: 'Peel Session 2000'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pretty Girls Make Graves",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Session 07/08/2003'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Prewar Yardsale",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Prolapse",
+    "years": "2022",
+    "reason": "Peel Session: 'Prolapse (John Peel Session 08.04.97)'; 'Prolapse (John Peel session 20.08.94)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Prong",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Prophecy of Doom",
+    "years": "1990-1991",
+    "reason": "Peel Session: 'The Peel Sessions'; 'Second Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Psychick Warriors ov Gaia",
+    "years": "1994",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Public Image Limited",
+    "years": "2011",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Public Image Ltd",
+    "years": "1979",
+    "reason": "Peel Session: 'John Peel Session 10th December 1979'; 'John Peel Session 1979'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Pulp",
+    "years": "2006",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Purple Avengers",
+    "years": "2016",
+    "reason": "Peel Session: 'Emma Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Quickspace",
+    "years": "1998",
+    "reason": "Peel Session: 'Quickspace - If I Were a Carpenter (Peel Session)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Rechenzentrum",
+    "years": "2001",
+    "reason": "Peel Session: 'The John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Redskins",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Rich Kids",
+    "years": "1978",
+    "reason": "Peel Session: 'John Peel Session (20th March 1978)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Robert Wyatt",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Rooney",
+    "years": "2020",
+    "reason": "Peel Session: 'This Job's Forever - The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "S.O.B.",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Saloon",
+    "years": "2024",
+    "reason": "Peel Session: 'Peel Sessions: 21.08.01 / 16.04.03'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Salt Tank",
+    "years": "1994",
+    "reason": "Peel Session: 'ST5: Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Scritti Politti",
+    "years": "1979",
+    "reason": "Peel Session: 'Work in Progress 2nd Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Seefeel",
+    "years": "2019",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Senseless Things",
+    "years": "1994",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Senser",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Shellac",
+    "years": "1994",
+    "reason": "Peel Session: '1994 Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Shonen Knife",
+    "years": "1991",
+    "reason": "Peel Session: 'Peel Sessions 1991–92'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Shop Assistants",
+    "years": "1986",
+    "reason": "Peel Session: 'Peel Session 2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Sigur Rós",
+    "years": "2000",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Sink",
+    "years": "1991",
+    "reason": "Peel Session: 'On Final Kick in the Head (3rd Peel Session)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Siouxsie and the Banshees",
+    "years": "1977-1978",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Peel Sessions 1977–1978' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Slab!",
+    "years": "1988",
+    "reason": "Peel Session: 'Peel Session #3 1988/03/07'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Smashing Pumpkins",
+    "years": "1992",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Smog",
+    "years": "2001",
+    "reason": "Peel Session: 'The Holy Grail: Bill Callahan’s \"Smog\" Dec. 10, 2001 Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Soft Machine",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Solar Race",
+    "years": "1996",
+    "reason": "Peel Session: 'The Peel Sessions Bar 2'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Sonic Youth",
+    "years": "1986-1988",
+    "reason": "Peel Session: 'Peel Sessions 1986-1988'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Spizz Oil",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Stereolab",
+    "years": "1997",
+    "reason": "Peel Session: 'Live John Peel Session, Sep 24 1997'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Stiff Little Fingers",
+    "years": "1978",
+    "reason": "Peel Session: 'The Peel Sessions Album'; 'Complete John Peel Sessions' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Stretch",
+    "years": "2016",
+    "reason": "Peel Session: 'Live at the BBC: The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Stump",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Swell Maps",
+    "years": "1978",
+    "reason": "Peel Session: 'Peel Session 1978'; 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Syd Barrett",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "T. Rex",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Talulah Gosh",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Teenage Fanclub",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Ten Years After",
+    "years": "1972",
+    "reason": "Peel Session: 'John Peel Session (23 November 1972)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Test Dept.",
+    "years": "1983",
+    "reason": "Peel Session: 'Peel Session 1983.'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "That Petrol Emotion",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Adverts",
+    "years": "1987",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Aislers Set",
+    "years": "2001",
+    "reason": "Peel Session: 'Peel Session'; '2001/04/01: Peel Session, Maida Vale Studio 4, London'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Bananas",
+    "years": "1995",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Bays",
+    "years": "2001",
+    "reason": "Peel Session: 'Live, 2001-10-30: Peel Session, The Boat Club, Nottingham, England, UK'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Beatnigs",
+    "years": "1988",
+    "reason": "Peel Session: '1988 Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Beloved",
+    "years": "1985",
+    "reason": "Peel Session: 'Peel Sessions 1985'; 'Demos & Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Birthday Party",
+    "years": "1987-2001",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Peel Sessions: The Birthday Party II' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Black Dog",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Bonzo Dog Band",
+    "years": "1987",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Brian Jonestown Massacre",
+    "years": "1998",
+    "reason": "Peel Session: 'Peel Sessions 1998'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Bug vs. Soundmurderer",
+    "years": "2003",
+    "reason": "Peel Session: 'Peel Session (live, Radio One, 2003-11-12: Maida Vale, London, United Kingdom)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Chameleons",
+    "years": "1990",
+    "reason": "Peel Session: 'John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Colorblind James Experience",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Cure",
+    "years": "1979-1985",
+    "reason": "Peel Session: 'The Peel Sessions'; 'John Peel Sessions 1979-1981' and 5 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Damned",
+    "years": "1979",
+    "reason": "Peel Session: 'John Peel Session November 1979'; 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Dawn Parade",
+    "reason": "Peel Session: 'Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Delgados",
+    "years": "2006",
+    "reason": "Peel Session: 'The Complete BBC Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Detroit Cobras",
+    "reason": "Peel Session: 'Peel Sessions (03/11/03)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Diagram Brothers",
+    "years": "2011",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Dirtbombs",
+    "years": "2001",
+    "reason": "Peel Session: 'Peel Session (11.01.2001)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Fall",
+    "years": "1978-2004",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Complete Peel Sessions 1978–2004' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Flaming Stars",
+    "years": "2000",
+    "reason": "Peel Session: 'The Six John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Go‐Betweens",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The House of Love",
+    "years": "1988-1989",
+    "reason": "Peel Session: 'The John Peel Sessions 1988:1989'; 'The John Peel Sessions' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Jam",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Jesus Lizard",
+    "years": "1992-1994",
+    "reason": "Peel Session: 'Peel Sessions'; 'John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Jesus and Mary Chain",
+    "years": "1991-2000",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The Complete John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Jimi Hendrix Experience",
+    "years": "1996",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Lemonheads",
+    "years": "2015",
+    "reason": "Peel Session: 'Bored on the Fourth of July (BBC Peel session)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Locust",
+    "years": "2010",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Members",
+    "years": "1979",
+    "reason": "Peel Session: 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Meteors",
+    "years": "1983-1985",
+    "reason": "Peel Session: 'John Peel Sessions: 1983-1985'; 'Undead, Unfriendly and Unstoppable / John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Moondogs",
+    "years": "2003",
+    "reason": "Peel Session: 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Olivia Tremor Control",
+    "years": "2000-2014",
+    "reason": "Peel Session: 'John Peel Session (18-3-97)'; 'John Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Only Ones",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions Album'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Orb",
+    "years": "1991-1996",
+    "reason": "Peel Session: 'Peel Sessions'; 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Pastels",
+    "years": "1984",
+    "reason": "Peel Session: 'Peel Session'; 'Peel Session 1984-02-07'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Pooh Sticks",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Rezillos",
+    "years": "1977-1978",
+    "reason": "Peel Session: 'Peel Sessions 1977/1978'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Ruts",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Screaming Blue Messiahs",
+    "years": "1986",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Sisters of Mercy",
+    "years": "1982-1984",
+    "reason": "Peel Session: 'The Peel Sessions'; 'John Peel Session: 1982' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Slits",
+    "years": "1989-2011",
+    "reason": "Peel Session: 'The Peel Sessions'; 'The John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Smiths",
+    "years": "1988",
+    "reason": "Peel Session: 'The Peel Session'; 'The Peel Sessions Complete' and 1 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Southern Death Cult",
+    "years": "1982",
+    "reason": "Peel Session: 'John Peel Session 1982'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Stupids",
+    "years": "2008",
+    "reason": "Peel Session: 'The Complete BBC Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Teardrop Explodes",
+    "years": "2007",
+    "reason": "Peel Session: 'Peel Sessions Plus'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Triffids",
+    "years": "1987",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Undertones",
+    "years": "1978",
+    "reason": "Peel Session: 'The Peel Sessions'; 'Downtown Radio 1978 (the Lost John Peel session)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Wedding Present",
+    "years": "1987-1995",
+    "reason": "Peel Session: 'The Peel Sessions'; 'John Peel Sessions 1987–1990' and 3 more",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The White Stripes",
+    "years": "2016",
+    "reason": "Peel Session: 'The Complete John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Wild Swans",
+    "years": "1986",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Wolfhounds",
+    "years": "2018",
+    "reason": "Peel Session: 'Hands in the Till: The Complete John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Young Gods",
+    "years": "1988",
+    "reason": "Peel Session: 'The John Peel Session 1988'; 'John Peel Session (12.10.1988 BBC Radio1)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "The Yummy Fur",
+    "years": "1995",
+    "reason": "Peel Session: 'Peel Session June 1995'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Thin Lizzy",
+    "years": "1994",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "This Heat",
+    "years": "1996",
+    "reason": "Peel Session: 'Made Available: John Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Th’ Faith Healers",
+    "years": "2005",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Tim Buckley",
+    "years": "1990",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Trumans Water",
+    "years": "1995",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Twa Toots",
+    "years": "1986",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "UFO",
+    "years": "1977",
+    "reason": "Peel Session: 'John Peel Session (1 June 1977)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "UK Subs",
+    "years": "1978",
+    "reason": "Peel Session: 'Peel Sessions 1978–79'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Ultravox",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Underworld",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Unsane",
+    "years": "1993",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Unseen Terror",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Unwound",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Urusei Yatsura",
+    "years": "1998",
+    "reason": "Peel Session: 'Hello Tiger (Peel Session version)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Uzeda",
+    "years": "1994",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Voodoo Queens",
+    "years": "1994",
+    "reason": "Peel Session: 'Peel Sessions: Touch No Dirt, See No Dirt, Eat No Dirt'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Wagon Christ",
+    "years": "1998",
+    "reason": "Peel Session: '1998-08: Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Ween",
+    "years": "1992-1993",
+    "reason": "Peel Session: 'Peel Session (1992-02-20)'; 'Peel Sessions (1993-04-25)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Wire",
+    "years": "1989",
+    "reason": "Peel Session: 'The Peel Sessions Album'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Wolves! (of Greece)",
+    "years": "2015",
+    "reason": "Peel Session: 'John Peel Session (live)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Xmal Deutschland",
+    "years": "1986-2026",
+    "reason": "Peel Session: 'Peel Sessions'; 'Peel: The Complete BBC Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "X‐Ray Spex",
+    "years": "2014",
+    "reason": "Peel Session: 'Peel Sessions & Singles'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Yeah Yeah Noh",
+    "years": "1986-1987",
+    "reason": "Peel Session: 'fun on the lawn lawn lawn: the peel sessions'; 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Young Marble Giants",
+    "years": "1991",
+    "reason": "Peel Session: 'The Peel Sessions'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "Young People",
+    "reason": "Peel Session: 'Peel Session, 22-Jul-03'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "ballboy",
+    "years": "2004",
+    "reason": "Peel Session: 'Peel Session 9th November 2004'; 'Live at Maida Vale, Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "bis",
+    "years": "2023",
+    "reason": "Peel Session: 'John Peel Session 14.10.95'; 'John Peel Session 16.06.96'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "cLOUDDEAD",
+    "years": "2002",
+    "reason": "Peel Session: 'The Peel Session'; 'Peel Session Live at Maida Vale (July 17th, 2002)'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "múm",
+    "years": "2006",
+    "reason": "Peel Session: 'The Peel Session'",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "μ‐Ziq",
+    "years": "1999",
+    "reason": "Peel Session: 'Peel Session 94''",
+    "branch": "Peel Session",
+    "group": "Peel Session"
+   },
+   {
+    "name": "AFI",
+    "reason": "BBC: 'BBC Maida Vale Studios'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ace",
+    "years": "2011-2024",
+    "reason": "BBC: 'Time for Another / No Strings / At the BBC'; 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Adam and the Ants",
+    "years": "2001",
+    "reason": "BBC: 'Live at the BBC: Complete Radio One Recordings'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Aereogramme",
+    "years": "2003",
+    "reason": "BBC: '2003-02-xx: Peel Session, Maida Vale, London, UK'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Alien Sex Fiend",
+    "years": "2015",
+    "reason": "BBC: 'Classic Albums and BBC Sessions Collection'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Amy Winehouse",
+    "years": "2012",
+    "reason": "BBC: 'Amy Winehouse at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Angel CCAA",
+    "years": "2025",
+    "reason": "BBC: 'Highgate / Maida Vale Promo'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Arctic Monkeys",
+    "reason": "BBC: 'BBC Radio 1: Maida Vale Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Argent",
+    "years": "1997",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Arrival",
+    "years": "1969-1973",
+    "reason": "BBC: 'BBC Sessions (1969-1973)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ash",
+    "years": "1994-1999",
+    "reason": "BBC: 'BBC Sessions 1994 - 1999'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Astor Piazzolla",
+    "years": "1989",
+    "reason": "BBC: 'Live at the BBC 1989'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Aswad",
+    "years": "1997-2009",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Atomic Rooster",
+    "years": "1970-1981",
+    "reason": "BBC: 'On Air - Live at the BBC & Other Transmissions'; 'Friday the 13th: The BBC Sessions 1970-1981' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Au Pairs",
+    "years": "1979-1981",
+    "reason": "BBC: 'Equal But Different – BBC Sessions 1979–1981'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "B.B. King",
+    "years": "2008",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "BEAK>",
+    "years": "2013",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Babe Ruth",
+    "years": "1973-1974",
+    "reason": "BBC: 'BBC Sessions 1973-1974'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Badfinger",
+    "years": "1972",
+    "reason": "BBC: 'Wish You Were Here / In Concert At The BBC, 1972-3'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Baroness",
+    "years": "2013-2020",
+    "reason": "BBC: 'Live at Maida Vale'; 'Live at Maida Vale – Vol. II'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bauhaus",
+    "years": "1989",
+    "reason": "BBC: 'Swing the Heartache: The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Be Bop Deluxe",
+    "years": "1974-1978",
+    "reason": "BBC: 'At the BBC 1974–1978'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Beck",
+    "years": "1994-2006",
+    "reason": "BBC: 'BBC Sessions'; 'BBC Sessions: 1994-2006'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Behemoth",
+    "years": "2015-2020",
+    "reason": "BBC: 'Live at the BBC'; 'Live From Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Belle and Sebastian",
+    "years": "2008",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Benny Carter and His Orchestra Featuring Benny Carter",
+    "years": "1936",
+    "reason": "BBC: 'Swingin' at Maida Vale / Nightfall'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bert Jansch",
+    "years": "2022",
+    "reason": "BBC: 'Bert at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Biffy Clyro",
+    "years": "2009",
+    "reason": "BBC: 'Live at Maida Vale Studio'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Big Country",
+    "years": "2013",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bill Evans featuring Chuck Israels & Larry Bunker",
+    "years": "1965",
+    "reason": "BBC: 'At the BBC: The Complete 1965 London Sets'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Billy Bragg",
+    "years": "1983-2019",
+    "reason": "BBC: 'Best of Billy Bragg at the BBC 1983 – 2019'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Billy Fury",
+    "years": "2006",
+    "reason": "BBC: 'Billy Fury Live At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Black Sheep",
+    "years": "2009",
+    "reason": "BBC: 'Black Sheep at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Blodwyn Pig",
+    "years": "1969-1974",
+    "reason": "BBC: 'BBC Sessions 1969-1974'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Blondie",
+    "years": "2010",
+    "reason": "BBC: 'Blondie at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Blur",
+    "years": "2019",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bob Marley & The Wailers",
+    "years": "1973-1980",
+    "reason": "BBC: 'BBC Sessions, Volume 1: 1973-1980'; 'BBC Sessions, Volume 2: In Concert, Paris Theatre, London, Britain, 5-24-1973' and 2 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bobbie Gentry",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bovine Fecal Matter",
+    "years": "2019",
+    "reason": "BBC: 'Noise Garbage At The BBC; The Self-Destructive Urine Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Brand X",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Brian Eno",
+    "years": "2010",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Brigadier Ambrose",
+    "years": "2007",
+    "reason": "BBC: 'Live from Maida Vale for BBC Radio One'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Bring Me the Horizon",
+    "years": "2015-2016",
+    "reason": "BBC: 'Drown (Live from Maida Vale)'; 'Live From Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Broadcast",
+    "years": "2022",
+    "reason": "BBC: 'BBC Maida Vale Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Buzzcocks",
+    "years": "1998",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "CUD",
+    "years": "2012",
+    "reason": "BBC: 'The Complete BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "CVNNT",
+    "years": "2014",
+    "reason": "BBC: 'A BRIEF LOOK AT THE BBC NEWS'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Caravan",
+    "years": "1968-1975",
+    "reason": "BBC: 'Green Bottles for Marjorie: The Lost BBC Sessions'; 'The Show of Our Lives: Live at the BBC 1968–1975'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Carcass / Godflesh",
+    "years": "2014",
+    "reason": "BBC: 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Carter the Unstoppable Sex Machine",
+    "years": "2015",
+    "reason": "BBC: 'Hello, Good Evening, Welcome. And Goodbye (live at Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cast",
+    "years": "2007",
+    "reason": "BBC: 'The Complete BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cave In",
+    "years": "2023",
+    "reason": "BBC: 'Heavy Pendulum: The Singles - Live at BBC's Maida Vale Studios'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Charli xcx",
+    "years": "2026",
+    "reason": "BBC: 'Charli xcx: Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Charly Antolini Jazz - Power",
+    "years": "1991",
+    "reason": "BBC: 'Recorded at the BBC - Studio London'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Chris Cornell",
+    "years": "2006",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Chris Farlowe",
+    "years": "2017",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Climax Blues Band",
+    "years": "1970-1978",
+    "reason": "BBC: 'Live at the BBC 1970-1978'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cloven Hoof",
+    "years": "2018",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Coalesce",
+    "years": "2024",
+    "reason": "BBC: 'Live at BBC’s Maida Vale Studios'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cobra Skulls",
+    "years": "2015",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cocteau Twins",
+    "years": "1999",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Colin Blunstone",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Colosseum",
+    "years": "2020",
+    "reason": "BBC: 'Transmissions: Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Converge",
+    "years": "2014",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Cream",
+    "years": "1967-1968",
+    "reason": "BBC: 'BBC Sessions'; 'BBC Session 1967-1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Crossbreed Supersoul",
+    "years": "2004",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Curved Air",
+    "years": "1995-2012",
+    "reason": "BBC: 'Live at the BBC'; 'Airwaves: Live at the BBC / Live at Paris Theatre'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Daniel Johnston",
+    "years": "2003-2011",
+    "reason": "BBC: 'Love Lives Forever (BBC Sessions 2003 - 2011)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Danielle Dax",
+    "years": "1988",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Daragh Carville, Martyn Wade & Colin Sharpe",
+    "years": "2006",
+    "reason": "BBC: 'Doctor Who at the BBC: The Plays'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dave Dee, Dozy, Beaky, Mick & Tich",
+    "years": "2008",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "David Bowie",
+    "years": "1967-1972",
+    "reason": "BBC: 'BBC Sessions 1969–1972 (sampler)'; 'Hazy Cosmic Jive (The BBC Sessions 1971–1972)' and 2 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Deaf Havana",
+    "years": "2010",
+    "reason": "BBC: 'Live at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Deep Purple",
+    "years": "1968-1970",
+    "reason": "BBC: 'At the BBC'; 'The BBC Sessions 1968–1970'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Denny Laine",
+    "years": "1967",
+    "reason": "BBC: 'Denny Laine & The Electric String Band Live At The BBC 1967'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Diamond Head",
+    "years": "1982",
+    "reason": "BBC: 'Live at the BBC'; 'Live at the BBC 1982'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dillinger Four",
+    "years": "2010",
+    "reason": "BBC: 'D4! The Bootleg (The BBC Sessions)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dinosaur Jr.",
+    "years": "1988-1993",
+    "reason": "BBC: 'BBC Sessions EP'; 'BBC Sessions 1988 - 1993'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dire Straits",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Disclosure",
+    "years": "2015",
+    "reason": "BBC: 'Caracal Live BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dislocation Dance",
+    "years": "1999",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Douglas Adams",
+    "years": "2004",
+    "reason": "BBC: 'Douglas Adams at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Down",
+    "years": "2008",
+    "reason": "BBC: 'BBC Sessions 2008'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dr. Feelgood",
+    "years": "1973-1978",
+    "reason": "BBC: 'Live at the BBC 1974–5'; 'BBC Sessions 1973–1978' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dusty Springfield",
+    "years": "2007",
+    "reason": "BBC: 'The Complete BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Dylan Thomas",
+    "years": "2003",
+    "reason": "BBC: 'Dylan Thomas at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Eagles",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elder",
+    "years": "2024",
+    "reason": "BBC: 'Live at BBC’s Maida Vale Studios'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Electric Light Orchestra",
+    "years": "1999",
+    "reason": "BBC: 'The BBC Sessions'; 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Electric Wizard",
+    "years": "2005",
+    "reason": "BBC: 'Radio 1 BBC Session 2005'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elephant9",
+    "years": "2011",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elisabeth Sladen",
+    "years": "2005-2010",
+    "reason": "BBC: 'Doctor Who at the BBC, Volume 3'; 'Doctor Who at the BBC: The Tenth Doctor' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elisabeth Sladen & Nicholas Courtney",
+    "years": "2003",
+    "reason": "BBC: 'Doctor Who at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elisabeth Sladen, Nicholas Courtney, Anthony Head & Louise Jameson",
+    "years": "2013",
+    "reason": "BBC: '50 Years of Doctor Who at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elisabeth Sladen, Nicholas Courtney, Anthony Head, Louise Jameson, Russell Tovey & Graham Norton",
+    "years": "2023",
+    "reason": "BBC: 'Doctor Who at the BBC: The Collection'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Eloy",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elton Dean’s Ninesense",
+    "years": "2003",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Elton John",
+    "years": "2022",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "English Teacher",
+    "years": "2024",
+    "reason": "BBC: 'Live from BBC Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Everything But The Girl",
+    "years": "2023",
+    "reason": "BBC: 'At Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Everything but the Girl",
+    "years": "2023",
+    "reason": "BBC: 'At Maida Vale (BBC Maida Vale Session)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Faces",
+    "years": "1970-1973",
+    "reason": "BBC: 'Had Me a Real Good Time at the BBC: In Session & In Concert 1971-1973'; 'Faces at the BBC: Complete BBC Concert & Session Recordings (1970-1973)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Fairport Convention",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Faust",
+    "years": "2001",
+    "reason": "BBC: 'BBC Sessions +'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Fighting With Wire",
+    "years": "2004",
+    "reason": "BBC: '2004-02: BBC Session: Northern Ireland'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Fish",
+    "years": "1999",
+    "reason": "BBC: 'The Complete BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Fleetwood Mac",
+    "years": "1968",
+    "reason": "BBC: 'Live at the BBC'; 'BBC Sessions 1968–69'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Flying Lotus",
+    "years": "2019",
+    "reason": "BBC: 'Presents INFINITY “Infinitum” - Maida Vale Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Focus",
+    "years": "1998-2004",
+    "reason": "BBC: 'At the BBC ’72'; 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Foghat",
+    "years": "2011",
+    "reason": "BBC: 'Not Live At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Frankie Goes to Hollywood",
+    "years": "2016",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Free",
+    "years": "1968-1971",
+    "reason": "BBC: 'Live at the BBC'; 'BBC Sessions' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Funeral Party",
+    "years": "2011",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Fuzzbox",
+    "years": "2002",
+    "reason": "BBC: 'Love Is a Slug: The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Gary Numan",
+    "years": "2000",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Genesis",
+    "years": "1970-1972",
+    "reason": "BBC: 'The Lost Radio Recordings: BBC Sessions 1970–1972'; 'The Complete BBC Sessions: 1970–1972'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Gentle Giant",
+    "years": "1996",
+    "reason": "BBC: 'Out of the Woods: The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "George Michael",
+    "years": "1996",
+    "reason": "BBC: 'Unplugged: Live At The BBC Radio Theater'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Gillan",
+    "years": "1998",
+    "reason": "BBC: 'Live at the BBC – 79/80'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Gilles Peterson",
+    "years": "2005",
+    "reason": "BBC: 'Gilles Peterson Presents The BBC Sessions, Volume 1'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Good Neighbours",
+    "years": "2024",
+    "reason": "BBC: 'Live at the BBC (live at the BBC 2024)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Gordon Giltrap",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Graham Bond",
+    "years": "2015",
+    "reason": "BBC: 'Live at the BBC and Other Stories'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Green Day",
+    "years": "2021",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Green on Red",
+    "years": "2007",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Greenslade",
+    "years": "2024",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "HOUSE Of ALL",
+    "years": "2024",
+    "reason": "BBC: 'Gaudy Pop Sensations: House Of All at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Harry Nilsson",
+    "years": "2004",
+    "reason": "BBC: 'At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Hawkwind",
+    "years": "1972",
+    "reason": "BBC: 'At the BBC – 1972'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Heavy Lungs x DITZ",
+    "years": "2024",
+    "reason": "BBC: 'DITZ x Heavy Lungs (Live at The BBC)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Hefner",
+    "years": "2006",
+    "reason": "BBC: 'Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Helen and the Horns",
+    "years": "2014",
+    "reason": "BBC: 'Footsteps at My Door: BBC Sessions & More'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Henry Cow",
+    "years": "1971-1977",
+    "reason": "BBC: '1971 – 1977 BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Heresy / Unseen Terror / Intense Degree",
+    "years": "2015",
+    "reason": "BBC: 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Home",
+    "years": "1972",
+    "reason": "BBC: 'Live BBC Sessions 1972-73'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Horslips",
+    "years": "2025",
+    "reason": "BBC: 'Horslips at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Howard Jones",
+    "years": "2021",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Humble Pie",
+    "years": "1969-1972",
+    "reason": "BBC: 'BBC Sessions 1969‐1972'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Hybrid",
+    "reason": "BBC: 'Live at Maida Vale 25-07-03'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Hype Williams",
+    "years": "2011",
+    "reason": "BBC: 'Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Iggy Pop",
+    "years": "2019",
+    "reason": "BBC: 'Radio 6: Iggy Pop Live at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Inspiral Carpets",
+    "years": "1994",
+    "reason": "BBC: 'Devil Hopping BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Isotope & Gary Boyle",
+    "years": "2004",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jack Bruce",
+    "years": "1971-1978",
+    "reason": "BBC: 'Spirit: Live at the BBC 1971-1978'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jacob Collier",
+    "years": "2015",
+    "reason": "BBC: 'Jacob Collier in Session at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jamiroquai",
+    "years": "1999-2006",
+    "reason": "BBC: 'Live at BBC Maida Vale: 1999'; 'Live at BBC Maida Vale: 2006'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jehnny Beth",
+    "years": "2022",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jethro Tull",
+    "years": "1968",
+    "reason": "BBC: 'Complete BBC Sessions 1968/69'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jetplane Landing",
+    "years": "2002-2003",
+    "reason": "BBC: 'Live BBC Sessions: Northern Ireland'; '2003: BBC Session: UK' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jimi Hendrix",
+    "years": "1998",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Jimmy Page",
+    "years": "2009",
+    "reason": "BBC: 'BBC 6 Music: Jimmy Page and the BBC Sessions (part 1 & 2)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Joe Bonamassa",
+    "years": "2010",
+    "reason": "BBC: 'Live at The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Joe Jackson",
+    "years": "2009",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "John Fahey",
+    "years": "1987",
+    "reason": "BBC: 'John Fahey Sessions (live at the BBC October, 1987)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "John Mayall & the Bluesbreakers",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "John Prine",
+    "years": "1971-1973",
+    "reason": "BBC: 'The BBC Sessions (The Lost Broadcasts 1971 - 1973)'; 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Johnny Kidd and the Pirates",
+    "years": "1994",
+    "reason": "BBC: 'The Lost BBC Sessions and More Rare Trax'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "John’s Children & Tyrannosaurus Rex and T. Rex",
+    "years": "2013",
+    "reason": "BBC: 'Marc Bolan at the BBC: The Best of the BBC Recordings'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Joni Mitchell",
+    "years": "1972",
+    "reason": "BBC: 'Live at the BBC 1972'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Joy Crookes",
+    "years": "2026",
+    "reason": "BBC: 'Juniper: Maida Vale Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Julian Cope",
+    "years": "1983",
+    "reason": "BBC: 'Floored Genius 2: Best of the BBC Sessions 1983–91'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Julie Driscoll, Brian Auger & the Trinity",
+    "years": "1968-1969",
+    "reason": "BBC: 'BBC Sessions, Volume 1'; 'BBC Sessions, Volume 2: 1968-1969'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Kenny Baker’s Dozen",
+    "years": "1957",
+    "reason": "BBC: 'Live at the BBC 1957'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Kevin Ayers",
+    "years": "1970-1976",
+    "reason": "BBC: 'The BBC Sessions 1970–1976'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Kool & the Gang",
+    "years": "2010",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Kylesa",
+    "years": "2017",
+    "reason": "BBC: 'Live at Maida Vale Studios'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "La Dispute",
+    "years": "2011-2014",
+    "reason": "BBC: 'BBC Maida Vale Session 2014'; 'BBC Maida Vale Session 2011'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Laura Cantrell",
+    "years": "2000-2005",
+    "reason": "BBC: 'At the BBC: On Air Performances and Recordings 2000-2005'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Laura Marling",
+    "years": "2008",
+    "reason": "BBC: 'BBC Session 2008‐12‐02'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Led Zeppelin",
+    "years": "1997",
+    "reason": "BBC: 'BBC Sessions'; 'The Lost BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Lenny Kaye's Nuggets",
+    "years": "2026",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Leonard Cohen",
+    "years": "1968",
+    "reason": "BBC: 'BBC Sessions 1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Lifestory: Monologue",
+    "years": "2005",
+    "reason": "BBC: 'Ballad of the Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Lindisfarne",
+    "years": "1971-1973",
+    "reason": "BBC: 'At The BBC: The Charisma Years 1971-1973'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Lloyd Cole",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Lloyd Cole and the Commotions",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC Volume One'; 'Live at the BBC Volume Two'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Loudon Wainwright III",
+    "years": "1998",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Louise Jameson, David Darlington, Michael Stevens, Ron Grainer, The BBC Radiophonic Workshop & Murray Gold",
+    "years": "2013",
+    "reason": "BBC: 'Doctor Who at the BBC: Lost Treasures'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Love Sculpture",
+    "years": "1968-1969",
+    "reason": "BBC: 'Live At The BBC 1968-1969'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Madness",
+    "years": "1979-1982",
+    "reason": "BBC: 'Faces for Radio: The BBC Sessions 1979-1982'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Magna Carta",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Magnetic Man",
+    "years": "2010",
+    "reason": "BBC: 'BBC Maida Vale Live Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Man or Astro‐Man?",
+    "years": "2024",
+    "reason": "BBC: 'ROYGBIV (The BBC Sessions)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Manfred Mann",
+    "years": "2019",
+    "reason": "BBC: 'Radio Days Vol 2 / The Mike D’Abo Era (Live at the BBC 66–69)'; 'Radio Days Vol 1 / The Paul Jones Era (Live At The BBC 64-66)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Manfred Mann’s Earth Band",
+    "years": "2019",
+    "reason": "BBC: 'Radio Days, Vol 4: Live at the BBC 70–73'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Marc Bolan & T. Rex",
+    "years": "2013",
+    "reason": "BBC: 'Marc Bolan at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Marc Riley with The Creepers",
+    "years": "1985",
+    "reason": "BBC: '4 A's from Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Maria McKee",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Marianne Faithfull",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Mark Knopfler",
+    "years": "2019",
+    "reason": "BBC: 'BBC Sessions'; 'More BBC sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "McCarthy",
+    "years": "2014",
+    "reason": "BBC: 'Complete Albums, Singles and BBC Sessions Collection'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "McGuinness Flint",
+    "years": "1970-1974",
+    "reason": "BBC: 'BBC Sessions, Volume 1: 1970-1974'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Melys",
+    "years": "2024",
+    "reason": "BBC: 'BBC Sessions Vol. 1 (John Peel Sessions & Other Selected Rarities)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Metronomy",
+    "years": "2025",
+    "reason": "BBC: 'BBC Sessions (The Look & On Dancefloors)'; 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Michael Chapman",
+    "years": "1998",
+    "reason": "BBC: 'BBC Sessions 69-75'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Michael Nesmith",
+    "years": "2017",
+    "reason": "BBC: 'At the BBC Paris Theatre'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Michael Stevens Presented by Elisabeth Sladen",
+    "years": "2004",
+    "reason": "BBC: 'Doctor Who at the BBC, Volume 2'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Mickey Jupp",
+    "years": "2004",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Mike Westbrook Orchestra",
+    "years": "1980",
+    "reason": "BBC: 'The Cortége Live at the BBC 1980'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Mogul Thrash",
+    "years": "1971",
+    "reason": "BBC: 'BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Mogwai",
+    "years": "1996-2003",
+    "reason": "BBC: 'Government Commissions: BBC Sessions 1996–2003'; '1999-03: BBC Radio 1 Evening Session, Maida Vale Studios, London, UK'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Momoko Gill",
+    "years": "2026",
+    "reason": "BBC: 'BBC Maida Vale Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Morrissey",
+    "years": "2004",
+    "reason": "BBC: 'Live at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Napalm Death",
+    "years": "2014",
+    "reason": "BBC: 'Grind Madness at the BBC: The Earache Peel Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Neil Young",
+    "years": "2013",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Neko Case and Her Boyfriends",
+    "reason": "BBC: 'Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "New Order & Joy Division",
+    "years": "2002",
+    "reason": "BBC: 'Before & After – The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "NewDad",
+    "years": "2024",
+    "reason": "BBC: 'Just Like Heaven (Live at BBC Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Nirvana",
+    "years": "1989",
+    "reason": "BBC: 'Almost Everything - The BBC Sessions'; 'The BBC Sessions 1989-91'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Norma Winstone",
+    "years": "2026",
+    "reason": "BBC: 'Gilles Peterson presents Norma Winstone (Live at Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Nothing But Thieves",
+    "years": "2018",
+    "reason": "BBC: 'Lover, You Should Have Come Over (live at BBC Maida Vale Studios)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Nucleus",
+    "years": "1971-1982",
+    "reason": "BBC: 'The Pretty Redhead: Live at the BBC 1971 & 1982'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Oasis",
+    "years": "2013",
+    "reason": "BBC: 'Live at Maida Vale 93/94'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ocean Colour Scene",
+    "years": "2007",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Oh Wonder",
+    "years": "2016",
+    "reason": "BBC: 'Without You (BBC session)'; 'Crazy in Love (BBC session)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Olivia Dean",
+    "years": "2026",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Omar Rodriguez Lopez Group",
+    "years": "2009",
+    "reason": "BBC: 'Maida Vale Studio Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "One Minute Silence",
+    "years": "2003",
+    "reason": "BBC: 'Live at the BBC 2003 (Live@BBC2003)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Orbital",
+    "years": "2004",
+    "reason": "BBC: 'Peel Session: Last Gig at BBC Maida Vale Studios 2004'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Paradise Lost",
+    "years": "2003",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Patto",
+    "years": "2012",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Paul McCartney",
+    "years": "2013",
+    "reason": "BBC: 'Maida Vale Studios 2013'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Paul Weller",
+    "years": "2008-2026",
+    "reason": "BBC: 'Weller at the BBC'; 'When Your Garden's Overgrown / Boy About Town (live at the BBC)' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Penetration",
+    "years": "2015",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Pentangle",
+    "years": "1982-2011",
+    "reason": "BBC: 'Reunions: Live & BBC Sessions 1982-2011'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Period Pains",
+    "years": "1998",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Phosphorescent",
+    "years": "2021",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Pink Floyd",
+    "years": "1967-2023",
+    "reason": "BBC: 'BBC Sessions ’68/’69'; 'BBC Sessions ’67' and 5 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Pissed Jeans",
+    "years": "2009-2013",
+    "reason": "BBC: 'The Best of Sub Pop: 2009-2013 \"Live\" at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Pixies",
+    "years": "1998",
+    "reason": "BBC: 'Pixies at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Play Dead",
+    "years": "2023",
+    "reason": "BBC: 'John Peel Sessions At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Pond",
+    "years": "2022",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Popeda",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Porcupine Tree",
+    "years": "2007",
+    "reason": "BBC: 'BBC Session 13th April 2007'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Porridge Radio",
+    "years": "2020",
+    "reason": "BBC: 'Every Bad BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Praying Mantis",
+    "years": "1979",
+    "reason": "BBC: 'BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Queen",
+    "years": "2010-2011",
+    "reason": "BBC: 'In the Mirror (The Lost BBC Sessions)'; 'In the Mirror Again (More Lost BBC Sessions)' and 2 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "R.E.M.",
+    "years": "2018",
+    "reason": "BBC: 'The Best of R.E.M. at the BBC'; 'R.E.M. at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Radiohead",
+    "years": "2012",
+    "reason": "BBC: 'Other Colors… BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Rancid",
+    "years": "1995",
+    "reason": "BBC: '1995 BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Red Guitars",
+    "years": "1983-1986",
+    "reason": "BBC: 'Seven Types Of Ambiguity: BBC Sessions 1983 – 1986'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Refused",
+    "years": "2020",
+    "reason": "BBC: 'Not Fit for Broadcast (Live at the BBC)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Regis",
+    "years": "2012",
+    "reason": "BBC: 'Archive Peel / BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Renaissance",
+    "years": "1999-2016",
+    "reason": "BBC: 'BBC Sessions'; 'Live at the BBC – Sight & Sound'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Revenge of the Psychotronic Man",
+    "years": "2013",
+    "reason": "BBC: 'Live in Session at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Richard Thompson featuring Linda Thompson",
+    "years": "2011",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Richie Havens",
+    "years": "1967-1971",
+    "reason": "BBC: 'BBC Sessions: 1967-1971'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Rick Wakeman",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Robert Cray",
+    "years": "2008",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Robert Palmer",
+    "years": "2010",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Robert Parker",
+    "years": "2019",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Robin Trower",
+    "years": "1973-1975",
+    "reason": "BBC: 'At the BBC 1973–1975'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Rocket From the Crypt",
+    "years": "1998",
+    "reason": "BBC: 'Apeshit at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Rolo Tomassi",
+    "years": "2016",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ronnie Lane’s Slim Chance",
+    "years": "1997",
+    "reason": "BBC: 'You Never Can Tell: BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Rory Gallagher",
+    "years": "1999-2024",
+    "reason": "BBC: 'BBC Sessions'; 'The Best of Rory Gallagher at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Roy Orbison",
+    "years": "1998",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Runrig",
+    "reason": "BBC: 'BBC Session and Live at the Royal Concert Hall, Glasgow '96'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Russell Tovey & Graham Norton",
+    "years": "2019",
+    "reason": "BBC: 'Doctor Who at the BBC: Happy Anniversary!'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Samson",
+    "years": "1997",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sandy Denny",
+    "years": "1971",
+    "reason": "BBC: 'The BBC Sessions 1971-73'; 'Live at the BBC' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Say She She",
+    "years": "2024",
+    "reason": "BBC: 'Slippery People (Live from BBC Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sea Pinks",
+    "years": "2017",
+    "reason": "BBC: 'Minimum Wage - BBC Sessions (& Others)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Self Defense Family",
+    "years": "2017",
+    "reason": "BBC: 'BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Self Esteem & Jake Shears",
+    "years": "2024",
+    "reason": "BBC: 'Cabaret: The Maida Vale Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Send More Paramedics",
+    "years": "2020",
+    "reason": "BBC: 'Undead at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sham 69",
+    "years": "2003",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Shane Fenton & the Fentones",
+    "years": "2011",
+    "reason": "BBC: 'The Lost BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Shed Seven",
+    "years": "2007",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Simon & Garfunkel",
+    "years": "2019",
+    "reason": "BBC: 'The Lost BBC Sessions & More'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Siouxsie and the Banshees",
+    "years": "2009",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Skids",
+    "years": "1978-1980",
+    "reason": "BBC: '1978–1980 Last Night From Glasgow Presents BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Slade",
+    "years": "2009",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sleeper",
+    "years": "2020",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Slipknot",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Small Faces",
+    "years": "1965-1968",
+    "reason": "BBC: 'The BBC Sessions'; 'BBC Sessions 1965-1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Soft Cell",
+    "years": "2003",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Spiritual Cramp",
+    "years": "2025",
+    "reason": "BBC: 'Live At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Spiritualized",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Splinters",
+    "years": "1996",
+    "reason": "BBC: 'Live at the BBC Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Squeeze",
+    "years": "2008",
+    "reason": "BBC: 'The Complete BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Star Fucking Hipsters",
+    "years": "2009",
+    "reason": "BBC: 'In Session at Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Status Quo",
+    "years": "2010",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Stephen Dale Petit",
+    "years": "2011",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Stereo MCs",
+    "years": "2008",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Steve Harley & Cockney Rebel",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sting",
+    "years": "2001",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Stone the Crows",
+    "years": "1969-1972",
+    "reason": "BBC: 'The BBC Sessions, Volume 2: 1971-1972'; 'The BBC Sessions, Volume 1: 1969-1970' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Stradaperta",
+    "years": "1979",
+    "reason": "BBC: 'Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Strawbs",
+    "years": "2010",
+    "reason": "BBC: 'Live at the BBC, Vol 2: In Concert'; 'Live at the BBC, Volume 1: In Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Stretch",
+    "years": "2016",
+    "reason": "BBC: 'Live at the BBC: The Peel Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Suede",
+    "years": "2026",
+    "reason": "BBC: 'Coming Up at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sugar",
+    "years": "1992",
+    "reason": "BBC: 'BBC Session 1992'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Sunset Cinema Club",
+    "years": "2006",
+    "reason": "BBC: 'SCC at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Supertramp",
+    "years": "2009",
+    "reason": "BBC: 'Crime and Crisis at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "T. Rex",
+    "years": "1993",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "TOY",
+    "years": "2012",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Taylor Swift",
+    "years": "2023",
+    "reason": "BBC: 'Taylor Swift at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ted Heath",
+    "years": "1983",
+    "reason": "BBC: 'At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Teenage Wrist",
+    "years": "2024",
+    "reason": "BBC: 'Live at Maida Vale (BBC)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ten Years After",
+    "years": "1967-1968",
+    "reason": "BBC: 'The Lost BBC Sessions'; 'BBC Sessions 1967–1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Terror",
+    "years": "2021",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Texas",
+    "years": "2007",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Thallo",
+    "years": "2022",
+    "reason": "BBC: 'Sesiwn Byw BBC Maida Vale Studios Live Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Aces",
+    "years": "2023",
+    "reason": "BBC: 'Live From BBC Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Aislers Set",
+    "years": "2001",
+    "reason": "BBC: '2001/04/01: Peel Session, Maida Vale Studio 4, London'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Albion Band",
+    "years": "1996",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Amazons",
+    "years": "2020",
+    "reason": "BBC: 'Month Of May (Recorded Live at BBC Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Animals",
+    "years": "2018",
+    "reason": "BBC: 'At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Beat",
+    "years": "2025",
+    "reason": "BBC: 'The Beat at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Beatles",
+    "years": "1962-2004",
+    "reason": "BBC: 'The Complete BBC Sessions'; 'Live at the BBC' and 7 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Beautiful South",
+    "years": "2007-2011",
+    "reason": "BBC: 'The BBC Sessions'; 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Black Keys",
+    "years": "2012",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Black Queen",
+    "years": "2016",
+    "reason": "BBC: 'BBC Session Feb 4, 2016'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Brilliant Corners",
+    "years": "2000",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Bug vs. Soundmurderer",
+    "years": "2003",
+    "reason": "BBC: 'Peel Session (live, Radio One, 2003-11-12: Maida Vale, London, United Kingdom)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Cherry Blues Project",
+    "years": "2001-2021",
+    "reason": "BBC: 'Live at the BBC'; 'Live at The BBC II: The Remixes' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Chills",
+    "years": "2014",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Chords",
+    "years": "2001",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Crazy World of Arthur Brown",
+    "years": "1968",
+    "reason": "BBC: 'BBC Sessions 1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Cure",
+    "years": "1979-1985",
+    "reason": "BBC: 'Early BBC Sessions: 1979–1985'; 'BBC Sessions From 1979 to 1983'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Delgados",
+    "years": "1997",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Districts",
+    "years": "2014",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Flaming Lips",
+    "years": "2013",
+    "reason": "BBC: '30th Anniversary Radio Show Live on BBC6 at Maida Vale Studio May 23, 2013'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Hollies",
+    "years": "2018",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The House of Love",
+    "years": "2009",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Housemartins",
+    "years": "2006",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Jam",
+    "years": "2002",
+    "reason": "BBC: 'The Jam at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The James Taylor Quartet",
+    "years": "1995",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Jimi Hendrix Experience",
+    "years": "1966-1969",
+    "reason": "BBC: 'BBC Sessions'; 'BBC Sessions 1966–1969'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Kinks",
+    "years": "1964-1994",
+    "reason": "BBC: 'BBC Sessions 1964 → 1977'; 'The Songs We Sang for Auntie: BBC Sessions Outtakes 1964 → 1994' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Mars Volta",
+    "years": "2003",
+    "reason": "BBC: 'Maida Vale Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Mission",
+    "years": "2008",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Moody Blues",
+    "years": "1967-1970",
+    "reason": "BBC: 'Live at the BBC: 1967–1970'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Move",
+    "years": "1998",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Murder Capital",
+    "years": "2020",
+    "reason": "BBC: 'Live from BBC Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Nice",
+    "years": "1996-2002",
+    "reason": "BBC: 'America: The BBC Sessions'; 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Only Ones",
+    "years": "1996",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Orb",
+    "years": "1989-2001",
+    "reason": "BBC: 'The BBC Sessions 1989–2001'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Passage",
+    "years": "2003",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Pentangle",
+    "years": "1995",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Pirates",
+    "years": "1976-1978",
+    "reason": "BBC: 'Shakin' at the Beeb - BBC Sessions (1976-1978)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Pogues",
+    "years": "1984-1986",
+    "reason": "BBC: 'BBC Sessions 1984–1985'; 'The BBC Sessions 1984–1986'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Pretty Things",
+    "years": "2002-2018",
+    "reason": "BBC: 'The BBC Sessions'; 'Live at the BBC' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Raconteurs",
+    "years": "2006",
+    "reason": "BBC: 'Zane Lowe BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Rolling Stones",
+    "years": "1963-1971",
+    "reason": "BBC: 'BBC Sessions'; 'BBC Sessions 1963–1971'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Rose of Avalanche",
+    "years": "2021",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Screaming Blue Messiahs",
+    "years": "2009",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Searchers",
+    "years": "2004",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Selecter",
+    "years": "1979",
+    "reason": "BBC: 'The BBC Sessions/Live at Paris Theatre 1979'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Sensational Alex Harvey Band",
+    "years": "2009",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Shadows",
+    "years": "2018",
+    "reason": "BBC: 'Live at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Sisters of Mercy",
+    "years": "1982-1984",
+    "reason": "BBC: 'BBC Sessions 1982–1984'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Smiths",
+    "years": "1983-1986",
+    "reason": "BBC: 'The Complete BBC Sessions 1983–1986'; 'BBC Sessions (1983–1986)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Specials",
+    "years": "1998",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Steampacket",
+    "years": "1965-1966",
+    "reason": "BBC: 'BBC Sessions (1965-1966)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Tannahill Weavers",
+    "years": "1981",
+    "reason": "BBC: 'Live at the BBC Concert Hall 1981'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Used",
+    "years": "2019",
+    "reason": "BBC: 'Live from Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Utopia Strong",
+    "years": "2024",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Vandals",
+    "years": "2008",
+    "reason": "BBC: 'BBC Sessions & Other Polished Turds'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Vaults",
+    "years": "2003",
+    "reason": "BBC: 'Live from Maida Vale 19 November 2003'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Wailers",
+    "years": "1973",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Waterboys",
+    "years": "2002",
+    "reason": "BBC: 'The Waterboys at the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Wedding Present",
+    "years": "1988",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The White Stripes",
+    "years": "2012",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Who",
+    "years": "1967-1968",
+    "reason": "BBC: 'BBC Sessions'; 'BBC Sessions 1967–1968'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Wonder Stuff",
+    "years": "2007",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Wonder Years",
+    "years": "2019",
+    "reason": "BBC: 'The Wonder Years Live From Maida Vale'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Woodentops",
+    "years": "2007",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "The Yardbirds",
+    "years": "1991-2024",
+    "reason": "BBC: 'The BBC Sessions'; 'BBC Sessions' and 3 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Therapy?",
+    "years": "2007",
+    "reason": "BBC: 'Music Through a Cheap Transistor: The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Thin Lizzy",
+    "years": "2011",
+    "reason": "BBC: 'At the BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Thunder",
+    "years": "1990-1995",
+    "reason": "BBC: 'Live at the BBC (1990–1995)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Tindersticks",
+    "years": "2007",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "To Rococo Rot",
+    "years": "2022",
+    "reason": "BBC: 'John Peel BBC Sessions 97-99'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Todd Rundgren",
+    "years": "1972-1982",
+    "reason": "BBC: 'At the BBC 1972-1982'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Traffic",
+    "years": "1967",
+    "reason": "BBC: 'The Complete BBC Sessions 1967–68'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Ty Segall & The Muggers",
+    "years": "2026",
+    "reason": "BBC: '\"Live\" \"At\" \"The\" \"BBC\"'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "UFO",
+    "years": "1974-1985",
+    "reason": "BBC: 'UFO at the BBC: On Air 1974–1985'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Uncle Acid & The Deadbeats",
+    "years": "2013",
+    "reason": "BBC: 'BBC Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Van der Graaf Generator",
+    "years": "1968-1977",
+    "reason": "BBC: 'Maida Vale'; 'After the Flood: At the BBC 1968–1977' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Vice Squad",
+    "years": "1997",
+    "reason": "BBC: 'The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "WaqWaq Kingdom & Nyx",
+    "years": "2024",
+    "reason": "BBC: 'Doomed Ebisu: BBC Late Junction (Live from Maida Vale)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Weezer",
+    "years": "2001",
+    "reason": "BBC: 'BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Wes Montgomery",
+    "years": "1965",
+    "reason": "BBC: 'Live At The BBC Studios 1965'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Wishbone Ash",
+    "years": "1970-1988",
+    "reason": "BBC: 'Raw to the Bone at the BBC'; 'At the BBC 1970–1988'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Wolves in the Throne Room",
+    "years": "2011",
+    "reason": "BBC: 'BBC Session 2011 Anno Domini'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Wonky Alice",
+    "years": "2020",
+    "reason": "BBC: 'Caterpillars - Live At The BBC'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Wreckless Eric",
+    "years": "2003",
+    "reason": "BBC: 'Almost a Jubilee: 25 Years at the BBC (With Gaps)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "XTC",
+    "years": "1998",
+    "reason": "BBC: 'Transistor Blast: The Best of the BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Yes",
+    "years": "2011",
+    "reason": "BBC: 'Astral Traveller: The BBC Sessions'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "Young Jack",
+    "years": "2020",
+    "reason": "BBC: 'What Is Real - Live At The BBC'; 'My My My: Live At The BBC' and 1 more",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "ballboy",
+    "reason": "BBC: 'Live at Maida Vale, Peel Session'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "cLOUDDEAD",
+    "years": "2002",
+    "reason": "BBC: 'Peel Session Live at Maida Vale (July 17th, 2002)'",
+    "branch": "BBC",
+    "group": "BBC"
+   },
+   {
+    "name": "10,000 Maniacs",
+    "years": "1993",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "9mm Parabellum Bullet",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'MTV UNPLUGGED'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "A. R. Rahman, Salim-Sulaiman, R. Anandh & Amit Trivedi",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Alanis Morissette",
+    "years": "1999",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Alejandro Sanz",
+    "years": "2001",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Alex Britti",
+    "years": "2008",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Alice in Chains",
+    "years": "1996-2006",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Dirt / MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "All Time Low",
+    "years": "2009",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Amit Trivedi",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'Iktara (MTV Unplugged Version)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Andreas Gabalier",
+    "years": "2016-2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Sie (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Annie Lennox",
+    "years": "1992-1993",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Cold, Colder, Coldest (MTV unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Arijit Singh",
+    "years": "2013",
+    "reason": "MTV Unplugged: 'MTV Unplugged - Arijit Singh'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Armaan Malik, Amaal Mallik",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged Season 7'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Aterciopelados",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "BENI",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Babasónicos",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Babyface",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged NYC 1997'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bastille",
+    "years": "2023",
+    "reason": "MTV Unplugged: 'Pompeii / Come as You Are (MTV Unplugged)'; 'MTV Unplugged – Live in London' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Biffy Clyro",
+    "years": "2008-2018",
+    "reason": "MTV Unplugged: 'Mountains (MTV Unplugged Live at Roundhouse, London)'; 'Many of Horror (MTV Unplugged Live at Roundhouse, London)' and 3 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Björk",
+    "years": "2001",
+    "reason": "MTV Unplugged: 'MTV Unplugged & Live'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bleachers",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'I Miss Those Days (MTV Unplugged)'; 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bob Dylan",
+    "years": "1995",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'MTV Unplugged Uncut /1'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bon Jovi",
+    "years": "2007",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bosé con la colaboración de Fonseca",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'Bambú (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Brodka",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bunbury",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged: El libro de las mutaciones'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Bunbury feat. Pepe Aguilar",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'Ven y camina conmigo (MTV unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "CHAGE & ASKA",
+    "years": "1996",
+    "reason": "MTV Unplugged: 'MTV UNPLUGGED LIVE'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "CNBLUE",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'MTV Unplugged [Regular Edition]'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Café Tacvba",
+    "years": "2005-2019",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Un segundo MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Caifanes",
+    "years": "1994",
+    "reason": "MTV Unplugged: 'Caifanes MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Chara",
+    "years": "2013",
+    "reason": "MTV Unplugged: 'MTV Unplugged Chara'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Charly García",
+    "years": "1995",
+    "reason": "MTV Unplugged: 'Hello! MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Christina Stürmer",
+    "years": "2024",
+    "reason": "MTV Unplugged: 'MTV Unplugged in Wien'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Colonial Cousins",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged (Colonial Cousins)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Courtney Barnett",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Cro",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "DMA's",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'DMA's Live (MTV Unplugged Melbourne)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Dashboard Confessional",
+    "years": "2002",
+    "reason": "MTV Unplugged: 'MTV Unplugged v2.0'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Die Fantastischen Vier",
+    "years": "2000-2012",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'MTV Unplugged II'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Diego Torres",
+    "years": "2004",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Cantar hasta morir (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Diljit Dosanjh",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'Kali Teri Gutt (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "El Tri",
+    "years": "2004",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Emmanuel",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Con el alma desnuda'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Emmanuel & Nacho",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'No he podido verte (MTV unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "FTISLAND",
+    "years": "2014",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Florence + the Machine",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Fobia",
+    "years": "2020",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Gang of Youths",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'MTV Unplugged (Live in Melbourne)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Gentleman",
+    "years": "2014",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "George Michael",
+    "years": "2004-2017",
+    "reason": "MTV Unplugged: 'George Michael MTV Unplugged'; 'Acoustic Show: Three Day Before MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Giorgia",
+    "years": "2005",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Grubson",
+    "years": "2025",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Guru Randhawa",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'MTV Unplugged Season 8 with Guru Randhawa'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Hey",
+    "years": "2007",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Hole",
+    "years": "1994-1995",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'MTV Unplugged and Even More'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Incubus",
+    "years": "2000",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "JUJU",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'MTV UNPLUGGED JUJU'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Javed Ali, Pritam & Shilpa Rao",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'Kamli (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Juanes",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'La señal (MTV Unplugged)'; 'Tr3s Presents MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Juanes feat. Paula Fernandes",
+    "years": "2012",
+    "reason": "MTV Unplugged: 'Hoy me voy (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Julieta Venegas",
+    "years": "2008",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "KISS",
+    "years": "1996",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'MTV Unplugged: The Lost Tracks'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Katy Perry",
+    "years": "2009",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Kayah",
+    "years": "2007",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Kinky",
+    "years": "2014",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'MTV Unplugged (Track by Track Commentary)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Korn",
+    "years": "2007",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Krzysztof Zalewski",
+    "years": "2021",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Kult",
+    "years": "2010",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "LOYW",
+    "years": "2026",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "La Ley",
+    "years": "2001",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Lady Pank",
+    "years": "2022",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Lauryn Hill",
+    "years": "2002",
+    "reason": "MTV Unplugged: 'MTV Unplugged № 2.0'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Liam Gallagher",
+    "years": "2020",
+    "reason": "MTV Unplugged: 'Gone (MTV Unplugged live at Hull City Hall)'; 'MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Los Auténticos Decadentes",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'Fiesta Nacional: MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Los Auténticos Decadentes ft. Mon Laferte",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'Amor (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Los Bunkers",
+    "years": "2024",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Los Tigres del Norte",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Los Tigres del Norte & Friends'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Luis Alberto Spinetta",
+    "years": "2001",
+    "reason": "MTV Unplugged: 'Estrelicia: MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Lïve",
+    "years": "1995",
+    "reason": "MTV Unplugged: 'All Over You (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Mando Diao",
+    "years": "2010-2023",
+    "reason": "MTV Unplugged: 'Down in the Past (MTV unplugged)'; 'MTV Unplugged: Above and Beyond' and 3 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Maná",
+    "years": "1999",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Mariah Carey",
+    "years": "1992",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Max Herre",
+    "years": "2013",
+    "reason": "MTV Unplugged: 'MTV Unplugged KAHEDI Radio Show'; 'MTV Unplugged KAHEDI Radio Show - Free Bonus EP' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Max Raabe & Palast Orchester",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'Küssen kann man nicht alleine (MTV Unplugged)'; 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Maxwell",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Miguel Bosé",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Molotov",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'Gimme Tha Power (MTV Unplugged)'; 'Here We Kum (MTV Unplugged)' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Mrozu",
+    "years": "2023",
+    "reason": "MTV Unplugged: 'Mrozu. MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Natalia Kukulska",
+    "years": "2022",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Negrita",
+    "years": "2021",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Neil Young",
+    "years": "1993",
+    "reason": "MTV Unplugged: 'MTV Unplugged, the Unofficial Release, Los Angeles, February 7th, 1993'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Nickelback",
+    "years": "2003",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Nirvana",
+    "years": "1994",
+    "reason": "MTV Unplugged: 'MTV Unplugged in New York'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "O.S.T.R.",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Autentycznie'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Oasis",
+    "reason": "MTV Unplugged: 'MTV Unplugged + Live Tracks'; 'MTV Unplugged & Oasis Sing the Beatles'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Panda",
+    "years": "2010",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Feliz Cumpleaños (Live)'; 'MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Paramore",
+    "years": "2009",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Patent Ochsner",
+    "years": "2022",
+    "reason": "MTV Unplugged: 'MTV Unplugged - Tonbildshow'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Paul Simon",
+    "years": "1992",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Pearl Jam",
+    "years": "1992",
+    "reason": "MTV Unplugged: 'MTV Unplugged'; 'Universal Version: The Complete B-Sides & MTV Unplugged' and 2 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Pepe Aguilar",
+    "years": "2014",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Peter Maffay",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'So bist du (MTV Unplugged)'; 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Peter Maffay & Jennifer Weist",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'Leuchtturm (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Peter Maffay & Johannes Oerding",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'Über sieben Brücken musst du gehn (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Placebo",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Pritam",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'MTV Unplugged (Season 5; Episode 7)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Queens of the Stone Age",
+    "years": "2005",
+    "reason": "MTV Unplugged: 'MTV Unplugged (Berlin 2005‐06‐10)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "R.E.M.",
+    "years": "2001",
+    "reason": "MTV Unplugged: 'MTV Unplugged 2001'; 'MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Ratones Paranoicos",
+    "years": "1998",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Revolverheld",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged in drei Akten'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Ricky Martin",
+    "years": "2006",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Roxette",
+    "years": "1993",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Salim-Sulaiman",
+    "years": "2014",
+    "reason": "MTV Unplugged: 'Mardaani Anthem (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Salim-Sulaiman, Rahat Fateh Ali Khan & Jaideep Sahni",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'O Re Piya (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Salim–Sulaiman",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Season 4 Episode 2'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Sandesh Shandilya",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'MTV Unplugged Season 6'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Santa Sabina",
+    "years": "1997",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Santiano",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'Santiano (MTV Unplugged)'; 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Santiano feat. Alligatoah",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'Wie Zuhause (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Santiano feat. Ben Zucker",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'Lieder der Freiheit (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Scorpions",
+    "years": "2013",
+    "reason": "MTV Unplugged: 'Still Loving You (MTV Unplugged in Athens)'; 'MTV Unplugged in Athens'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Seal",
+    "years": "1996",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Shakira",
+    "years": "2000",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Shawn Mendes",
+    "years": "2017",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Sido",
+    "years": "2010",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Live aus'm MV'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Soda Stereo",
+    "years": "1996",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Comfort y música para volar'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Sportfreunde Stiller",
+    "years": "2009-2010",
+    "reason": "MTV Unplugged: 'Ein Kompliment - MTV Unplugged In New York'; 'MTV Unplugged in New York' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Staind",
+    "years": "2002",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Sting",
+    "years": "1991",
+    "reason": "MTV Unplugged: '1991-03-xx: MTV Unplugged Rehearsals and Outtakes'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Stone Temple Pilots",
+    "years": "2014-2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged & Acoustic'; 'MTV Unplugged' and 1 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Stress",
+    "years": "2023",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Stress & JP Cooper",
+    "years": "2023",
+    "reason": "MTV Unplugged: 'God Knows (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Susheela Raman",
+    "reason": "MTV Unplugged: 'Live at MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Tash Sultana",
+    "years": "2022",
+    "reason": "MTV Unplugged: 'MTV Unplugged (Live In Melbourne)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "The Cranberries",
+    "years": "1995",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "The Cure",
+    "years": "1991",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "The Rubens",
+    "years": "2019",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "The Smithereens",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Thirty Seconds to Mars",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Tony Bennett",
+    "years": "1994",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Tori Amos",
+    "years": "2005",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Trey Songz",
+    "years": "2010",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Udo Lindenberg",
+    "years": "2011-2018",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Live aus dem Hotel Atlantic'; 'MTV Unplugged 2: Live vom Atlantik'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Udo Lindenberg feat. Clueso",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'Cello (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Udo Lindenberg feat. Jan Delay",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'Reeperbahn 2011 (What it's like) (MTV Unplugged)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Unheilig",
+    "years": "2015",
+    "reason": "MTV Unplugged: 'MTV Unplugged “Unter Dampf – Ohne Strom” (Deluxe Version)'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "VAMPS",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'MTV Unplugged: VAMPS'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Westernhagen",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Wilki",
+    "years": "2009",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Zoé",
+    "years": "2011",
+    "reason": "MTV Unplugged: 'MTV Unplugged: Música de fondo'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "a‐ha",
+    "years": "2017-2019",
+    "reason": "MTV Unplugged: 'Acoustic Hits: MTV Unplugged'; 'The Sun Always Shines On TV (MTV Unplugged / Edit)' and 4 more",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "twenty one pilots",
+    "years": "2023",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Ørganek",
+    "years": "2024",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Аквариум",
+    "years": "2018",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "中島美嘉",
+    "years": "2016",
+    "reason": "MTV Unplugged: 'MTV Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "布袋寅泰",
+    "years": "2007",
+    "reason": "MTV Unplugged: 'MTV UNPLUGGED'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "庾澄慶",
+    "years": "1996",
+    "reason": "MTV Unplugged: 'Mtv Unplugged'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "矢井田瞳",
+    "years": "2005",
+    "reason": "MTV Unplugged: 'Sound drop 〜MTV Unplugged＋Acoustic live 2005〜'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "絢香",
+    "years": "2010",
+    "reason": "MTV Unplugged: 'MTV Unplugged ayaka'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "西野カナ",
+    "years": "2013",
+    "reason": "MTV Unplugged: 'MTV UNPLUGGED Kana Nishino'",
+    "branch": "MTV Unplugged",
+    "group": "MTV Unplugged"
+   },
+   {
+    "name": "Alana Springsteen",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live From NPR’s Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Alex Isley",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Live from NPR’s Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Amaia",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Ana Tijoux",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Ana Tijoux: En vivo en NPR Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Anderson .Paak & The Free Nationals",
+    "years": "2024",
+    "reason": "Tiny Desk: 'NPR Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "BADBADNOTGOOD",
+    "years": "2017",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Bad Bunny",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Bad Bunny: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Beirut",
+    "years": "2011",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Bela Fleck, Edgar Meyer, Zakir Hussain",
+    "years": "2010",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Ben Gibbard",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Ben Howard",
+    "years": "2021",
+    "reason": "Tiny Desk: 'Tiny Desk (Home) Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Big Boi",
+    "years": "2018",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Billie Eilish",
+    "years": "2025",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Billy Strings",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Brandi Carlile",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Buke and Gass",
+    "years": "2010",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Bush",
+    "years": "2026",
+    "reason": "Tiny Desk: 'NPR Bush: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "C. Tangana",
+    "years": "2021",
+    "reason": "Tiny Desk: 'El madrileño (Live at NPR's Tiny Desk)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Caroline Polachek",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Tiny Desk Concerts 2023-10-10, \"Caroline Polacheck\"'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Chaka Khan",
+    "years": "2024",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Chappell Roan",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live at Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Chelsea Wolfe",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live at Tiny Desk 2024'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Clipse",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Coldplay",
+    "years": "2020",
+    "reason": "Tiny Desk: 'Champion of the World (live at NPR’s Tiny Desk)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Cowboy Junkies",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Death Cab for Cutie",
+    "years": "2015",
+    "reason": "Tiny Desk: 'NPR Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Denzel Curry",
+    "years": "2022",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Diamante Eléctrico",
+    "years": "2021",
+    "reason": "Tiny Desk: 'Live At Npr´s Tiny Desk (Home) Concert [live At Npr’s Tiny Desk]'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Doechii",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live at Tiny Desk 2024'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Dua Lipa",
+    "years": "2020-2024",
+    "reason": "Tiny Desk: 'Tiny Desk (Home) Concert'; 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Edmar Castañeda",
+    "years": "2010",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Emerson String Quartet",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Emerson String Quartet: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "E‐40",
+    "years": "2025",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Fred again..",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Fred again..: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Freddie Gibbs & Madlib",
+    "years": "2019",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Free Nationals feat Anderson .Paak, Chronixx & India Shawn",
+    "years": "2020",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Geese",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Geese: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Giovani Cidreira",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Giovani Cidreira - Tiny Desk Brasil'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Iron & Wine",
+    "years": "2011",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Isata Kanneh‐Mason",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Isata Kanneh-Mason: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "JID",
+    "years": "2022",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Jacob Collier",
+    "years": "2019-2020",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'; 'NPR Tiny Desk (Home) Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Jennifer Koh & Missy Mazzoli",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live @ Tiny Desk 2024'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Jorja Smith",
+    "years": "2018",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "João Gomes",
+    "years": "2025",
+    "reason": "Tiny Desk: 'João Gomes: Tiny Desk Brasil (Ao Vivo)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Justin Bieber",
+    "years": "2021",
+    "reason": "Tiny Desk: 'Tiny Desk (Home) Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Justin Timberlake",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Kany García",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Live at NPR’s Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Katy Kirby",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Katy Kirby: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Kelly Hogan",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Kes",
+    "years": "2026",
+    "reason": "Tiny Desk: 'KesTheBand: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Laufey",
+    "years": "2023",
+    "reason": "Tiny Desk: 'NPR Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Leon Thomas",
+    "years": "2025",
+    "reason": "Tiny Desk: 'MUTT (Live from NPR's Tiny Desk)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Leonardo Gabriel Garcia",
+    "years": "2021",
+    "reason": "Tiny Desk: 'Very Tiny Desk Concert at Home'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Little Simz",
+    "years": "2017",
+    "reason": "Tiny Desk: 'Tiny Desk Concert (2017)'; 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Los Campesinos!",
+    "years": "2010",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "MIKE",
+    "years": "2025",
+    "reason": "Tiny Desk: 'MIKE: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "MJ Lenderman",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "MUNA",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Mac Miller",
+    "years": "2023",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Machel Montano",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Machel Montano: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Macklemore & Ryan Lewis",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Marc‐André Hamelin",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Marc André Hamelin: Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Mariachi El Bronx",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Mates of State",
+    "years": "2011",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Megan Thee Stallion",
+    "years": "2019",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Milo j",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Live From NPR's Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Mitski",
+    "years": "2015",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Mon Laferte",
+    "years": "2022",
+    "reason": "Tiny Desk: 'NPR’s Tiny Desk Live (Home) Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Nicki Nicole",
+    "years": "2022",
+    "reason": "Tiny Desk: 'Live at NPR's Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Of Montreal",
+    "years": "2013",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Omar Apollo",
+    "years": "2022",
+    "reason": "Tiny Desk: 'Live at NPR's Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "PJ Sin Suela",
+    "years": "2025",
+    "reason": "Tiny Desk: 'Live @ NPR's Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Palberta",
+    "years": "2021",
+    "reason": "Tiny Desk: 'Live on Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Phony Ppl",
+    "years": "2020",
+    "reason": "Tiny Desk: 'Fkn Around (live at NPR's Tiny Desk)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Pinegrove",
+    "years": "2016",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Punch Brothers",
+    "years": "2015",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Raphael Saadiq",
+    "years": "2009",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Sabrina Carpenter",
+    "years": "2024-2025",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'; 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Sampha",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Sasha Keable",
+    "years": "2026",
+    "reason": "Tiny Desk: 'Live from NPR’s Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Souad Massi",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "St. Vincent",
+    "years": "2018",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Stars",
+    "years": "2011",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Staycation",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Staycation Tiny Desk Show (LIVE at Gardner Hall)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Svaneborg Kardyb",
+    "years": "2023",
+    "reason": "Tiny Desk: 'At Home (An NPR Tiny Desk Concert)'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Sweeney Todd",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Taylor Swift",
+    "years": "2025",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The Decemberists",
+    "years": "2011",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The Magnetic Fields",
+    "years": "2024",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The National",
+    "years": "2013",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The Neighborhood Kids",
+    "years": "2025",
+    "reason": "Tiny Desk: 'BIDDI BOMB x HUSH - Tiny Desk Version'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The Roots feat. Bilal",
+    "years": "2017",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "The Smile",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Tori Amos",
+    "years": "2022",
+    "reason": "Tiny Desk: 'Tiny Desk (Home) Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Turnstile",
+    "years": "2026",
+    "reason": "Tiny Desk: 'NPR Music Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Tyler, The Creator",
+    "years": "2017",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Wilco",
+    "years": "2011-2016",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Yann Tiersen",
+    "years": "2012",
+    "reason": "Tiny Desk: 'Tiny Desk Concert'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "dodie",
+    "years": "2023",
+    "reason": "Tiny Desk: 'Live at NPR’s Tiny Desk'",
+    "branch": "Tiny Desk",
+    "group": "Tiny Desk"
+   },
+   {
+    "name": "Adrian Borland & The Sound",
+    "years": "2004",
+    "reason": "2 Meter Sessions: '2 Meter Sessies'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Alain Johannes",
+    "years": "2020",
+    "reason": "2 Meter Sessions: 'Jan Douwe Kroeske presents: 2 Meter Sessions #1696 - Alain Johannes'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Anouk",
+    "years": "1999",
+    "reason": "2 Meter Sessions: '2 Meter Sessies'; 'Sacrifice Me: 2 Meter Sessies 1999 & More'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Def P",
+    "years": "2021",
+    "reason": "2 Meter Sessions: 'Jan Douwe Kroeske presents: 2 Meter Sessions #1762'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Epica",
+    "years": "2004",
+    "reason": "2 Meter Sessions: 'We Will Take You With Us: 2 Meter Sessies'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Het Zesde Metaal",
+    "years": "2026",
+    "reason": "2 Meter Sessions: 'Live on 2 Meter Sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "John Campbell",
+    "years": "1991-2026",
+    "reason": "2 Meter Sessions: '2 Meter Sessies'; '2 Meter Sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "K’s Choice",
+    "years": "2025",
+    "reason": "2 Meter Sessions: 'Live on 2 Meter Sessions'; 'Electric: Live on 2 Meter Sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Luka Bloom",
+    "years": "2011",
+    "reason": "2 Meter Sessions: '2 meter sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Spinvis",
+    "years": "2007",
+    "reason": "2 Meter Sessions: 'Jan Douwe Kroeske presents: 2 Meter Sessions #1299 - Spinvis'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Stef Kamil Carlens / Moondog Jr. / Zita Swoon",
+    "years": "2026",
+    "reason": "2 Meter Sessions: 'Live on 2 Meter Sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Ten Times A Million",
+    "years": "2021",
+    "reason": "2 Meter Sessions: 'Jan Douwe Kroeske Presents: 2 Meter Sessions #1745 - Ten Times A Million'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "The Jayhawks",
+    "years": "2026",
+    "reason": "2 Meter Sessions: '2 Meter Sessions'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Venice",
+    "years": "2000",
+    "reason": "2 Meter Sessions: '2 Meter Sessies'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "Willy DeVille",
+    "years": "2000",
+    "reason": "2 Meter Sessions: '2 Meter Sessies'",
+    "branch": "2 Meter Sessions",
+    "group": "2 Meter Sessions"
+   },
+   {
+    "name": "7 Days of Funk",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Agnes Obel",
+    "years": "2017",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "AlunaGeorge",
+    "years": "2013-2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live from Spotify London)'; 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Anderson .Paak",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Angus & Julia Stone",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Animal Collective",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "BROODS",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Band of Horses",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Ben Howard",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Benjamin Booker",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Benjamin Clementine",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Bigflo & Oli",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live from Spotify Paris)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Birds Of Tokyo",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Bleachers",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Bridgit Mendler",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Live in London (Spotify Sessions)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "BØRNS",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "CHVRCHES",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Car Seat Headrest",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Caro Emerald",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Cazzette",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Desserts: Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Chakuza",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions: Live from Spotify Berlin'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Charli XCX",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Christine and the Queens",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Live from Spotify London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Coldplay",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Live From Spotify London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Courtney Barnett",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live from Coachella 2014)'; 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Craig David",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Cœur de pirate",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Dawes",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Day Wave",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Demi Lovato",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Disclosure",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live from Bonnaroo 2014)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Dr. Dog",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Dua Lipa",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "D’Angelo and The Vanguard",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Echosmith",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Elbow",
+    "years": "2017",
+    "reason": "Spotify Sessions: 'Live From Spotify London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "End of the World",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Estopa",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Father John Misty",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Foster the People",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Frank Turner",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Franz Ferdinand",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions: Thoughts, Words, Action'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Gallant",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Gregory Alan Isakov",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "HAIM",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live from Spotify London)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Hale",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Halsey",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Hiatus Kaiyote",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Howler",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Hozier",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Hunter Hayes",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Hurts",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Imagine Dragons",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Imagine Dragons (Spotify Sessions)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Interpol",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Jackson Browne",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Jake Bugg",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live from Spotify London)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Jamie N Commons",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Joey Bada$$",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "John Legend",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Julia Stone",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Julien Baker",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Kacey Musgraves",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live from Bonnaroo 2013)'; 'Spotify Sessions (Live from Spotify House '16)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Kwabs",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Kylie Minogue",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions: Kiss Me Once'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Laura Marling",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Leon Bridges",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Little Mix",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Lucius",
+    "years": "2014-2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Lucy Spraggan",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "MNEK",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "MUNA",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Macklemore & Ryan Lewis",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Maldita Nerea",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Meg Myers",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Meghan Trainor",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Metric",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Michael Kiwanuka",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Miguel",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Miike Snow",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Milky Chance",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Missy Higgins",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live From Spotify Sydney / 2014)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "MisterWives",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Mon Laferte",
+    "years": "2026",
+    "reason": "Spotify Sessions: 'FEMME FATALE (Spotify Sessions)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Mumford & Sons",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "NLE Choppa",
+    "years": "2024",
+    "reason": "Spotify Sessions: 'SLUT ME OUT (live from Spotify Green Screen)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Nate Ruess",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Niall Horan",
+    "years": "2024",
+    "reason": "Spotify Sessions: 'Live from Spotify Studios'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Nina Nesbitt",
+    "years": "2023",
+    "reason": "Spotify Sessions: 'Romantic Poetry - Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Nsqk",
+    "years": "2026",
+    "reason": "Spotify Sessions: 'Nsqk - Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Owl City",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Paloma Faith",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Parcels",
+    "years": "2017",
+    "reason": "Spotify Sessions: 'Live from Spotify London'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Passenger",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions Recorded at Sydney Opera House 2014'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Pharrell Williams",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Phosphorescent",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Pixies",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Porches",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Pusha T",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Radkey",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Real Estate",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Ricki‐Lee",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Royal Blood",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Run the Jewels",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Saint Motel",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Sam Hunt",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live from Spotify NYC)'; 'Spotify Sessions II (live from Spotify NYC)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Satellite Stories",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Scott Helman",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Sharon Van Etten",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Sia",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Slash",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Slash featuring Myles Kennedy and the Conspirators",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "St. Lucia",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Strange Talk",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The 1975",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Bamboos",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Band Perry",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Dø",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Head and the Heart",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Kills",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Last Shadow Puppets",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "The Shins",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Tinashe",
+    "years": "2023",
+    "reason": "Spotify Sessions: 'Gravity (live from Spotify Green Screen)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Tom Odell",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions - Long Way Down'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Tori Amos",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions (live in New York / 2014)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Toro y Moi",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Troye Sivan",
+    "years": "2023",
+    "reason": "Spotify Sessions: 'Still Got It (live from Spotify Green Screen)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Twin Atlantic",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Two Door Cinema Club",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live From Spotify NYC/2013)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Urthboy",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions (Live)'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Vampire Weekend",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Vanaprasta",
+    "years": "2012",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Vance Joy",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Villagers",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Weezer",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Wolf Alice",
+    "years": "2015",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Young the Giant",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Zaz",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "alt‐J",
+    "years": "2014",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "twenty one pilots",
+    "years": "2013",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "Álvaro Soler",
+    "years": "2016",
+    "reason": "Spotify Sessions: 'Spotify Sessions'",
+    "branch": "Spotify Sessions",
+    "group": "Spotify Sessions"
+   },
+   {
+    "name": "*repeat repeat",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "2nd Grade",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "9Million",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "A Place to Bury Strangers",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "A.A. Williams",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "AJJ",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Abby Holliday",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Acid Dad",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Adam Ness",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Adeem the Artist",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Adeem The Artist on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Adult Mom",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Aiming for Enrike",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Aiming for Enrike on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Alison’s Halo",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Alix Page",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "All Dogs",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "All Get Out",
+    "years": "2015-2019",
+    "reason": "Audiotree Live: 'All Get Out on Audiotree Live'; 'All Get Out on Audiotree Live (#2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "All Under Heaven",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Allegra Krieger",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Allysha Joy",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Amasa Hines",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Amble",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Amy Helm",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Amy O",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Amygdala",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Anamanaguchi",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "And So I Watch You From Afar",
+    "years": "2013-2015",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "And the Kids",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Andrea von Kampen",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Anemone",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Angie McMahon",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Anna Tivel",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Annie DiRusso",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Another Michael",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Anthony Green",
+    "years": "2013",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Apollo Mighty",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "April + VISTA",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Arc Iris",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Archie Powell & The Exports",
+    "years": "2012",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ariel Posen",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Arkells",
+    "years": "2016-2019",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (No. 2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Armlock",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Armor for Sleep",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Arm’s Length",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Artifex Pereo",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Arts Fishing Club",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Arts Fishing Club on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "As Cities Burn",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ashes to Amber",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Astronauts, etc.",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Author",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Author on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Avsha",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ax and the Hatchetmen",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Ax and the Hatchetmen on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Aye Nako",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "BIG SPECIAL",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "BIG|BRAVE",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "BONES UK",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Babehoven",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Balún",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bambara",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Barely Civil",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Basement Revolver",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Be Forest",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Beach Bunny",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Beach Goons",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bear vs. Shark",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Becca Mancari",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Been Stellar",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ben Sollee",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bent Knee",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bev Rage & the Drinks",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Bev Rage & the Drinks on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Big Bliss",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Big Jesus",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Big Nothing",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Big Ups",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Billie Marten",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Birds in Row",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Black Hibiscus",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Black Joe Lewis & The Honeybears",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bleed",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bleed From Within",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Blood Club",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Blushing",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Blvck Hippie",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bodega",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Born Days",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Boston Manor",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Boundaries",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Boys Go to Jupiter",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bre Kennedy",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Breakup Shoes",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Breathe Owl Breathe",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Brennan Wedl",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Bronze Radio Return",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Buggin",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "CAFUNÉ",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "CHON",
+    "years": "2014",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cabal",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cal in Red",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Cal in Red on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Calva Louise",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Camp Cope",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Camp Howard",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Capital Soirée",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Carpool",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Caspian",
+    "years": "2012-2016",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cassandra Jenkins",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cat Clyde",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Catcher",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Catie Turner",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cayetana",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cedric Burnside",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Celeste",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cende",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chad Valley",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Charlotte Cornfield",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Charly Bliss",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Charmer",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cheap Girls",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cheekface",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chelsea Williams",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chinese Football",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chris Farren",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chris Staples",
+    "years": "2012-2019",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Christian Lee Hutson",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Christopher the Conquered",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Christopher the Conquered on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Chuck Strangers",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Church Girls",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Circles Around The Sun and Mikaela Davis",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Citizen",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "City Mouth",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "City of the Sun",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Claire Cronin",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Claude",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Clearbody",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Closure in Moscow",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Combust",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Common Holly",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Conjurer",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Corey Kilgannon",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Courting",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Covey",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Creepoid",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Crisman",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Crooked Teeth",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Crying",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cuco",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Cult Leader",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Current Joys",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "DAISY",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "DERYK G.",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "DRAIN",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "DURRY",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Daddy Issues",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Daisy the Great",
+    "years": "2019-2026",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dan Mangan",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dante Elephante",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dasher",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dead Horses",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dead Soft",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Deap Vally",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dear Seattle",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Dear Seattle on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Death Lens",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Deeper",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Defeater",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Delta Sleep",
+    "years": "2018-2023",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dessa",
+    "years": "2014-2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Destroy Boys",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Die Spitz",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Discovery Zone",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Discovery Zone on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Divino Niño",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dollar Signs",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Dominique Fils-Aimé",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Dominique Fils-Aimé on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Donovan Wolfington",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Doomtree",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Downward",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Drea the Vibe Dealer",
+    "years": "2020",
+    "reason": "Audiotree Live: 'drea the vibe dealer on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Drug Church",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ducks Ltd.",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Ducks Ltd. on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "EKKSTACY",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Eli Winter",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ellis",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Emil Landman",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Emily Blue",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Emily King",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Emma Harner",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Emma Ruth Rundle",
+    "years": "2014",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "End It",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Enterprise Earth",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Entheos",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Erin Rae",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Evann McIntosh",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Evolfo",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "FINGY",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Far Caspian",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fashion Club",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fear of Men",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Field Guide",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Field Medic",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Field Mouse",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fievel Is Glauque",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fleece",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Flint Eastwood",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Flycatcher",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Footballhead",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "For Your Health",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Forth Wanderers",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fox Lake",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Foxing",
+    "years": "2014-2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Frances Cone",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Frankie and The Witch Fingers",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Frankie and the Witch Fingers on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Freak Slug",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Free Range",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Friday Pilots Club",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Friday Pilots Club on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Friko",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "From Indian Lakes",
+    "years": "2024",
+    "reason": "Audiotree Live: 'From Indian Lakes on Audiotree Live (Session #3)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Fujiya & Miyagi",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Fujiya & Miyagi on Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Full Body 2",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Full of Hell",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Future Generations",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Future Teens",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "GEL",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "GILT",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "GREAT TIME",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "GRLwood",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gabby’s World",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gatherers",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Geowulf",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Getdown Services",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gia Margaret",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Giant Panda Guerilla Dub Squad",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ginger Root",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Girl Ray",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Glare",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Glassing",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Glixen",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Godcaster",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Good Looks",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Goon",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gouge Away",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gracie and Rachel",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Gracie and Rachel on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Graham Hunt",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Graveyard Club",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Grayscale",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Great American Ghost",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Great Divide",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Great Grandpa",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Great Peacock",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Greet Death",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gridiron",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Guerilla Toss",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gully Boys",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gurriers",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Gustaf",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Guster",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "HARU NEMURI",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "HOOPS",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hail the Sun",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Hail the Sun on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Half Gringa",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Half Waif",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hana Eid",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hana Vu",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hand Habits",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hannah Wicklund",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hannah Wicklund & The Steppin Stones",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Hannah Wicklund & The Steppin Stones on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Harmony Woods",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hazel English",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Heart Attack Man",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Heart to Gold",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hello Mary",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Helms Alee",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hemming",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hockey Dad",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hollow Coves",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hollyy",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Home Is Where",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hooveriii",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Horse Jumper of Love",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Horse Jumper of Love on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hot Flash Heat Wave",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hotel Fiction",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hotline TNT",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "House of Harm",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Hovvdy",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Husbands",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Incendiary",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Indigo De Souza",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Indigo Wild",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Interlay",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Into It. Over It.",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Israel Nash",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "It Looks Sad.",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Izzy True",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "JIVEBOMB",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "JORDANN",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jackie Venson",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Japanese Breakfast",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jeremie Albino",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jeremy & the Harlequins",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jeromes Dream",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jess Williamson",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jmsey",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jodi",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Joe Hertler & the Rainbow Seekers",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Joe Hertler & The Rainbow Seekers (session #2) [Audiotree live]'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "John Mark Nelson",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "John-Robert",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Johnny Booth",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Joliette",
+    "years": "2014",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jordan Hamilton",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Jordana",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Joshua Powell",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Joshua Powell & the Great Train Robbery",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Judah & the Lion",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Judah & the Lion on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Julien Baker",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Justice Hill",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Justus Proffit",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "K.Flay",
+    "years": "2013-2015",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live, Session #2'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kainalu",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kal Marks",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kali Masi",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Karima Walker",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Katie Ellen",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Katie Toupin",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Katy Kirby",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Katzù Oso",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kelsey Waldon",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ken Yates",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kerosene Heights",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "King Woman",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kishi Bashi",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kississippi",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Knifeplay",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Knox Hamilton",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Korine",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Kuinka",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "LAPÊCHE",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "La Dispute",
+    "years": "2012",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lagrimas",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Landon Conrath",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Last Dinosaurs",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Laura Stevenson",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lauren Ruth Ward",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Lauren Ruth Ward on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Leland Blue",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lemolo",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lemuria",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lever",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Liam Kazar",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lily & Madeleine",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lina Tullgren",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lindi Ortega",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Liz Cooper",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Loona Dae",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Low Cut Connie",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "LowDown Brass Band",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lowertown",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lowland Hum",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Loyal Divide",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lucy Dacus",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Luke Titus",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Luna Luna",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Lunar Vacation",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "M.A.G.S.",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "MSPAINT",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "MX LONELY",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Macie Stewart",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Macseal",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Madeline Kenney",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Madison McFerrin",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Maggie Miles",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mal Blum",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mamas Gun",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mannequin Pussy",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Manwolves",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Manwolves on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Maps & Atlases",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Marlon Funaki",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Marriages",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mary Shelley",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Matt Andersen",
+    "years": "2016-2022",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Matthew Logan Vasquez",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Meat Wave",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Meernaa",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Meernaa (Audiotree Live)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Meet Me @ the Altar",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mega Bog",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mei Semones",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Melissa Carper",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Melkbelly",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Melted Bodies",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Michael Rault",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Michigander",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Microwave",
+    "years": "2015-2017",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Midnight Generation",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Midwest Hype",
+    "years": "2010",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mike Dawes",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mike Krol",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Mike Krol on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mike Love",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Militarie Gun",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Miranda Winters",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mitski",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mo Lowda & the Humble",
+    "years": "2015-2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mobley",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Molly Burch",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mom Jeans.",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Momma",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mon Rovîa",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Moon Tooth",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Moonrise Nation",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Morningsiders",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Motel Breakfast",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mothers",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mountain Grass Unit",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Mountain Grass Unit on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Mourn",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Murder By Death",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "NO MEN",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "NOVELISTS",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Naia Izumi",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Narrow Head",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Nathan Xander & Witchouse",
+    "years": "2010",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Native Sun",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Nature TV",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Nicole Atkins",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Night Cap",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Night Riots",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Night Tapes",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Night Tapes on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Niiice.",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "No BS! Brass",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "No Vacation",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Nots",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Now, Now",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Nuovo Testamento",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Nuovo Testamento on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "OSTON",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ocean Alley",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Oceanator",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Odie Leigh",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Odonis Odonis",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Oginalii",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Oketo",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Olden Yolk",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Olivia O.",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Omni",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "One Step Closer",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ora Cogan",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Orthodox",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Outrun the Sunlight",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Outrun the Sunlight on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Overcoats",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "O’Brother",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live (Session #3)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "PAWS",
+    "years": "2017",
+    "reason": "Audiotree Live: 'PAWS on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "PILE",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "PKEW PKEW PKEW",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "PUBLIC",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "PUP",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Palehound",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Paper Lady",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Paradise Fears",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Paris Paloma",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Partner",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Patio",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Peaer",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pearl and the Beard",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Penelope Isles",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Penguin Prison",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Penny and Sparrow",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Penny and Sparrow - Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Persefone",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pet Symmetry",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Petey",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Phillip-Michael Scales",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Phum Viphurit",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pink Mexico",
+    "years": "2019",
+    "reason": "Audiotree Live: 'PINK MEXICO on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pip Blom",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pixel Grip",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pi󠀱xel G󠀱rip",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Pixel Grip on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Polyphia",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pool Kids",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Poppies",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Population II",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Post Animal",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Primitive Man",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Pro Teens",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Provoker",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Provoker on Audiotree Live'; 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Queen of Jeans",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Quiet Hollers",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "REZN",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Raavi",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Raavi & The Houseplants on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Rachael Yamagata",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Rachele Eve",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Radical Face",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Raging Fyah",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Rare Americans",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ratboys",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Recoechi",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Remember Sports",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Remo Drive",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Retirement Party",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ric Wilson",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Rich Robbins",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Robert Lester Folsom",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Robert Lester Folsom on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ron Gallo",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Rosetta",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Run River North",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SALES",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SAWCE",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SHEBAD",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SOM",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SONNY",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SPACED",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "SPY",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sadurn",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Samantha Fish",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sammy Rae & The Friends",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sarah Shook & the Disarmers",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Save Us From the Archon",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Scowl",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sea Cycles",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sea Moya",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sen Morimoto",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Seratones",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shady Bug",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shakey Graves",
+    "years": "2013-2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shamir",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shane Guerrette",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shannon Lay",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shilpa Ray",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shonen Knife",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Shopping",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Short Fictions",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sidewalk Chalk",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sidney Gish",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Silent Planet",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sincere Engineer",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Single Mothers",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sister Sparrow & The Dirty Birds",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Skating Polly",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Skyway Man",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sleeping With Sirens",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Slingshot Dakota",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Slothrust",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Slow Hollows",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sløtface",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Snail Mail",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Snooze",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Soccer Mommy",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Soft Blue Shimmer",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Soft Kill",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Softcult",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sons of Bill",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sorority Noise",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Soul Blind",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Souvenirs",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Square Peg Round Hole",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Starbenders",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stay Outside",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stef Chura",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stellar Circuits",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stolen Jars",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stonefield",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Strange Americans",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Strawberry Girls",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stray Fossa",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stray From the Path",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "String Machine",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Stuyedeyed",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Subsonic Eye",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Such Gold",
+    "years": "2013-2018",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'Audiotree Live #2'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sun June",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sun Seeker",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Super Sometimes",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Suzanne Santo",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Swearin’",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Sweet Pill",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Syd Taylor",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "T-Rextasy",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "THE BOBBY LEES",
+    "years": "2023",
+    "reason": "Audiotree Live: 'THE BOBBY LEES on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "TTNG",
+    "years": "2013",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Taking Meds",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tall Heights",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live (session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tallah",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tancred",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tasha",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Tasha on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tchotchke",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tedious & Brief",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Teenage Halloween",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tennis",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tera Melos",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thank You Scientist",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thanya Iyer",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Accidentals",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Aces",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Altons",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Ballroom Thieves",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Band CAMINO",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Blue Stones",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Body & Dis Fig",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Bottle Rockets",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Bright Light Social Hour",
+    "years": "2025",
+    "reason": "Audiotree Live: 'The Bright Light Social Hour on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Bros. Landreth",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Brother Brothers",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Cardboard Swords",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Chamanas",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Collection",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Cordial Sins",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Courtneys",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Cribs",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Dirty Nil",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Districts",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Dove & the Wolf",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The End of the Ocean",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Flatliners",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The High Divers",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Joy Formidable",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The KVB",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Kraken Quartet",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Lonely Wild",
+    "years": "2013",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Main Squeeze",
+    "years": "2015",
+    "reason": "Audiotree Live: 'The Main Squeeze on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Obsessives",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Ophelias",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Pack A.D.",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live Session 11/16/2016'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Pauses",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Right Now",
+    "years": "2012",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Sewing Club",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Sheepdogs",
+    "years": "2015-2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Slaps",
+    "years": "2021",
+    "reason": "Audiotree Live: 'The Slaps on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Spook School",
+    "years": "2018",
+    "reason": "Audiotree Live: 'The Spook School on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Suffers",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Symposium",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Technicolors",
+    "years": "2015",
+    "reason": "Audiotree Live: 'The Technicolors on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Vaughns",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Way Down Wanderers",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Western Den",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The Wildwoods",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "The World Is a Beautiful Place & I Am No Longer Afraid to Die",
+    "years": "2014",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thee Commons",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thee Sacred Souls",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "They Are Gutting a Body of Water",
+    "years": "2022",
+    "reason": "Audiotree Live: 'They Are Gutting a Body of Water on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "This Patch of Sky",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thornhill",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Thou",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Three Man Cannon",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Three Trapped Tigers",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Three Trapped Tigers on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tides of Man",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tim Atlas",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tim Kasher",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Titus Andronicus",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Trade Wind",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Transviolet",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Trophy Wife",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Turnover",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Tweens",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Twen",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Twin Tribes",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Ulrika Spacek",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vacationer",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vacations",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vagabon",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Valley Maker",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Valley Queen",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vansire",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vasudeva",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vein",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Venom Prison",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vita and the Woolf",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Vita and the Woolf on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Vundabar",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "VÉRITÉ",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "W. H. Lung",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Walker Lukens",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "War on Women",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Warmduscher",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Water From Your Eyes",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "We Are the Union",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "We Lost the Sea",
+    "years": "2025",
+    "reason": "Audiotree Live: 'We Lost the Sea on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "We Were Promised Jetpacks",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wednesday",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Weeping Icon",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wess Meets West",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "White Reaper",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Widowspeak",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wild Nothing",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wild Ones",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wild Pink",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wilder Maker",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wilderado",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wildermiss",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Will Phalen",
+    "years": "2011",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wimps",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Windser",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wine Lips",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Winona Forever",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wishy",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Woes",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Work Wife",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Worlds Worst",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Worriers",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Wrekmeister Harmonies",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yak",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yautja",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yoke Lore",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Young Culture",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yours Truly",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yowler",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Yves Jarvis",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Zeta",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Zilched",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Zulu",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "allie",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "chlothegod",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "covet",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "deca joins",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "fish narc",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "flipturn",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "foxtails",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "gates",
+    "years": "2016",
+    "reason": "Audiotree Live: 'Gates on Audiotree Live (Session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "girlpuppy",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "illuminati hotties",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "late night drive home",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "meg elsier",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "meija",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "meth.",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "mewithoutYou",
+    "years": "2015",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "modernlove.",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "moondoggy",
+    "years": "2026",
+    "reason": "Audiotree Live: 'moondoggy on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "oso oso",
+    "years": "2017",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "portrayal of guilt",
+    "years": "2019",
+    "reason": "Audiotree Live: 'portrayal of guilt on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "runo plum",
+    "years": "2026",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "sleepmakeswaves",
+    "years": "2016-2025",
+    "reason": "Audiotree Live: 'Audiotree Live'; 'sleepmakeswaves on Audiotree Live (session #2)'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "standards",
+    "years": "2023",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "terraplana",
+    "years": "2025",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "the moss",
+    "years": "2021",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "theMIND",
+    "years": "2022",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "trauma ray",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "tricot",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "yungatita",
+    "years": "2024",
+    "reason": "Audiotree Live: 'Yungatita on Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "大象體操",
+    "years": "2019",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "椅子樂團",
+    "years": "2020",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "落日飛車",
+    "years": "2018",
+    "reason": "Audiotree Live: 'Audiotree Live'",
+    "branch": "Audiotree Live",
+    "group": "Audiotree Live"
+   },
+   {
+    "name": "Alabama Shakes",
+    "years": "2015",
+    "reason": "Austin City Limits: 'Joe (live from Austin City Limits)'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Albert Collins",
+    "years": "2012",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Amos Lee",
+    "years": "2008",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Asleep at the Wheel featuring the Texas Playboys",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Beck with The Flaming Lips",
+    "years": "2002",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Billy Joe Shaver",
+    "years": "2012",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Bobby Mack And Night Train",
+    "years": "1994",
+    "reason": "Austin City Limits: 'Red, Hot and Humid: Live From Austin Texas'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Brittany Howard",
+    "years": "2024",
+    "reason": "Austin City Limits: 'Live from Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Buck Owens",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Calexico",
+    "years": "2009",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Carl Perkins and The C.P. Express",
+    "years": "1981",
+    "reason": "Austin City Limits: 'Live at Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Charli XCX",
+    "years": "2020",
+    "reason": "Austin City Limits: 'Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Chris Tomlin",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin Music Hall'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Clarence “Gatemouth” Brown",
+    "years": "2012",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Cory Morrow",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Cowboy Junkies",
+    "years": "1990",
+    "reason": "Austin City Limits: 'Endless Skies (The Austin City Limits Broadcast 1990 Remastered)'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Crowder",
+    "years": "2022",
+    "reason": "Austin City Limits: 'Milk & Honey Tour - Austin City Limits Live'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "DJ Shadow",
+    "years": "2002",
+    "reason": "Austin City Limits: 'Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Damien Rice",
+    "years": "2004",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Dave Alvin",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "David Byrne",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Delbert McClinton",
+    "years": "1989-2006",
+    "reason": "Austin City Limits: 'Live From Austin'; 'Live From Austin Tx'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Doug Sahm",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Drive‐By Truckers",
+    "years": "2009",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Dwight Yoakam",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Eliza Gilkyson",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Eric Johnson",
+    "years": "2005-2010",
+    "reason": "Austin City Limits: 'Live From Austin, TX'; 'Live From Austin, TX ’84'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Fats Domino",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Future Islands",
+    "years": "2015",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Ghostland Observatory",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin Texas'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Guided by Voices",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Guy Clark",
+    "years": "2007-2013",
+    "reason": "Austin City Limits: 'Live from Austin, TX'; 'Live From Austin, TX: Dixie's Bar & Bus Stop'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Hargus “Pig” Robbins",
+    "years": "1979",
+    "reason": "Austin City Limits: 'Alive from Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Ian Moore",
+    "years": "1994",
+    "reason": "Austin City Limits: 'Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Jackie Venson",
+    "years": "2020",
+    "reason": "Austin City Limits: 'Live at Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Jason Isbell",
+    "years": "2014",
+    "reason": "Austin City Limits: 'Live at Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Jerry Lee Lewis",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin Tx'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Jimmy Buffett",
+    "years": "1983",
+    "reason": "Austin City Limits: 'Austin City Limits 11-3-83'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "John Fogerty",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "John Hiatt",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "John Mayall",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Johnny Cash",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Kinky Friedman",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Kris Kristofferson",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "LL Cool J",
+    "years": "2018",
+    "reason": "Austin City Limits: 'Austin City Limits - Live'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Lauryn Hill",
+    "years": "2016",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Leonard Cohen",
+    "years": "2018",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Los Lonely Boys",
+    "years": "2004",
+    "reason": "Austin City Limits: 'Texican Style: Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Lucinda Williams",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Mandolin Orange",
+    "years": "2020",
+    "reason": "Austin City Limits: 'Austin City Limits Live at The Moody Theater'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Margo Price",
+    "years": "2017",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Merle Haggard",
+    "years": "2006-2008",
+    "reason": "Austin City Limits: 'Live From Austin, TX'; 'Live From Austin, TX ’78'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Modest Mouse",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Austin City Limits Show'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "NEEDTOBREATHE",
+    "years": "2014",
+    "reason": "Austin City Limits: 'Live From Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Neil Young",
+    "years": "1985",
+    "reason": "Austin City Limits: 'Live at Austin City Limits 1985'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Neil Young and the International Harvesters",
+    "years": "2019",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Neko Case",
+    "years": "2007",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Norah Jones",
+    "years": "2008",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Pat Metheny Group",
+    "years": "2002",
+    "reason": "Austin City Limits: 'Live at Austin City Limits 11-24-2002'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "R.E.M.",
+    "years": "2010",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Ray Charles",
+    "reason": "Austin City Limits: 'Austin City Limits Soundstage'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Red Young & His Hot Horns",
+    "years": "2017",
+    "reason": "Austin City Limits: 'Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Richard Thompson",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Robert Earl Keen",
+    "years": "2004",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Robert Plant and his Strange Sensation",
+    "years": "2002",
+    "reason": "Austin City Limits: 'Austin City Limits 2002'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Roy Buchanan",
+    "years": "2008",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Roy Orbison",
+    "years": "1982",
+    "reason": "Austin City Limits: 'Live at Austin City Limits August 5, 1982'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Ruby Dee & The Snakehandlers",
+    "years": "2010",
+    "reason": "Austin City Limits: 'Live From Austin Texas'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Ryan Adams",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "SUMPP",
+    "years": "2022",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Sheryl Crow",
+    "years": "1998",
+    "reason": "Austin City Limits: 'VH1 Story Tellers & Austin City Limits '99'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Sir Douglas Quintet",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Son Volt",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "St. Vincent",
+    "years": "2017",
+    "reason": "Austin City Limits: 'New York (live at Austin City Limits)'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Steve Earle",
+    "years": "2004-2008",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Stevie Ray Vaughan",
+    "reason": "Austin City Limits: 'Live at Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Stevie Ray Vaughan and Double Trouble",
+    "years": "1997",
+    "reason": "Austin City Limits: 'Live From Austin, Texas'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Sufjan Stevens & Calexico",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Austin City Limits S32E05: Sufjan Stevens & Calexico'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Susan Tedeschi",
+    "years": "2004",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Tara MacLean",
+    "years": "2000",
+    "reason": "Austin City Limits: 'Live from Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Texas Tornados",
+    "years": "2005",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "The Allman Brothers Band",
+    "years": "1995",
+    "reason": "Austin City Limits: 'Austin City Limits 1995'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "The Disco Biscuits",
+    "years": "2023",
+    "reason": "Austin City Limits: 'Live from Austin, TX (September 16th, 2023)'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "The Earl Scruggs Revue",
+    "years": "1977",
+    "reason": "Austin City Limits: 'Live! From Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "The Minus 5",
+    "years": "2014",
+    "reason": "Austin City Limits: 'Live From Austin: The Minus 5'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "The Polyphonic Spree",
+    "years": "2004",
+    "reason": "Austin City Limits: 'Live From Austin TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Tom Waits",
+    "years": "2009",
+    "reason": "Austin City Limits: 'Romeo Bleeding: Live From Austin'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Tony Joe White",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live From Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Townes Van Zandt",
+    "years": "2017",
+    "reason": "Austin City Limits: 'Live at Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Watchhouse",
+    "years": "2024",
+    "reason": "Austin City Limits: 'Austin City Limits Live at The Moody Theater'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Waylon Jennings",
+    "years": "2006-2008",
+    "reason": "Austin City Limits: 'Live From Austin TX'; 'Live From Austin, TX ’84'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Widespread Panic",
+    "years": "2008",
+    "reason": "Austin City Limits: 'Live from Austin, TX'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Willie Nelson",
+    "years": "2006-2020",
+    "reason": "Austin City Limits: 'Live From Austin TX'; 'Red Headed Stranger Live From Austin City Limits'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Willie Nelson, Waylon Jennings, Kris Kristofferson, Billy Joe Shaver, Kimmie Rhodes",
+    "years": "2006",
+    "reason": "Austin City Limits: 'Live From Austin TX: Outlaw Country'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Yonder Mountain String Band",
+    "years": "2003",
+    "reason": "Austin City Limits: 'Live from Austin City Limits - 9'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "Zach Williams",
+    "years": "2023",
+    "reason": "Austin City Limits: 'Austin City Limits Live at the Moody Theater'",
+    "branch": "Austin City Limits",
+    "group": "Austin City Limits"
+   },
+   {
+    "name": "#1 Dads",
+    "years": "2015",
+    "reason": "Like A Version: 'Two Weeks (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "1300",
+    "years": "2022",
+    "reason": "Like A Version: 'Gangnam Style (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "3%",
+    "years": "2024",
+    "reason": "Like A Version: 'Youngblood (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "360",
+    "years": "2011",
+    "reason": "Like A Version: ''! (The Song Formerly Known As) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "6LACK",
+    "years": "2017",
+    "reason": "Like A Version: 'On & On (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "A$AP Rocky",
+    "years": "2018",
+    "reason": "Like A Version: '(Sittin' On) the Dock of the Bay (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "A$AP Rocky & Otis Redding",
+    "years": "2018",
+    "reason": "Like A Version: 'Triple J Like a Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "A.B. Original feat. Paul Kelly",
+    "years": "2017",
+    "reason": "Like A Version: 'Dumb Things (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "A.GIRL",
+    "years": "2022",
+    "reason": "Like A Version: 'Higher Ground (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "AURORA",
+    "years": "2019",
+    "reason": "Like A Version: 'Across the Universe (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Abbe May",
+    "years": "2022",
+    "reason": "Like A Version: 'Pony (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Adrian Eagle",
+    "years": "2019",
+    "reason": "Like A Version: 'Confidence (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alex Lahey",
+    "years": "2017-2023",
+    "reason": "Like A Version: 'Torn (Like a Version)'; 'Welcome to the Black Parade (triple j Like A Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alex Turner",
+    "years": "2012",
+    "reason": "Like A Version: 'Strange (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alex the Astronaut",
+    "years": "2020",
+    "reason": "Like A Version: 'Mr. Blue Sky (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alexisonfire",
+    "years": "2018",
+    "reason": "Like A Version: '(I’m) Stranded (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ali Barter",
+    "years": "2016",
+    "reason": "Like A Version: 'Cause I'm A Man (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alice Ivy",
+    "years": "2018-2021",
+    "reason": "Like A Version: 'American Boy (triple J Like a Version)'; 'How Bizarre (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alice Skye",
+    "years": "2021",
+    "reason": "Like A Version: 'Come On Mess Me Up (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alkaline Trio",
+    "years": "2009",
+    "reason": "Like A Version: 'The KKK Took My Baby Away (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Allday",
+    "years": "2014-2024",
+    "reason": "Like A Version: 'Never Tear Us Apart (triple J Like a Version)'; 'Big Yellow Taxi (Triple J Like A Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alter Boy",
+    "years": "2021",
+    "reason": "Like A Version: 'Montero (Call Me by Your Name) [triple j Like A Version]'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Amy Shark",
+    "years": "2019",
+    "reason": "Like A Version: 'Be Alright (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Angie McMahon",
+    "years": "2020-2024",
+    "reason": "Like A Version: 'Knowing Me, Knowing You (triple j Like A Version)'; 'Reckless (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Angus & Julia Stone",
+    "years": "2018-2024",
+    "reason": "Like A Version: 'Passionfruit (Triple J Like a Version)'; 'Someone You Loved (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Annie Hamilton",
+    "years": "2020",
+    "reason": "Like A Version: 'Ubu (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Anti‐Flag",
+    "years": "2008",
+    "reason": "Like A Version: 'Beds Are Burning (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Aodhan",
+    "years": "2021",
+    "reason": "Like A Version: 'Just What I Needed (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Archie Roach",
+    "years": "2022",
+    "reason": "Like A Version: 'Redemption Song/One Love/Get Up, Stand Up (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Architecture in Helsinki",
+    "years": "2011",
+    "reason": "Like A Version: 'Break My Stride (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Arlo Parks",
+    "years": "2022",
+    "reason": "Like A Version: 'Good Guy (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "ArrDee",
+    "years": "2023",
+    "reason": "Like A Version: 'ArrDee covers Ja Rule 'Always On Time' for Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Art of Fighting",
+    "years": "2005",
+    "reason": "Like A Version: 'All Night Long (All Night) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Art vs Science",
+    "years": "2019-2023",
+    "reason": "Like A Version: 'Enter Sandman (triple j Like a Version)'; 'Harder, Better, Faster, Stronger (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Artemas",
+    "years": "2024",
+    "reason": "Like A Version: 'Grace (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ash",
+    "years": "2004",
+    "reason": "Like A Version: 'Teenage Kicks (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Asha Jefferies",
+    "years": "2024",
+    "reason": "Like A Version: 'Booster Seat (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ashnikko",
+    "years": "2026",
+    "reason": "Like A Version: 'What You Waiting For? (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Audrey Hobert",
+    "years": "2026",
+    "reason": "Like A Version: 'Earrings - Live from Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Augie March",
+    "years": "2006",
+    "reason": "Like A Version: 'Still I Dream of It (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "BADBADNOTGOOD",
+    "years": "2016",
+    "reason": "Like A Version: 'God Only Knows (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "BENEE",
+    "years": "2022",
+    "reason": "Like A Version: 'God is a woman (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "BOY SODA",
+    "years": "2025",
+    "reason": "Like A Version: 'I Write Sins Not Tragedies (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "BROODS",
+    "years": "2017",
+    "reason": "Like A Version: 'One Dance (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Babe Rainbow",
+    "years": "2025",
+    "reason": "Like A Version: 'Thank You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bad//Dreems feat. Peter Garrett & Mambali & Emily Wurramara",
+    "years": "2019",
+    "reason": "Like A Version: 'Black Fella/Whitefella (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Baker Boy",
+    "years": "2022-2026",
+    "reason": "Like A Version: 'Song 2 (triple j Like a Version)'; 'Jump (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ball Park Music",
+    "years": "2020-2025",
+    "reason": "Like A Version: 'Paranoid Android (triple j Like A Version)'; 'Hide and Seek (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Balu Brigada",
+    "years": "2026",
+    "reason": "Like A Version: 'You Make My Dreams (Come True) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Band of Skulls",
+    "years": "2012",
+    "reason": "Like A Version: 'I Follow Rivers (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Beasts of Bourbon",
+    "years": "2007",
+    "reason": "Like A Version: 'Sorrow (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bec Sandridge",
+    "years": "2017",
+    "reason": "Like A Version: 'You’re the Voice (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Becca Hatch",
+    "years": "2026",
+    "reason": "Like A Version: 'Smooth Operator (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Beddy Rays",
+    "years": "2021-2025",
+    "reason": "Like A Version: 'Better in Blak (triple j Like a Version)'; 'Khe Sanh (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Behind Crimson Eyes",
+    "years": "2006",
+    "reason": "Like A Version: 'I Touch Myself (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ben Folds",
+    "years": "2011",
+    "reason": "Like A Version: 'Sleazy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ben Kweller",
+    "years": "2007",
+    "reason": "Like A Version: 'God Only Knows (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ben Lee",
+    "years": "2007",
+    "reason": "Like A Version: 'Thrash Unreal (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Beth Orton",
+    "years": "2006",
+    "reason": "Like A Version: 'O-o-h Child (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Between You & Me",
+    "years": "2023",
+    "reason": "Like A Version: 'All Star (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Big Scary",
+    "years": "2012-2017",
+    "reason": "Like A Version: 'Hurt Me (triple j Like a Version)'; 'Come as You Are (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Birds of Tokyo",
+    "years": "2008-2019",
+    "reason": "Like A Version: 'I Heard It Through The Grapevine (triple j Like a Version)'; 'Swimming Pools (Drank) (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Birdz",
+    "years": "2017",
+    "reason": "Like A Version: 'Sunset Dreaming (Djapana Remix / triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bleeding Knees Club",
+    "years": "2012",
+    "reason": "Like A Version: 'Oblivion (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bluebottle Kiss",
+    "years": "2004",
+    "reason": "Like A Version: 'Grapefruit Moon (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Blusher",
+    "years": "2025",
+    "reason": "Like A Version: 'Your Love Is My Drug (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bon Iver",
+    "years": "2009",
+    "reason": "Like A Version: 'The Park (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bonde do Rolê",
+    "years": "2008",
+    "reason": "Like A Version: 'It's a Long Way to the Top (If You Wanna Rock 'N' Roll) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Boo Seeka",
+    "years": "2015",
+    "reason": "Like A Version: 'Deception Bay (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bootleg Rascal",
+    "years": "2016",
+    "reason": "Like A Version: 'The Hills (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Boy & Bear",
+    "years": "2021",
+    "reason": "Like A Version: 'Don't You (Forget About Me) (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Boy Soda",
+    "years": "2025",
+    "reason": "Like A Version: 'I Write Sins Not Tragedies (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "British India",
+    "years": "2013",
+    "reason": "Like A Version: 'Your Woman (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Buchanan",
+    "years": "2023",
+    "reason": "Like A Version: 'Thinkin Bout You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Budjerah",
+    "years": "2025",
+    "reason": "Like A Version: 'Always Be My Baby (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Bugs",
+    "years": "2020",
+    "reason": "Like A Version: 'Charlie (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Butterfingers",
+    "years": "2005",
+    "reason": "Like A Version: 'Like A Virgin (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "CHVRCHES",
+    "years": "2018",
+    "reason": "Like A Version: 'LOVE (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "CXLOE",
+    "years": "2020-2024",
+    "reason": "Like A Version: 'Zombie (triple j Like a Version)'; 'Good Luck, Babe! (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Calling All Cars",
+    "years": "2014",
+    "reason": "Like A Version: 'Psycho Killer (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Camp Cope",
+    "years": "2022",
+    "reason": "Like A Version: 'Seventeen Going Under (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Carla Wehbe",
+    "years": "2025",
+    "reason": "Like A Version: 'The Winner Takes It All (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Carmouflage Rose",
+    "years": "2018",
+    "reason": "Like A Version: 'Heartless (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Cat & Calmell",
+    "years": "2022-2025",
+    "reason": "Like A Version: 'Maneater (triple j Like a Version)'; '4ever (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ceres",
+    "years": "2019",
+    "reason": "Like A Version: 'A Thousand Miles (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chairlift",
+    "years": "2012",
+    "reason": "Like A Version: 'Party (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chet Faker",
+    "years": "2018",
+    "reason": "Like A Version: '(Lover) You Don’t Treat Me No Good (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chicks on Speed",
+    "years": "2005",
+    "reason": "Like A Version: 'Mind Your Own Business (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chiddy Bang",
+    "years": "2010",
+    "reason": "Like A Version: 'Young Blood (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Childish Gambino",
+    "years": "2015",
+    "reason": "Like A Version: 'So Into You (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chillinit",
+    "years": "2020",
+    "reason": "Like A Version: 'Sugar (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chloe Parché",
+    "years": "2025-2026",
+    "reason": "Like A Version: 'My People (triple j Like a Version)'; 'My People (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Chuck Ragan & Laura Jane Grace",
+    "years": "2009",
+    "reason": "Like A Version: 'Greenback Dollar (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Circa Waves",
+    "years": "2023",
+    "reason": "Like A Version: 'Angels (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Citizen Kay",
+    "years": "2016",
+    "reason": "Like A Version: 'Brick House / Gold Digger / Uptown Funk (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Citizens!",
+    "years": "2012",
+    "reason": "Like A Version: 'The Best (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "City and Colour",
+    "years": "2018",
+    "reason": "Like A Version: 'Settle Down (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Claire Rosinkranz",
+    "years": "2023",
+    "reason": "Like A Version: 'Screw Time (Like a Version)'; 'Kiss It Better (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Clare Bowditch",
+    "years": "2007-2010",
+    "reason": "Like A Version: 'No Man's Land (triple j Like a Version)'; 'My Happiness (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Clea",
+    "years": "2019",
+    "reason": "Like A Version: 'Nothing Breaks Like a Heart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Client Liaison",
+    "years": "2022",
+    "reason": "Like A Version: 'Groove Is In The Heart (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Cloud Control",
+    "years": "2014",
+    "reason": "Like A Version: 'Dammit (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Clowns",
+    "years": "2015",
+    "reason": "Like A Version: 'Alone With You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Confidence Man",
+    "years": "2022",
+    "reason": "Like A Version: 'Heaven (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Connie Constance",
+    "years": "2023",
+    "reason": "Like A Version: 'Escapism (triple j Like A Version)'; 'Connie Constance covers RAYE’s ‘Escapism.’ for Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Cosmo’s Midnight",
+    "years": "2024",
+    "reason": "Like A Version: 'Water (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Courtney Barnett",
+    "years": "2013",
+    "reason": "Like A Version: 'Black Skinhead (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Cub Sport",
+    "years": "2016-2024",
+    "reason": "Like A Version: 'Ultralight Beam (triple j Like A Version)'; 'when the party's over (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Cut Off Your Hands",
+    "years": "2007",
+    "reason": "Like A Version: 'Is By Bus (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "DEVAURA",
+    "years": "2026",
+    "reason": "Like A Version: 'I Wanna Be Down (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "DICE",
+    "years": "2024",
+    "reason": "Like A Version: 'I Will Survive (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "DMA’s",
+    "years": "2017",
+    "reason": "Like A Version: 'Believe (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "DZ Deathrays",
+    "years": "2015-2021",
+    "reason": "Like A Version: 'Addicted to Bass (triple j Like a Version)'; 'Rock Star (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dallas Crane",
+    "years": "2007",
+    "reason": "Like A Version: 'Can't Get You Out of My Head (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dallas Woods",
+    "years": "2021",
+    "reason": "Like A Version: 'What's Luv? (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dan Kelly",
+    "years": "2008",
+    "reason": "Like A Version: 'Head Full of Steam (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dan Kelly and The Alpha Males",
+    "years": "2004",
+    "reason": "Like A Version: 'Sitting By the Riverside / Summer Wine (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dan Sultan",
+    "years": "2008-2019",
+    "reason": "Like A Version: 'Pulse (triple j Like a Version)'; 'The Plot (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Daniel Lee Kendall",
+    "years": "2014",
+    "reason": "Like A Version: 'Rock With You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dappled Cities",
+    "years": "2009",
+    "reason": "Like A Version: 'My Girls (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Darwin Deez",
+    "years": "2010",
+    "reason": "Like A Version: 'Scar Tissue (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Datarock",
+    "years": "2007",
+    "reason": "Like A Version: 'Mongoloid (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dave Winnel",
+    "years": "2022",
+    "reason": "Like A Version: 'Africa (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "David McCormack and The Polaroids",
+    "years": "2007",
+    "reason": "Like A Version: 'Spring Rain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dawn Landes",
+    "years": "2008",
+    "reason": "Like A Version: 'Young Folks (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dead Letter Circus",
+    "years": "2014",
+    "reason": "Like A Version: 'Killing In The Name (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dear Seattle",
+    "years": "2019",
+    "reason": "Like A Version: 'The Special Two (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Death Cab for Cutie",
+    "years": "2006",
+    "reason": "Like A Version: 'You Woke up My Neighbourhood (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Death by Denim",
+    "years": "2022",
+    "reason": "Like A Version: 'Watermelon Sugar (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Del Water Gap",
+    "years": "2025",
+    "reason": "Like A Version: 'Sailor Song (triple j Like a Version)'; 'Sailor Song (triple j Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Denzel Curry",
+    "years": "2019",
+    "reason": "Like A Version: 'Bulls on Parade (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Diafrix",
+    "years": "2013",
+    "reason": "Like A Version: 'Retrograde (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Didirri",
+    "years": "2021",
+    "reason": "Like A Version: 'Wake Me up When September Ends (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dinosaur Jr.",
+    "years": "2007",
+    "reason": "Like A Version: 'Change of Heart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dirty Projectors",
+    "years": "2013",
+    "reason": "Like A Version: 'Climax (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dirty Three",
+    "years": "2006",
+    "reason": "Like A Version: 'Maggie May (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Divine Fits",
+    "years": "2013",
+    "reason": "Like A Version: 'Hungry Heart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Djo",
+    "years": "2025",
+    "reason": "Like A Version: 'Gasoline (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dominic Fike",
+    "years": "2026",
+    "reason": "Like A Version: 'South Park Theme (triple j Like a Version)'; 'Boylife In America (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Drapht",
+    "years": "2021",
+    "reason": "Like A Version: 'Robbery (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Dune Rats",
+    "years": "2023",
+    "reason": "Like A Version: 'Am I Ever Gonna See Your Face Again (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "E^ST",
+    "years": "2020",
+    "reason": "Like A Version: 'SLOW DANCING IN THE DARK (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Eagles of Death Metal",
+    "years": "2009",
+    "reason": "Like A Version: 'Brown Sugar (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ecca Vandal",
+    "years": "2018",
+    "reason": "Like A Version: 'Bitch Better Have My Money / Dance Wiv Me / Milkshake (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Eddy Current Suppression Ring",
+    "years": "2008",
+    "reason": "Like A Version: 'There's A Lot of It Going Round (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Eliott",
+    "years": "2023",
+    "reason": "Like A Version: 'Glimpse of Us (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Eliza & the Delusionals",
+    "years": "2022",
+    "reason": "Like A Version: 'Motion Sickness (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Elizabeth Rose",
+    "years": "2013",
+    "reason": "Like A Version: 'Rhythm Of The Night (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Emily Wurramara",
+    "years": "2024",
+    "reason": "Like A Version: 'Too Sweet (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Emma Donovan",
+    "years": "2026",
+    "reason": "Like A Version: 'Birds of a Feather (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Emperors",
+    "years": "2012",
+    "reason": "Like A Version: 'Shake It Out (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ethel Cain",
+    "years": "2026",
+    "reason": "Like A Version: 'Angels and Fuselage (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Everything Everything",
+    "years": "2015",
+    "reason": "Like A Version: 'With Every Heartbeat (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Evie Irie",
+    "years": "2025",
+    "reason": "Like A Version: 'Norman fucking Rockwell (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Example",
+    "years": "2011",
+    "reason": "Like A Version: 'Boulevard of Broken Dreams (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Expatriate",
+    "years": "2007",
+    "reason": "Like A Version: 'MLK (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "FELIVAND",
+    "years": "2023",
+    "reason": "Like A Version: 'Rush (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "FIDLAR",
+    "years": "2013-2019",
+    "reason": "Like A Version: 'Red Right Hand (triple j Like A Version)'; 'Xanny (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "FINNEAS",
+    "years": "2025",
+    "reason": "Like A Version: 'Time Of The Season (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Faker",
+    "years": "2008",
+    "reason": "Like A Version: 'Pet Sematary (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Fdel",
+    "years": "2006",
+    "reason": "Like A Version: 'For What It's Worth (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Fionn Regan",
+    "years": "2007",
+    "reason": "Like A Version: 'Getting Better (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "First Aid Kit",
+    "years": "2010",
+    "reason": "Like A Version: 'When I Grow Up (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Florence Road",
+    "years": "2025",
+    "reason": "Like A Version: 'Georgia (triple j Like a Version)'; 'Georgia (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Flume & Toro y Moi",
+    "years": "2022",
+    "reason": "Like A Version: 'Shooting Stars (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Flume feat. Vince Staples, Kučka, Ngaiire & Vera Blue",
+    "years": "2016",
+    "reason": "Like A Version: 'My Boo (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Folk Bitch Trio",
+    "years": "2025",
+    "reason": "Like A Version: 'Sex on Fire (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Fontaines D.C.",
+    "years": "2025",
+    "reason": "Like A Version: 'Can You Feel My Heart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Foreign Heights",
+    "years": "2007",
+    "reason": "Like A Version: 'If I Ruled The World (Imagine That) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Franz Ferdinand",
+    "years": "2026",
+    "reason": "Like A Version: 'U Should Not Be Doing That (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Françoiz Breut",
+    "years": "2006",
+    "reason": "Like A Version: 'Plain Gold Ring (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Frightened Rabbit",
+    "years": "2013",
+    "reason": "Like A Version: 'The Only Place (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Fumes",
+    "years": "2006",
+    "reason": "Like A Version: 'I’m Goin’ Down (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "G Flip",
+    "years": "2020-2024",
+    "reason": "Like A Version: 'Lady Marmalade (triple j Like a Version)'; 'Cruel Summer (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "G. Love",
+    "years": "2005",
+    "reason": "Like A Version: 'Paid in Full (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "GRAACE",
+    "years": "2020",
+    "reason": "Like A Version: 'Complicated (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gang of Youths",
+    "years": "2022",
+    "reason": "Like A Version: 'Gang of Youths - triple j Like a Version Sessions'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Genesis Owusu",
+    "years": "2026",
+    "reason": "Like A Version: 'Paint It, Black (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gengahr",
+    "years": "2020",
+    "reason": "Like A Version: 'Everything I Wanted (triple j Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "George Alice",
+    "years": "2022",
+    "reason": "Like A Version: 'Alive (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gigi Perez",
+    "years": "2026",
+    "reason": "Like A Version: 'Summertime Sadness (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Glass Animals",
+    "years": "2022",
+    "reason": "Like A Version: 'Say my Name (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Glass Towers",
+    "years": "2013",
+    "reason": "Like A Version: 'Young And Beautiful (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Glenn Richards",
+    "years": "2010",
+    "reason": "Like A Version: 'Quasimodo's Dream (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gold Fang",
+    "years": "2024",
+    "reason": "Like A Version: 'I'm Still Standing (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gomez",
+    "years": "2009",
+    "reason": "Like A Version: 'From St. Kilda To Kings Cross (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Good Neighbours",
+    "years": "2024",
+    "reason": "Like A Version: 'Espresso (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gordi",
+    "years": "2020",
+    "reason": "Like A Version: 'Wrecking Ball (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gossip",
+    "years": "2006-2012",
+    "reason": "Like A Version: 'Fancy (triple j Like a Version)'; 'What's Love Got To Do With It (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Go‐Jo",
+    "years": "2023",
+    "reason": "Like A Version: 'Teenage Dream (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gracie Abrams",
+    "years": "2024",
+    "reason": "Like A Version: 'Gracie Abrams covers Ethel Cain's 'American Teenager' for Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Great Gable",
+    "years": "2022",
+    "reason": "Like A Version: 'Fireflies (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Greta Stanley",
+    "years": "2022",
+    "reason": "Like A Version: 'Everlong (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Griff",
+    "years": "2024",
+    "reason": "Like A Version: 'Apple (triple j Like a Version)'; 'Apple (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Groove Armada",
+    "years": "2010",
+    "reason": "Like A Version: 'Enjoy the Silence (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gypsy & the Cat",
+    "years": "2011",
+    "reason": "Like A Version: 'Flash (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Gyroscope",
+    "years": "2008-2010",
+    "reason": "Like A Version: 'To Her Door (Like a Version)'; 'Redemption Song (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "HAIM",
+    "years": "2017",
+    "reason": "Like A Version: 'That Don’t Impress Me Much (triple j Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Halsey",
+    "years": "2016",
+    "reason": "Like A Version: 'Love Yourself (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hands Like Houses",
+    "years": "2016-2020",
+    "reason": "Like A Version: 'Don't Speak (triple j Like a Version)'; 'Shimmer (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hard‐Fi",
+    "years": "2006",
+    "reason": "Like A Version: 'Bankrobber (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Harts",
+    "years": "2015",
+    "reason": "Like A Version: 'Aerial Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hayley Mary",
+    "years": "2021",
+    "reason": "Like A Version: 'Chemtrails over the Country Club (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hein Cooper",
+    "years": "2019",
+    "reason": "Like A Version: 'The Fear (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hellions",
+    "years": "2017",
+    "reason": "Like A Version: 'Adore (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hermitude",
+    "years": "2019",
+    "reason": "Like A Version: 'Heart-Shaped Box (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hey Geronimo",
+    "years": "2016",
+    "reason": "Like A Version: 'Pedestrian At Best / Happiness (Rotting My Brain) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hilltop Hoods",
+    "years": "2019",
+    "reason": "Like A Version: 'Can’t Stop (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hockey Dad",
+    "years": "2016-2019",
+    "reason": "Like A Version: 'Malibu (triple j Like a Version)'; 'I Try (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Holly Humberstone",
+    "years": "2025",
+    "reason": "Like A Version: 'Wild World (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Holy Holy",
+    "years": "2022",
+    "reason": "Like A Version: 'Sunflower (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hooligan Hefs",
+    "years": "2026",
+    "reason": "Like A Version: 'Numb (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hope D",
+    "years": "2021",
+    "reason": "Like A Version: 'Toxic (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Horrorshow",
+    "years": "2013-2017",
+    "reason": "Like A Version: 'Walk On The Wild Side/Can I Kick It? (triple j Like A Version)'; 'No Aphrodisiac (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hot Chip",
+    "years": "2007",
+    "reason": "Like A Version: 'Graceland (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hot Hot Heat",
+    "years": "2011",
+    "reason": "Like A Version: 'Animal (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Hungry Kids of Hungary",
+    "years": "2013",
+    "reason": "Like A Version: 'Feels Like We Only Go Backwards (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Husky",
+    "years": "2019",
+    "reason": "Like A Version: 'Need You Tonight (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Illy",
+    "years": "2009",
+    "reason": "Like A Version: 'Where Is My Mind? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "In Hearts Wake & WAAX",
+    "years": "2022",
+    "reason": "Like A Version: 'all the good girls go to hell (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Inhaler",
+    "years": "2025",
+    "reason": "Like A Version: 'Nightcall (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Inkabee",
+    "years": "2026",
+    "reason": "Like A Version: 'Where Is the Love? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Iron & Wine",
+    "years": "2008",
+    "reason": "Like A Version: 'Love Is The Foundation (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "JK-47",
+    "years": "2021",
+    "reason": "Like A Version: 'Changes (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "JOY.",
+    "years": "2022",
+    "reason": "Like A Version: 'Kiss Me Thru The Phone (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jack Garratt",
+    "years": "2016",
+    "reason": "Like A Version: 'Crazy In Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jack River",
+    "years": "2019-2023",
+    "reason": "Like A Version: 'Truly Madly Deeply (triple j Like A Version)'; 'Jack River covers Amyl and the Sniffers' 'Guided By Angels' for Like A Version' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jackie Onassis",
+    "years": "2014",
+    "reason": "Like A Version: 'Drunk In Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jae Laffer",
+    "years": "2009",
+    "reason": "Like A Version: 'They Thought I Was Asleep (triple j Like a Version)'; 'When I First Met Your Ma (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jagwar Ma",
+    "years": "2014",
+    "reason": "Like A Version: 'Why'd You Only Call Me When You're High? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jake Shimabukuro",
+    "years": "2008",
+    "reason": "Like A Version: 'While My Guitar Gently Weeps (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "James Vincent McMorrow",
+    "years": "2017",
+    "reason": "Like A Version: 'West Coast (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jax Anderson",
+    "years": "2019",
+    "reason": "Like A Version: 'Want You Back (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jay and the Doctor",
+    "years": "2005",
+    "reason": "Like A Version: 'Mel-dley (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jem Cassar-Daley",
+    "years": "2026",
+    "reason": "Like A Version: 'Who Can It Be Now? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jem Cassar‐Daley",
+    "years": "2023",
+    "reason": "Like A Version: 'The Sweet Escape (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jen Cloher",
+    "years": "2005",
+    "reason": "Like A Version: 'State Trooper (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jens Lekman",
+    "years": "2006",
+    "reason": "Like A Version: 'Vem kan segla förutan vind? (Who Can Sail Without the Wind?) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jess Kent",
+    "years": "2020",
+    "reason": "Like A Version: 'Hell N Back (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jess Ribeiro",
+    "years": "2008",
+    "reason": "Like A Version: 'Into My Arms (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jessica Mauboy",
+    "years": "2025",
+    "reason": "Like A Version: 'World Turning (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jesswar",
+    "years": "2020",
+    "reason": "Like A Version: 'Rollin' (Air Raid Vehicle) (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jet",
+    "years": "2009",
+    "reason": "Like A Version: 'Sooner Or Later (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jimblah",
+    "years": "2018",
+    "reason": "Like A Version: 'Resolution (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Joey Bada$$",
+    "years": "2018-2023",
+    "reason": "Like A Version: 'When Thugs Cry (triple J Like a Version)'; 'UMI Says (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Joey Valence & Brae",
+    "years": "2026",
+    "reason": "Like A Version: 'Security (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Johnny Boy",
+    "years": "2006",
+    "reason": "Like A Version: 'Sheena Is a Punk Rocker/The Clapping Song (Clap Pat Clap Slap) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Jorja Smith",
+    "years": "2019",
+    "reason": "Like A Version: 'Killing Me Softly With His Song (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Josh Earl",
+    "years": "2009",
+    "reason": "Like A Version: 'Single Ladies (Put a Ring on It) [Like a Version]'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Josh Pyke",
+    "years": "2013",
+    "reason": "Like A Version: 'Good Riddance (Time Of Your Life) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "José González",
+    "years": "2005",
+    "reason": "Like A Version: 'Teardrop (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Joy Anonymous",
+    "years": "2024",
+    "reason": "Like A Version: 'Padam Padam (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Julia Jacklin",
+    "years": "2019-2026",
+    "reason": "Like A Version: 'Someday (triple j Like a Version)'; 'Every Morning (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Just a Gent",
+    "years": "2016",
+    "reason": "Like A Version: 'Day ’n’ Night (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "K.Flay",
+    "years": "2019",
+    "reason": "Like A Version: 'Hollaback Girl (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "KIAN",
+    "years": "2024",
+    "reason": "Like A Version: 'Island In The Sun (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "KLP and Stace Cadet",
+    "years": "2021",
+    "reason": "Like A Version: 'Breathe Me (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "KUČKA",
+    "years": "2024",
+    "reason": "Like A Version: 'My Love Mine All Mine (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kaki King",
+    "years": "2008",
+    "reason": "Like A Version: 'LoveStoned / I Think She Knows (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kali Uchis",
+    "years": "2019",
+    "reason": "Like A Version: 'Venus As A Boy (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Karma County",
+    "years": "2005",
+    "reason": "Like A Version: 'Dirty Deeds Done Dirt Cheap (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kasabian",
+    "years": "2007-2014",
+    "reason": "Like A Version: 'Somebody to Love (triple j Like a Version)'; 'I'm So Tired (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kate Nash",
+    "years": "2011",
+    "reason": "Like A Version: 'Let's Hear It for the Boy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Keli Holiday",
+    "years": "2025",
+    "reason": "Like A Version: 'I'm On Fire (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kelley Stoltz",
+    "years": "2006",
+    "reason": "Like A Version: 'Dolphins (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kevin Abstract",
+    "years": "2026",
+    "reason": "Like A Version: 'Goodbye Horses (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kim Churchill",
+    "years": "2017-2023",
+    "reason": "Like A Version: 'Make It Wit Chu (triple J Like a Version)'; 'Just For You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kimbra",
+    "years": "2011-2023",
+    "reason": "Like A Version: 'Two Weeks / Head Over Heels (triple j Like a Version)'; 'Break My Soul (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kinder",
+    "years": "2023",
+    "reason": "Like A Version: 'Say It Right (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "King Princess",
+    "years": "2023",
+    "reason": "Like A Version: 'Black Hole Sun (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "King Stingray",
+    "years": "2022",
+    "reason": "Like A Version: 'Yellow (Triple J Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kingswood",
+    "years": "2017",
+    "reason": "Like A Version: 'Say My Name (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kita Alexander",
+    "years": "2023-2024",
+    "reason": "Like A Version: 'Stacy's Mom (triple J Like a Version)'; 'triple j Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Klaxons",
+    "years": "2010",
+    "reason": "Like A Version: 'Bad Romance (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Koolism",
+    "years": "2006",
+    "reason": "Like A Version: 'Sign “☮︎” the Times (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kota Banks",
+    "years": "2020",
+    "reason": "Like A Version: 'SICKO MODE (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Kwame",
+    "years": "2018",
+    "reason": "Like A Version: 'Alright (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "LAUREL",
+    "years": "2019",
+    "reason": "Like A Version: 'Happy Man (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ladyhawke",
+    "years": "2009",
+    "reason": "Like A Version: 'Message to My Girl (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Last Dinosaurs",
+    "years": "2012",
+    "reason": "Like A Version: 'Sing It Back (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lastlings",
+    "years": "2021",
+    "reason": "Like A Version: 'Love on the Brain (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Laufey",
+    "years": "2024",
+    "reason": "Like A Version: 'Savior Complex (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Laura Marling",
+    "years": "2008",
+    "reason": "Like A Version: 'The Wrote & The Writ (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Laura Veirs",
+    "years": "2005",
+    "reason": "Like A Version: 'I'm So Lonesome I Could Cry (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Leader Cheetah",
+    "years": "2011",
+    "reason": "Like A Version: 'Losing My Religion (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lederhosen Lucil",
+    "years": "2005",
+    "reason": "Like A Version: 'T.N.T. (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lime Cordiale",
+    "years": "2019",
+    "reason": "Like A Version: 'I Touch Myself (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lisa Mitchell",
+    "years": "2012",
+    "reason": "Like A Version: 'Midnight City (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Little Dragon",
+    "years": "2014",
+    "reason": "Like A Version: 'Millionaire (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Little Red",
+    "years": "2008",
+    "reason": "Like A Version: 'It's a Long Way to the Top (If You Wanna Rock 'N' Roll) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Little Simz",
+    "years": "2019",
+    "reason": "Like A Version: 'Feel Good Inc (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lola Young",
+    "years": "2025",
+    "reason": "Like A Version: 'Close To Me (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Loon Lake",
+    "years": "2012",
+    "reason": "Like A Version: 'Angels (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lotek",
+    "years": "2011",
+    "reason": "Like A Version: 'Rock It (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Luca Brasi",
+    "years": "2017-2023",
+    "reason": "Like A Version: 'How to Make Gravy (Triple J Like a Version)'; 'Iris (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lucy Dacus",
+    "years": "2026",
+    "reason": "Like A Version: 'Who Knows (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lurch & Chief",
+    "years": "2014",
+    "reason": "Like A Version: 'Drop The Game (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lykke Li",
+    "years": "2011",
+    "reason": "Like A Version: 'Unchained Melody (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Lyric",
+    "years": "2025",
+    "reason": "Like A Version: 'Ribs (triple j Like a Version)'; 'Make a Move (live for Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Låpsley",
+    "years": "2016",
+    "reason": "Like A Version: 'Mountain At My Gates (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "M-Phazes",
+    "years": "2010",
+    "reason": "Like A Version: 'More Than a Game (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "MAY‐A",
+    "years": "2026",
+    "reason": "Like A Version: 'Edge of Seventeen (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "MS MR",
+    "years": "2013",
+    "reason": "Like A Version: 'Dance Yrself Clean (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "MUNA",
+    "years": "2023",
+    "reason": "Like A Version: 'My Heart Will Go On (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "MUTEMATH",
+    "years": "2012",
+    "reason": "Like A Version: 'Fallin' (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Maanyung",
+    "years": "2024",
+    "reason": "Like A Version: 'What Was I Made For? (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Maddy Jane",
+    "years": "2021",
+    "reason": "Like A Version: 'Unwritten (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Magdalena Bay",
+    "years": "2025",
+    "reason": "Like A Version: 'Ashes to Ashes (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mahalia",
+    "years": "2024",
+    "reason": "Like A Version: 'When The Sun Goes Down (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Maisie Peters",
+    "years": "2023",
+    "reason": "Like A Version: 'Basket Case (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Malcolm Todd",
+    "years": "2026",
+    "reason": "Like A Version: 'Phoebe (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mansionair",
+    "years": "2022-2025",
+    "reason": "Like A Version: 'Still Don’t Know My Name (triple j Like A Version)'; 'Wicked Game (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mariachi El Bronx",
+    "years": "2009",
+    "reason": "Like A Version: 'I Would Die 4 U (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mark Ronson",
+    "years": "2008",
+    "reason": "Like A Version: 'Beggin' (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mark Ronson & The Business Intl",
+    "years": "2011",
+    "reason": "Like A Version: 'Solitude Is Bliss (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Matt Corby",
+    "years": "2023-2026",
+    "reason": "Like A Version: 'No Scrubs (triple j Like a Version)'; 'Dracula (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Meg Mac",
+    "years": "2017-2023",
+    "reason": "Like A Version: 'Let It Happen (triple j Like a Version)'; 'No Time To Die (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Megan Washington",
+    "years": "2011",
+    "reason": "Like A Version: 'Even When I'm Sleeping (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Methyl Ethel",
+    "years": "2018-2021",
+    "reason": "Like A Version: 'Cry Me A River (triple j Like A Version)'; 'Frontier Psychiatrist/Dribble (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Metric",
+    "years": "2009-2012",
+    "reason": "Like A Version: 'The End Has No End (triple j Like a Version)'; 'Always On My Mind (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mia Rodriguez",
+    "years": "2021",
+    "reason": "Like A Version: 'Corduroy Dreams (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mia Wray",
+    "years": "2023",
+    "reason": "Like A Version: 'Silk Chiffon (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Micah P. Hinson",
+    "years": "2005",
+    "reason": "Like A Version: 'Suzanne (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mick Hart",
+    "years": "2006",
+    "reason": "Like A Version: 'The Wind Cries Mary (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mickey Kojak",
+    "years": "2019",
+    "reason": "Like A Version: 'Parlez Vous Francais? (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Middle Kids",
+    "years": "2021-2024",
+    "reason": "Like A Version: 'Drivers License (triple j Like a Version)'; 'Champagne Supernova (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Midnight Juggernauts",
+    "years": "2006",
+    "reason": "Like A Version: 'Ça plane pour moi (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Miguel",
+    "years": "2018",
+    "reason": "Like A Version: 'Porcelain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Miiesha",
+    "years": "2022",
+    "reason": "Like A Version: 'Freedom (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Milan Ring",
+    "years": "2021",
+    "reason": "Like A Version: 'Love Galore / Broken Clocks (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Milky Chance",
+    "years": "2020",
+    "reason": "Like A Version: 'triple j Like A Version Sessions'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Missy Higgins",
+    "years": "2012-2024",
+    "reason": "Like A Version: 'Hearts a Mess (triple j Like A Version)'; 'One Of Your Girls (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Montaigne",
+    "years": "2022",
+    "reason": "Like A Version: 'Lucky (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Muroki",
+    "years": "2024",
+    "reason": "Like A Version: 'Borderline (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Muscles",
+    "years": "2008",
+    "reason": "Like A Version: 'Wrapped Up (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "My Morning Jacket",
+    "years": "2009",
+    "reason": "Like A Version: 'Sayonara (The Japanese Farewell Song) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "MØ",
+    "years": "2019",
+    "reason": "Like A Version: '3 Nights (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Mélanie Pain",
+    "years": "2009",
+    "reason": "Like A Version: 'God Save the Queen (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "NIKI",
+    "years": "2025",
+    "reason": "Like A Version: 'Casual (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nerve",
+    "years": "2026",
+    "reason": "Like A Version: 'SexyBack (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nessa Barrett",
+    "years": "2026",
+    "reason": "Like A Version: 'Jolene (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nick Ward",
+    "years": "2022",
+    "reason": "Like A Version: 'Adam’s Song (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nilüfer Yanya",
+    "years": "2019",
+    "reason": "Like A Version: 'Super Rich Kids (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "No Money Enterprise",
+    "years": "2021",
+    "reason": "Like A Version: 'Mo Money Mo Problems (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Noah Dillon",
+    "years": "2022",
+    "reason": "Like A Version: 'The Wire (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Northeast Party House",
+    "years": "2017-2024",
+    "reason": "Like A Version: 'Redbone (triple j Like A Version)'; 'Heads Will Roll (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nothing But Thieves",
+    "years": "2023",
+    "reason": "Like A Version: 'Flowers (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Nouvelle Vague",
+    "years": "2007",
+    "reason": "Like A Version: 'Human Fly (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "ONEFOUR",
+    "years": "2026",
+    "reason": "Like A Version: 'In the Air Tonight (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ocean Alley",
+    "years": "2018-2021",
+    "reason": "Like A Version: 'Baby Come Back (triple j Like A Version)'; 'Breathe / Comfortably Numb / Money (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ocean Grove",
+    "years": "2021",
+    "reason": "Like A Version: 'UFO (triple j Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Odette",
+    "years": "2019",
+    "reason": "Like A Version: 'Magnolia (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Of Monsters and Men",
+    "years": "2013",
+    "reason": "Like A Version: 'Skeletons (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Oh Mercy",
+    "years": "2009",
+    "reason": "Like A Version: 'Lovefool (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Okkervil River",
+    "years": "2006",
+    "reason": "Like A Version: 'Ex-Girl Collection (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Old Man River",
+    "years": "2007",
+    "reason": "Like A Version: 'Marilyn (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Olivia Dean",
+    "years": "2025",
+    "reason": "Like A Version: 'Sexy to Someone (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Omar Apollo",
+    "years": "2024",
+    "reason": "Like A Version: 'Please Please Please (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "One Day",
+    "years": "2023",
+    "reason": "Like A Version: 'Not Many (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Operator Please",
+    "years": "2010",
+    "reason": "Like A Version: 'Heart of Glass (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Oscar Key Sung",
+    "years": "2015",
+    "reason": "Like A Version: 'Loud Places (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "PVT",
+    "years": "2013",
+    "reason": "Like A Version: 'Nothing Arrived (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pacific Avenue",
+    "years": "2023-2026",
+    "reason": "Like A Version: 'Dancing Queen (Like a Version)'; 'Dancing Queen (triple j Like A Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pania",
+    "years": "2023",
+    "reason": "Like A Version: 'PANIA covers Kylie Minogue 'Can't Get You Out of My Head' for Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Parcels",
+    "years": "2019",
+    "reason": "Like A Version: 'I Will Always Love You (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Passion Pit",
+    "years": "2010",
+    "reason": "Like A Version: 'Said I Loved You...But I Lied (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Passionflower",
+    "years": "2023",
+    "reason": "Like A Version: 'Like a Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Paul Dempsey",
+    "years": "2008-2022",
+    "reason": "Like A Version: 'If You Want My Love (triple j Like a Version)'; 'Edge Of Town (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Paul Kelly",
+    "years": "2025",
+    "reason": "Like A Version: 'Did It Again (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Peabody",
+    "years": "2005",
+    "reason": "Like A Version: 'Borderline (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Peach PRC",
+    "years": "2023",
+    "reason": "Like A Version: 'Everytime We Touch (Like a Version)'; 'Loved You Before (live for Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pegz",
+    "years": "2005",
+    "reason": "Like A Version: 'Zebra (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Peking Duk feat. Julia Stone",
+    "years": "2023",
+    "reason": "Like A Version: 'Fall at Your Feet (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pendulum",
+    "years": "2023",
+    "reason": "Like A Version: 'Anti‐Hero (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pete Murray",
+    "years": "2004",
+    "reason": "Like A Version: 'Sugar Mountain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Peter Bjorn and John",
+    "years": "2007",
+    "reason": "Like A Version: 'Me and Julio Down by the Schoolyard (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Petit Biscuit",
+    "years": "2018",
+    "reason": "Like A Version: '1901 (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Phoenix",
+    "years": "2009",
+    "reason": "Like A Version: 'Playground Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Phrase",
+    "years": "2011",
+    "reason": "Like A Version: 'Tighten Up (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pierce the Veil",
+    "years": "2023",
+    "reason": "Like A Version: 'Karma Police (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pigeon John",
+    "years": "2011",
+    "reason": "Like A Version: 'Last Nite (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Playlunch",
+    "years": "2025",
+    "reason": "Like A Version: 'It's Raining Men (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Polaris",
+    "years": "2020",
+    "reason": "Like A Version: 'Black Fingernails, Red Wine (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Polish Club",
+    "years": "2022",
+    "reason": "Like A Version: 'Never Be Like You (triple j Like A Version)'; 'Say So (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pond",
+    "years": "2019-2022",
+    "reason": "Like A Version: 'Ray of Light (triple j Like a Version)'; 'Rain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Pony Up",
+    "years": "2006",
+    "reason": "Like A Version: 'An Honest Mistake (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Poppy",
+    "years": "2025",
+    "reason": "Like A Version: 'Taste (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Porter Robinson",
+    "years": "2025",
+    "reason": "Like A Version: 'Favourite (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Press Club",
+    "years": "2018",
+    "reason": "Like A Version: 'When You Were Young (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Psychedelic Porn Crumpets",
+    "years": "2020",
+    "reason": "Like A Version: 'I Wanna Be Like You (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Queens of the Stone Age",
+    "years": "2008",
+    "reason": "Like A Version: 'White Wedding (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "RAYE",
+    "years": "2024",
+    "reason": "Like A Version: 'Feeling Good (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "REMI",
+    "years": "2017-2018",
+    "reason": "Like A Version: 'Thong Song (triple j Like a Version)'; 'Since I Left You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "ROLE MODEL",
+    "years": "2025",
+    "reason": "Like A Version: 'Nothing New (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Radical Son",
+    "years": "2007",
+    "reason": "Like A Version: 'The Dead Heart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Radio Free Alice",
+    "years": "2026",
+    "reason": "Like A Version: 'DJ Got Us Fallin' In Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Rebecca Black",
+    "years": "2025",
+    "reason": "Like A Version: 'Fame Is a Gun (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Red Riders",
+    "years": "2006",
+    "reason": "Like A Version: 'Waterfall (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "RedHook",
+    "years": "2024",
+    "reason": "Like A Version: 'Greedy (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Regular John",
+    "years": "2009",
+    "reason": "Like A Version: 'Hybrid Moments (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Regurgitator",
+    "years": "2005",
+    "reason": "Like A Version: 'Whole Lotta Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Remi Wolf",
+    "years": "2023",
+    "reason": "Like A Version: 'Valerie (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Resurrectors",
+    "years": "2006",
+    "reason": "Like A Version: 'Last Nite (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Rise Against",
+    "years": "2007",
+    "reason": "Like A Version: 'Mother (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Royal Blood",
+    "years": "2015",
+    "reason": "Like A Version: 'Hang Me Up To Dry (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Royel Otis",
+    "years": "2024",
+    "reason": "Like A Version: 'Murder on the Dancefloor (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ruby Fields",
+    "years": "2019-2025",
+    "reason": "Like A Version: 'The Unguarded Moment (triple j Like a Version)'; 'Lovesong (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ruel",
+    "years": "2022",
+    "reason": "Like A Version: 'It Ain't Over 'Til It's Over (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Rum Jungle",
+    "years": "2023",
+    "reason": "Like A Version: 'Stay (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "RÜFÜS DU SOL",
+    "years": "2022",
+    "reason": "Like A Version: 'Something in the Way (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Róisín Murphy",
+    "years": "2008",
+    "reason": "Like A Version: 'Good Life (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "SAFIA",
+    "years": "2022-2023",
+    "reason": "Like A Version: 'triple j Like A Version Sessions'; 'SAFIA cover Dido 'White Flag' for Like a Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "SKATERS",
+    "years": "2023",
+    "reason": "Like A Version: 'Judy Is a Punk (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "SLUMBERJACK",
+    "years": "2022",
+    "reason": "Like A Version: 'In for the Kill (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "SLUMBERJACK feat. K.Flay",
+    "years": "2017",
+    "reason": "Like A Version: 'Paper Planes (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sampa the Great",
+    "years": "2023",
+    "reason": "Like A Version: 'DNA (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "San Cisco",
+    "years": "2018",
+    "reason": "Like A Version: 'Get Lucky (triple j Like a Version)'; '4ever (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sarah Blasko",
+    "years": "2010",
+    "reason": "Like A Version: 'Triple J Like a Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Seekae",
+    "years": "2014",
+    "reason": "Like A Version: 'Picture Me Gone (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Shihad",
+    "years": "2004",
+    "reason": "Like A Version: 'Ace of Spades (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sia",
+    "years": "2009",
+    "reason": "Like A Version: 'I Go to Sleep (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Silversun Pickups",
+    "years": "2007",
+    "reason": "Like A Version: 'Shadowplay (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Skegss",
+    "years": "2019-2025",
+    "reason": "Like A Version: 'Here Comes Your Man (triple j Like a Version)'; 'If It Makes You Happy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Slowly Slowly",
+    "years": "2019-2023",
+    "reason": "Like A Version: 'Skinny Love (Triple J Like a version)'; 'I Miss You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Slum Sociable",
+    "years": "2019",
+    "reason": "Like A Version: 'Somebody To Love Me (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sly Withers",
+    "years": "2021",
+    "reason": "Like A Version: 'The Scientist (triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Smino",
+    "years": "2024",
+    "reason": "Like A Version: 'Roses (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Soccer Mommy",
+    "years": "2025",
+    "reason": "Like A Version: 'Gold Soundz (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sofi Tukker",
+    "years": "2017-2024",
+    "reason": "Like A Version: 'Alaska (triple j Like a Version)'; 'Chasing Cars (triple J Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Something With Numbers",
+    "years": "2009",
+    "reason": "Like A Version: 'Sex From the Bong (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Something for Kate",
+    "years": "2021-2022",
+    "reason": "Like A Version: 'Cardigan (triple j Like a Version)'; 'Sweet Nothing (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sonic Animation",
+    "years": "2005",
+    "reason": "Like A Version: 'Why Can't I Be You? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sons and Daughters",
+    "years": "2005",
+    "reason": "Like A Version: 'Come In Out of the Rain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "South Summit",
+    "years": "2024",
+    "reason": "Like A Version: 'Roxanne (triple J Like a Version)'; 'Roxanne (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Spacey Jane",
+    "years": "2021",
+    "reason": "Like A Version: 'Here Comes the Sun (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sparkadia",
+    "years": "2009",
+    "reason": "Like A Version: 'Summer Rain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sparta",
+    "years": "2007",
+    "reason": "Like A Version: 'Precious (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Spinnerette",
+    "years": "2010",
+    "reason": "Like A Version: 'Do You Wanna Dance? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Spoon",
+    "years": "2008",
+    "reason": "Like A Version: 'Peace Like a River (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Stand Atlantic",
+    "years": "2020-2024",
+    "reason": "Like A Version: 'Righteous (triple j Like a Version)'; 'Chemical (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Stella Donnelly",
+    "years": "2020",
+    "reason": "Like A Version: 'Love Is in the Air (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Stevan",
+    "years": "2023",
+    "reason": "Like A Version: 'Them Changes (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sticky Fingers",
+    "years": "2015",
+    "reason": "Like A Version: 'Rhiannon (triple j Like A Version)'; 'Delete (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Suki Waterhouse",
+    "years": "2025",
+    "reason": "Like A Version: 'Look At That Woman (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sumner",
+    "years": "2025",
+    "reason": "Like A Version: 'Like A Prayer (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Supergrass",
+    "years": "2008",
+    "reason": "Like A Version: 'Next to You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Superorganism",
+    "years": "2018",
+    "reason": "Like A Version: 'Congratulations (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Surf Trash",
+    "years": "2024",
+    "reason": "Like A Version: 'This Heart Attack (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Sycco",
+    "years": "2021-2025",
+    "reason": "Like A Version: 'Dribble (triple j Like a Version)'; 'Embrace (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Taking Back Sunday",
+    "years": "2010",
+    "reason": "Like A Version: 'Time To Move On (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tame Impala",
+    "years": "2020",
+    "reason": "Like A Version: 'A Girl Like You (Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tash Sultana",
+    "years": "2017",
+    "reason": "Like A Version: 'Electric Feel (Triple J Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tasman Keith",
+    "years": "2025",
+    "reason": "Like A Version: 'B.O.B. (Bombs Over Baghdad) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ta‐ku",
+    "years": "2017",
+    "reason": "Like A Version: 'Leave (Get Out) [triple j Like A Version]'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Teen Jesus and the Jean Teasers",
+    "years": "2023-2026",
+    "reason": "Like A Version: 'Happier Than Ever (triple j Like A Version)'; 'All the Things She Said (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Teenage Dads",
+    "years": "2023",
+    "reason": "Like A Version: 'Video Killed the Radio Star (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Teenage Joans",
+    "years": "2024",
+    "reason": "Like A Version: 'Call Me Maybe (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Telenova",
+    "years": "2021",
+    "reason": "Like A Version: 'Hung Up (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Amity Affliction",
+    "years": "2025",
+    "reason": "Like A Version: 'HOLIDAY (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Audreys",
+    "years": "2006",
+    "reason": "Like A Version: 'That Ain't Bad (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Bamboos",
+    "years": "2007",
+    "reason": "Like A Version: 'Everybody Here Wants You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Beaches",
+    "years": "2024",
+    "reason": "Like A Version: 'End of Beginning (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Beautiful Girls",
+    "years": "2004-2010",
+    "reason": "Like A Version: 'I’ve Just Destroyed the World (Like a Version)'; 'Hopelessly Devoted To You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Bedroom Philosopher",
+    "years": "2005",
+    "reason": "Like A Version: '2005 Hottest 100 Megamix (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Belair Lip Bombs",
+    "years": "2026",
+    "reason": "Like A Version: 'Happiness (triple j Like a Version)'; 'Happiness (triple j Like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Bennies",
+    "years": "2023",
+    "reason": "Like A Version: 'You’ll Never Be An Old Man River (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Brunettes",
+    "years": "2006",
+    "reason": "Like A Version: 'Toxic (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Buoys",
+    "years": "2024",
+    "reason": "Like A Version: 'Vampire (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Camels",
+    "years": "2004",
+    "reason": "Like A Version: 'Can't Take My Eyes Off You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Cops",
+    "years": "2007",
+    "reason": "Like A Version: 'A Horse With No Name (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Creases",
+    "years": "2017",
+    "reason": "Like A Version: 'You Get What You Give (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Devoted Few",
+    "years": "2005",
+    "reason": "Like A Version: 'Lost Highway (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Dreggs",
+    "years": "2025",
+    "reason": "Like A Version: 'Take On Me (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Flaming Lips",
+    "years": "2009",
+    "reason": "Like A Version: 'Borderline / Can't Get You Out Of My Head (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Gaslight Anthem",
+    "years": "2011",
+    "reason": "Like A Version: 'Sitting, Waiting, Wishing (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Grates",
+    "years": "2011",
+    "reason": "Like A Version: 'Please Leave (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Greenhornes",
+    "years": "2006",
+    "reason": "Like A Version: 'Nothing Can Change This Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Grogans",
+    "years": "2023",
+    "reason": "Like A Version: 'You Really Got Me (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Herd",
+    "years": "2018",
+    "reason": "Like A Version: 'I Was Only 19 (triple j Like a Version)'; 'Bodies (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Hold Steady",
+    "years": "2009",
+    "reason": "Like A Version: 'History Lesson – Part II (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Holidays",
+    "years": "2011-2014",
+    "reason": "Like A Version: 'Wolf Like Me (triple j Like a Version)'; 'Is This How You Feel? / Sexual Healing (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Internet",
+    "years": "2016",
+    "reason": "Like A Version: 'Tape You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Jezabels",
+    "years": "2017",
+    "reason": "Like A Version: 'If You Go (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The John Steel Singers",
+    "years": "2008",
+    "reason": "Like A Version: 'Confide in Me (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Jungle Giants",
+    "years": "2013-2026",
+    "reason": "Like A Version: 'Buddy Holly (triple j Like a Version)'; 'Lights & Music (triple j Like a version)' and 2 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Kills",
+    "years": "2009",
+    "reason": "Like A Version: 'Crazy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Kite String Tangle",
+    "years": "2014",
+    "reason": "Like A Version: 'Clair de Lune (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Last Dinner Party",
+    "years": "2024",
+    "reason": "Like A Version: 'Call Me (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Lazy Eyes",
+    "years": "2022",
+    "reason": "Like A Version: 'More Than A Woman (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Living End",
+    "years": "2004-2012",
+    "reason": "Like A Version: 'Walls (triple j Like a Version)'; 'Drugs (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Lumineers",
+    "years": "2013",
+    "reason": "Like A Version: 'This Must Be The Place (Naive Melody) (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Matches",
+    "years": "2008",
+    "reason": "Like A Version: 'Bodysnatchers (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Mess Hall",
+    "years": "2007",
+    "reason": "Like A Version: 'Speed of the Sound of Loneliness (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Moving Stills",
+    "years": "2023",
+    "reason": "Like A Version: 'My Delirium (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Paper Kites",
+    "years": "2013",
+    "reason": "Like A Version: 'Help Me Lose My Mind (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Shins",
+    "years": "2012",
+    "reason": "Like A Version: 'Andrew In Drag (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Smith Street Band",
+    "years": "2023",
+    "reason": "Like A Version: 'Hand In My Pocket (triple j Like A Version)'; 'History Eraser (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Soundtrack of Our Lives",
+    "years": "2006",
+    "reason": "Like A Version: 'Signed D.C. (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Temper Trap",
+    "years": "2019-2026",
+    "reason": "Like A Version: 'Don't Fight It (Triple J Like A Version)'; 'Multi‐Love (triple j Like A Version)' and 2 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Terrys",
+    "years": "2022-2025",
+    "reason": "Like A Version: 'Catch My Disease (triple j Like A Version)'; 'Changes (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Tullamarines",
+    "years": "2026",
+    "reason": "Like A Version: 'The Chain (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Vaccines",
+    "years": "2011",
+    "reason": "Like A Version: 'Where Is My Mind? (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Vanns",
+    "years": "2020",
+    "reason": "Like A Version: 'Hey, Ma (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Vasco Era",
+    "years": "2005",
+    "reason": "Like A Version: 'The Needle and the Damage Done (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Veronicas",
+    "years": "2026",
+    "reason": "Like A Version: 'Untouched (triple j Like a Version)'; '12 to 12 (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Wiggles",
+    "years": "2021",
+    "reason": "Like A Version: 'Elephant (triple j like a version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Wombats",
+    "years": "2011-2025",
+    "reason": "Like A Version: 'Price Tag (triple j Like a Version)'; 'Running Up That Hill (triple j Like A Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "The Yung Warriors",
+    "years": "2012",
+    "reason": "Like A Version: 'Black Boy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Thelma Plum",
+    "years": "2024",
+    "reason": "Like A Version: 'Bitch (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "These New South Whales",
+    "years": "2023",
+    "reason": "Like A Version: 'Tubthumping (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Thornhill",
+    "years": "2022-2025",
+    "reason": "Like A Version: 'Supermassive Black Hole (triple j Like a Version)'; 'Paparazzi (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Thundamentals",
+    "years": "2018",
+    "reason": "Like A Version: 'Brother (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tia Gostelow",
+    "years": "2023",
+    "reason": "Like A Version: 'Poison (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tim Minchin",
+    "years": "2012-2021",
+    "reason": "Like A Version: 'Here Comes The Flood (triple j Like a Version)'; 'bad guy (triple j Like a Version)' and 1 more",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tim Rogers & The Temperance Union",
+    "years": "2005",
+    "reason": "Like A Version: 'Victoria (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tiny Little Houses",
+    "years": "2018",
+    "reason": "Like A Version: 'SOS (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tkay Maidza",
+    "years": "2023",
+    "reason": "Like A Version: 'Kill Bill (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tom Morello",
+    "years": "2008",
+    "reason": "Like A Version: 'Dirty Deeds Done Dirt Cheap (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tones and I",
+    "years": "2019-2022",
+    "reason": "Like A Version: 'Forever Young (Triple J Like A Version)'; 'Achilles Come Down (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tonight Alive",
+    "years": "2018",
+    "reason": "Like A Version: 'Affirmation (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tove Lo",
+    "years": "2023",
+    "reason": "Like A Version: 'Dancing on My Own (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Trial Kennedy",
+    "years": "2008",
+    "reason": "Like A Version: 'Sunday Bloody Sunday (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Triple One",
+    "years": "2021",
+    "reason": "Like A Version: 'Time After Time (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Trophy Eyes",
+    "years": "2017-2023",
+    "reason": "Like A Version: 'Every Breath You Take (triple j Like a Version)'; 'Silver (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "True Live",
+    "years": "2008",
+    "reason": "Like A Version: 'Never Tear Us Apart (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Turnstile",
+    "years": "2026",
+    "reason": "Like A Version: 'I Wanna Be Adored (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Two Door Cinema Club",
+    "years": "2010",
+    "reason": "Like A Version: 'Cecilia (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Two Nice Girls",
+    "years": "1990",
+    "reason": "Like A Version: 'Like a Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Tyne-James Organ",
+    "years": "2021-2022",
+    "reason": "Like A Version: 'Tyne-James Organ covers The Kooks 'Naive' for Like A Version'; 'Naïve (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "T󠀱elenova",
+    "years": "2021",
+    "reason": "Like A Version: 'Hung Up (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Urge Overkill",
+    "years": "2006",
+    "reason": "Like A Version: 'Hello There (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Urthboy",
+    "years": "2018",
+    "reason": "Like A Version: 'Roll up Your Sleeves (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vacations",
+    "years": "2024",
+    "reason": "Like A Version: 'Never Gonna Give You Up (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vallis Alps",
+    "years": "2017",
+    "reason": "Like A Version: 'New Slang (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vampire Weekend",
+    "years": "2008",
+    "reason": "Like A Version: 'Everywhere (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vance Joy",
+    "years": "2022-2024",
+    "reason": "Like A Version: 'Don't Change (triple j Like A Version)'; 'triple j Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vera Blue",
+    "years": "2022",
+    "reason": "Like A Version: 'Stay (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vetta Borne",
+    "years": "2021",
+    "reason": "Like A Version: 'Cool (triple j Like A version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Violent Femmes",
+    "years": "2005",
+    "reason": "Like A Version: '(I’m) Stranded (Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vlossom",
+    "years": "2020",
+    "reason": "Like A Version: 'Fast Car (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Vydamo",
+    "years": "2013",
+    "reason": "Like A Version: 'One Way Trigger / I Follow You (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "WAAX",
+    "years": "2022",
+    "reason": "Like A Version: 'Good Luck (Triple J Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wafia",
+    "years": "2024",
+    "reason": "Like A Version: 'I Was Neon (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wallows",
+    "years": "2025",
+    "reason": "Like A Version: 'No One Noticed (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "West Thebarton",
+    "years": "2018",
+    "reason": "Like A Version: 'You’ve Got the Love (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wet Leg",
+    "years": "2022",
+    "reason": "Like A Version: 'Smoko (Like a Version)'; 'Smoko (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wilson Dixon",
+    "years": "2010",
+    "reason": "Like A Version: 'Pistol of Fire (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Winston Surfshirt",
+    "years": "2017-2022",
+    "reason": "Like A Version: '21 Questions (triple j Like A Version)'; 'Kiss Me More (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wisp",
+    "years": "2026",
+    "reason": "Like A Version: 'Last Night on Earth (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wolf & Cub",
+    "years": "2009-2013",
+    "reason": "Like A Version: 'Mambo Sun (triple j Like a Version)'; 'I Would Die 4 U (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wolf Alice",
+    "years": "2022",
+    "reason": "Like A Version: 'Sense (Triple J Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Wolfmother",
+    "years": "2009",
+    "reason": "Like A Version: 'Wuthering Heights (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "World’s End Press",
+    "years": "2013",
+    "reason": "Like A Version: 'Elephant (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Xavier Rudd",
+    "years": "2005-2012",
+    "reason": "Like A Version: 'Let It Be (Like a Version)'; 'I Need A Dollar (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Yeasayer",
+    "years": "2011",
+    "reason": "Like A Version: 'Crazy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Yo La Tengo",
+    "years": "2007",
+    "reason": "Like A Version: 'Beautiful World (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "You Am I",
+    "years": "2013",
+    "reason": "Like A Version: 'Super Rich Kids (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "You Me at Six",
+    "years": "2012",
+    "reason": "Like A Version: 'Paradise (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Yours Truly",
+    "years": "2020-2024",
+    "reason": "Like A Version: 'Don't Look Back in Anger (Triple J Like a Version)'; 'Von Dutch (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Youth Group",
+    "years": "2008",
+    "reason": "Like A Version: 'Beautiful Waste (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ziggy Alberts",
+    "years": "2018",
+    "reason": "Like A Version: 'Juke Jam (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Ziggy Ramo",
+    "years": "2023",
+    "reason": "Like A Version: 'Doo Wop (That Thing) [triple j Like a Version]'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "alt‐J",
+    "years": "2012",
+    "reason": "Like A Version: 'Slow Dre (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "bbno$",
+    "years": "2023",
+    "reason": "Like A Version: 'I'm Too Sexy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "beabadoobee",
+    "years": "2025",
+    "reason": "Like A Version: 'Sway (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "d4vd",
+    "years": "2023",
+    "reason": "Like A Version: 'Set Fire to the Rain (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "daine",
+    "years": "2026",
+    "reason": "Like A Version: 'Hello (triple j Like A Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "girl in red",
+    "years": "2024",
+    "reason": "Like A Version: 'Lunch (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "grentperez",
+    "years": "2022",
+    "reason": "Like A Version: 'Teacher's Pet (Like a Version)'; 'Teachers Pet (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "k‐os",
+    "years": "2008",
+    "reason": "Like A Version: 'Champion (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "merci, mercy",
+    "years": "2022",
+    "reason": "Like A Version: 'Good News (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "sleepmakeswaves",
+    "years": "2017",
+    "reason": "Like A Version: 'Children (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "sombr",
+    "years": "2026",
+    "reason": "Like A Version: 'Man I Need (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "thatboykwame",
+    "years": "2026",
+    "reason": "Like A Version: 'Dance Monkey (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "theredsunband",
+    "years": "2005",
+    "reason": "Like A Version: 'My Drug Buddy (triple j Like a Version)'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "venbee",
+    "years": "2023",
+    "reason": "Like A Version: 'Venbee covers Justin Bieber's 'Sorry' for Like A Version'",
+    "branch": "Like A Version",
+    "group": "Like A Version"
+   },
+   {
+    "name": "Alanis Morissette",
+    "years": "2005",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Alicia Keys",
+    "years": "2013",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Bee Gees",
+    "years": "1997",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Billy Idol",
+    "years": "2002",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Culture Club",
+    "years": "1998",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers: Greatest Moments'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Dave Matthews & Tim Reynolds",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Dave Matthews Band",
+    "years": "2005",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers 2005'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "David Bowie",
+    "years": "2009",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Def Leppard",
+    "years": "1999",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Dixie Chicks",
+    "years": "2011",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Don Henley",
+    "years": "2010",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers & More'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "John Mellencamp",
+    "years": "1998",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers: Limited Edition Bonus Disc'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Johnny Cash & Willie Nelson",
+    "years": "1998",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Kanye West",
+    "years": "2010",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Matchbox Twenty",
+    "years": "2002",
+    "reason": "VH1 Storytellers: 'VH-1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Meat Loaf",
+    "years": "1999",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "R.E.M.",
+    "years": "1998",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Ringo Starr",
+    "years": "1998",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Sarah McLachlan",
+    "years": "2003",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'; 'Storytellers (VH1)'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "Stone Temple Pilots",
+    "years": "2000",
+    "reason": "VH1 Storytellers: 'VH1 Storytellers'; 'VH1 Storytellers & MTV Unplugged'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   },
+   {
+    "name": "The Doors",
+    "years": "2000",
+    "reason": "VH1 Storytellers: 'The Doors and Guests: VH1 Storytellers'",
+    "branch": "VH1 Storytellers",
+    "group": "VH1 Storytellers"
+   }
+  ],
+  "not": []
  }
 };

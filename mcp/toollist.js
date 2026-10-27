@@ -514,7 +514,8 @@ export const TOOLS = [
       "DJ named to play is this call. Only an ask for A SET (a length, a mood, a subject) is a new set made " +
       "the other way.\n\n" +
       "ONE ARTIST, ENDLESS is Deep Dive with the artist in `words`: \"Michael Jackson, endless\". A GENRE " +
-      "no DJ owns is Genre with the genre in `words`: \"80s new wave, endless\". " +
+      "no DJ owns is Genre with the genre in `words`: \"80s new wave, endless\". LIVE VERSIONS, a band in " +
+      "a small room (sessions, unplugged, Tiny Desk) are Sessions, with a series or years in `words` if said. " +
       // Words for any guest (2026-10-13, with the merges).
       "Any other guest may be given `words` too, optional: Vibe a mood (\"the room\", \"the morning\", " +
       "\"the small hours\"), Soul a half or a label (\"the South (Stax)\", \"the North (Motown)\"). " +
@@ -2238,7 +2239,7 @@ export const VOICE_BRIEFS = {
     "plays their own preset; anyone else becomes the guest DJ on 3 and starts at once from their newest program, " +
     "or makes an opening in about four minutes. Deep Dive takes the artist in `words` (one artist, endless), " +
     "Genre the genre (a genre no DJ owns). Optional `words` for any other guest: Vibe a mood, Soul the South, " +
-    "the North or a label. " +
+    "the North or a label, Sessions a series. " +
     "Say the one line in `said`.",
   search_archive: `The house's own live tapes: ${ARCHIVE.who}, ${ARCHIVE.years}, on no music service. ` +
     "Filter by `song`, `artist`, `venue`, `year` ('1999' or '1999-2001'), " +

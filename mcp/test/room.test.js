@@ -407,8 +407,9 @@ test("a DJ cut from the house has no page and no brief, and no list names them",
     }
     const all = await callTool(e, "get_dj", {}, { remaining: 40 });
     // Seventeen since the merges, 2026-10-13: six DJs became two. Fifteen
-    // since Dutch and Chanson were cut the same day; ten since 2026-10-15.
-    assert.equal(all.djs.length, 10);
+    // since Dutch and Chanson were cut the same day; ten since 2026-10-15;
+    // eleven since Sessions (2026-10-26).
+    assert.equal(all.djs.length, 11);
     assert.ok(!all.djs.some((d) => /Bootlegger|Correspondent|Engineer|Baddie|Youp|Comedy|Amadeus|Projectionist|Tempo|Grunge|Dutch|Chanson/.test(d.name)));
     assert.ok(!all.djs.some((d) => /Camille|Monk|Professor|Selector|Hip Hop/.test(d.name)), "nor the five cut on 2026-10-15");
     assert.ok(!all.djs.some((d) => /Sunny|Morning|Nightside|Stax|Soul Factory|KRS-One/.test(d.name)), "the merged DJs are not listed");

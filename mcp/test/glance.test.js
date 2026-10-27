@@ -53,7 +53,8 @@ test("every DJ on the roster has a Which DJ card: a way of choosing, the words, 
   const ids = new Set(WHICH_SCRIPTS.map((x) => x.id));
   // Six since 2026-10-13: "the sound" went with the Engineer, the
   // Bootlegger and the Projectionist, and "the place" with Dutch and Chanson.
-  assert.equal(ids.size, 6);
+  // Seven since 2026-10-26: "the sound" is back with Sessions.
+  assert.equal(ids.size, 7);
   for (const sc of WHICH_SCRIPTS) assert.ok(sc.colour.every((c) => /^#[0-9A-Fa-f]{6}$/.test(c)), `${sc.id}: colours`);
   for (const k of Object.keys(ROSTER)) {
     const w = WHICH[k];

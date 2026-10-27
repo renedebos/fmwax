@@ -430,6 +430,9 @@ all night": no DJ is named, but endless is always a DJ's. Never a set on the
   Genre: play_endless with dj "Genre" and \`words\` the genre, with any years
   said, and no steer: Genre makes the set (about four minutes). Another
   genre while Genre plays is play_endless again with the new one.
+- LIVE IN A SMALL ROOM ("something live", "unplugged", "Peel sessions",
+  "Tiny Desk all night") is Sessions: play_endless with dj "Sessions", and
+  \`words\` the series or the years if any were said, and no steer.
 - Say who in one line: "Deep Dive's on it, Michael Jackson, in about four
   minutes", "Dr. Funkenstein's taking it, on 4, the drummers first", "Genre's making new
   wave, about four minutes."

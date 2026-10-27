@@ -53,7 +53,8 @@ test("the artists of a label, and a DJ with no roll call has no slice", () => {
   // reviewed since stay.
   assert.equal(hasRollCall("monk"), false);
   assert.equal(rollCallSlice("monk", { words: "organ trios" }), null);
-  assert.deepEqual(Object.keys(ROLL_CALLS).sort(), ["dr-funkenstein", "genre:jazz", "hank", "pub-rock"]);
+  // Sessions' since 2026-10-26, gathered from MusicBrainz and not read one by one.
+  assert.deepEqual(Object.keys(ROLL_CALLS).sort(), ["dr-funkenstein", "genre:jazz", "hank", "pub-rock", "sessions"]);
 });
 
 test("get_dj with the listener's words carries the slice; without them only says there is one; other DJs carry neither", async () => {
