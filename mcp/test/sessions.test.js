@@ -34,6 +34,8 @@ test("its brief: every song a session take, never the record, junk named, new ea
   assert.match(b, /SOMETHING NEW IN EVERY SET[^]*last month/);
   assert.match(b, /at least four series in an hour[^]*Audiotree\s+Live, the biggest, no more than a quarter/);
   assert.match(PERSONAS["deep-dive"].brief, /AGAINST SESSIONS/);
+  // The owner, 2026-10-26: "only 60's bands? Or only hip-hop?" Both fences.
+  assert.match(b, /so are years and a genre \('sixties bands', 'only\s+hip-hop'\): then the spread is within what the fence leaves/);
 });
 
 test("its roll call: every series, a broad ask crosses them, a named series keeps to it", () => {

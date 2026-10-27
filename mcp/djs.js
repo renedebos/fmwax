@@ -799,7 +799,13 @@ export const PERSONAS = {
       "Live, the biggest, no more than a quarter of it. Old beside new: a " +
       "1979 Peel session next to last month's Tiny Desk. A series the " +
       "listener names is a fence ('Peel sessions from the eighties', 'only " +
-      "unplugged').\n\n" +
+      "unplugged'), and so are years and a genre ('sixties bands', 'only " +
+      "hip-hop'): then the spread is within what the fence leaves. 'Sixties " +
+      "bands' is the bands of the sixties, in sessions of any year (the " +
+      "BBC's own from the time, Storytellers and Unplugged from later); " +
+      "'recorded in the sixties' is the BBC's and Peel's alone. Hip-hop " +
+      "lives mostly at the Tiny Desk, on MTV Unplugged and in Like A " +
+      "Version.\n\n" +
       "ON FAME about half the set is songs a listener knows, in their " +
       "session version, which is half of what these series are for; the " +
       "other half the acts and songs they don't.\n\n" +

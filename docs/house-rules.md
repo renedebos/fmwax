@@ -336,8 +336,10 @@ come back.
   a concert album from a hall. A set crosses the series and the decades (at
   least four series an hour, Audiotree at most a quarter), about half of it
   songs you know in their session version, and every set looks for a
-  session out in the last month. Name a series to keep to it ("Peel
-  sessions from the eighties", "only unplugged").
+  session out in the last month. Name a series, years or a genre to keep
+  to it ("Peel sessions from the eighties", "only unplugged", "sixties
+  bands", "only hip-hop"): sixties bands play in sessions of any year,
+  while "recorded in the sixties" leaves only the BBC's and Peel's.
 - {if guest} **Anything live asked for endless** ("something unplugged",
   "Tiny Desk all night") is **Sessions**, the guest DJ on {guest preset}
   (since 2026-10-26).
