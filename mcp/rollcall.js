@@ -29,6 +29,13 @@ const STOP = new Set(("a an and the of for in on to my me i it its is be with wh
 // "Funk" bands for an hour of funk) where it should be a broad ask.
 const FIELD = { "dr-funkenstein": ["funk", "funky", "soul"], hank: ["funk", "funky", "soul"],
   "genre:jazz": ["jazz", "jazzy", "genre"] };
+// A ROLL CALL WITH NOTHING BUT SERIES AND TITLES (Sessions', 2026-10-26)
+// knows no genre, so an ask's other words can only match a title by chance:
+// "only hip-hop" brought The Only Ones and "God Only Knows". Its words are
+// the series' own; the rest leaves a broad spread, and an act named in full
+// still counts (score's whole-name check).
+const VOCAB = { sessions: new Set(("peel john bbc beeb maida vale mtv unplugged tiny desk npr meter sessies " +
+  "spotify audiotree austin acl limits triple version storytellers vh1").split(" ")) };
 // GENRE'S ROLL CALLS (2026-10-18). Genre plays whatever genre was asked, so
 // its roll calls are by genre ("genre:jazz" in rollcalls.js) and the ask's
 // words pick one. Jazz is Monk's, from when he was the jazz DJ (cut
@@ -153,7 +160,7 @@ export function rollCallSlice(djKey, { words = "", recent = [], seed = "", brief
   if (!key) return null;
   const rc = ROLL_CALLS[key];
   const field = new Set(FIELD[key] ?? []);
-  const ws = telling(rc, wordsOf(words).filter((w) => !field.has(w))), ys = yearsOf(words);
+  const ws = telling(rc, wordsOf(words).filter((w) => !field.has(w) && (!VOCAB[key] || VOCAB[key].has(w)))), ys = yearsOf(words);
   const heard = artistsOfLabels(recent), named = norm(brief);
   const fresh = (e) => !namesOf(e).some((n) => heard.has(n));
   const unnamed = (e) => !namesOf(e).some((n) => n.length > 2 && ` ${named} `.includes(` ${n} `));

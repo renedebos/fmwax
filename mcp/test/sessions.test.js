@@ -55,6 +55,12 @@ test("its roll call: every series, a broad ask crosses them, a named series keep
   assert.ok(desk.filter((l) => l.endsWith("[Tiny Desk]")).length >= 10, "an ask that names a series keeps to it");
   const unplugged = rollCallSlice("sessions", { words: "something unplugged", seed: "a" }).fits;
   assert.ok(unplugged.every((l) => l.endsWith("[MTV Unplugged]")), "'something' matches no band called Something");
+  // The list knows no genre (2026-10-26: "only hip-hop" brought The Only Ones
+  // and "God Only Knows"): words outside the series' own leave a broad spread.
+  const hiphop = rollCallSlice("sessions", { words: "only hip-hop", seed: "a" }).fits;
+  assert.ok(!hiphop.some((l) => /\bOnly\b|Hipp/.test(l)), hiphop.join("\n"));
+  assert.ok(new Set(hiphop.map((l) => l.match(/\[([^\]]+)\]$/)?.[1])).size >= 6, "a spread instead");
+  assert.ok(rollCallSlice("sessions", { words: "The Fall, Peel sessions", seed: "a" }).fits[0].startsWith("The Fall"), "an act named in full still leads");
 });
 
 test("Talk and the tools send anything live to Sessions", () => {
