@@ -1,6 +1,6 @@
 # A note for testers
 
-*To send with the invite.*
+*To send with the link to https://github.com/renedebos/fmwax.*
 
 ---
 
@@ -22,17 +22,16 @@ long as you listen.
     the ChatGPT app, and a ChatGPT Work chat runs the Endless part. If you
     are on Free or Go, tell me how far you get: nobody has checked yet.
 - A free Cloudflare account (no card).
-- A computer with Node.js 22 or newer (nodejs.org, the LTS installer): a
-  Mac, Windows, Linux, or a Chromebook's Linux. Nothing else to install:
-  you download the code as a ZIP. A Mac and a Windows 10 laptop have been
-  tried; tell me how it goes on yours.
-- A GitHub account, for the invite.
+- A computer with a browser, and a free GitHub account: the Deploy button
+  puts your own copy of the house there. (Or, without GitHub, the
+  terminal way: Node.js 22 or newer from nodejs.org, the LTS installer.
+  A Mac and a Windows 10 laptop have been tried.)
 - About an hour, plus 30 to 45 minutes for Endless. Most of it is saving
   presets on the WiiM.
 
-**How:** accept the GitHub invite, then follow `START-HERE.md` in the
-repository from the top. It is the whole install: one command in a
-terminal, then a checklist on your house's setup page.
+**How:** open the repository and follow `START-HERE.md` from the top. It
+is the whole install: make up a password, press the Deploy button, then a
+checklist on your house's setup page.
 
 **Where to start once it plays:** three DJs take any ask. **Genre** for a
 style ("Genre, an hour of ska"), **Deep Dive** for an artist ("Deep Dive,
@@ -45,17 +44,14 @@ taste.
 - Everything runs on *your* accounts: your Cloudflare, your own Spotify
   developer app, your Claude or ChatGPT. I cannot see your house or your
   music.
-- The repository also holds my own house (its settings and my notes).
-  Ignore them: the install makes yours from scratch and touches nothing of
-  mine. Please don't push changes to the repository.
 - Optional, any time later: the home helper, a small program on a computer
   at home that lets the house see and press every preset (the setup page
   has its steps, and a Remove button to take it away again).
 - Not in this version: Tidal, and the house's Talk tab without an OpenAI
   key. The Claude app's and ChatGPT's own voice modes work.
-- Updates: I'll send a message. You download the new ZIP and run the
-  install command again (`START-HERE.md`, *Updates*). When the message says **re-add the
-  connector**, do that too: the Claude app keeps the old list of the
+- Updates: your setup page says when one is out, and its **Updates**
+  opens GitHub's page for it (`START-HERE.md`, *Updates*). When an update's
+  note says **re-add the connector**, do that too: the Claude app keeps the old list of the
   house's tools until you do. On ChatGPT, rescan the house's plugin
   instead.
 

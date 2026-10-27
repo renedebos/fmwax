@@ -137,12 +137,27 @@ test("the Updates step: offered on a button house, the copy given once, then the
     const r = await go(e, "/setup/updates", { method: "POST", form: { repo: "github.com/you/fmwax-house2" }, cookie: me });
     assert.equal(r.headers.get("location"), "/setup/updates?saved=1#turn-on");
     page = await (await go(e, "/setup/updates?saved=1", { cookie: me })).text();
-    assert.match(page, /href="https:\/\/github\.com\/you\/fmwax-house2\/new\/main\?filename=\.github\/workflows\/update\.yml&amp;value=/);
+    assert.match(page, /href="\/setup\/updates\/on"/);
     assert.match(page, /href="https:\/\/github\.com\/you\/fmwax-house2\/actions\/workflows\/update\.yml"/);
     assert.match(page, /Commit changes/);
     assert.match(page, /Run workflow/);
+    assert.match(await (await go(e, "/setup", { cookie: me })).text(), /Turn on updates/, "the copy given, not yet turned on");
+    // Turning on goes through the house, which notes it, then to GitHub's
+    // new-file page; step 1 then folds away (2026-10-26: it stayed, since a
+    // private copy cannot be read). A visitor is sent to the claim.
+    assert.equal((await go(e, "/setup/updates/on")).headers.get("location"), `${ORIGIN}/setup`);
+    const on = await go(e, "/setup/updates/on", { cookie: me });
+    assert.equal(on.status, 303);
+    assert.ok(on.headers.get("location").startsWith("https://github.com/you/fmwax-house2/new/main?filename=.github/workflows/update.yml&value="));
+    page = await (await go(e, "/setup/updates", { cookie: me })).text();
+    assert.match(page, /<summary>Turn updates on again<\/summary>/);
+    assert.ok(page.indexOf("Turn updates on again") > page.indexOf("Get the latest version, whenever"), "folded under step 2");
     const after = await (await go(e, "/setup", { cookie: me })).text();
     assert.match(after, VERSION ? /A newer version is out/ : /From you\/fmwax-house2/);
+    assert.doesNotMatch(after, /Turn on updates/);
+    // Another copy: turned on again for that one.
+    await go(e, "/setup/updates", { method: "POST", form: { repo: "you/other-house" }, cookie: me });
+    assert.match(await (await go(e, "/setup", { cookie: me })).text(), /Turn on updates/);
     assert.equal(raw.asked.length, 1, "the newest version read once an hour, not on every look");
   } finally { raw.restore(); }
 });

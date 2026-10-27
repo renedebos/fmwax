@@ -49,8 +49,9 @@ function newKey() {
 // page where no file sets it (MC-34 1a, the Deploy button's house has no
 // address until it is visited).
 // UPDATE_REPO: the owner's own GitHub copy of a house made by the Deploy
-// button, for its Updates step (MC-34 stage 2, updates.js).
-export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL", "UPDATE_REPO"];
+// button, for its Updates step (MC-34 stage 2, updates.js); UPDATES_ON, the
+// copy whose workflow its owner went to commit (the step then folds away).
+export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL", "UPDATE_REPO", "UPDATES_ON"];
 
 // The settings as this deploy's vars have them: the names present, values as
 // Wrangler hands them over (a string, or BUTTONS' array of tables).

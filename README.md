@@ -6,8 +6,12 @@ morning"*), the house writes the set into a Spotify playlist and starts it,
 and the preset that holds the playlist plays the latest set. Endless DJs keep
 playing on their own presets, and the writers publish programmes with notes.
 
-**Installing it?** Read [`START-HERE.md`](START-HERE.md): one command, then a
-setup page, in about an hour.
+**Installing it?** Read [`START-HERE.md`](START-HERE.md) first: it has a
+password to make up before you press the button, and two boxes on
+Cloudflare's form to fill in. Then a setup page walks you through the rest,
+in about an hour. (Or one command in a terminal instead; the guide has both.)
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
 
 What is here:
 
@@ -20,6 +24,8 @@ What is here:
 - `docs/house-rules.md` — how the house behaves, in plain words: the app's
   House rules page.
 - `art/covers/` — the DJs' faces.
+- `wrangler.jsonc`, `package.json`, `.dev.vars.example` — what the Deploy
+  button reads: the house's config, its deploy command and the setup key's box.
 
 Stuck while installing? Open an issue with the **Install problem** form, or
 send a message as `docs/install/tester-note.md` says. A security problem is

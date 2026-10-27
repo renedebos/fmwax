@@ -1,10 +1,11 @@
 # Start here
 
-*2026-10-17, updated 2026-10-21 (ChatGPT; the code as a ZIP, so no git; Windows tried; the helper's one paste and its Remove).
-The install as it is now: one command in a terminal, then a setup page in
-your browser that walks you through the rest. It has been run start to
-finish twice on a second Cloudflare account, and up to the claim on a Mac
-and on Windows 10.
+*2026-10-17, updated 2026-10-26 (the Deploy button first).
+Two ways to put the house on Cloudflare: the **Deploy button**, all in the
+browser, pressed twice on a second Cloudflare account; or **one command in
+a terminal**, run start to finish twice on a second Cloudflare account, and
+up to the claim on a Mac and on Windows 10. Either way, a setup page in
+your browser then walks you through the rest.
 If a step reads differently on your screen, say so.*
 
 This puts a set of radio DJs on your WiiM's presets. You ask a DJ for music
@@ -55,8 +56,8 @@ for radio or anything else.
   put on it.
 - **A preset remembers the playlist, not the songs.** You save each preset
   once. After that the house only changes what is in the playlist.
-- **Nothing runs at home.** The computer is needed for the install and for
-  updates, not to play music.
+- **Nothing runs at home.** A computer is needed to set the house up, not
+  to play music.
 
 ## What you need
 
@@ -75,28 +76,81 @@ for radio or anything else.
   - **ChatGPT:** Plus or higher. You ask through a plugin, in ChatGPT on
     the web or in its app, typed or by voice. For Endless the curator is a
     ChatGPT Work chat, which Plus has. Free and Go have not been checked.
-- **A computer with Node.js 22 or newer**: a Mac, Windows, Linux or a
-  Chromebook's Linux. At nodejs.org, download the **LTS** version's
-  installer (on a Mac, *macOS Installer (.pkg)*) and run it. On Windows,
-  leave the installer's *Tools for Native Modules* box unticked. Nothing
-  else to install: no git, no developer tools. Tried by a person on a Mac
-  (2026-10-19) and on Windows 10 (2026-10-21), and checked by machine on
-  both at each change to the installer.
-- **An invite to this repository**, and a free GitHub account. It is
-  private for now: ask for one.
+- **A computer with a browser**: a laptop or a desktop. Some steps happen
+  only in a browser (adding the house to Claude or ChatGPT, Spotify's
+  developer dashboard).
+- **For the Deploy button: a GitHub account**, free, at github.com. The
+  button puts your own copy of the house there, and Cloudflare runs the
+  house from it.
+- **For the terminal instead: Node.js 22 or newer** on that computer: a
+  Mac, Windows, Linux or a Chromebook's Linux. At nodejs.org, download the
+  **LTS** version's installer (on a Mac, *macOS Installer (.pkg)*) and run
+  it. On Windows, leave the installer's *Tools for Native Modules* box
+  unticked. Nothing else to install: no git, no developer tools. Tried by a
+  person on a Mac (2026-10-19) and on Windows 10 (2026-10-21), and checked
+  by machine on both at each change to the installer. The optional home
+  helper needs Node.js too, whichever way you install.
 
 **Time:** about an hour for Core and 30 to 45 minutes more for Endless.
 Most of it is saving presets.
 
 ## 1. Put the house on Cloudflare
 
-First, accept the invite in the email from GitHub. Then:
+Two ways, and the house is the same either way:
 
-1. **Get the code.** In your browser, sign in at github.com and open the
-   repository the invite is for (the email links to it). Click the green
+- **The Deploy button**, the easier: all in the browser, nothing to
+  install. Your copy of the house lives in your GitHub, and an update is a
+  click on GitHub's page.
+- **The terminal**: no GitHub account, and the house's code stays on your
+  computer. An update is a new download and the same command again.
+
+### The Deploy button
+
+**First, make up a password** of 24 characters or more (letters and numbers
+are enough) and **write it in a note**. It is the house's setup key: you
+paste it once into Cloudflare's form and once more to claim the house.
+The form's box hides what you type, and one wrong character there locks you
+out, so paste it; don't type it.
+
+Then press:
+
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
+
+1. **Sign in to Cloudflare**, and pick the account the house goes on if it
+   asks.
+2. **Connect GitHub**, if it asks. GitHub asks to install Cloudflare's app
+   on your account: choose **All repositories**, then Install (or Save).
+   Cloudflare makes a new repository for your copy, and its app must be
+   able to reach it. You can narrow it later, in GitHub's Settings,
+   Applications, to your house's copy alone.
+   - **If you then land on Cloudflare's own "Create an application"
+     page**, don't pick anything there. Come back to this page and press
+     the button again: this time it goes straight to the house's form.
+3. **The form.** Most of it is filled in. Go down it:
+   - **Git account:** yours (it may show as a number). Tick **private** if
+     it isn't: your copy needn't be public.
+   - **Project name:** `fmwax-house`, or a name of your own. It becomes the
+     start of the house's address.
+   - **The two "Select KV namespace" boxes** are the house's two stores,
+     and both fill in the same name. **Give each its own**: for example
+     `fmwax-house-tokens` in the first and `fmwax-house-programs` in the
+     second.
+   - **SETUP_KEY:** paste the password from your note.
+   - Leave the rest as it is, and press the button at the bottom to create
+     and deploy.
+4. **Wait about a minute** while the steps turn green one by one
+   (initializing, cloning, installing, deploying). Cloudflare then shows the
+   house's address, `https://fmwax-house.<your-subdomain>.workers.dev`.
+5. **Open that address with `/setup` on the end**, and claim it (step 2,
+   below).
+
+### The terminal
+
+1. **Get the code.** In your browser, open
+   https://github.com/renedebos/fmwax. Click the green
    **Code** button, then **Download ZIP**. A Mac unpacks it by itself into
-   a folder in Downloads named after the repository, such as
-   **music-control-master**. On Windows, right-click the ZIP
+   a folder in Downloads named after the repository,
+   **fmwax-main**. On Windows, right-click the ZIP
    file, then **Extract All** and **Extract**. On a Chromebook, open the
    ZIP in the Files app and copy the folder inside it into *Linux files*.
 2. **Open a terminal in its `mcp` folder.**
@@ -107,8 +161,7 @@ First, accept the invite in the email from GitHub. Then:
      unpack into a folder of the same name inside another: open both),
      click the address bar at the top, type `powershell`, and press Enter.
    - **Linux or a Chromebook:** in the terminal, `cd` into it, for example
-     `cd music-control-master/mcp` (the folder is named after the
-     repository).
+     `cd fmwax-main/mcp`.
 3. **Type this and press Return:**
 
 ```
@@ -146,9 +199,19 @@ what it is doing and counts the seconds, so you can see it is working.
 
 ## 2. Claim it
 
-The setup page opens with the house's setup key already filled in. Tap
-**Claim this house**. From then on, only a browser you sign in can change
-the house's settings.
+The setup page asks for the house's setup key:
+
+- **From the button:** paste the password from your note, and tap
+  **Claim this house**.
+- **From the terminal:** the page opens with it filled in. Tap **Claim
+  this house**.
+
+From then on, only a browser you sign in can change the house's settings.
+
+**The key is refused, or the page says it is too short** (the button): in
+Cloudflare, open Workers & Pages, your house, Settings, Variables and
+Secrets. Edit **SETUP_KEY**, paste a new password from your note, and save.
+Then claim again.
 
 You are shown a **recovery code once**. Save it in your password manager or
 notes. It signs you in on your phone or any other browser.
@@ -212,6 +275,11 @@ open a step again later to change it. In order:
 - **DJ presets.** Choose the house DJ and the two numbers. The guest DJ
   comes with it. Then save both on each WiiM.
 
+**Updates** (a house from the button). Tell the house where your copy is
+on GitHub (its page says where to find it), then turn updates on, once:
+GitHub opens a new file already written, and you commit it. See *Updates*,
+below.
+
 **Home helper** (optional, any time later). A small program on a computer
 at home, on the same Wi-Fi as the WiiMs and often on: a Mac, a Windows PC,
 a Linux computer or Raspberry Pi, or a Chromebook with Linux turned on. It
@@ -222,7 +290,8 @@ sign in to that computer and works while it is awake; a Raspberry Pi or
 other Linux computer can run it from when it starts.
 
 The checklist's **Set up the home helper** has the steps: on that computer,
-Node.js and the house's code (the same ZIP), then one command, copied from
+Node.js and the house's code (a ZIP from GitHub: your copy from the button,
+or as in *The terminal*), then one command, copied from
 that page with **Copy the command** and pasted in a terminal in the code's
 `mcp` folder (in Windows' PowerShell, paste with a **right-click**):
 
@@ -287,8 +356,17 @@ that preset again.
 
 ## Updates
 
-Download a new ZIP the same way, open a terminal in its `mcp` folder, and
-run the same command again:
+Nothing updates by itself: you choose when.
+
+**A house from the button:** the setup page's **Updates** says when a newer
+version is out. Its **Get the latest version** opens GitHub: press **Run
+workflow**, then **Run workflow** again. A minute or two later Cloudflare
+has deployed it, and the page says the house has the latest version. Your
+copy keeps the house's name and stores, and everything you chose on the
+setup page stays.
+
+**A house from the terminal:** download a new ZIP the same way, open a
+terminal in its `mcp` folder, and run the same command again:
 
 ```
 node install/door.js
@@ -328,6 +406,9 @@ backup** puts it back, on this house or on a new one.
 
 ## If something goes wrong
 
+- **The button's build failed:** Cloudflare's page shows which step, with
+  its log. Copy the log into the **Install problem** form:
+  https://github.com/renedebos/fmwax/issues/new/choose
 - **The command stopped:** run it again. It picks up what is already there.
 - **The house misbehaves:** setup page, **Check the house**.
 - **"Waiting on the curator… its plan may have hit its limit":** an ask or
@@ -337,7 +418,10 @@ backup** puts it back, on this house or on a new one.
 - **Lost the recovery code, still signed in somewhere:** on the checklist,
   **Make a new recovery code**.
 - **Lost the code and every signed-in browser:** your Cloudflare account is
-  the way back. Run `node install/door.js --new-key` (with `--name` if you
-  gave one). It makes a new setup key and opens the page with **Claim it
-  again with a new setup key** filled in: tap Claim. The old sign-ins and
-  the old code stop working.
+  the way back. The old sign-ins and the old code then stop working.
+  - **From the button:** set **SETUP_KEY** again in Cloudflare (as in *2.
+    Claim it*). On the setup page, open **Claim it again with a new setup
+    key**, paste it, and tap Claim.
+  - **From the terminal:** run `node install/door.js --new-key` (with
+    `--name` if you gave one). It makes a new setup key and opens the page
+    with **Claim it again with a new setup key** filled in: tap Claim.

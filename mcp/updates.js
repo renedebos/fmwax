@@ -80,7 +80,8 @@ export async function latestVersion(env, now = Date.now()) {
 
 // What the setup page says: null for a house with no source (the author's,
 // or one made from the terminal); else its version, the newest, and the
-// owner's copy and links once given.
+// owner's copy and links once given, and whether updates were turned on for
+// that copy (UPDATES_ON, set by the press that opens GitHub's page).
 export async function updateFacts(env, now = Date.now()) {
   const source = updateSource(env);
   if (!source) return null;
@@ -89,7 +90,7 @@ export async function updateFacts(env, now = Date.now()) {
   return {
     source: source.web, current: VERSION, latest,
     newer: !!(latest && VERSION && latest !== VERSION),
-    own: own?.web ?? null, ownSlug: own?.slug ?? null,
+    own: own?.web ?? null, ownSlug: own?.slug ?? null, on: !!own && env.UPDATES_ON === own.web,
     turnOn: own ? turnOnLink(own, source) : null, run: own ? runLink(own) : null,
   };
 }

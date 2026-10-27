@@ -258,7 +258,7 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
   // UPDATES (MC-34 stage 2): only a house made by the Deploy button has a
   // source to update from; turned on from its owner's own GitHub copy.
   const up = await updateFacts(env, now).catch(() => null);
-  const updates = !up ? [] : !up.own
+  const updates = !up ? [] : !up.on
     ? [{ title: "Updates", state: "offer", href: "/setup/updates", label: "Turn on updates",
       detail: "New versions with a click, from your own GitHub copy of the house" }]
     : [{ title: "Updates", state: up.newer ? "due" : "done", href: "/setup/updates", label: up.newer ? "Get the latest version" : "Open", always: true,

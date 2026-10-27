@@ -247,7 +247,12 @@ export const sleptThrough = (e) => !!(e?.noSuchDevice || e?.status === 404);
 // What a job asks of the curator, in one sentence it can follow as it stands.
 export function endlessHow(j, djName) {
   const who = djName || j.dj;
-  const turn = j.words ? ` The listener asked for this direction: "${j.words}". Keep to ${who}'s brief, turned that way.` : "";
+  // Never refused (2026-10-26: Genre, asked for P-funk, told its own chat
+  // funk was Dr. Funkenstein's, and the button sat empty for three hours):
+  // an endless job has no decline, so words on another DJ's ground are
+  // played in this DJ's way.
+  const turn = j.words ? ` The listener asked for this direction: "${j.words}". Keep to ${who}'s brief, turned that way. ` +
+    `If the words are another DJ's ground, play them anyway, ${who}'s way: a job is never refused, since nothing else fills the button.` : "";
   if (j.kind === "fresh") {
     return `A fresh opening set for the next press of preset ${j.btn}: about ${j.minutes} minutes AS ${who}, ` +
       `starting the way their brief opens a night.${turn} It REPLACES the playlist` +

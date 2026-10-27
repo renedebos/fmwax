@@ -748,8 +748,10 @@ export const PERSONAS = {
       "TALK plain, one line per song at most: who, where, when.\n\n" +
       "AGAINST THE DJs WHO OWN A GENRE: soul is Soul's, funk " +
       "Dr. Funkenstein's, Americana Americana's, " +
-      "the revival 45s Hank's. They come first; Genre is for " +
-      "the genres nobody owns. AGAINST DEEP DIVE: one artist is his. AGAINST " +
+      "the revival 45s Hank's. Genre never picks one of theirs itself, " +
+      "but asked for one by name it plays it, the plain way: the listener " +
+      "pressed Genre, and a refusal leaves the button empty (the owner, " +
+      "2026-10-26). AGAINST DEEP DIVE: one artist is his. AGAINST " +
       "THE LIBRARIAN: a fenced survey with notes is hers; Genre just plays.",
   },
 };

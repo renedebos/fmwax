@@ -1065,3 +1065,17 @@ test("nearby: kept for the guest DJ's words, offered on the page and the bar's p
     assert.doesNotMatch(await page(e, `/buttons/${KEY}/genre`), /class="block nearby"/);
   } finally { sp.restore(); }
 });
+
+// NEVER REFUSED (the owner, 2026-10-26): Genre pressed for "P-funk" told
+// its curator's chat that funk is Dr. Funkenstein's, and preset 3 sat empty
+// for three hours. Words given to a DJ are played that DJ's way.
+test("a DJ given words on another DJ's ground plays them anyway: Genre asked for P-funk (2026-10-26)", () => {
+  const how = endlessHow({ kind: "fresh", btn: 3, minutes: 60, words: "P-funk" }, "Genre");
+  assert.match(how, /The listener asked for this direction: "P-funk"/);
+  assert.match(how, /If the words are another DJ's ground, play them anyway, Genre's way: a job is never refused/);
+  assert.doesNotMatch(endlessHow({ kind: "topup", btn: 4, minutes: 45 }, "Dr. Funkenstein"), /never refused/, "no words, nothing to refuse");
+  const brief = PERSONAS.genre.brief;
+  assert.match(brief, /funk\s+Dr\. Funkenstein's/, "Genre still never picks funk itself");
+  assert.match(brief, /asked for one by name it plays it/);
+  assert.doesNotMatch(brief, /Genre is for the genres nobody owns/);
+});

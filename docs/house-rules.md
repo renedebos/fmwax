@@ -335,7 +335,9 @@ come back.
   all night") is **Genre**, the guest DJ on {guest preset}, made like Deep
   Dive's (about four minutes) and kept to that genre, every top-up. A genre
   a DJ owns (soul, funk, Americana…) goes to that DJ (since 2026-10-10).
-  Disco, club music, grunge, French song, Dutch-language music, jazz, reggae
+  But Genre pressed for one of those by name plays it, the plain way:
+  a DJ never refuses words given on a DJ's page, since a refusal leaves
+  the button empty (since 2026-10-26). Disco, club music, grunge, French song, Dutch-language music, jazz, reggae
   and hip-hop are Genre's too (since 2026-10-15). About half of a Genre or
   Deep Dive set is hits; say "more hits" or "fewer hits" while it plays and
   it steers that way, keeping the genre or the artist (since 2026-10-12).

@@ -5973,8 +5973,10 @@ function setupHelperHtml({ house, key, pair = null, hands = false, known = false
       in to that computer and works while it is awake.</p>
     <h3>Set it up</h3>
     <ol class="sgntext setsteps">
-      <li>On that computer, install <b>Node.js</b> from nodejs.org (the LTS version), and download the house's code as
-        a ZIP and unpack it, as you did for the install. The computer you installed from has both already.</li>
+      <li>On that computer, install <b>Node.js</b> from nodejs.org (the LTS version), and get the house's code: on
+        GitHub, open your copy of the house (the Deploy button made it) or the repository you downloaded it from,
+        click <b>Code</b>, then <b>Download ZIP</b>, and unpack it. A computer you installed from with the terminal
+        has both already.</li>
       <li>Open the <b>mcp</b> folder inside it, and open a terminal there.<br>
         <b>Windows:</b> click the folder's address bar, type <b>powershell</b>, press Enter.<br>
         <b>Mac:</b> open Terminal, type <b>cd</b> and a space, drag the mcp folder into the window, press Return.</li>
@@ -6356,6 +6358,10 @@ function setupUpdatesHtml(up) {
         placeholder="github.com/your-name/your-house"${up.own ? ` value="${esc(up.own.replace(/^https:\/\//, ""))}"` : ""}>
       <button class="sgo" type="submit" data-busy="Keeping…">${open ? "Keep" : "Change"}</button>
     </form>`;
+  // Through the house, which notes it, then on to GitHub (/setup/updates/on).
+  const turnOn = `<li><b>Turn updates on, once.</b> GitHub opens a new file, already written: press <b>Commit changes</b>, then
+        <b>Commit changes</b> again.<br>
+        <a class="sgo" href="/setup/updates/on" target="_blank" rel="noopener">Turn updates on (GitHub)</a></li>`;
   return `<section class="ucard setsec" aria-labelledby="scard">
     <div class="sethead"><h2 id="scard">Updates</h2><span>${up.newer ? "One is out" : up.own ? "On" : "Off"}</span></div>
     <p class="setsub">New versions of the house come from ${esc(up.source.replace(/^https:\/\//, ""))}, and reach it through
@@ -6365,13 +6371,13 @@ function setupUpdatesHtml(up) {
       name. Cloudflare shows it under the house's Settings, Builds.</p>
     ${askCopy(true)}` : `
     <ol class="setsteps" id="turn-on">
-      <li><b>Turn updates on, once.</b> GitHub opens a new file, already written: press <b>Commit changes</b>, then
-        <b>Commit changes</b> again.<br>
-        <a class="sgo" href="${esc(up.turnOn)}" target="_blank" rel="noopener">Turn updates on (GitHub)</a></li>
+      ${up.on ? "" : turnOn}
       <li><b>Get the latest version, whenever one is out.</b> Press <b>Run workflow</b>, then <b>Run workflow</b> again.
         A minute or two later Cloudflare has deployed it, and this page says the house has the latest version.<br>
         <a class="sgo" href="${esc(up.run)}" target="_blank" rel="noopener">Get the latest version (GitHub)</a></li>
     </ol>
+    ${up.on ? `<details class="setkey"><summary>Turn updates on again</summary><p class="sgntext">Only if GitHub
+      says it cannot find the workflow: the new file was not committed.</p><ol class="setsteps">${turnOn}</ol></details>` : ""}
     <details class="setkey"><summary>A different copy</summary>${askCopy(false)}</details>`}
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;

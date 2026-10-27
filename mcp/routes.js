@@ -547,7 +547,7 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/restore" || url.pathname === "/setup/check" || url.pathname === "/setup/name" || url.pathname === "/setup/identify" ||
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
       url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" || url.pathname === "/setup/updates" ||
-      url.pathname === "/setup/endless") {
+      url.pathname === "/setup/updates/on" || url.pathname === "/setup/endless") {
       // A SETUP KEY TOO SHORT (MC-34): the Deploy button's form takes any
       // password, and one under 24 characters keeps the door shut. Said
       // here, with the way out, rather than a bare 404 on a new house.
@@ -728,6 +728,18 @@ export async function handleRequest(request, env, ctx) {
         if (!up) return Response.redirect(new URL("/setup", url).toString(), 303);
         return setupPage({ state: "updates", updates: up,
           flash: url.searchParams.get("saved") ? "Kept. Now turn updates on, once, below." : null });
+      }
+      // TURNED ON (2026-10-26): the house cannot read a private copy to see
+      // the workflow there, so the press that opens GitHub's page counts as
+      // turning updates on, for that copy. A link, not a form: the pages'
+      // form-action 'self' would stop a form's redirect to GitHub. What it
+      // sets only folds a step away, so a stranger's link does no harm.
+      if (url.pathname === "/setup/updates/on" && request.method === "GET") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const up = await updateFacts(env);
+        if (!up?.own) return Response.redirect(new URL("/setup/updates", url).toString(), 303);
+        try { await choosePageSetting(env, "UPDATES_ON", up.own); } catch { /* step 1 shows again; harmless */ }
+        return new Response(null, { status: 303, headers: { location: up.turnOn, "cache-control": "no-store" } });
       }
       // BACKUP AND REPAIR (backup.js): the owner's only, every one.
       if (["/setup/backup", "/setup/restore", "/setup/check"].includes(url.pathname) && request.method === "GET") {
