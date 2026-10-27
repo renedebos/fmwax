@@ -126,18 +126,36 @@ Then press:
    - **If you then land on Cloudflare's own "Create an application"
      page**, don't pick anything there. Come back to this page and press
      the button again: this time it goes straight to the house's form.
-3. **The form.** Most of it is filled in. Go down it:
-   - **Git account:** yours (it may show as a number). Tick **private** if
-     it isn't: your copy needn't be public.
-   - **Project name:** `fmwax-house`, or a name of your own. It becomes the
-     start of the house's address.
-   - **The two "Select KV namespace" boxes** are the house's two stores,
-     and both fill in the same name. **Give each its own**: for example
-     `fmwax-house-tokens` in the first and `fmwax-house-programs` in the
-     second.
-   - **SETUP_KEY:** paste the password from your note.
-   - Leave the rest as it is, and press the button at the bottom to create
-     and deploy.
+3. **The form, "Set up your application".** Go down it from the top:
+
+   | On the form | What to do |
+   |---|---|
+   | **Git account** (your GitHub, perhaps shown as a number) | Leave it. |
+   | **Create private Git repository** | Tick it: your copy needn't be public. |
+   | The project name, `fmwax-house` | Leave it, or type a name of your own. It becomes the start of the house's address. |
+   | **Select KV namespace**, the first | Keep **+ Create new**. In the name box under it, change `fmwax-house` to **`fmwax-house-tokens`**. |
+   | **Select KV namespace**, the second | Keep **+ Create new**. In the name box under it, change `fmwax-house` to **`fmwax-house-programs`**. |
+   | **SETUP_KEY** | Paste the password from your note. |
+   | `false`, `false`, `replay`, `{}` | Leave them: the house's first settings, which its setup page changes later. |
+   | `npm run deploy`, `npx wrangler preview` | Leave them. |
+   | **Enable Preview builds** | Leave it off. |
+   | **Protect with Cloudflare Access** | Leave it off: it puts a Cloudflare sign-in in front of the house, which Claude and ChatGPT can't get past. |
+   | **Advanced settings** | Leave it closed. |
+
+   Then press the deploy button at the bottom.
+
+   **Why the two KV boxes need changing.** A *KV namespace* is Cloudflare's
+   word for a store, and the house has two: one keeps its sign-in to
+   Spotify, the other its sets, pages and settings. Cloudflare fills in the
+   same name in both, and two stores on one account can't share a name, so
+   left as they are, the deploy fails. The form doesn't say which box is
+   which. In the house's own order the first is the sign-ins and the second
+   the sets, so the names above fit, but the names are only labels: any two
+   different names work. These are easy to find later on Cloudflare's
+   Storage page. If you changed the project
+   name, put yours in front instead (`my-house-tokens`, `my-house-programs`).
+   **Never pick a store already in the list**: it belongs to something else
+   on your account, and the two would mix.
 4. **Wait about a minute** while the steps turn green one by one
    (initializing, cloning, installing, deploying). Cloudflare then shows the
    house's address, `https://fmwax-house.<your-subdomain>.workers.dev`.
