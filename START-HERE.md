@@ -1,6 +1,6 @@
 # Start here
 
-*2026-10-17, updated 2026-10-26 (the Deploy button first).
+*2026-10-17, updated 2026-10-27 (the Deploy button first, run start to finish on a new Cloudflare and GitHub account).
 Two ways to put the house on Cloudflare: the **Deploy button**, all in the
 browser, pressed twice on a second Cloudflare account; or **one command in
 a terminal**, run start to finish twice on a second Cloudflare account, and
@@ -65,9 +65,11 @@ for radio or anything else.
   Home app, on the same Wi-Fi as your phone.
 - **Spotify Premium.** Spotify lets an app start music on a speaker only
   for a paying account.
-- **A Cloudflare account.** Free, at cloudflare.com, no card. Before you
-  start, open *Workers & Pages* in its dashboard once, so the account gets
-  its own `workers.dev` address.
+- **A Cloudflare account.** Free, at cloudflare.com, no card. Click the
+  link in Cloudflare's "verify your email" message. Then open
+  https://dash.cloudflare.com/?to=/:account/workers-and-pages once, so the
+  account gets its own `workers.dev` address: if it asks for a subdomain,
+  take the one it suggests; if it offers to create something, don't.
 - **Claude or ChatGPT**, whichever you have:
   - **Claude:** Core uses the Claude app with a custom connector. Endless
     needs a paid plan (Pro or higher), because scheduled tasks are not on
@@ -79,9 +81,16 @@ for radio or anything else.
 - **A computer with a browser**: a laptop or a desktop. Some steps happen
   only in a browser (adding the house to Claude or ChatGPT, Spotify's
   developer dashboard).
-- **For the Deploy button: a GitHub account**, free, at github.com. The
-  button puts your own copy of the house there, and Cloudflare runs the
-  house from it.
+- **For the Deploy button: a GitHub account**, free, at github.com/signup.
+  The button puts your own copy of the house there, and Cloudflare runs the
+  house from it. Make it before you start.
+  - **One GitHub account goes with one Cloudflare account.** If your GitHub
+    is already connected to another Cloudflare account, make a new GitHub
+    account for the house: moving the old one breaks what the other
+    account builds from it.
+  - **"Too many requests" on GitHub's sign-up page** is GitHub's own limit,
+    not something you did. Wait 15 minutes, or make the account on your
+    phone with its Wi-Fi off.
 - **For the terminal instead: Node.js 22 or newer** on that computer: a
   Mac, Windows, Linux or a Chromebook's Linux. At nodejs.org, download the
   **LTS** version's installer (on a Mac, *macOS Installer (.pkg)*) and run
@@ -116,33 +125,43 @@ Then press:
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
 
+Use a private (incognito) window if you have other Cloudflare or GitHub
+sign-ins in your browser, so the house can't land on the wrong account.
+
 1. **Sign in to Cloudflare**, and pick the account the house goes on if it
-   asks.
-2. **Connect GitHub**, if it asks. GitHub asks to install Cloudflare's app
-   on your account: choose **All repositories**, then Install (or Save).
-   Cloudflare makes a new repository for your copy, and its app must be
-   able to reach it. You can narrow it later, in GitHub's Settings,
-   Applications, to your house's copy alone.
-   - **If you then land on Cloudflare's own "Create an application"
-     page**, don't pick anything there. Come back to this page and press
-     the button again: this time it goes straight to the house's form.
-3. **The form, "Set up your application".** Go down it from the top:
+   asks. The form, *Set up your application*, opens.
+2. **Connect GitHub.** Under **Git account**, click **New GitHub
+   connection**. GitHub opens: sign in, choose **All repositories**, then
+   **Install & Authorize**. Cloudflare makes a new repository for your
+   copy, and its app must be able to reach it. You can narrow it later, in
+   GitHub's Settings, Applications, to your house's copy alone.
+   - **GitHub shows a settings page with a grey Save, not Install?** That
+     GitHub account is already connected to a Cloudflare account. Use a
+     new GitHub account (*What you need*).
+3. **Cloudflare then shows "Select a repository", with your GitHub name
+   in it.** That's Cloudflare's own page, not the house's: **don't pick
+   anything there**, not even *Clone a public repository*. Open the
+   button's address again, in the address bar:
+   `https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax`
+   (or press the button above again). The house's form opens, with your
+   GitHub under *Git account*.
+4. **The rest of the form.** Go down it from the top:
 
    | On the form | What to do |
    |---|---|
-   | **Git account** (your GitHub, perhaps shown as a number) | Leave it. |
+   | **Git account**, now your GitHub (perhaps shown as a number) | Leave it. |
    | **Create private Git repository** | Tick it: your copy needn't be public. |
    | The project name, `fmwax-house` | Leave it, or type a name of your own. It becomes the start of the house's address. |
-   | **Select KV namespace**, the first | Keep **+ Create new**. In the name box under it, change `fmwax-house` to **`fmwax-house-tokens`**. |
-   | **Select KV namespace**, the second | Keep **+ Create new**. In the name box under it, change `fmwax-house` to **`fmwax-house-programs`**. |
-   | **SETUP_KEY** | Paste the password from your note. |
-   | `false`, `false`, `replay`, `{}` | Leave them: the house's first settings, which its setup page changes later. |
+   | **Select KV namespace**, the first | Keep **+ Create new**. In **Name your KV namespace** under it, change `fmwax-house` to **`fmwax-house-tokens`**. |
+   | **Select KV namespace**, the second | Keep **+ Create new**. In **Name your KV namespace** under it, change `fmwax-house` to **`fmwax-house-programs`**. |
+   | **SETUP_KEY** | Paste the password from your note. No note yet? Make one now (*First, make up a password*, above), copy it, paste it here, and keep the note open. |
+   | **SOURCE_REPO** and the filled-in boxes after it (`false`, `false`, `replay`, `{}`…) | Leave them: where updates come from, and the house's first settings, which its setup page changes later. |
    | `npm run deploy`, `npx wrangler preview` | Leave them. |
    | **Enable Preview builds** | Leave it off. |
    | **Protect with Cloudflare Access** | Leave it off: it puts a Cloudflare sign-in in front of the house, which Claude and ChatGPT can't get past. |
    | **Advanced settings** | Leave it closed. |
 
-   Then press the deploy button at the bottom.
+   Then press **Deploy** at the bottom right.
 
    **Why the two KV boxes need changing.** A *KV namespace* is Cloudflare's
    word for a store, and the house has two: one keeps its sign-in to
@@ -156,11 +175,12 @@ Then press:
    name, put yours in front instead (`my-house-tokens`, `my-house-programs`).
    **Never pick a store already in the list**: it belongs to something else
    on your account, and the two would mix.
-4. **Wait about a minute** while the steps turn green one by one
-   (initializing, cloning, installing, deploying). Cloudflare then shows the
+5. **Wait about a minute** while the steps turn green one by one
+   (initializing, cloning, installing, deploying). The log under them ends
+   with **Success! Build completed**, and a few lines above that is the
    house's address, `https://fmwax-house.<your-subdomain>.workers.dev`.
-5. **Open that address with `/setup` on the end**, and claim it (step 2,
-   below).
+6. **Open that address with `/setup` on the end**, in a new tab, and claim
+   it (step 2, below).
 
 ### The terminal
 
