@@ -40,6 +40,7 @@ this page to every house, so a few marks make it fit the one reading it:
 - {if requests} **Where does a set I ask for go?** On {requests presets}, replacing what was there. Tick **Keep** and it goes on the Shelf for good.
 - {if endless} **When does a DJ add songs?** When 30 minutes or 4 songs are left: 45 minutes more, up to 4 hours a start. The house has 12 endless runs a day; a set you ask for doesn't count.
 - {if endless} **Why did the music stop?** An endless set plays out after 4 hours of top-ups, or once the day's 12 endless runs are spent. Spotify can also refuse for a while; the pages say how long.
+- {if endless} **Why did I hear that song again?** An endless DJ skips the last 150 songs they played, and anything the house played in the last 3 hours. A set you ask for doesn't look back, and another recording of a song (a live take, a remaster) counts as a new one.
 - **Why does the WiiM app show an old name?** A preset keeps the name it had when it was saved, and renaming it over the network would unhook it. Save it again: play it, then hold the preset.
 - **Can I undo a set?** Yes, for 90 days: every playlist is copied before it's rewritten. Ask Claude or ChatGPT to put the old one back.
 - {if tidal} **What can't it do?** Move Tidal between speakers, or make a start quieter: your amp sets the volume, so "mute" pauses instead.
@@ -185,10 +186,8 @@ come back.
 - **12 endless runs a day** across all endless presets: top-ups, fresh sets
   and steers. A set you ask for doesn't count. After that, no new songs until
   tomorrow. [`dailyRuns`]
-- **No repeats** of the last **150 songs** on that preset, nor of anything
-  the house played in the last three hours, from Talk, the Shelf or any
-  preset, by Spotify's own play history: a song skipped inside 30 seconds
-  doesn't count (since 2026-10-18).
+- **No repeats** of the last **150 songs** the DJ played, nor of anything
+  the house played in the last three hours. *Repeats*, below, says how.
 - **The house counts the rules it can** before a set lands: never the same
   recording twice, never one act's song twice (a remaster or another take
   is that song), never the same song back to back, and the DJ's own
@@ -411,6 +410,46 @@ come back.
   takes the asker's word for which DJ it was. A set with no DJ named has no
   name and can't be steered (since 2026-09-28).
 
+## Repeats
+
+> {if endless} A DJ doesn't play a song again until 150 of their others have played.
+> Never the same song twice in one set.
+
+{if endless} An endless DJ remembers what they have played, so the same
+preset, pressed night after night, keeps finding something new.
+
+- {if endless} **150 songs before a repeat.** Each DJ keeps a list of the
+  last **150 songs** they played and leaves them out of every new set. That
+  is about five evenings of listening, but it is counted in songs, not days:
+  a DJ you play every night can come round to a song again within a week,
+  and one you play once a month may not for months. The list belongs to the
+  DJ, not the preset, so it goes with them to another number. [house.json
+  `endless`: `noRepeatSongs`; endless.js `endlessRemember`]
+- {if endless} **Only what played counts.** A song that was on the list but
+  never played isn't used up (since 2026-09-25).
+- {if endless} **Nothing the house just played.** Anything heard in the
+  last **3 hours** is left out too, whoever played it: another DJ, the
+  Shelf, the Spotify app itself. This comes from Spotify's own history, which logs a
+  song only after about 30 seconds, so a quick skip doesn't count, and
+  music from another service or the radio isn't in it (since 2026-10-18).
+  [endless.js `HEARD_WINDOW_MS`]
+- {if endless} **Nothing twice on one list.** New songs added to a playing
+  set never repeat one already on it.
+- **In one set**, the house checks before it plays (every endless set, and
+  a set asked of a DJ by name): never the same
+  recording twice, never one song twice in two versions (a remaster, a live
+  take, another mix), never the same title back to back. A set that breaks
+  one goes back to the DJ to be fixed, once. Artists are spaced too, each
+  DJ their own way, and the **Same artist** slider changes it.
+- {if guest} **Deep Dive goes through every album** of an artist before any
+  comes round again.
+- {if requests} **A set you ask for starts clean.** It doesn't look at what
+  the DJ played before, so it can hold a song you heard yesterday.
+- {if endless} **What can come back sooner:** another recording of a song you heard
+  (a live take, a remaster) is a new song to Spotify and to the list. And
+  the list holds songs, not artists: an artist you just heard can turn up
+  again in the next set.
+
 ## Tuning a DJ
 
 > Four sliders per DJ, kept until you change them back.
@@ -421,9 +460,11 @@ come back.
   artist comes back, and how far from their genre they stray. Vibe has a
   **Mood** slider (pin the morning, the room or the small hours, instead of
   the hour choosing), Deep Dive **Career**, **Live takes** and **Order**,
-  and the Librarian and Gatefold **Notes** (short or the long read, the
-  starting choice on their Ask form). A small ring marks where the DJ
-  stands on their own.
+  the Librarian and Gatefold **Notes** (short or the long read, the
+  starting choice on their Ask form), and Sessions **Genres**: close (one
+  family of music all set), drift (each song a neighbour of the last, a
+  few turns an hour) or anywhere, its own (since 2026-10-27). A small ring
+  marks where the DJ stands on their own.
 - **Only what fits the DJ**: each slider moves a DJ inside their own
   character (Soul's years run 1959 to 1979, and it never offers "no hits").
   Dr. Funkenstein can go up to half hits, at the owner's word.

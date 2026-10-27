@@ -383,6 +383,10 @@ that preset again.
   Dive keeps going on the guest DJ preset.
 - **Name the DJ.** "Hank, forty minutes of 45s." The other DJs each have
   their own taste. Each DJ has a page in the house's app; DJs tab.
+- **No repeats.** An endless DJ doesn't play a song again until 150 of
+  their others have played, and skips anything the house played in the
+  last three hours. The app's **House rules** page (Speakers tab) has the
+  rest, with every other rule the house keeps.
 - **Start a new chat** when something seems off. An old chat may not have
   the house's tools.
 - **One music connector at a time.** If Claude's own Spotify connector, or

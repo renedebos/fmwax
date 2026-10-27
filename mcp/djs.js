@@ -975,7 +975,8 @@ export const GLANCE = {
 // its words). Dr. Funkenstein's hits go up to "half" at the owner's word
 // ("this gives the user options"), against his brief's "never the hits".
 // Where a dial does not fit a DJ another takes its place: Vibe's mood,
-// Deep Dive's career, live takes and order, the Librarian's notes and order.
+// Deep Dive's career, live takes and order, the Librarian's notes and order,
+// Sessions' genres (the owner, 2026-10-27: "genre drift").
 //   years   the track the years slider spans; "now" is this year
 //   hits    none / few / half / mostly (the Librarian's are "landmarks",
 //           Gatefold's "albums": deep / mixed / classics)
@@ -985,6 +986,8 @@ export const GLANCE = {
 //   career  Deep Dive: early / all / late
 //   live    Deep Dive: none / some / lots
 //   order   mixed / order (in order)
+//   drift   Sessions: close / drift / anywhere, how far the genre moves
+//           from song to song (any genre is its own)
 //   notes   a kept set's notes: short / long; its own is the house's default
 export const TUNE = {
   "dr-funkenstein": [{ id: "years", track: [1960, 1979] }, { id: "hits", stops: ["none", "few", "half"], own: "none" },
@@ -1008,7 +1011,7 @@ export const TUNE = {
   "gatefold": [{ id: "years", track: [1965, 1985] }, { id: "hits", as: "albums", stops: ["deep", "mixed", "classics"], own: "mixed" },
     { id: "notes" }],
   "sessions": [{ id: "years", track: [1965, "now"] }, { id: "hits", stops: ["few", "half", "mostly"], own: "half" },
-    { id: "same", own: "sometimes" }],
+    { id: "same", own: "sometimes" }, { id: "drift", stops: ["close", "drift", "anywhere"], own: "anywhere" }],
 };
 
 // WHICH DJ? (the owner, 2026-10-01: "replace every dj on one map with this" —

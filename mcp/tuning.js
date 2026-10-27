@@ -30,9 +30,10 @@ const STOP_NAMES = {
   live: { none: "None", some: "Some", lots: "Lots" },
   order: { mixed: "Mixed", order: "In order" },
   notes: { short: "Short", long: "Long read" },
+  drift: { close: "Close", drift: "Drift", anywhere: "Anywhere" },
 };
 const DIAL_NAMES = { years: "Years", hits: "Hits", landmarks: "Landmarks", albums: "Albums", same: "Same artist",
-  mood: "Mood", career: "Career", live: "Live takes", order: "Order", notes: "Notes" };
+  mood: "Mood", career: "Career", live: "Live takes", order: "Order", notes: "Notes", drift: "Genres" };
 
 // A kept set's notes start on the house's default (requests.notes).
 const notesOwn = (env) => (env?.REQUEST_NOTES === "long" ? "long" : "short");
@@ -122,6 +123,19 @@ const SAME_WORDS = {
   rarely: "SAME ARTIST: never two songs in a row by one act, and no act more than once an hour.",
 };
 const MOOD = { morning: "THE MORNING", room: "THE ROOM", late: "THE SMALL HOURS" };
+// GENRE DRIFT (the owner, 2026-10-27): how far the genre moves from one song
+// to the next, for a DJ with no genre of their own. Counted per hour, as the
+// word trial found holds; the house cannot count genres, so words only.
+const DRIFT = {
+  close: "GENRES: close. The set stays in one family of music, set by the first song or the request (indie and " +
+    "alternative rock; soul, R&B and hip-hop; folk, country and Americana): all 16 to 18 songs in an hour come from it, " +
+    "and a top-up stays in the family of the list it joins. The years and everything else still vary; the genre does not.",
+  drift: "GENRES: drift. Each song is a neighbour in genre of the one before it, so the set moves slowly: 3 or 4 turns " +
+    "of genre in an hour of 16 to 18 songs, never a jump across the map (folk to Americana to country rock to soul, " +
+    "never folk to techno). A top-up starts next to the song it follows.",
+  anywhere: "GENRES: anywhere. Contrast on purpose: the next song may come from any genre, at least 5 genres in an hour " +
+    "of 16 to 18 songs.",
+};
 function lineFor(d, v) {
   switch (d.id) {
     case "years": return `YEARS: only music recorded from ${v[0]} to ${v[1]} (when the music was made, not when it was issued).`;
@@ -143,6 +157,7 @@ function lineFor(d, v) {
     case "order": return v === "order"
       ? "ORDER: in order. The career from the first record to the latest, by when the music was made, instead of early beside late; a top-up carries on from where the list ends and never goes back to the start."
       : "ORDER: mixed, not in order: the fence's records side by side for contrast, never two from one year in a row.";
+    case "drift": return DRIFT[v] ?? null;
     default: return null; // notes: the Ask form's default, nothing to curate by
   }
 }
@@ -168,6 +183,7 @@ const SHORT = {
   live: { none: "no live takes", lots: "lots of live takes" },
   order: { order: "in order", mixed: "mixed" },
   notes: { short: "short notes", long: "the long read" },
+  drift: { close: "one family of genres", drift: "genres drifting slowly", anywhere: "any genre" },
 };
 export function tuningSummary(env, key, values = null) {
   const t = values ?? tuningOf(env, key);

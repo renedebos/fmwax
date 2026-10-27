@@ -31,6 +31,9 @@ test("every DJ with dials is a DJ, and every dial stays inside what the owner ch
   assert.ok(dialsOf("vibe").some((d) => d.id === "mood"));
   assert.deepEqual(dialsOf("deep-dive").map((d) => d.id), ["career", "hits", "live", "order"]);
   assert.deepEqual(dialsOf("the-librarian").map((d) => d.id), ["notes", "hits", "same", "order"]);
+  // Sessions' fourth is genre drift (the owner, 2026-10-27); any genre is its own.
+  const drift = dialsOf("sessions").find((d) => d.id === "drift");
+  assert.deepEqual([drift.name, drift.labels, drift.own], ["Genres", ["Close", "Drift", "Anywhere"], "anywhere"]);
 });
 
 test("only a moved dial is kept: its own stop, a stop outside the DJ and years off the track are dropped", () => {
@@ -65,6 +68,12 @@ test("the words: none for an untuned DJ, one counted line per moved dial under a
     /CAREER: the early years only[\s\S]*LIVE TAKES: lots[\s\S]*ORDER: in order/);
   assert.match(tuningWords(tuned({ "the-librarian": { hits: "mostly" } }), "the-librarian"), /LANDMARKS: mostly/);
   assert.match(tuningWords(tuned({ gatefold: { hits: "deep" } }), "gatefold"), /ALBUMS: deep/);
+  // Genre drift, counted per hour; its own stop sends nothing.
+  assert.match(tuningWords(tuned({ sessions: { drift: "close" } }), "sessions"), /GENRES: close\. .*all 16 to 18 songs in an hour come from it/);
+  assert.match(tuningWords(tuned({ sessions: { drift: "drift" } }), "sessions"), /GENRES: drift\. .*3 or 4 turns of genre in an hour/);
+  assert.equal(tuningWords(tuned({ sessions: { drift: "anywhere" } }), "sessions"), null);
+  assert.equal(tuningWords(tuned({ soul: { drift: "close" } }), "soul"), null, "a dial the DJ hasn't is dropped");
+  assert.equal(tuningSummary(tuned({ sessions: { years: [1979, 1989], drift: "close" } }), "sessions"), "1979–1989, one family of genres");
   // Notes is the Ask form's default, nothing to curate by.
   assert.equal(tuningWords(tuned({ "the-librarian": { notes: "long" } }), "the-librarian"), null);
   assert.equal(tuningSummary(tuned({ soul: { years: [1966, 1970], hits: "few", same: "rarely" } }), "soul"),

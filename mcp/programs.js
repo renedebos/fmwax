@@ -6260,7 +6260,8 @@ function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [
       ${lane ? `<li><b>The guest DJ, preset ${esc(String(lane.btn))}.</b> On the DJs tab, press ▶ on any DJ: they become the guest
         DJ and play endless. Then save it on each WiiM device the same way: the playlist <b>Guest DJ</b>, preset
         <b>${esc(String(lane.btn))}</b>. Whoever you play next takes it over; the preset never needs saving again.</li>` : ""}
-      <li><b>Then just press the numbers.</b> Each plays for as long as you listen; the curator tops it up.</li>
+      <li><b>Then just press the numbers.</b> Each plays for as long as you listen; the curator tops it up. A DJ
+        doesn't play a song again until 150 of their others have played: House rules, under Speakers, says how.</li>
     </ol>
     ${setupWatchTag(first?.state === "writing" ? { first: "writing" } : null, "/setup/endless")}
   </section>
