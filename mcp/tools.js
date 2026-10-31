@@ -9,7 +9,7 @@ import { rollCallSlice, rollCallsOf } from "./rollcall.js";
 import { CAP_MINUTES, houseDay, houseTz } from "./voice.js";
 import { catalogOfUri } from "./catalog.js";
 import { playlistIdFrom } from "./spotify.js";
-import { station, fingerprintUris, getRequestRecord, SETTLED_TTL_MS } from "./station.js";
+import { station, fingerprintUris, getRequestRecord, SETTLED_TTL_MS, cutReason } from "./station.js";
 import {
   ARCHIVE_WINDOW, STATION_KEY, STATION_MAX, archiveClock, archiveProgramRecord,
   archiveStreamUrl, loadArchive, parkStation, putArchiveProgram,
@@ -1719,9 +1719,9 @@ export async function callTool(env, name, args, budget) {
       if (!env.STATION) throw new Error("the request ledger is not configured");
       const requestId = String(args.request_id ?? "").trim();
       if (!requestId) throw new Error("request_id is required — from list_requests");
-      const reason = String(args.reason ?? "")
+      const reason = cutReason(String(args.reason ?? "")
         .replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2060\ufeff]/g, " ")
-        .replace(/\s+/g, " ").trim().slice(0, 140);
+        .replace(/\s+/g, " ").trim());
       if (!reason) {
         throw new Error(
           "reason is required — one line, in the DJ's voice, shown to the listener");

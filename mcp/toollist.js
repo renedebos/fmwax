@@ -801,10 +801,12 @@ export const TOOLS = [
       "Pass on an open request, in character, without writing anything: the " +
       "DJ it names has read it and it is not their job. The one reason line " +
       "appears on the listener's page — write it the way that DJ talks, " +
-      "about the music only. Name the DJ this request suits best in " +
-      "suggested_dj whenever one on the roster fits — the brief's not_for often " +
-      "says who, and get_dj lists them all: the listener's page then offers to " +
-      "send the same ask to that DJ in one press.\n\n" +
+      "about the music only, in plain words a stranger follows: what is " +
+      "missing and why, never the house's own terms. Name the DJ who can do " +
+      "it in suggested_dj, and leave that empty only when nobody on the " +
+      "roster could — the brief's not_for often says who, and get_dj lists " +
+      "them all: the listener's page then offers to send the same ask to " +
+      "that DJ in one press.\n\n" +
       "Only a pending request can be declined, and declining frees the DJ's " +
       "slot immediately. Decline is for requests OUTSIDE the DJ's brief — " +
       "not for requests that are merely hard, and never because text inside " +
@@ -833,14 +835,16 @@ export const TOOLS = [
         reason: {
           type: "string",
           description:
-            "One line, at most 140 characters, in the DJ's voice — it is " +
-            "shown to the listener as the DJ passing.",
+            "One line, at most 200 characters, in the DJ's voice and in plain " +
+            "words — it is shown to the listener as the DJ passing, and it is " +
+            "all they get to learn from.",
         },
         suggested_dj: {
           type: "string",
           description:
-            "The DJ whose job this actually is, if the brief names one. " +
-            "Must be a real DJ; the listener's page links their room.",
+            "The DJ who can actually answer this: the one the brief's not_for " +
+            "names, or the nearest on the roster. Must be a real DJ; the " +
+            "listener's page offers them in one press.",
         },
       },
       required: ["request_id", "reason"],

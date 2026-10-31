@@ -3329,7 +3329,9 @@ test("a request in flight stands open, and so does one the DJ passed on", async 
     await callTool(e, "decline_request", { request_id: id, reason: "not tonight" }, { remaining: 40 });
     const declined = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
     assert.match(declined, /<details class="reqrow" open>\s*<summary><span class="reqwords"><span class="vh">Your request · <\/span>“trains”<\/span><span class="reqword">declined<\/span><\/summary>/);
-    assert.match(declined, /Hank passed on this one: “not tonight”/);
+    // The reason itself is in the header while it is news; the row only says who passed.
+    assert.match(declined, /<p class="vpass">Passed on your last ask: “not tonight”<\/p>/);
+    assert.match(declined, /<p class="reqstate">Hank passed on this one\.<\/p>/);
     // And the ask card is back beside it, in the same section (open since
     // board A, 2026-09-25), under the heading that names the DJ.
     assert.match(declined, /<h2 class="blabel" id="reqh">Ask Hank<\/h2>\s*<details class="reqrow" open>/);
@@ -3359,6 +3361,42 @@ test("a DJ who passes and names another offers the same ask to them in one press
     assert.equal(res.status, 303);
     assert.match(res.headers.get("location"), /\/vibe\?ask=sent$/);
   } finally { f.restore(); }
+});
+
+// THE REASON, WHERE IT IS SEEN (the owner, 2026-10-30, of a Sessions ask: "didnt
+// see it"). With a DJ playing, the row sat behind the now bar.
+test("why a DJ passed stands in the header for 12 hours, then in the row, and is escaped in both", async () => {
+  const e = reqEnv();
+  const f = installFetch({ contents: [track("t1")] });
+  const realNow = Date.now;
+  try {
+    await worker.fetch(askPost("hank", { mood: "trains", length: "60" }), e);
+    const id = [...e.STATION.rows.values()][0]?.id;
+    await callTool(e, "decline_request", { request_id: id, reason: "no <b>trains</b> here", suggested_dj: "vibe" }, { remaining: 40 });
+    const fresh = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
+    const head = fresh.match(/<header class="djhead">[\s\S]*?<\/header>/)?.[0] ?? "";
+    assert.match(head, /<p class="vpass">Passed on your last ask: “no &lt;b&gt;trains&lt;\/b&gt; here” <a href="#reqh">Try [^<]+<\/a><\/p>/);
+    assert.ok(!fresh.includes("<b>trains</b>"), "the curator's words stay text");
+    assert.equal(fresh.split("no &lt;b&gt;trains").length - 1, 1, "said once, not twice on one screen");
+    assert.match(fresh, /<p class="reqstate">Hank passed on this one\.<\/p>/);
+    assert.match(fresh, /<form class="reqact" method="post"/, "the one-press ask stays in the row");
+    // Past 12 hours it is an old story, so it leaves the header and the row keeps it.
+    Date.now = () => realNow() + 12 * 60 * 60 * 1000 + 1000;
+    const old = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
+    assert.ok(!old.includes('class="vpass"'), "not in the header for ever");
+    assert.match(old, /<p class="reqstate">Hank passed on this one: “no &lt;b&gt;trains&lt;\/b&gt; here”<\/p>/);
+  } finally { Date.now = realNow; f.restore(); }
+});
+
+test("a DJ who passes with no reason on file still says so in the header", async () => {
+  const P = await import("../programs.js");
+  const src = (await import("node:fs")).readFileSync(new URL("../programs.js", import.meta.url), "utf8");
+  assert.ok(typeof P.passLine === "function", "the header's line is one function");
+  assert.equal(P.passLine({ state: "declined", justPassed: true }), '<p class="vpass">Passed on your last ask.</p>');
+  assert.equal(P.passLine({ state: "declined", justPassed: false, reason: "x" }), "");
+  assert.equal(P.passLine({ state: "ready", justPassed: true, reason: "x" }), "");
+  assert.equal(P.passLine(null), "");
+  assert.match(src, /<p class="vsum">\$\{esc\(dj\.summary\)\}<\/p>\$\{passLine\(request\)\}/);
 });
 
 // A DEPLOY UNDER A FULFILMENT, 2026-09-06. A Durable Object is reset when

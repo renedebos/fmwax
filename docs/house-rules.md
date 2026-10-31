@@ -151,12 +151,14 @@ asks; "resume" brings it back (since 2026-10-16).
   saved. [now.js `PLAYER_REUSE_*`; off: house.json `player.reuse: false`]
 - {if tidal} **The Tidal button** in the bar's menu (the Tidal Requests
   playlist, to open in the Tidal app) shows only while Spotify isn't playing
-  on that speaker, and with the helper on, only while the helper reads Tidal
-  there (since 2026-09-28).
+  on that speaker. With the helper on, that's only while the helper reads
+  Tidal there (since 2026-09-28). Without it, only once Spotify has answered,
+  so never while Spotify can't be read (since 2026-10-30).
 
 Open pages check what is playing **every 30 seconds** while on screen, stop
 after **10 minutes** without a touch, and check again straight away when you
-come back.
+come back. A page with only the bar (a DJ's page, Talk) checks when it opens,
+and once more **4 seconds** later if Spotify didn't answer.
 
 ## Endless DJs {if endless}
 
@@ -273,6 +275,11 @@ come back.
   [tasks/rollcalls/]
 - A set you ask for (a length, a mood, a subject) goes on **{requests
   presets}**, and replaces what was there.
+- **When a DJ passes on your ask**, the reason shows in the header of their
+  page for **12 hours**, then stays further down that page until you ask them
+  again. It also shows on Loaded, under the preset the set was for, until a
+  new set lands there, for 12 hours at most (since 2026-10-30). Where another
+  DJ could do it, the page offers them the same ask in one press.
 - **Three dates, kept apart** (since 2026-10-18): when a recording was
   made, when it was first issued, and when another notable version came
   out. A Stax demo on the 2023 box is "Mack Rice's demo, first issued 2023;

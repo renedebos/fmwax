@@ -2259,6 +2259,8 @@ li.bandreq a{display:flex;align-items:center;gap:.45rem;min-height:2.75rem;paddi
   color:var(--ink-2);text-decoration:none}
 li.bandreq a::before{content:"";flex:0 0 auto;width:7px;height:7px;border-radius:999px;background:var(--q-deep)}
 li.bandreq.off a::before{background:#FFB400}
+li.bandreq.why a{align-items:flex-start;padding-top:.6rem;padding-bottom:.6rem}
+li.bandreq.why a::before{margin-top:.3rem}
 li.bandreq a:hover{color:var(--ink)}
 /* Said to a screen reader, not shown: the wall's heading, since the numbers
    say it (the owner, 2026-09-05 — less text on the wall). */
@@ -2326,6 +2328,9 @@ li.bandreq a:hover{color:var(--ink)}
   line-height:.95;letter-spacing:-.03em;margin:0;color:inherit}
 .djpage .vsum{font-size:var(--fs-16);line-height:1.4;margin:.7rem 0 0;color:inherit;max-width:22rem;
   opacity:.95}
+.djpage .vpass{font-family:"Archivo",sans-serif;font-size:var(--fs-14);line-height:1.4;margin:.6rem 0 0;max-width:22rem;color:inherit}
+.djpage .vpass::before{content:"";display:inline-block;width:7px;height:7px;border-radius:999px;background:#FFB400;margin-right:.45rem;vertical-align:.08em}
+.djpage .vpass a{color:inherit;text-decoration:underline;text-underline-offset:.15em;white-space:nowrap}
 .djpage .vact{position:relative;z-index:1;margin:0;gap:.6rem;flex-wrap:nowrap}
 /* The two chips in the top row sit on one line: .backline carries a bottom
    margin for the pages where it is a line of its own, and here it is not. */
@@ -3009,6 +3014,16 @@ export function icon(name, size = 16) {
 }
 const PLAY_IC = `<svg class="ic" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a.8.8 0 0 0 1.2.7l10.3-6.5a.8.8 0 0 0 0-1.4L9.2 4.8A.8.8 0 0 0 8 5.5z" fill="currentColor"></path></svg>`;
 const ARR = `<span class="arr" aria-hidden="true">&nbsp;${icon("arrow", 14)}</span>`;
+// WHY THE DJ PASSED, IN THE COLOURED HEADER (the owner, 2026-10-30, of a
+// Sessions ask: "didnt see it"). With a DJ playing, the row sat behind the now
+// bar. One line, and only while it is news: the card itself left the header
+// on 2026-09-05, so an old decline stays in the row. The way on is in the row.
+export function passLine(request) {
+  if (request?.state !== "declined" || !request.justPassed) return "";
+  const why = request.reason ? `: “${esc(request.reason)}”` : ".";
+  const next = request.suggested?.name ? ` <a href="#reqh">Try ${esc(request.suggested.name)}</a>` : "";
+  return `<p class="vpass">Passed on your last ask${why}${next}</p>`;
+}
 // ↗ for a link that leaves the app for Spotify or Tidal, as the bar's panel
 // and the Loaded bands have it (the UI review, 2026-09-26); → stays for a
 // page inside the app.
@@ -3285,11 +3300,12 @@ export function renderRoom({ base, notesHref, defaultDevice, devices = null, pla
     const who = esc(a.djName ?? "A DJ");
     const at = a.at ? ` ${esc(a.at)}` : "";
     const off = a.state === "declined" || a.state === "needs-attention";
-    const words = a.state === "declined" ? `${who} passed on your ask${at} — see why`
+    const why = a.state === "declined" && a.reason;
+    const words = a.state === "declined" ? `${who} passed on your ask${at}${why ? `: “${esc(a.reason)}”` : " — see why"}`
       : a.state === "needs-attention" ? `Your ask of ${who}${at} needs attention — open it`
       : `Asked ${who}${at} — ${a.state === "claimed" ? "being made now" : quiet ? `waiting on the curator, who last checked in ${esc(quiet)}: its Claude or ChatGPT plan may have hit its limit` : "on its way"}`;
     return `
-    <li class="bandreq${off ? " off" : ""}"><a href="${esc(base)}/${esc(a.dj)}">${words}${ARR}</a></li>`;
+    <li class="bandreq${off ? " off" : ""}${why ? " why" : ""}"><a href="${esc(base)}/${esc(a.dj)}">${words}${ARR}</a></li>`;
   };
   // PLAYING FROM THE SHELF (shelfPlayOf): drawn hidden and unlit when nothing
   // from the Shelf plays, so the live script has a row to fill when something
@@ -3683,11 +3699,15 @@ export function listOf(o, w) {
 // caught Amazon Music, offered Tidal again. While the helper reads the
 // speakers (`lan`), the row waits for a reading that says Tidal; without
 // it nobody knows, and the offer stands.
+// BUT ONLY ON SPOTIFY'S OWN WORD (the owner, 2026-10-30, 18:51: Sessions on
+// the Pro Plus, the helper off, a panel saying "Can't reach Spotify" over a
+// Tidal row). Spotify unread is not Spotify quiet. `nologin` keeps the row: a
+// house with no Spotify sign-in has nothing to misread.
 export function tidalOffer(o, last) {
   const td = last && last.tidal;
   if (!td || !td.url || !o || o.state === "playing") return null;
   if (last.lan) return o.state === "lan" && /tidal/i.test(String(o.source || "")) ? td : null;
-  return td;
+  return o.state === "quiet" || o.state === "nologin" ? td : null;
 }
 // THE STREAM'S QUALITY (2026-10-25, the owner: "show the streaming quality
 // (bitrate etc)"): a line in the panel under where it plays, from the
@@ -4724,16 +4744,23 @@ ${SHEET_JS}(function () {
   if (last) paint(last);
   var url = bar.getAttribute("data-fill"); if (!url) return;
   var busy = false, asked = 0;
-  function ask(fresh) {
+  function ask(fresh, again) {
     if (busy || document.visibilityState !== "visible") return;
     busy = true; asked = Date.now();
     var ctl = window.AbortController ? new AbortController() : null;
     var cut = setTimeout(function () { if (ctl) ctl.abort(); }, 10000);
     function end() { clearTimeout(cut); busy = false; }
+    /* ONE MORE READ AFTER A FAILED ONE (the owner, 2026-10-30): the bar said
+       "Try again in a moment" and, with no poll on these pages, nothing did.
+       Past the server's memo, and not a third time. */
+    function got(o) {
+      end(); paint(o);
+      if (o.state === "unknown" && !again) setTimeout(function () { ask(true, true); }, 4000);
+    }
     fetch(url + (fresh ? (url.indexOf("?") < 0 ? "?" : "&") + "fresh=1" : ""), ctl ? { cache: "no-store", signal: ctl.signal } : { cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (o) { end(); paint(o || { state: "unknown" }); })
-      .catch(function () { end(); paint({ state: "unknown" }); });
+      .then(function (o) { got(o || { state: "unknown" }); })
+      .catch(function () { got({ state: "unknown" }); });
   }
   ask();
   document.addEventListener("visibilitychange", function () {
@@ -9310,7 +9337,7 @@ export function renderDjRoom({
     ? `Waiting — the ${request.waitingOn ? `${esc(request.waitingOn)} requests preset` : "requests preset"} is being written ` +
       `for another request; ${auto ? "this one follows within the hour." : "this one can be made once that set is in."}`
     : request.state === "declined"
-    ? `${esc(request.djName ?? "The DJ")} passed on this one${request.reason
+    ? `${esc(request.djName ?? "The DJ")} passed on this one${request.reason && !request.justPassed
         ? `: “${esc(request.reason)}”` : "."}`
     : (REQ_LINES[request.state] ?? "") + throttledLine + quietLine;
   // THE REQUEST ROW (option A, chosen from the canvas 2026-09-05). One row
@@ -9849,7 +9876,7 @@ export function renderDjRoom({
       : dj.guest ? `<span class="ghost" aria-hidden="true">${esc(String(dj.guest.btn))}</span>` : ""}
     <div class="djwords">
       <h1 class="vname">${esc(dj.name)}</h1>
-      <p class="vsum">${esc(dj.summary)}</p>
+      <p class="vsum">${esc(dj.summary)}</p>${passLine(request)}
     </div>
     ${act.startsWith('<form class="vact"')
       // PLAY BESIDE WHAT IT PLAYS (board A, 2026-09-25): the circle, and

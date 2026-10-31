@@ -36,7 +36,7 @@ import {
 } from "./endless.js";
 import {
   askDay, askedTag, atWords, destinationFor, djPlaces, djSlotsExist, findDj, guestAlias,
-  guestAsks, guestFor, guestForPlaylistId, guestHolders, guestLabel, helperKeyFlash, house,
+  GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, guestLabel, helperKeyFlash, house,
   houseClockWords, liveGuests, loadedWords, newestOn, parseButtons, pastTheList, playableKeys, presetFlash,
   presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash,
 } from "./house.js";
@@ -1341,6 +1341,7 @@ export async function handleRequest(request, env, ctx) {
       const asks = guestAskRows.map((a) => {
         const iso = Number.isFinite(a.row.created_at) ? new Date(a.row.created_at).toISOString() : null;
         return { btn: a.btn, dj: a.row.dj, djName: house(env).djs[a.row.dj]?.name ?? null, state: a.row.state,
+          reason: a.row.decline_reason ?? null,
           at: iso ? atWords(houseClockWords(env, iso)) : null };
       });
       // No line over the wall for music on none of the bands (the owner,
@@ -3134,6 +3135,8 @@ export async function handleRequest(request, env, ctx) {
             openRequest = { state: "declined", ...common,
               djName: dj.name,
               reason: row.decline_reason ?? null,
+              // News for as long as the line on Loaded, then the row's alone.
+              justPassed: Date.now() - (row.updated_at ?? row.created_at ?? 0) < GUEST_ASK_WINDOW_MS,
               suggested: sDj
                 ? { name: sDj.name, href: `${base}/${sKey}`,
                     // The same ask, to the DJ it suits, in one press (2026-09-14):

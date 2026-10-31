@@ -1070,11 +1070,11 @@ test("an ask bound for a guest shows under its band — on its way, then passed 
     assert.notEqual((await (await worker.fetch(get(`/buttons/${KEY}/playing?asks=1`), e)).json()).asks, drawn,
       "a page left open sees it move");
     const after = await page(e, `/buttons/${KEY}`);
-    assert.match(after, new RegExp(`<li class="bandreq off"><a href="/buttons/${KEY}/hank">${HANK} passed on your ask at \\d\\d:\\d\\d — see why`));
+    assert.match(after, new RegExp(`<li class="bandreq off why"><a href="/buttons/${KEY}/hank">${HANK} passed on your ask at \\d\\d:\\d\\d: “not my shelf”`));
     assert.ok(!after.includes("data-asks="), "nothing in flight, nothing to poll");
     const hank = await page(e, `/buttons/${KEY}/hank`);
     assert.match(hank, /<details class="reqrow" open>/);
-    assert.match(hank, /passed on this one: “not my shelf”/);
+    assert.match(hank, /<p class="vpass">Passed on your last ask: “not my shelf”<\/p>/);
     // A set landing on the guest since then retires the line.
     await putOn(e, GS, { dj: "vibe", ref: "vibe-set", at: new Date(Date.now() + 1000).toISOString() });
     assert.ok(!(await page(e, `/buttons/${KEY}`)).includes('class="bandreq'));

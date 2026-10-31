@@ -45,6 +45,18 @@ export const PENDING_CAP = 3;
 // enough.
 export const PENDING_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const SETTLED_TTL_MS = 90 * 24 * 60 * 60 * 1000;
+// THE REASON A DJ PASSED, for the listener's page. 140 cut two of nine
+// mid-word ("his co-write of Respe", 2026-10-30), so a little longer, and a
+// cut that stops at a sentence, or failing that at a word.
+export const DECLINE_REASON_MAX = 240;
+export function cutReason(text, max = DECLINE_REASON_MAX) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
+  if (stop >= max / 2) return cut.slice(0, stop + 1);
+  const word = cut.lastIndexOf(" ");
+  return `${(word > 0 ? cut.slice(0, word) : cut).replace(/[\s,;:–—-]+$/, "")}…`;
+}
 
 // pending and claimed block a second request for the same DJ; ready and
 // declined do not — a finished set invites the next ask, and a DJ who passed
@@ -214,7 +226,7 @@ export function advance(row, action, args = {}, now = Date.now()) {
       if (row.state === "declined") return ok(row, "noop");
       if (row.state !== "pending") return refuse("bad-transition", row);
       return ok({ ...row, state: "declined",
-        decline_reason: String(args.reason ?? "").slice(0, 140) || null,
+        decline_reason: String(args.reason ?? "").slice(0, DECLINE_REASON_MAX) || null,
         suggested_dj: String(args.suggestedDj ?? "").slice(0, 64) || null,
         updated_at: now });
     }

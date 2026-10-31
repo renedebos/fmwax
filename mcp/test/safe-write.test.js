@@ -1260,6 +1260,30 @@ test("the budget refuses a fulfilment it could not finish, before the claim", as
   } finally { f.restore(); }
 });
 
+test("a long reason is cut at a sentence, or failing that at a word, never mid-word", async () => {
+  const { cutReason, DECLINE_REASON_MAX: MAX } = await import("../station.js");
+  assert.equal(cutReason("short and whole."), "short and whole.");
+  const sentences = "The shelf is thin here, and the session tapes never reached this service at all. ".repeat(4).trim();
+  const one = cutReason(sentences);
+  assert.ok(one.length <= MAX && one.endsWith("at all."), one);
+  const words = "the session tapes never reached this service ".repeat(8).trim();
+  const two = cutReason(words);
+  assert.ok(two.length <= MAX, two);
+  assert.match(two, /(the|session|tapes|never|reached|this|service)…$/, "a whole word, then the mark");
+  assert.equal(cutReason("x".repeat(400)).length, MAX, "one long word still fits");
+  // Through the tool, as the curator sends it.
+  const e = fulfilEnv();
+  const id = seedRequest(e);
+  await callTool(e, "decline_request", { request_id: id, reason: words }, { remaining: 40 });
+  assert.equal(e.STATION.rows.get(id).decline_reason, two);
+});
+
+test("the curator is told a decline teaches: plain words, and who can do it", async () => {
+  const { HOUSE_RULES } = await import("../djs.js");
+  assert.match(HOUSE_RULES, /A DECLINE IS ALL THE LISTENER GETS/, "in get_dj's rules, which need no connector re-added");
+  assert.match(HOUSE_RULES, /name who can do it in suggested_dj/);
+});
+
 test("declining writes the pass and the pointer, and only from pending", async () => {
   const e = fulfilEnv();
   const id = seedRequest(e);

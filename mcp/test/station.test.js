@@ -209,10 +209,10 @@ const cand = { normalized: "an hour of trains" };
 
 test("a DJ passes: pending declines with a bounded reason and a suggestion", () => {
   const r = advance(row(), "decline",
-    { reason: "not my records, friend. " + "x".repeat(200), suggestedDj: "funkenstein" }, T0 + 1);
+    { reason: "not my records, friend. " + "x".repeat(300), suggestedDj: "funkenstein" }, T0 + 1);
   assert.equal(r.ok, true);
   assert.equal(r.row.state, "declined");
-  assert.equal(r.row.decline_reason.length, 140, "one line for the page, never an essay");
+  assert.equal(r.row.decline_reason.length, 240, "a line or two for the page, never an essay");
   assert.equal(r.row.suggested_dj, "funkenstein");
   assert.equal(advance(r.row, "decline", {}, T0 + 2).note, "noop");
 });

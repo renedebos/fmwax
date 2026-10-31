@@ -621,7 +621,7 @@ test("the bar's panel runs steerOf for its steer buttons and the line saying why
 // WITH THE HELPER ON, ONLY ITS WORD (the owner, 2026-09-28, 19:16: the panel
 // drawn in the seconds after key 3, before the helper's reading caught Amazon
 // Music, offered Tidal again). `o` is the answer as the bar narrows it.
-test("the Tidal row: with the helper on, only while its reading says Tidal; without it, whenever Spotify is not playing", async () => {
+test("the Tidal row: with the helper on, only while its reading says Tidal; without it, only on Spotify's own word", async () => {
   const { tidalOffer } = await import("../programs.js");
   const tidal = { url: "https://tidal.com/playlist/x", name: "Requests · Tidal" };
   const lan = { at: 1, speakers: {} };
@@ -633,12 +633,59 @@ test("the Tidal row: with the helper on, only while its reading says Tidal; with
   assert.equal(tidalOffer(on("Prime"), { tidal, lan }), null, "Amazon Music playing");
   assert.equal(tidalOffer(quiet, { tidal, lan }), null,
     "quiet by the reading (the seconds after a press, Spotify's pause, a stop): not Tidal");
-  // The helper off: nobody knows, and the offer stands while Spotify is not playing.
+  // The helper off: the offer stands once Spotify has said it is not playing here.
   assert.equal(tidalOffer(quiet, { tidal }), tidal);
-  assert.equal(tidalOffer({ state: "unknown" }, { tidal }), tidal);
+  // Spotify unread is not Spotify quiet (the owner, 2026-10-30): Sessions
+  // played on the Pro Plus under "Can't reach Spotify" and a Tidal row.
+  for (const state of ["unknown", "throttled", "signedout"]) {
+    assert.equal(tidalOffer({ state }, { tidal }), null, state);
+  }
+  // No Spotify sign-in at all, as in a Tidal house: nothing to misread.
+  assert.equal(tidalOffer({ state: "nologin" }, { tidal }), tidal);
   // Either way: never over Spotify, and nothing without a Tidal guest.
   assert.equal(tidalOffer({ state: "playing", device: "Pro Plus" }, { tidal, lan }), null);
   assert.equal(tidalOffer({ state: "playing", device: "Pro Plus" }, { tidal }), null);
   assert.equal(tidalOffer(on("Tidal"), { lan }), null);
   assert.equal(tidalOffer(quiet, { tidal: { name: "no url" } }), null);
+});
+
+test("a bar with no poll of its own reads once more after a failed read, past the memo, and never a third time", async () => {
+  const sp = spotify({ now: null });
+  let block;
+  try {
+    const html = await page(env(), `/buttons/${KEY}/vibe`);
+    block = html.match(/var url = bar\.getAttribute\("data-fill"\);[\s\S]*?(?=\}\)\(\);\s*<\/script>)/)[0];
+  } finally { sp.restore(); }
+  const CUT_MS = 10000;
+  // Runs the page's own lines against a stub, with `answers` as what /playing
+  // says, in order: an object, a status number, or "down" for a failed fetch.
+  const run = async (answers) => {
+    const asked = [], painted = [], waits = [];
+    const fetch = async (u) => {
+      asked.push(u);
+      const a = answers.shift();
+      if (a === "down") throw new Error("offline");
+      return typeof a === "number" ? { ok: false, json: async () => ({}) } : { ok: true, json: async () => a };
+    };
+    new Function("bar", "paint", "fetch", "document", "window", "setTimeout", "clearTimeout", block)(
+      { getAttribute: () => "/playing" }, (o) => painted.push(o.state), fetch,
+      { visibilityState: "visible", addEventListener() {} }, {},
+      (fn, ms) => { if (ms !== CUT_MS) waits.push({ fn, ms }); return 0; }, () => {});
+    const settle = async () => { for (let i = 0; i < 5; i++) await new Promise((r) => setImmediate(r)); };
+    await settle();
+    while (waits.length) { waits.shift().fn(); await settle(); }
+    return { asked, painted };
+  };
+  const first = "/playing", again = "/playing?fresh=1";
+  assert.deepEqual(await run([{ state: "unknown" }, { state: "playing" }]),
+    { asked: [first, again], painted: ["unknown", "playing"] });
+  assert.deepEqual(await run(["down", { state: "playing" }]),
+    { asked: [first, again], painted: ["unknown", "playing"] }, "a fetch that failed too");
+  assert.deepEqual(await run([500, { state: "quiet" }]),
+    { asked: [first, again], painted: ["unknown", "quiet"] }, "and a refused one");
+  assert.deepEqual(await run([{ state: "unknown" }, { state: "unknown" }, { state: "playing" }]),
+    { asked: [first, again], painted: ["unknown", "unknown"] }, "twice is the end of it");
+  for (const state of ["playing", "quiet", "throttled", "signedout", "nologin"]) {
+    assert.deepEqual(await run([{ state }]), { asked: [first], painted: [state] }, `${state} is an answer`);
+  }
 });
