@@ -13,7 +13,7 @@ import {
   speakerRule, canonicalDevice, voicePrompt, backendPrompt,
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
-import { githubRepo, updateFacts } from "./updates.js";
+import { githubRepo, updateFacts, versionWords } from "./updates.js";
 import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, renewHouseKey } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
@@ -564,7 +564,7 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/restore" || url.pathname === "/setup/check" || url.pathname === "/setup/name" || url.pathname === "/setup/identify" ||
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
       url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" || url.pathname === "/setup/updates" ||
-      url.pathname === "/setup/updates/on" || url.pathname === "/setup/endless") {
+      url.pathname === "/setup/updates/on" || url.pathname === "/setup/endless" || url.pathname === "/setup/saved") {
       // A SETUP KEY TOO SHORT (MC-34): the Deploy button's form takes any
       // password, and one under 24 characters keeps the door shut. Said
       // here, with the way out, rather than a bare 404 on a new house.
@@ -861,6 +861,13 @@ export async function handleRequest(request, env, ctx) {
       if (!sameSite) {
         return roomPage(renderRefusal({ why: "This form has to be sent from the house's own setup page.", back: "/setup" }),
           { status: 403, headers: { "cache-control": "no-store" } });
+      }
+      // SAVED IN THE PHONE'S PASSWORDS (2026-11-05, the owner: "nobody would
+      // remember this password"): the form under a new recovery code exists so
+      // the phone or browser offers to keep it, which a form sent and answered
+      // is what they wait for. Nothing it sends is read.
+      if (url.pathname === "/setup/saved") {
+        return new Response(null, { status: 303, headers: { location: "/setup", "cache-control": "no-store" } });
       }
       const form = await request.formData().catch(() => null);
       if (url.pathname === "/setup/restore") {
@@ -1995,7 +2002,9 @@ export async function handleRequest(request, env, ctx) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(rulesPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The house rules page only answers GET.");
-      return roomPage(renderRules({ base: `/buttons/${key}`, md: RULES_MD, facts: await rulesFacts(env), ...(await tabState(env)) }));
+      // Its version on the last line, the one a problem report asks for (2026-11-05).
+      return roomPage(renderRules({ base: `/buttons/${key}`, md: RULES_MD, facts: await rulesFacts(env), ...(await tabState(env)),
+        version: versionWords() }));
     }
 
     // RECONNECT SPOTIFY (MC-31 stage 0b, 2026-10-16; spotify-login.js). The
@@ -3434,6 +3443,8 @@ export async function handleRequest(request, env, ctx) {
           "start-sent": sentWords,
           "lane-sent": sentWords,
           "start-stuck": `Spotify took it, but the ${on ?? "speaker"} is not playing it. Tap Play it now again.`,
+          "start-empty": `Nothing is on preset ${btnNow ?? ""} yet, so there is nothing to play. Tap Start fresh for ${dj.name}'s first set: ` +
+            "a new one-hour opening, about four minutes, using one of today's DJ runs.",
           "start-asleep": shutWords(on, speakerKind(env, on), "tap Play it now again")
             ?? `The ${on ?? "speaker"} still did not answer: it is asleep. Wake it and tap Play it now again. Nothing was changed.`,
           "more-asked": `${dj.name} is making more like this. It takes over after the song that is playing, in a few minutes.`,
@@ -3479,6 +3490,8 @@ export async function handleRequest(request, env, ctx) {
           "put-in-lane": `${dj.name} is playing as the guest DJ right now. Stop it first, then make ${dj.name} a house DJ on ${n}.`,
         };
         const line = ENDLESS_LINES[said] ?? "That didn't go through. Nothing changed; try again in a moment.";
+        // Its first set is the thing to tap: Start fresh in Play's place.
+        if (said === "start-empty" && endless) endless.empty = true;
         // "Being made" only while it is (the owner, 2026-09-24: Sunny was
         // playing and the flash still said so). Once the job is done the
         // section below says what happened, so the line goes.
@@ -3874,6 +3887,17 @@ export async function handleRequest(request, env, ctx) {
           } catch (e) {
             out.status = sleptThrough(e) ? "asleep" : "failed";
             if (out.status === "asleep") await endlessNoStart(env, p.button, { at: Date.now(), device, asleep: true });
+            // NOTHING ON IT YET (2026-11-05: Sessions made the house DJ on 6 by
+            // hand, its list still empty, and Play said only "That didn't go
+            // through"). Spotify refuses to start an empty list, so a Play that
+            // failed reads the list once, and an empty one is said, with Start
+            // fresh as the button.
+            if (out.status === "failed") {
+              try {
+                const got = await playlistItems(catalogFor(withBudget(env, { remaining: 2 }), "spotify"), p.playlist, null, 1);
+                if (got.total === 0) out.status = "empty";
+              } catch { /* the plain words */ }
+            }
           }
         }
       } else if (what === "more" || what === "change") {

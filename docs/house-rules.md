@@ -249,6 +249,9 @@ and once more **4 seconds** later if Spotify didn't answer.
   starts music by itself. If that preset is playing by then, its songs go on
   the end of the list instead (since 2026-10-31). Tapping Start fresh again
   starts the 25 minutes over. A guest DJ's opening works the same way (since 2026-10-02).
+- **Play** on a DJ's preset plays what is on it and never makes a new set.
+  On a preset with nothing on it yet, Play says so and Start fresh takes its
+  place, for the first set (since 2026-11-05).
 - {if no chatgpt} **Who makes the songs:** the curator, Claude in the cloud.
   Each tap or ask wakes it, and it also checks in every hour.
 - {if chatgpt} **Who makes the songs:** the curator, ChatGPT: a Work chat in

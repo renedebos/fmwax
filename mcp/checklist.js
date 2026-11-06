@@ -262,7 +262,8 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
     ? [{ title: "Updates", state: "offer", href: "/setup/updates", label: "Turn on updates",
       detail: "New versions with a click, from your own GitHub copy of the house" }]
     : [{ title: "Updates", state: up.newer ? "due" : "done", href: "/setup/updates", label: up.newer ? "Get the latest version" : "Open", always: true,
-      detail: up.newer ? "A newer version is out" : up.latest && up.current ? "This house has the latest version" : `From ${up.ownSlug}` }];
+      detail: up.newer ? `A newer version is out${up.latestWhen ? `, of ${up.latestWhen}` : ""}`
+        : up.latest && up.current ? `This house has the latest version${up.currentWhen ? `, of ${up.currentWhen}` : ""}` : `From ${up.ownSlug}` }];
 
   // ONE RULE FOR DONE (Codex, 2026-10-17: a section said 5 of 5 while Core
   // said 4 of 5): "due" is done, with something to look at, counted apart.

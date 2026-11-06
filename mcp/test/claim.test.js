@@ -121,6 +121,36 @@ test("the recovery code signs in another browser, and a wrong one does not", asy
   }
 });
 
+// THE PHONE KEEPS THE CODE (2026-11-05, the owner: "nobody would remember
+// this password"): both boxes were plain text with autofill off, so no phone
+// or browser ever offered to keep the code or fill it in.
+test("the recovery code is a password a phone can keep: offered to save when shown, filled in at the sign-in", async () => {
+  const { e } = await house();
+  const claimed = await (await send(e, "/setup/claim", { method: "POST", form: { key: KEY } })).text();
+  const code = codeOf(claimed);
+  const save = claimed.match(/<form class="setform setsave" method="post" action="\/setup\/saved" id="setsave">([\s\S]*?)<\/form>/)?.[1];
+  assert.ok(save, "a form to save it");
+  assert.match(save, /<input class="vh sethouse" type="text" name="house" autocomplete="username"/, "kept under the house's address");
+  assert.ok(save.includes(`type="password" name="code" autocomplete="new-password" value="${code}"`), "the code itself, as a new password");
+  assert.match(save, /<button class="sgo" type="submit">Save it in this phone's passwords<\/button>/);
+  assert.match(claimed, /hs\[k\]\.value = location\.host/, "the address filled in by the page");
+  assert.match(claimed, /new PasswordCredential\(sf\)/, "a browser that can be asked outright is asked");
+  // Sent, it goes on to the checklist and reads nothing; from elsewhere, refused.
+  const saved = await send(e, "/setup/saved", { method: "POST", form: { house: "x", code } });
+  assert.equal(saved.status, 303);
+  assert.equal(saved.headers.get("location"), "/setup");
+  assert.equal((await send(e, "/setup/saved", { method: "POST", form: { code }, origin: "https://elsewhere.test" })).status, 403);
+  // The sign-in on another browser: a login form, the code as its password, shown on asking.
+  const owned = await (await send(e, "/setup")).text();
+  assert.match(owned, /<input class="vh sethouse" type="text" name="house" autocomplete="username" tabindex="-1" aria-hidden="true">\s*<label for="scode">Recovery code<\/label>\s*<input type="password" id="scode" name="code" required autocomplete="current-password"/);
+  assert.match(owned, /<label class="setshow"><input type="checkbox" id="sshow"> Show the code<\/label>/);
+  assert.match(owned, /sc\.type = sh\.checked \? "text" : "password"/);
+  assert.ok(!owned.includes(code));
+  // And it still signs in, sent with the house's address beside it.
+  const back = await send(e, "/setup/recover", { method: "POST", form: { house: "fmwax.test", code } });
+  assert.equal(back.headers.get("location"), "/setup?signed=1");
+});
+
 test("recovering an unclaimed house says to claim it", async () => {
   const { e } = await house();
   const r = await send(e, "/setup/recover", { method: "POST", form: { code: "0000-0000-0000-0000" } });

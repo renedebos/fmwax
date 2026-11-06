@@ -7,7 +7,7 @@
 // after that an update is Run workflow on GitHub (install/update.mjs does the
 // work). The page also says when the public repository has a newer version
 // than this house runs (version.js, stamped by the copy script).
-import { VERSION } from "./version.js";
+import { UPDATED, VERSION, VERSION_DAY } from "./version.js";
 import { programsKV } from "./services.js";
 
 // The public repository this house came from (SOURCE_REPO, in the button's
@@ -59,38 +59,71 @@ export function turnOnLink(own, source) {
 export const runLink = (own) => `${own.web}/actions/workflows/update.yml`;
 
 // The public repository's newest version: the commit its copy was made from
-// (.fmwax-copy), read at most once an hour. Null when it cannot be read.
+// and the day it was made (.fmwax-copy: `day`, or the day of `at` in a copy
+// made before `day` was written), read at most once an hour. Null when it
+// cannot be read.
 const LATEST_KEY = "update:latest";
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
 export async function latestVersion(env, now = Date.now()) {
   const source = updateSource(env);
   if (!source) return null;
   try {
     const kept = await programsKV(env).get(LATEST_KEY, { type: "json" });
-    if (kept?.from && now - kept.read < 3600e3) return kept.from;
+    if (kept?.from && now - kept.read < 3600e3) return { from: kept.from, day: DAY.test(kept.day ?? "") ? kept.day : null };
   } catch { /* read it again */ }
   try {
     const r = await fetch(`https://raw.githubusercontent.com/${source.slug}/main/.fmwax-copy`, { headers: { "user-agent": "fmwax-house" } });
     if (!r.ok) return null;
-    const from = String((await r.json())?.from ?? "");
+    const copy = await r.json();
+    const from = String(copy?.from ?? "");
     if (!/^[0-9a-f]{40}$/.test(from)) return null;
-    try { await programsKV(env).put(LATEST_KEY, JSON.stringify({ from, read: now }), { expirationTtl: 86400 }); } catch { /* read again next time */ }
-    return from;
+    const day = DAY.test(String(copy?.day ?? "")) ? copy.day : DAY.test(String(copy?.at ?? "").slice(0, 10)) ? String(copy.at).slice(0, 10) : null;
+    try { await programsKV(env).put(LATEST_KEY, JSON.stringify({ from, day, read: now }), { expirationTtl: 86400 }); } catch { /* read again next time */ }
+    return { from, day };
   } catch { return null; }
+}
+
+// A VERSION A PERSON CAN READ (the owner, 2026-11-05: "should there be a
+// version number?"): the day it was made, in words that read the same
+// everywhere ("5 November 2026"), and the commit's first seven characters
+// as its code, for a problem report. Null in the author's own house.
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export function dayWords(day) {
+  const m = DAY.test(String(day ?? "")) ? String(day).split("-").map(Number) : null;
+  return m && m[1] >= 1 && m[1] <= 12 ? `${m[2]} ${MONTHS[m[1] - 1]} ${m[0]}` : null;
+}
+export const versionCode = (sha) => (/^[0-9a-f]{40}$/.test(String(sha ?? "")) ? String(sha).slice(0, 7) : null);
+// "the version of 5 November 2026 (code b8a5d8a)", "version b8a5d8a" when
+// its day is not known, or null.
+export function versionWords(sha = VERSION, day = VERSION_DAY) {
+  const code = versionCode(sha);
+  if (!code) return null;
+  const when = dayWords(day);
+  return when ? `the version of ${when} (code ${code})` : `version ${code}`;
 }
 
 // What the setup page says: null for a house with no source (the author's,
 // or one made from the terminal); else its version, the newest, and the
 // owner's copy and links once given, and whether updates were turned on for
 // that copy (UPDATES_ON, set by the press that opens GitHub's page).
-export async function updateFacts(env, now = Date.now()) {
+// A house its workflow has updated (UPDATED) has updates on whatever the page
+// saw (2026-11-05: fmwax-house2, turned on before the page noted it, still
+// offered step 1 after its update).
+export async function updateFacts(env, now = Date.now(), { current = VERSION, currentDay = VERSION_DAY, updated = UPDATED } = {}) {
   const source = updateSource(env);
   if (!source) return null;
   const own = githubRepo(env.UPDATE_REPO);
-  const latest = await latestVersion(env, now);
+  const newest = await latestVersion(env, now);
+  const latest = newest?.from ?? null;
+  // Its own day, or the newest's when it is the newest (a copy made before
+  // the day was stamped).
+  const day = currentDay ?? (latest && latest === current ? newest.day : null);
   return {
-    source: source.web, current: VERSION, latest,
-    newer: !!(latest && VERSION && latest !== VERSION),
-    own: own?.web ?? null, ownSlug: own?.slug ?? null, on: !!own && env.UPDATES_ON === own.web,
+    source: source.web, current, latest,
+    // In words for the page: "5 November 2026", and the code for a report.
+    currentWhen: dayWords(day), latestWhen: dayWords(newest?.day), code: versionCode(current),
+    newer: !!(latest && current && latest !== current),
+    own: own?.web ?? null, ownSlug: own?.slug ?? null, on: !!own && (updated === true || env.UPDATES_ON === own.web),
     turnOn: own ? turnOnLink(own, source) : null, run: own ? runLink(own) : null,
   };
 }

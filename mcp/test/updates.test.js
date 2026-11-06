@@ -10,7 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import worker from "../worker.js";
-import { githubRepo, turnOnLink, updateWorkflow, WORKFLOW_PATH } from "../updates.js";
+import { dayWords, githubRepo, turnOnLink, updateFacts, updateWorkflow, versionCode, versionWords, WORKFLOW_PATH } from "../updates.js";
+import { renderRules, renderSetup } from "../programs.js";
 import { mergeConfig, update } from "../install/update.mjs";
 import { makeEnv, makeHouseStore } from "./harness.js";
 import { VERSION } from "../version.js";
@@ -58,6 +59,7 @@ test("update.mjs: everything of the latest comes in, what it dropped goes, the h
     put(latest, ".github/workflows/install-check.yml", "the author's own check");
     put(here, "wrangler.jsonc", cfg({ name: "fmwax-house2", main: "mcp/worker.js",
       kv_namespaces: [{ binding: "TOKENS", id: "t".repeat(32) }, { binding: "PROGRAMS", id: "p".repeat(32) }], migrations: [{ tag: "v1" }, { tag: "v2" }] }));
+    put(latest, "mcp/version.js", `export const VERSION = "${SHA_NEW}";\nexport const VERSION_DAY = "2026-11-05";\nexport const UPDATED = false;\n`);
     put(here, "mcp/worker.js", "old worker");
     put(here, "mcp/gone.js", "dropped since");
     put(here, "package.json", JSON.stringify({ name: "fmwax-house2", scripts: { deploy: "npx wrangler@4.129.1 deploy" } }));
@@ -66,6 +68,9 @@ test("update.mjs: everything of the latest comes in, what it dropped goes, the h
 
     assert.equal(update(latest, here), SHA_NEW);
     assert.equal(readFileSync(join(here, "mcp/worker.js"), "utf8"), "new worker");
+    assert.equal(readFileSync(join(here, "mcp/version.js"), "utf8"),
+      `export const VERSION = "${SHA_NEW}";\nexport const VERSION_DAY = "2026-11-05";\nexport const UPDATED = true;\n`,
+      "brought by its workflow: the house knows its updates are on (2026-11-05)");
     assert.ok(existsSync(join(here, "mcp/new-file.js")));
     assert.ok(!existsSync(join(here, "mcp/gone.js")), "what the latest dropped goes");
     assert.ok(existsSync(join(here, ".git")));
@@ -167,4 +172,55 @@ test("a house from the terminal or the author's own has no Updates step", async 
   const me = ((await go(e, "/setup/claim", { method: "POST", form: { key: KEY } })).headers.get("set-cookie") ?? "").split(";")[0];
   assert.ok(!/Turn on updates/.test(await (await go(e, "/setup", { cookie: me })).text()));
   assert.equal((await go(e, "/setup/updates", { cookie: me })).headers.get("location"), `${ORIGIN}/setup`);
+});
+
+// A VERSION A PERSON CAN READ (the owner, 2026-11-05: "should there be a
+// version number?"): the day it was made, and a short code for a report.
+test("a version is the day it was made, in words, with a seven-letter code; the author's own has none", () => {
+  assert.equal(dayWords("2026-11-05"), "5 November 2026");
+  assert.equal(dayWords("2026-01-31"), "31 January 2026");
+  for (const bad of [null, "", "2026-13-01", "5 Nov", "2026-11-05T04:46:30Z"]) assert.equal(dayWords(bad), null, String(bad));
+  assert.equal(versionCode("b8a5d8a3b387d3f85ea6812b75e90fe4425cd0c5"), "b8a5d8a");
+  assert.equal(versionCode("b8a5d8a"), null, "only a whole commit");
+  assert.equal(versionWords("b8a5d8a3b387d3f85ea6812b75e90fe4425cd0c5", "2026-11-05"), "the version of 5 November 2026 (code b8a5d8a)");
+  assert.equal(versionWords("b8a5d8a3b387d3f85ea6812b75e90fe4425cd0c5", null), "version b8a5d8a", "a copy made before the day was stamped");
+  assert.equal(versionWords(null, null), null);
+  assert.equal(versionWords(), VERSION ? versionWords(VERSION) : null, "this repository's own: the author's house says none");
+  // Its last line on the House rules page, only where there is one.
+  const page = (version) => renderRules({ base: "/buttons/k", md: "# House rules\n", version });
+  assert.match(page("the version of 5 November 2026 (code b8a5d8a)"), /<p class="unote rver">This house runs the version of 5 November 2026 \(code b8a5d8a\)\.<\/p>\s*<footer class="roomfoot"/);
+  assert.ok(!page(null).includes(`class="unote rver"`));
+});
+
+test("the Updates step says both versions by their day, its code, and an updated house is not offered step 1", async () => {
+  const OLD = "a".repeat(40);
+  const e = makeEnv();
+  e.SOURCE_REPO = SOURCE;
+  e.UPDATE_REPO = "https://github.com/you/fmwax-house2";
+  const inner = globalThis.fetch;
+  let copy = { from: SHA_NEW, at: "2026-11-06T04:46:30.488Z", day: "2026-11-05" };
+  globalThis.fetch = async (u, init) => (String(u).startsWith("https://raw.githubusercontent.com/") ? Response.json(copy) : inner(u, init));
+  try {
+    const t0 = Date.parse("2026-11-06T05:00:00Z");
+    let up = await updateFacts(e, t0, { current: OLD, currentDay: "2026-10-26", updated: true });
+    assert.equal(up.newer, true);
+    assert.equal(up.currentWhen, "26 October 2026");
+    assert.equal(up.latestWhen, "5 November 2026", "the day the copy was made where it was made, not UTC's 6 November");
+    assert.equal(up.code, "aaaaaaa");
+    assert.equal(up.on, true, "its workflow brought this version: updates are on, whatever the page saw");
+    const html = renderSetup({ state: "updates", updates: up });
+    assert.match(html, /A newer version is out, of 5 November 2026\. This house has the version of 26 October 2026\./);
+    assert.match(html, /This version's code is <b>aaaaaaa<\/b>: say it when you report a problem\./);
+    assert.match(html, /<details class="setkey"><summary>Turn updates on again<\/summary>/, "step 1 folded away");
+    assert.ok(html.indexOf("Turn updates on, once.") > html.indexOf("Turn updates on again"), "only inside the fold");
+    // Up to date, from a copy made before its day was stamped: the newest's day is its own.
+    up = await updateFacts(e, t0 + 7200e3, { current: SHA_NEW, currentDay: null, updated: false });
+    assert.match(renderSetup({ state: "updates", updates: up }), /This house has the latest version, of 5 November 2026\./);
+    assert.equal(up.on, false, "not updated by its workflow, nor turned on here: step 1 is offered");
+    // A public copy made before `day`: its `at`, as written.
+    copy = { from: SHA_NEW, at: "2026-10-31T03:04:17.000Z" };
+    up = await updateFacts(e, t0 + 4 * 3600e3, { current: OLD, currentDay: null, updated: false });
+    assert.equal(up.latestWhen, "31 October 2026");
+    assert.match(renderSetup({ state: "updates", updates: up }), /A newer version is out, of 31 October 2026\. This house has version aaaaaaa\./);
+  } finally { globalThis.fetch = inner; }
 });

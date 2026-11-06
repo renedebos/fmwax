@@ -53,6 +53,12 @@ export function update(latestDir, hereDir) {
     const pkg = JSON.parse(readFileSync(join(here, "package.json"), "utf8"));
     writeFileSync(join(here, "package.json"), `${JSON.stringify({ ...pkg, name: ownName }, null, 2)}\n`);
   }
+  // UPDATED BY ITS WORKFLOW (2026-11-05): the house then knows its updates
+  // are on, and its setup page stops offering to turn them on.
+  const version = join(here, "mcp", "version.js");
+  if (existsSync(version)) {
+    writeFileSync(version, readFileSync(version, "utf8").replace("export const UPDATED = false;", "export const UPDATED = true;"));
+  }
   return JSON.parse(readFileSync(join(latest, ".fmwax-copy"), "utf8")).from ?? null;
 }
 

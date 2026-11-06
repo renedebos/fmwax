@@ -54,6 +54,9 @@ page.on("console", (m) => {
   if (m.type() === "error" && !/Failed to load resource/.test(m.text())) errors.push(m.text());
 });
 
+function houseButtons(e) {
+  try { return (typeof e.BUTTONS === "string" ? JSON.parse(e.BUTTONS) : e.BUTTONS) ?? []; } catch { return []; }
+}
 // Every tab and every kind of page a phone opens.
 const slug = PROGRAMS[4].slug;
 const PAGES = [
@@ -67,7 +70,10 @@ const PAGES = [
   ["an endless DJ", `${ROOM}/soul`], ["the guest DJ's", `${ROOM}/pub-rock`], ["Deep Dive", `${ROOM}/deep-dive`],
   // Comedy's page (asked sets only) went with Comedy, 2026-10-13; the
   // Professor's, the writer's, with him, 2026-10-15.
-  ["a writer", `${ROOM}/the-librarian`], ["the archive", `${ROOM}/archive`],
+  ["a writer", `${ROOM}/the-librarian`],
+  // The archive's page only in a house with an archive preset (the owner's
+  // switched off 2026-11-05, Sessions on 6): anywhere else it is a 404.
+  ...(houseButtons(env).some((b) => b.archive) ? [["the archive", `${ROOM}/archive`]] : []),
 ];
 
 // What the bar can be handed: every state barWords and view() tell apart, on

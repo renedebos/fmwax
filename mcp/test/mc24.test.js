@@ -324,6 +324,42 @@ test("a fresh set that lands while the speaker sleeps: the page says so, and Pla
   } finally { unfail(); sp.restore(); }
 });
 
+// NOTHING ON IT YET (2026-11-05): Sessions made the house DJ on 6 by hand,
+// its list empty; Play failed and the page said only "That didn't go through".
+test("Play on a preset with nothing on it says so, and offers Start fresh in its place; a failed Play otherwise says what it did", async () => {
+  const sp = spotify({ now: null });
+  const fail = { on: true };
+  const unfail = (() => {
+    const inner = globalThis.fetch;
+    globalThis.fetch = async (u, init = {}) => {
+      const url = new URL(String(u));
+      if (fail.on && init.method === "PUT" && url.pathname === "/v1/me/player/play") {
+        return Response.json({ error: { status: 403, message: "Player command failed: Restriction violated", reason: "UNKNOWN" } }, { status: 403 });
+      }
+      return inner(u, init);
+    };
+    return () => { globalThis.fetch = inner; };
+  })();
+  try {
+    const e = env();
+    sp.f.state.contents = [];
+    const play = () => worker.fetch(new Request(`https://x.test/buttons/${KEY}/vibe/endless`, { method: "POST",
+      body: new URLSearchParams({ do: "start", device: "Pro Plus" }) }), e);
+    let r = await play();
+    assert.match(r.headers.get("location"), /endless=start-empty/);
+    const said = await page(e, r.headers.get("location"));
+    assert.match(said, /Nothing is on preset 4 yet, so there is nothing to play\. Tap Start fresh for Vibe&#39;s first set: a new one-hour opening, about four minutes, using one of today&#39;s DJ runs\./);
+    assert.match(said, /<button class="lanebtn" type="submit" form="endfresh" name="do" value="fresh"><span class="laneic" aria-hidden="true"><svg[^]*?<\/svg><\/span>Start fresh<\/button>/);
+    assert.ok(!/name="do" value="start"/.test(said), "no Play beside it");
+    assert.equal(doc(e)?.runs ?? 0, 0, "and nothing spent");
+    // A list with songs that will not start is not called empty.
+    sp.f.state.contents = [track("t1")];
+    r = await play();
+    assert.match(r.headers.get("location"), /endless=start-failed/);
+    assert.match(await page(e, `/buttons/${KEY}/vibe`), /name="do" value="start"/, "Play, as ever, without the flash");
+  } finally { unfail(); sp.restore(); }
+});
+
 test("\"being made\" only while it is: the page's wait asks the ledger, and a stale flash is dropped", async () => {
   const sp = spotify({ now: null });
   try {

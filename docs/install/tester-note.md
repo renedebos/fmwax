@@ -50,7 +50,7 @@ taste.
 - Not in this version: Tidal, and the house's Talk tab without an OpenAI
   key. The Claude app's and ChatGPT's own voice modes work.
 - Updates: your setup page says when one is out, and its **Updates**
-  opens GitHub's page for it (`START-HERE.md`, *Updates*). When an update's
+  opens GitHub's page for it (`docs/install/updates.md`). When an update's
   note says **re-add the connector**, do that too: the Claude app keeps the old list of the
   house's tools until you do. On ChatGPT, rescan the house's plugin
   instead.

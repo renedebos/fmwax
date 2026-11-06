@@ -33,6 +33,11 @@ body:
         - Something else
     validations:
       required: true
+  - type: input
+    id: version
+    attributes:
+      label: Your house's version
+      description: The last line of the House rules page (Speakers, then House rules), or the setup page's Updates, like "5 November 2026 (code b8a5d8a)". Leave it empty if the house never got that far.
   - type: textarea
     id: happened
     attributes:

@@ -5770,10 +5770,15 @@ document.querySelectorAll("time[datetime]").forEach(function (t) {
 const SETUP_CSS = `
 .use .setform{display:grid;gap:.6rem;margin:1rem 0 0}
 .use .setform label{font-size:var(--fs-14);font-weight:600;color:var(--ink)}
-.use .setform input[type="text"]{width:100%;box-sizing:border-box;border:1.5px solid var(--rule);border-radius:8px;
+.use .setform input[type="text"],.use .setform input[type="password"]{width:100%;box-sizing:border-box;border:1.5px solid var(--rule);border-radius:8px;
   background:var(--raised);color:var(--ink);font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-16);
   min-height:3.2rem;padding:0 1rem}
-.use .setform input[type="text"]:focus{outline:2px solid var(--q-ink);outline-offset:2px;border-color:var(--ink)}
+.use .setform input[type="text"]:focus,.use .setform input[type="password"]:focus{outline:2px solid var(--q-ink);outline-offset:2px;border-color:var(--ink)}
+/* The phone keeps the recovery code (2026-11-05): the house's address as the
+   name it is kept under, unseen, and a box to show the code. */
+.use .setform input.vh{width:1px;min-height:0;padding:0;border:0}
+.use .setform label.setshow{display:flex;align-items:center;gap:.5rem;min-height:44px;font-weight:500;color:var(--ink-2)}
+.use .setform label.setshow input{width:20px;height:20px;margin:0}
 .use .setform input[type="file"]{font-size:var(--fs-14);color:var(--ink);min-height:44px}
 .use .setform select.setwide{max-width:none}
 .use .setform select{min-height:48px;max-width:8rem;border:1.5px solid var(--rule);border-radius:8px;background:var(--raised);
@@ -6430,9 +6435,12 @@ function setupKeysHtml({ keys = [], browsers = 1, renewed = null, signedOut = nu
 // UPDATES (MC-34 stage 2): a house made by the Deploy button, its owner's
 // GitHub copy given once, the workflow committed once from GitHub's own
 // page, then each update a Run workflow there.
+// Which version, in days a person reads (the owner, 2026-11-05), and its code
+// in small print for a problem report.
 function setupUpdatesHtml(up) {
-  const where = up.newer ? "A newer version is out."
-    : up.latest && up.current ? "This house has the latest version."
+  const mine = up.currentWhen ? `the version of ${up.currentWhen}` : up.code ? `version ${up.code}` : "an older version";
+  const where = up.newer ? `A newer version is out${up.latestWhen ? `, of ${up.latestWhen}` : ""}. This house has ${mine}.`
+    : up.latest && up.current ? `This house has the latest version${up.currentWhen ? `, of ${up.currentWhen}` : ""}.`
     : "This house's version is not known yet: it is said after its first update.";
   const askCopy = (open) => `<form class="setform" method="post" action="/setup/updates">
       <label for="srepo">Your copy's address on GitHub</label>
@@ -6460,7 +6468,8 @@ function setupUpdatesHtml(up) {
     </ol>
     ${up.on ? `<details class="setkey"><summary>Turn updates on again</summary><p class="sgntext">Only if GitHub
       says it cannot find the workflow: the new file was not committed.</p><ol class="setsteps">${turnOn}</ol></details>` : ""}
-    <details class="setkey"><summary>A different copy</summary>${askCopy(false)}</details>`}
+    <details class="setkey"><summary>A different copy</summary>${askCopy(false)}</details>`}${up.code ? `
+    <p class="unote">This version's code is <b>${esc(up.code)}</b>: say it when you report a problem.</p>` : ""}
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
@@ -6554,8 +6563,15 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     <p class="sgntext">Your recovery code. It signs you in again on a new phone or another browser. Save it in your
       password manager or your notes, or write it down: <b>this is the only time it is shown</b>.</p>
     <p class="setcode" id="setcode">${esc(recovery)}</p>
+    <form class="setform setsave" method="post" action="/setup/saved" id="setsave">
+      <input class="vh sethouse" type="text" name="house" autocomplete="username" tabindex="-1" aria-hidden="true">
+      <input class="vh" type="password" name="code" autocomplete="new-password" value="${esc(recovery)}" tabindex="-1" aria-hidden="true">
+      <button class="sgo" type="submit">Save it in this phone's passwords</button>
+    </form>
     <p class="setnext"><button class="setcopy" type="button" id="setcopy" hidden>Copy the code</button>
-      <a href="/setup">I have saved it: on to the checklist</a></p>`)
+      <a href="/setup">I have saved it: on to the checklist</a></p>
+    <p class="unote">The phone or browser offers to keep it, as it keeps any password, and fills it in the next
+      time this page asks for it.</p>`)
     : state === "yours" ? setupChecklistHtml(checklist)
     : state === "speaker" ? setupSpeakerHtml(speaker)
     : state === "timezone" ? setupTimezoneHtml(timezone)
@@ -6574,8 +6590,10 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     <p class="sgntext">If it is yours and this is a new phone or browser, enter the recovery code you were given
       when you claimed it.</p>
     <form class="setform" method="post" action="/setup/recover">
+      <input class="vh sethouse" type="text" name="house" autocomplete="username" tabindex="-1" aria-hidden="true">
       <label for="scode">Recovery code</label>
-      <input type="text" id="scode" name="code" required autocomplete="off" autocapitalize="characters" spellcheck="false">
+      <input type="password" id="scode" name="code" required autocomplete="current-password" autocapitalize="characters" spellcheck="false">
+      <label class="setshow"><input type="checkbox" id="sshow"> Show the code</label>
       <button class="sgo" type="submit" data-busy="Signing in…">Sign in</button>
     </form>
     </div>
@@ -6621,12 +6639,31 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     }
     history.replaceState(null, "", location.pathname);
   }
+  // THE PHONE KEEPS THE CODE (2026-11-05): the house's address is the name
+  // it is kept under, and the code can be shown to check it.
+  var hs = document.querySelectorAll(".sethouse");
+  for (var k = 0; k < hs.length; k++) hs[k].value = location.host;
+  var sh = document.getElementById("sshow"), sc = document.getElementById("scode");
+  if (sh && sc) sh.addEventListener("change", function () { sc.type = sh.checked ? "text" : "password"; });
 })();
 </script>` : ""}${state === "claimed" ? `
 <script>
 (function () {
   // A reload is then a look at /setup, never the claim sent again.
   try { history.replaceState(null, "", "/setup"); } catch (e) {}
+  // SAVED UNDER THE HOUSE'S ADDRESS (2026-11-05): a browser that can be asked
+  // outright (Chrome's PasswordCredential) is asked; the others offer when
+  // the form is sent.
+  var hs = document.querySelectorAll(".sethouse");
+  for (var k = 0; k < hs.length; k++) hs[k].value = location.host;
+  var sf = document.getElementById("setsave");
+  if (sf && window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+    sf.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var done = function () { sf.submit(); };
+      try { navigator.credentials.store(new PasswordCredential(sf)).then(done, done); } catch (x) { done(); }
+    });
+  }
   var b = document.getElementById("setcopy"), c = document.getElementById("setcode");
   if (!b || !c || !navigator.clipboard) return;
   b.hidden = false;
@@ -7126,6 +7163,8 @@ const RULES_CSS = `
 .rules .rfb ul,.rules .rfb ol{padding-left:1.2rem;display:grid;gap:.4rem}
 .rules .rsince{font-size:var(--fs-12);color:var(--ink-3);white-space:nowrap}
 @media (prefers-reduced-motion:reduce){.rules .rfold summary .ic{transition:none}}
+/* Its version, the last line (2026-11-05): the footer draws the rule. */
+.use .unote.rver{border-top:0;padding-top:0;margin:1.4rem 0 0}
 `;
 function rulesPresets({ keys = [], kinds = [] } = {}) {
   if (!keys.some((k) => k.role !== "yours")) return "";
@@ -7147,7 +7186,7 @@ function rulesPresets({ keys = [], kinds = [] } = {}) {
     </ul>` : ""}
   </section>`;
 }
-export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0, talk = false }) {
+export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0, talk = false, version = null }) {
   const doc = rulesDoc(md, facts);
   const numbers = facts.numbers ?? [];
   return `${head("House rules", "How this house behaves, in plain words.", ROOM_CSS + USE_CSS + RULES_CSS, WALL_FONTS + appMeta(base))}
@@ -7167,7 +7206,8 @@ export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0
   <section class="ucard rcard rfolds" aria-label="All the rules">
     <h2>All the rules</h2>
     <p class="rsub">Tap a heading to open it.</p>${rulesFolds(doc.sections)}
-  </section>` : ""}
+  </section>` : ""}${version ? `
+  <p class="unote rver">This house runs ${esc(version)}.</p>` : ""}
   <footer class="roomfoot" id="roomfoot">
     <div class="chips footchips"><a class="chip" href="${esc(base)}/wiim">${icon("back", 16)}Speakers</a></div>
   </footer>
@@ -8824,6 +8864,8 @@ function endlessHead(e, moreBtn, { actions = true, dj = null } = {}) {
   const pickOn = e.nostart && !e.playing && (e.devices ?? []).includes(e.nostart.device) ? e.nostart.device : e.device;
   const main = e.making || e.steering ? ""
     : e.playing ? `${endlessTap(e, "more", "More like this", "lanebtn")}${endlessTap(e, "change", "Change it up", "calmout")}`
+    // A preset with nothing on it yet (2026-11-05): its first set, not Play.
+    : e.empty ? `<button class="lanebtn" type="submit" form="endfresh" name="do" value="fresh"><span class="laneic" aria-hidden="true">${icon("fresh", 18)}</span>Start fresh</button>`
     : `<button class="lanebtn" type="submit" form="endfresh" name="do" value="start"><span class="laneic" aria-hidden="true">${icon("play", 18)}</span>${e.nostart ? "Play it now" : "Play"}</button>`;
   return `${form}
     <div class="calmacts">${main}${moreBtn}${(e.devices ?? []).length ? `

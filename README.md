@@ -1,37 +1,35 @@
 # fmwax
 
-A house of radio DJs on the presets of a WiiM device. You ask a DJ for music
-in the Claude app or ChatGPT (*"Vibe, play me 20 minutes for a quiet
-morning"*), the house writes the set into a Spotify playlist and starts it,
-and the preset that holds the playlist plays the latest set. Endless DJs keep
-playing on their own presets, and the writers publish programmes with notes.
+**Radio DJs for your WiiM speaker's preset buttons.**
 
-**Installing it?** Read [`START-HERE.md`](START-HERE.md) first: it has a
-password to make up before you press the button, and two boxes on
-Cloudflare's form to fill in. Then a setup page walks you through the rest,
-in about an hour. (Or one command in a terminal instead; the guide has both.)
+Ask for music on your phone, in the Claude app or in ChatGPT: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later it plays on your WiiM. The set also stays on a preset button, so a press on the remote plays it again. Some DJs play endlessly, adding songs as long as you listen. Others write notes to read with their sets.
+
+It runs on your own free Cloudflare account. You need Spotify Premium and a paid Claude or ChatGPT plan.
+
+## Install it
+
+Read **[Start here](START-HERE.md)** first. It takes about an hour, all in your browser, and starts with this button (after a password you make up first, so read the guide before you press it):
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
 
-What is here:
+No GitHub account? [Install from a terminal](docs/install/terminal.md) instead.
 
-- `mcp/` — the house: a Cloudflare Worker with its pages, its connector for
-  Claude and ChatGPT, and the install command (`mcp/install/door.js`).
-- `helper/` — the home helper, a small program for a computer at home that
-  reads the WiiMs. Optional.
-- `docs/install/` — the curator's notes, the secrets, and the note for
-  testers.
-- `docs/house-rules.md` — how the house behaves, in plain words: the app's
-  House rules page.
-- `art/covers/` — the DJs' faces.
-- `wrangler.jsonc`, `package.json`, `.dev.vars.example` — what the Deploy
-  button reads: the house's config, its deploy command and the setup key's box.
+## Help
 
-Stuck while installing? Open an issue with the **Install problem** form, or
-send a message as `docs/install/tester-note.md` says. A security problem is
-reported privately: [`.github/SECURITY.md`](.github/SECURITY.md).
+- **Stuck while installing?** See [If something goes wrong](docs/install/troubleshooting.md), or tell us with the **Install problem** form under [Issues](https://github.com/renedebos/fmwax/issues/new/choose). You can also send a message, as [the tester note](docs/install/tester-note.md) says.
+- **A security problem?** Please report it privately, as [SECURITY.md](.github/SECURITY.md) says, never in a public issue.
 
-This copy is made by a script from the author's own repository, so a change
-made here is not kept: say what you would change instead.
+## For developers
 
-MIT licence: [`LICENSE`](LICENSE).
+What is in this repository:
+
+- `mcp/`: the house, a Cloudflare Worker with its pages, its connector for Claude and ChatGPT, and the install command (`mcp/install/door.js`).
+- `helper/`: the optional home helper, a small program for a computer at home that reads the WiiMs.
+- `docs/install/`: the install pages, the curator's notes, the secrets, and the note for testers.
+- `docs/house-rules.md`: how the house behaves, in plain words (the app's House rules page).
+- `art/covers/`: the DJs' faces.
+- `wrangler.jsonc`, `package.json`, `.dev.vars.example`: what the Deploy button reads.
+
+This repository is a copy, made by a script from the author's own repository. A change made here directly is not kept: please suggest it in an issue instead.
+
+MIT licence: [LICENSE](LICENSE).
