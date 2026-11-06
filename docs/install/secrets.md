@@ -1,5 +1,7 @@
 # Every secret and setting, and who makes it
 
+**You don't need this page to install fmwax.** [Start here](../../START-HERE.md) and your house's setup page make every key for you. This page is the technical list, for anyone who wants to look under the hood.
+
 *2026-09-03. The inventory is read off the code, and the install that
 pushes it has been run: every secret below went up through
 `wrangler secret put` on stdin during a throwaway install, and the

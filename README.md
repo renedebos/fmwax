@@ -1,6 +1,6 @@
 # fmwax
 
-**Radio DJs for your WiiM speaker's preset buttons.**
+**Radio-style DJs for your WiiM speaker's preset buttons, curated by Claude or ChatGPT.**
 
 Ask for music on your phone, in the Claude app or in ChatGPT: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later it plays on your WiiM. The set also stays on a preset button, so a press on the remote plays it again. Some DJs play endlessly, adding songs as long as you listen. Others write notes to read with their sets.
 

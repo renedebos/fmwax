@@ -1,6 +1,6 @@
 # Start here
 
-This guide sets up **fmwax**: a set of radio DJs that play on your WiiM speaker's preset buttons.
+This guide sets up **fmwax**: radio-style DJs for your WiiM speaker's preset buttons, curated by Claude or ChatGPT.
 
 You ask a DJ for music on your phone, typed or spoken, in the Claude app or in ChatGPT. For example: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later the set is playing on your WiiM. It also stays on a preset button, so a press on the WiiM's remote plays your latest set again.
 
