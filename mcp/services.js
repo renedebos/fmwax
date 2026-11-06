@@ -7,6 +7,7 @@ import { CATALOGS, catalogOfUri, unreachable } from "./catalog.js";
 import { spotifyCatalog, playlistIdFrom } from "./spotify.js";
 import { tidalCatalog, playlistIdFrom as tidalPlaylistIdFrom } from "./tidal.js";
 import { station, stationStub } from "./station.js";
+import { timed } from "./timing.js";
 import { destinationFor, guestAlias, guestPhrase, house } from "./house.js";
 
 export const SPOTIFY_API = "https://api.spotify.com/v1";
@@ -70,7 +71,10 @@ export async function subrequest(env, input, init, { critical = false } = {}) {
     b.remaining -= 1;
   }
   await countSpotifyCall(env, init?.method ?? "GET", input);
-  return fetch(input, init);
+  // Spotify's waits apart from everyone else's (timing.js, MC-37).
+  let host = "";
+  try { host = new URL(String(input instanceof Request ? input.url : input)).hostname; } catch { /* not a URL */ }
+  return timed(env, /(^|\.)spotify\.com$/.test(host) ? "spotify" : "fetch", fetch(input, init));
 }
 
 // THE COUNTER (2026-09-06). Spotify's development-mode quota is a number it
@@ -748,6 +752,11 @@ export function setService(env, { asked = null, uris = null } = {}) {
   if (own.length === 1) return own[0];
   return guestCatalog(env);
 }
+// Which service one ask's set is for: the DJ's own preset's, else the ask's
+// choice. The pages and the waiting note go by it, as fulfill_request does.
+export function askService(env, dj, rec) {
+  return dj?.button ? dj.catalog : setService(env, { asked: rec?.service });
+}
 
 // Where a DJ's songs live, in words: their preset when they hold one, their
 // own crate when they do not. Every sentence that used to name a button asks
@@ -1130,13 +1139,52 @@ export function countedKV(env, kv) {
     const k = `${op}|${kvCategory(key)}`;
     tally.set(k, (tally.get(k) ?? 0) + 1);
   };
+  // And timed (timing.js, MC-37): the store's waits, summed for the page.
   return {
-    get: (key, opts) => { bump("get", key); return kv.get(key, opts); },
-    getWithMetadata: (key, opts) => { bump("get", key); return kv.getWithMetadata(key, opts); },
-    put: (key, value, opts) => { bump("put", key); return kv.put(key, value, opts); },
-    delete: (key) => { bump("delete", key); return kv.delete(key); },
-    list: (opts) => { bump("list", opts?.prefix ?? "all"); return kv.list(opts); },
+    // Many keys in one read (kvMany) count a read each, once the store has
+    // answered with them: one that reads a key at a time is asked again.
+    get: (key, opts) => {
+      if (!Array.isArray(key)) { bump("get", key); return timed(env, "store", kv.get(key, opts)); }
+      return timed(env, "store", kv.get(key, opts)).then((got) => {
+        if (got instanceof Map) for (const k of key) bump("get", k);
+        return got;
+      });
+    },
+    getWithMetadata: (key, opts) => { bump("get", key); return timed(env, "store", kv.getWithMetadata(key, opts)); },
+    put: (key, value, opts) => { bump("put", key); return timed(env, "store", kv.put(key, value, opts)); },
+    delete: (key) => { bump("delete", key); return timed(env, "store", kv.delete(key)); },
+    list: (opts) => { bump("list", opts?.prefix ?? "all"); return timed(env, "store", kv.list(opts)); },
   };
+}
+
+// MANY KEYS IN ONE READ (MC-37 step A, 2026-11-02). The stopwatch found the
+// slow first open after a quiet spell is the store's: its copy near the house
+// lapses after about a minute, and the Loaded page then fetched its 26 small
+// keys one call each, 2,062 ms on one load. The store answers up to a hundred
+// keys in one call, as text; `kvMany` asks that way, and a store that reads
+// one key at a time (an older runtime, the test suite's) is asked key by key,
+// as before. Missing keys are null.
+export const KV_MANY_MAX = 100;
+export async function kvMany(kv, keys) {
+  const want = [...new Set(keys.filter(Boolean))];
+  const out = new Map();
+  for (let i = 0; i < want.length; i += KV_MANY_MAX) {
+    const part = want.slice(i, i + KV_MANY_MAX);
+    let got = null;
+    try { got = await kv.get(part); } catch { got = null; }
+    if (got instanceof Map) {
+      for (const k of part) out.set(k, got.get(k) ?? null);
+      continue;
+    }
+    const one = await Promise.all(part.map((k) => Promise.resolve(kv.get(k)).catch(() => null)));
+    part.forEach((k, j) => out.set(k, one[j] ?? null));
+  }
+  return out;
+}
+// A value kvMany read as text, as `{ type: "json" }` would have answered it.
+export function kvJson(text) {
+  if (text == null) return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 // Hand the tally to the ledger, once, at the end of a request. Never throws:

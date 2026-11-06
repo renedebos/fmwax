@@ -328,7 +328,10 @@ export async function resolveProgramTracks(env, cat, claims, budget) {
     try {
       const id = cat.trackId(c.uri);
       return id ? await cat.track(id) : null;
-    } catch {
+    } catch (e) {
+      // A refused look is no verdict on the track (the deep review, 2026-10-31:
+      // in a block every one was "not a track Spotify will return").
+      if (e?.status === 429 || e?.status >= 500 || e?.budgetExhausted) throw e;
       return null;
     }
   });

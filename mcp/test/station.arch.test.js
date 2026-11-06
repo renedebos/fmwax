@@ -122,6 +122,35 @@ test("no media host configured means no stream URL, never a borrowed one", async
   } finally { f.restore(); }
 });
 
+// THE ADDRESS NEEDS NO KEY, SO A GET MUST NOT COST A WRITE (the deep review,
+// 2026-10-31). The stamps stop at 40, so once full their length never changes,
+// and "every fourth ask" had become every ask: a thousand plain GETs a day
+// would have spent the account's free KV writes.
+test("a full list of stamps costs no write per ask; a turn of the window still does", async () => {
+  const e = makeEnv();
+  const f = archiveFetch(9);
+  let writes = 0;
+  const put = e.TOKENS.put.bind(e.TOKENS);
+  e.TOKENS.put = async (k, ...r) => { if (String(k).startsWith("station:")) writes++; return put(k, ...r); };
+  const parkedWith = (n, nextAt) => put(STATION_KEY(ARCHIVE.key), JSON.stringify({ refs: ["r0", "r1", "r2", "r3"], pos: 0,
+    nextAt, loop: true, asks: Array.from({ length: n }, (_, i) => i + 1) }));
+  const ask = async (n) => { for (let i = 0; i < n; i++) await worker.fetch(new Request(`https://x.test/archive/${ARCHIVE.key}.m3u`), e); };
+  try {
+    await parkedWith(40, Date.now() + 1e9);
+    await ask(50);
+    assert.equal(writes, 0, "fifty asks, nothing moved, nothing written");
+    // Below the top the measurement still rides along, once for each fourth.
+    await parkedWith(3, Date.now() + 1e9);
+    await ask(50);
+    assert.equal(writes, 1);
+    // And a turn is a write, however full the list.
+    writes = 0;
+    await parkedWith(40, 1);
+    await ask(5);
+    assert.equal(writes, 1, "the position has to be kept");
+  } finally { f.restore(); }
+});
+
 test("the m3u turns the page when the clock says so, and repeats itself when it does not", async () => {
   const e = makeEnv();
   const f = archiveFetch(9);

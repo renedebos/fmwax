@@ -171,6 +171,9 @@ export async function verifySequence(env, pl, uris, budget) {
     try {
       got = await playlistItems(catalogOf(env, pl), pl.id, budget, 500);
     } catch (e) {
+      // One refused read is no proof either (the deep review, 2026-10-31): it
+      // also lost a ticked Keep, which needs what this read carries out.
+      if (!attempt && !e?.budgetExhausted) continue;
       return { state: "unconfirmed", why: `it could not be read back (${e.message})` };
     }
     if (!got.complete) {

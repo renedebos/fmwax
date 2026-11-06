@@ -5,9 +5,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import worker, { __test } from "../worker.js";
+import realWorker, { __test } from "../worker.js";
 import { PERSONAS, ROSTER } from "../djs.js";
-import { makeEnv, installFetch, installTidalFetch, track, PID, TPID, buttons, HOUSE, putTile } from "./harness.js";
+import { makeEnv, installFetch, installTidalFetch, track, PID, TPID, buttons, HOUSE, putTile, withSheet } from "./harness.js";
+const worker = withSheet(realWorker);
 
 const { callTool, house } = __test;
 
@@ -86,13 +87,14 @@ test("card headings sit under their zone, and never jump backwards", async () =>
 // layout cannot be measured in a unit test.
 test("the speaker picker is capped to the page width", async () => {
   const { renderDjRoom } = await import("../programs.js");
-  const html = renderDjRoom({
+  const { inlineSheet } = await import("./harness.js");
+  const html = inlineSheet(renderDjRoom({
     base: "/b", notesHref: "/n", dj: { key: "hank", name: "Hank", summary: "", brief: "", btn: 2,
       button: "button 2", unit: "tracks", catalog: "spotify" },
     tile: null, tracks: [], premise: null, shelf: null,
     devices: ["Pro Plus", "Studio Living Room With A Very Long Name Indeed"],
     defaultDevice: "Pro Plus", flash: null, archive: false, lastLoaded: null,
-  });
+  }));
   assert.match(html, /\.devsel\{[^}]*max-width:100%/);
   assert.match(html, /\.vact\{[^}]*flex-wrap:wrap/);
 });
@@ -299,8 +301,20 @@ test("the player line announces itself when it cannot see", async () => {
   const f = installFetch({ contents: [track("t1")], fail: { "GET /me/player": "down" } });
   try {
     const html = await (await worker.fetch(page(`/buttons/${KEY}`), e)).text();
-    assert.match(html, /<p class="quietline" role="status">Spotify could not be reached/);
+    assert.match(html, /<p class="quietline" role="status" data-player>Spotify could not be reached/);
     assert.ok(!/replaceState/.test(html), "nothing rides in the URL any more, so nothing has to leave it");
+  } finally { f.restore(); }
+});
+
+test("the quota's warning is one line: the page's poll rewrites the line it came with", async () => {
+  const e = await roomEnv();
+  await e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 600000 }));
+  const f = installFetch({ contents: [track("t1")] });
+  try {
+    const html = await (await worker.fetch(page(`/buttons/${KEY}`), e)).text();
+    assert.equal(html.match(/<p class="quietline" role="status" data-player>/g)?.length, 1);
+    assert.match(html, /<p class="quietline" role="status" data-player>Spotify is limiting this account/);
+    assert.match(html, /note = main\.querySelector\("\.quietline\[data-player\]"\)/, "say() starts from that line, not a second one");
   } finally { f.restore(); }
 });
 

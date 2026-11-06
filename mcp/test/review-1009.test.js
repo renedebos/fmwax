@@ -124,6 +124,20 @@ test("an endless Play is refused in words while Spotify is limiting the account,
   } finally { f.restore(); }
 });
 
+test("in a block the bar's panel is told so in JSON, and a house DJ's page says it before the tap", async () => {
+  const e = env();
+  const f = installFetch();
+  try {
+    await e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 30 * 60_000 }));
+    const r = await worker.fetch(new Request(`https://x.test/buttons/${KEY}/americana/endless`, { method: "POST",
+      headers: { accept: "application/json", origin: "https://x.test" }, body: new URLSearchParams({ do: "more" }) }), e);
+    assert.equal(r.status, 503);
+    assert.deepEqual(await r.json(), { ok: false, code: "throttled" });
+    const page = await (await worker.fetch(new Request(`https://x.test/buttons/${KEY}/americana`), e)).text();
+    assert.match(page, /so Play here is refused until then\. The preset on the speaker still works\./);
+  } finally { f.restore(); }
+});
+
 test("an Undo offered for one load is refused once another set has gone on that preset", async () => {
   const e = env();
   const f = installFetch();

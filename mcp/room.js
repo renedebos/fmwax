@@ -205,9 +205,13 @@ export async function writeMark(env, pid, uris) {
 // `count` is the cheap one, which catches tracks added or taken away and is
 // what a tile read already has in hand. No mark means no claim either way —
 // a playlist written before this existed is not evidence of anything.
-export async function driftOf(env, pid, { uris = null, count = null }) {
-  let mark = null;
-  try { mark = await programsKV(env).get(`mark:${pid}`, { type: "json" }); } catch { return null; }
+// `mark`, when the caller already read it (the Loaded page's one read, MC-37):
+// undefined reads it here.
+export async function driftOf(env, pid, { uris = null, count = null, mark: known } = {}) {
+  let mark = known ?? null;
+  if (known === undefined) {
+    try { mark = await programsKV(env).get(`mark:${pid}`, { type: "json" }); } catch { return null; }
+  }
   if (!mark || typeof mark.n !== "number") return null;
   const now = uris ? uris.length : count;
   if (typeof now !== "number") return null;
@@ -262,7 +266,7 @@ export async function dropTile(env, pid) {
 // it is, marked stale, and its id put on `cache.refresh` for the caller to
 // re-read AFTER the response (the wall, 2026-09-12: a cold wall re-read
 // eleven playlists in front of the page, six seconds on a slow morning).
-export async function tileFor(env, cat, pid, budget, cache = null, { serveStale = false } = {}) {
+export async function tileFor(env, cat, pid, budget, cache = null, { serveStale = false, mark } = {}) {
   let cached = null;
   if (cache) cached = cache.map[pid] ?? null;
   else {
@@ -298,7 +302,7 @@ export async function tileFor(env, cat, pid, budget, cache = null, { serveStale 
     // or taken away in the service's own app, which is the case that happens.
     // A swap that keeps the count is caught by read_playlist, where the URIs
     // are in hand. Cached with the tile, and every write clears both.
-    const moved = await driftOf(env, pid, { count: read.total });
+    const moved = await driftOf(env, pid, { count: read.total, mark });
     if (moved) t.drifted = { was: moved.was, now: moved.now, since: moved.since };
     if (cache) { cache.map[pid] = t; cache.dirty = true; }
     else await writeTiles(env, { [pid]: t });

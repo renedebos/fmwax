@@ -9,7 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { __test } from "../worker.js";
-import { endlessFile, endlessHow } from "../endless.js";
+import { endlessFile, endlessHow, endlessPageSteer } from "../endless.js";
 import { PERSONAS } from "../djs.js";
 import { HOUSE_CACHE } from "../house.js";
 import { makeEnv, installFetch, track } from "./harness.js";
@@ -480,6 +480,66 @@ test("the playing answer names the guest DJ's band, so the Loaded tab lights it 
     const loaded = await page(e, `/buttons/${KEY}`);
     assert.ok(loaded.includes('data-rest="Endless · started from “Seven Sleeves, 1971”"'), "the line the script restores");
     assert.ok(loaded.includes("7 is the guest DJ: whoever you last played endless"));
+  } finally { sp.restore(); }
+});
+
+// CHANGE IT UP LEAVES THE WORDS (the owner, 2026-10-31: pressed on Sessions, four
+// days after "acoustic grunge" by voice, and heard no change). The lane's subject
+// goes on every job, so the press reached the curator as "acoustic grunge; Change
+// it up", and only a new tenancy could lift it.
+test("Change it up lets go of the words on a DJ who needs none; More like this keeps them, and Deep Dive keeps its artist", async () => {
+  const sp = spotifyAt({ now: { pid: LANE, at: 1 } });
+  const steer = (e, words, leaveWords) => endlessPageSteer(e, { button: 7, words, leaveWords });
+  const onLane = (e, dj, words) => endlessUpdate(e, (st) => {
+    const r = endlessLaneTakeover(e, parseEndless(e), st, { dj, now: Date.now(), words });
+    st.lane.ready = true;
+    return r;
+  });
+  const lastSteer = async (e) => Object.values((await endlessLoad(e)).jobs).filter((j) => j.kind === "steer").sort((a, b) => b.at - a.at)[0];
+  try {
+    const e = env();
+    await onLane(e, "sessions", "acoustic grunge");
+    assert.equal((await steer(e, "More like what is playing", false)).status, "asked");
+    assert.equal((await lastSteer(e)).words, "acoustic grunge; More like what is playing", "More like this stays where it is");
+    assert.equal((await endlessLoad(e)).lane.words, "acoustic grunge");
+
+    await new Promise((r) => setTimeout(r, 2));
+    assert.equal((await steer(e, "Change it up", true)).status, "asked");
+    assert.equal((await lastSteer(e)).words, "Change it up", "the press goes out on its own");
+    let st = await endlessLoad(e);
+    assert.equal(st.lane.words ?? null, null, "and the words are gone from the lane");
+    assert.equal(st.lane.dj, "sessions", "the same DJ, on the same lane");
+    await endlessUpdate(e, (s) => { endlessFile(s, { id: "up", kind: "topup", btn: 7, dj: "sessions" }, []); return {}; });
+    assert.equal((await endlessLoad(e)).jobs.up.words, undefined, "top-ups follow");
+
+    // Deep Dive is told what to play, every time: its artist stays.
+    const d = env();
+    await onLane(d, "deep-dive", "Michael Jackson");
+    assert.equal((await steer(d, "Change it up", true)).status, "asked");
+    assert.equal((await lastSteer(d)).words, "Michael Jackson; Change it up");
+    assert.equal((await endlessLoad(d)).lane.words, "Michael Jackson");
+  } finally { sp.restore(); }
+});
+
+test("the page's Change it up lets go of the words, and its More like this does not", async () => {
+  const sp = spotifyAt({ now: { pid: LANE, at: 1 } });
+  try {
+    const e = env();
+    e.PROGRAM_LIBRARY_KEY = KEY;
+    await endlessUpdate(e, (st) => {
+      const r = endlessLaneTakeover(e, parseEndless(e), st, { dj: "sessions", now: Date.now(), words: "acoustic grunge" });
+      st.lane.ready = true;
+      return r;
+    });
+    // The way back in: its page keeps a box for new words while it is the guest DJ.
+    assert.match(await page(e, `/buttons/${KEY}/sessions`), /<input class="lanewords opt" type="text" name="words"[^>]*placeholder="A series, years or a genre"/);
+    const press = (what) => worker.fetch(new Request(`https://x.test/buttons/${KEY}/sessions/endless`, { method: "POST",
+      body: new URLSearchParams({ do: what }), headers: { origin: "https://x.test", accept: "application/json" } }), e).then((r) => r.json());
+    assert.equal((await press("more")).code, "asked");
+    assert.equal((await endlessLoad(e)).lane.words, "acoustic grunge");
+    await new Promise((r) => setTimeout(r, 2));
+    assert.equal((await press("change")).code, "asked");
+    assert.equal((await endlessLoad(e)).lane.words ?? null, null);
   } finally { sp.restore(); }
 });
 

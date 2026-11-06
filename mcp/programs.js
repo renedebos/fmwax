@@ -726,10 +726,21 @@ function head(title, description, extra = "", metaExtra = "", htmlAttrs = "") {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<style>${CSS}${extra}</style>
+${styles(extra)}
 </head>
 <body>
 `;
+}
+// THE APP'S STYLESHEET, SENT ONCE (MC-37 step D, the owner, 2026-11-02: "do
+// step D"). Every tab carried the same ~105 KB of CSS inline, ~27 KB on the
+// wire each time. A page whose extra starts with ROOM_CSS (every tab, the
+// Shelf, setup) links one file instead, named by its contents so a phone
+// keeps it until a deploy changes a rule; its own rules follow inline, in
+// the order they always came. A programme's page keeps its sheet inline.
+function styles(extra) {
+  if (!extra.startsWith(ROOM_CSS)) return `<style>${CSS}${extra}</style>`;
+  const own = extra.slice(ROOM_CSS.length);
+  return `<link rel="stylesheet" href="${APP_CSS_PATH}">${own ? `\n<style>${own}</style>` : ""}`;
 }
 
 // Program Notes. One page, one bookmark, every program newest first.
@@ -846,6 +857,8 @@ export function shelfControls(r, { live = false, play = null, open = null, archi
 
 export function renderLibrary(rows, {
   onAir = null, action = null, flash = null, dj = null, svc = null, q = null, self = null, undo = null,
+  // How long Spotify's block has left, in words: this page has no bar to say it.
+  blocked = null,
   room = null, unreadable = false, remove = null,
   // The house mark's answer (helperView): this page runs no script, so the
   // route says whether the home helper is on (2026-10-22).
@@ -1080,6 +1093,8 @@ export function renderLibrary(rows, {
       find ? `<a class="shclear" href="${esc(qs(active?.slug, activeSvc).replace(/([?&])q=[^&]*&?/, "$1").replace(/[?&]$/, ""))}" aria-label="Clear the search">${icon("close", 18)}</a>` : ""}
     </form>` : ""}
   </header>
+  ${blocked ? `<p class="quietline" role="status">Spotify is limiting this account's requests for about ${esc(blocked)} more (quota exceeded), so Play on a Spotify set is refused until then.${
+    services.some((x) => x.key === "tidal") ? " Tidal sets are not affected." : ""}</p>` : ""}
 
   ${flash ? `<div class="flash"><p>${esc(flash)}</p>${
     // The load that just happened already took a backup; without this the page
@@ -1663,7 +1678,7 @@ html.sheetlock,html.sheetlock body{overflow:hidden}
 /* The stream's quality (2026-10-25), under where it plays. */
 .nbpanel .nbq{margin:2px 0 0;font-size:var(--fs-12);color:var(--ink-3);font-variant-numeric:tabular-nums}
 .nbpanel .nbq[hidden]{display:none}
-.nbpanel .nbtrans{display:flex;justify-content:center;align-items:center;gap:26px;padding:2px 18px 14px;border-bottom:1px solid var(--rule-soft)}
+.nbpanel .nbtrans{display:flex;justify-content:center;align-items:center;gap:26px;padding:2px 18px 14px}
 .nbpanel .nbtb{appearance:none;-webkit-appearance:none;width:48px;height:48px;border-radius:50%;border:0;background:transparent;
   display:flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer;touch-action:manipulation;padding:0}
 .nbpanel .nbtb:disabled{opacity:.3;cursor:default}
@@ -1671,7 +1686,7 @@ html.sheetlock,html.sheetlock body{overflow:hidden}
 .nbpanel .nbmain .nbplay{display:none}
 .nbpanel .nbmain.again .nbplay{display:block}.nbpanel .nbmain.again .nbpause{display:none}
 .nbpanel .nbdj{display:flex;align-items:center;gap:8px;padding:13px 18px;border-bottom:1px solid var(--rule-soft);color:var(--ink);text-decoration:none}
-.nbpanel .nbdj[hidden],.nbpanel .nbsteer[hidden],.nbpanel .nbwhy[hidden],.nbpanel .nbnote[hidden],.nbpanel .nblinks[hidden],.nbpanel .nblb[hidden]{display:none}
+.nbpanel .nbdj[hidden],.nbpanel .nbsteer[hidden],.nbpanel .nbwhy[hidden],.nbpanel .nbnote[hidden],.nbpanel .nbrow[hidden],.nbpanel .nbout[hidden],.nbpanel .nbs2[hidden]{display:none}
 /* THE BIG SLEEVE (the owner, 2026-10-13, design A of docs/design/now-sleeve):
    while Spotify plays on the speaker, the sleeve across the top as WiiM Home
    draws it, the song in two lines under it, a progress line and bigger
@@ -1717,11 +1732,20 @@ html.sheetlock,html.sheetlock body{overflow:hidden}
 .nbpanel .nbchips button[aria-pressed="true"]{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep)}
 /* More speakers, a third kind of button (MC-30 stage 6): navy words and a chevron, no outline. */
 .nbpanel .nbchips button.nbfew{border-color:transparent;background:transparent;color:var(--q-ink,#2C3E5C);font-weight:600;padding-inline:6px;display:inline-flex;align-items:center;gap:2px}
-.nbpanel .nblinks{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 18px 0}
-.nbpanel .nbmark{display:inline-flex;margin-right:2px}
-.nbpanel .nblb{display:inline-flex;align-items:center;gap:7px;min-height:40px;border:1.5px solid var(--rule);border-radius:999px;
-  padding:0 13px;font-size:var(--fs-14);color:var(--ink);text-decoration:none}
-.nbpanel .nblb svg{color:var(--ink-2)}.nbpanel .nblb b{font-weight:600}.nbpanel .nblb i{font-style:normal;color:var(--ink-3)}
+/* The speaker on the left, the service on the right (the owner's Option 2,
+   2026-11-02, after Spotify's own row). A long name gives way, never the icon. */
+.nbpanel .nbrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 16px 8px 24px;border-bottom:1px solid var(--rule-soft)}
+.nbpanel .nbspk{appearance:none;-webkit-appearance:none;border:0;background:transparent;display:inline-flex;align-items:center;gap:8px;min-width:0;
+  min-height:44px;padding:0;font:inherit;font-size:var(--fs-14);font-weight:600;color:var(--q-ink);cursor:pointer;touch-action:manipulation}
+.nbpanel .nbspk:disabled{cursor:default}
+.nbpanel .nbspk svg{flex:0 0 auto;display:block}
+.nbpanel .nbspkn{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nbpanel .nbspkc{display:inline-flex;flex:0 0 auto;transition:transform .15s}
+.nbpanel .nbspk[aria-expanded="true"] .nbspkc{transform:rotate(180deg)}
+.nbpanel .nbspk:disabled .nbspkc{display:none}
+.nbpanel .nbouts{display:flex;flex:0 0 auto}
+.nbpanel .nbout{width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.nbpanel .nbout svg{width:28px;height:28px}
 .nbpanel a:focus-visible,.nbpanel button:focus-visible{outline:2px solid var(--q-ink);outline-offset:2px}
 .nowbar .nbart{flex:0 0 auto;width:38px;height:38px;border-radius:8px;display:flex;
   align-items:center;justify-content:center;background:var(--q-deep);color:var(--q-on-deep)}
@@ -2914,6 +2938,15 @@ details[open]>summary .chev::after{content:" ▴"}
 .chip>.ic:first-child,.morelink>.ic:first-child{margin-right:6px}
 .putic .ic,.laneic .ic{vertical-align:middle}
 `;
+// The file it is sent as (styles, above; routes.js serves it): CSS then
+// ROOM_CSS, the order the pages inlined them, and a name from its contents.
+export const APP_CSS = CSS + ROOM_CSS;
+function cssVersion(text) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return (h >>> 0).toString(16).padStart(8, "0");
+}
+export const APP_CSS_PATH = `/app.${cssVersion(APP_CSS)}.css`;
 
 // "1 tracks" was on the confirm sheet, the facts line and a shelf row — the
 // three places a count is read most carefully. One helper, and a non-number
@@ -2944,15 +2977,18 @@ export function plural(n, word) {
 // title) and a quiet account needs no sentence — the owner took both lines off
 // the top of the page, 2026-09-05. An outage is different: nothing on the wall
 // can show it, and "quiet" would be a claim the server just failed to check.
-function playerLine(playing) {
+function playerLine(playing, now = null) {
   if (playing?.throttledUntil) {
     const mins = Math.max(1, Math.ceil((playing.throttledUntil - Date.now()) / 60000));
-    return `<p class="quietline" role="status">Spotify is limiting this account's requests ` +
-      `for about <b>${waitWords(mins)} more</b> (quota exceeded) — ` +
-      `what is playing cannot be read and Play would be refused until then</p>`;
+    return `<p class="quietline" role="status" data-player>Spotify is limiting this account's requests ` +
+      `for about <b>${waitWords(mins)} more</b> (quota exceeded) — ${BLOCK_WORDS}</p>`;
+  }
+  // Signed out is not an outage: the bar says so, and so does this line.
+  if (now?.state === "signedout" && now.notice) {
+    return `<p class="quietline" role="status" data-player>${esc(now.notice)}</p>`;
   }
   if (playing?.unknown) {
-    return `<p class="quietline" role="status">Spotify could not be reached just now — ` +
+    return `<p class="quietline" role="status" data-player>Spotify could not be reached just now — ` +
       `<b>what is playing is unknown</b> from here, which is not the same as quiet</p>`;
   }
   return "";
@@ -3036,6 +3072,11 @@ const OUT = `<span class="arr" aria-hidden="true">&nbsp;${OUT_IC}</span>`;
 // so the loop is seamless; the duration follows the length so long titles
 // stay readable. Stilled by CSS for anyone who asked for less motion.
 // "20 minutes" or "11 hours": Spotify said 40322 seconds on 2026-09-06.
+// What a block stops, on the pages (the deep review, 2026-10-31: "Play would
+// be refused", over a Tidal row whose Play worked). Spotify's only, in words
+// that hold in a house with no Tidal.
+export const BLOCK_WORDS = "what Spotify is playing cannot be read and its Play buttons are refused until then; " +
+  "the presets on the speakers still work";
 export function waitWords(minutes) {
   if (minutes < 90) return `${minutes} minute${minutes === 1 ? "" : "s"}`;
   const h = Math.round(minutes / 60);
@@ -3434,6 +3475,8 @@ export function renderRoom({ base, notesHref, defaultDevice, devices = null, pla
     : played.code === "asleep"
     ? `${played.on || "That speaker"} is not in Spotify's device list right now, so nothing could be sent to it ` +
       "— it is most likely asleep. Play anything on it for a moment and press Play again. Nothing was changed."
+    : played.code === "signedout"
+    ? "Spotify has signed the house out, so nothing was started. Reconnect it on Speakers, under Spotify."
     : played.code === "failed"
     ? `Could not start ${played.name} — Spotify refused the play request, so the speaker is playing whatever ` +
       "it was before."
@@ -3528,7 +3571,7 @@ ${hasSlots ? `
     <select class="devsel" id="wdev" data-pick hidden aria-label="Speaker to play on">${rooms.map((d) =>
       `<option${d === selected ? " selected" : ""}>${esc(d)}</option>`).join("")}</select>
   </header>
-  ${playerLine(playing)}${playedWords ? `
+  ${playerLine(playing, now)}${playedWords ? `
   <p class="quietline" role="status">${esc(playedWords)}</p>` : ""}${PAUSED_WORDS[paused] ? `
   <p class="quietline" role="status">${esc(PAUSED_WORDS[paused])}</p>` : ""}${helperKeyWords(hflash) ? `
   <p class="quietline" role="status">${esc(helperKeyWords(hflash))}</p>` : ""}
@@ -3639,9 +3682,6 @@ const NB_NEXT = `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="tr
 // green disc with black waves, Tidal's four black diamonds.
 const NB_SPOTIFY = `<svg width="30" height="30" viewBox="0 0 24 24" role="img" aria-label="Spotify"><circle cx="12" cy="12" r="11" fill="#1ED760"></circle><path d="M6.5 9.3c3.8-1.1 7.9-.8 11.2 1M7.2 12.4c3.1-.9 6.4-.6 9.2.9M7.8 15.3c2.5-.7 5-.5 7.2.7" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round"></path></svg>`;
 const NB_TIDAL = `<svg width="30" height="30" viewBox="0 0 24 24" role="img" aria-label="Tidal"><path d="M6 5l3.4 3.4L6 11.8 2.6 8.4zM12 5l3.4 3.4-3.4 3.4-3.4-3.4zM18 5l3.4 3.4-3.4 3.4-3.4-3.4zM12 11.8l3.4 3.4-3.4 3.4-3.4-3.4z" fill="#000"></path></svg>`;
-const NB_SONG = `<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="17.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="2"></circle></svg>`;
-const NB_LIST = `<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`;
-const nbLink = (cls, icon, word, label) => `<a class="nblb ${cls}" href="#" rel="noopener noreferrer" aria-label="${label}" hidden>${icon}<b>${word}</b><i aria-hidden="true">${OUT_IC}</i></a>`;
 const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="nbscrim" data-close></div>` +
   `<div class="nbpanel" role="dialog" aria-modal="true" aria-labelledby="nbs1" tabindex="-1"><div class="nbgrip" aria-hidden="true"></div>` +
   `<div class="nbhead"><span class="nbcv" aria-hidden="true">${NB_NOTE}</span><div class="nbhw"><p class="nbs1" id="nbs1"></p><p class="nbal" hidden></p><p class="nbs2"></p><p class="nbq" hidden></p></div></div>` +
@@ -3649,16 +3689,16 @@ const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="
   `<div class="nbtrans"><button type="button" class="nbtb nbprev" data-skip="prev" aria-label="Previous song" disabled>${NB_PREV}</button>` +
   `<button type="button" class="nbtb nbmain" aria-label="Pause" disabled>${NB_PAUSE}${NB_PLAY}</button>` +
   `<button type="button" class="nbtb nbnext" data-skip="next" aria-label="Next song" disabled>${NB_NEXT}</button></div>` +
+  `<div class="nbrow" hidden><button type="button" class="nbspk" aria-expanded="false" aria-controls="nbpick">${icon("speaker", 18)}<span class="nbspkn"></span><span class="nbspkc">${icon("chevronDown", 16)}</span></button>` +
+  `<span class="nbouts"><a class="nbout nblist" href="#" rel="noopener noreferrer" aria-label="Open the playlist in Spotify" hidden>${NB_SPOTIFY}</a>` +
+  `<a class="nbout nbtidal" href="#" rel="noopener noreferrer" aria-label="Open the playlist in Tidal" hidden>${NB_TIDAL}</a></span></div>` +
+  `<div class="nbpick" id="nbpick" hidden><p class="nblbl">Play on</p><div class="nbchips" role="group" aria-label="Speaker"></div></div>` +
   `<a class="nbdj" href="#" hidden><span class="nbwho"></span><span class="nbfrom"></span><span class="nbgo" aria-hidden="true">${icon("chevron", 18)}</span></a>` +
   `<div class="nbsteer" hidden><button type="button" data-steer="more">More like this</button><button type="button" data-steer="change">Change it up</button>` +
   // TUNE (MC-32 2b): the DJ's dials, opened in this panel from here.
   `<button type="button" class="nbtune" data-tune>${TV_SLIDERS}Tune</button>` +
   `<p class="nbsrest" hidden></p></div><div class="nbnear" hidden><p class="nbnlbl"></p><div class="nbnchips" role="group"></div></div><p class="nbwhy" hidden></p>` +
   `<p class="nbnote" role="status" hidden></p>` +
-  `<div class="nbpick"><p class="nblbl">Play on</p><div class="nbchips" role="group" aria-label="Speaker"></div></div>` +
-  `<div class="nblinks nbspotify" hidden><span class="nbmark">${NB_SPOTIFY}</span>` +
-  `${nbLink("nbspot", NB_SONG, "Song", "Open the song in Spotify")}${nbLink("nblist", NB_LIST, "Playlist", "Open the playlist in Spotify")}</div>` +
-  `<div class="nblinks nbtidalrow" hidden><span class="nbmark">${NB_TIDAL}</span>${nbLink("nbtidal", NB_LIST, "Playlist", "Open the playlist in Tidal")}</div>` +
   `</div></div>`;
 // A FUNCTION INLINED INTO A PAGE'S SCRIPT BY ITS SOURCE goes through here
 // (2026-10-12). The deploy bundles with esbuild's keepNames, wrangler's
@@ -3672,18 +3712,9 @@ export function inlineFn(fn) {
   return `(function () { var __name = function (f) { return f; }; return ${fn.toString()}; })()`;
 }
 
-// Which record the strip opens, if any: the playing one, or the one the
-// bar's own pause stopped. `song` is the server's open.spotify.com link;
-// the words decide whether the bar is naming a record at all. Inlined into
-// the bar's script by its source, like barWords.
-export function songOf(o, w) {
-  const s = w && w.tone === "live" ? o && o.song : w && w.tone === "held" ? o && o.paused && o.paused.song : null;
-  if (!s) return null;
-  const t = w.tone === "live" ? o.track : o.paused.track;
-  return { url: s, title: t || "this record" };
-}
-// And the playlist it is playing from (the owner, 2026-09-23, to see the
-// endless Sunny list as it grew): the same rule, from `list`.
+// The playlist the record plays from (the owner, 2026-09-23, to see the endless
+// Sunny list as it grew): the playing record's, or the one the bar's own pause
+// stopped. Inlined into the bar's script by its source, like barWords.
 export function listOf(o, w) {
   // A speaker the helper read stopped on Spotify has its list too (2026-10-12).
   if (o && o.state === "lan" && o.list) return { url: o.list };
@@ -4032,7 +4063,6 @@ ${SHEET_JS}(function () {
   ${PICK_JS}
   var one = bar.querySelector(".nb1"), two = bar.querySelector(".nb2");
   var words = ${inlineFn(barWords)};
-  var songOf = ${inlineFn(songOf)};
   var listOf = ${inlineFn(listOf)};
   var tidalOffer = ${inlineFn(tidalOffer)};
   var steerOf = ${inlineFn(steerOf)};
@@ -4092,7 +4122,12 @@ ${SHEET_JS}(function () {
   }
   function view(o) {
     var pk = picked(o), who = pk && pk.name;
-    if (!o || !who || (o.state !== "playing" && o.state !== "quiet")) return o;
+    /* A BLOCK STOPS WHAT SPOTIFY SAYS, NOT WHAT THE SPEAKER SAYS (the owner,
+       2026-10-31: "blocked and stuck on Tidal", with the helper on). Its
+       reading goes on being said and its pause and play cost no Spotify
+       call; "Not known" only where the speaker has nothing to add. */
+    var blocked = !!(o && o.state === "throttled" && o.lan && o.lan.speakers);
+    if (!o || !who || (o.state !== "playing" && o.state !== "quiet" && !blocked)) return o;
     if (o.state === "playing" && norm(o.device) === norm(who)) return o;
     /* Not Spotify here: what the home helper read from the speaker itself,
        if it is fresh and not Spotify (MC-25). Playing beats the bar's own
@@ -4113,6 +4148,7 @@ ${SHEET_JS}(function () {
        helper presses the preset the song came from, as the key would. */
     if (sr && sr.preset && sr.preset.btn && o.lan && o.lan.hands) sr.hands = true;
     if (sr) return sr;
+    if (blocked) return o;
     return { state: "quiet", speaker: who, other: pk.other, keys: !!o.ownKeys && (!pk.other || !(o.speakers || []).length) };
   }
   var last = null;
@@ -4209,8 +4245,8 @@ ${SHEET_JS}(function () {
   /* The panel's own state: the rest of the speakers open or not, and a
      line it said after a skip or a steer, kept until the next fill of a
      different song. */
-  var allRooms = false, noteFor = "";
-  function say2(t) { two.textContent = t; if (sheet && !sheet.hidden) sheet.querySelector(".nbs2").textContent = t; }
+  var allRooms = false, pickOpen = false, noteFor = "";
+  function say2(t) { two.textContent = t; if (sheet && !sheet.hidden) { var s2 = sheet.querySelector(".nbs2"); s2.textContent = t; s2.hidden = false; } }
   function note(t) {
     var n = sheet && sheet.querySelector(".nbnote"); if (!n) return;
     noteFor = t ? String((view(last) || {}).track || "") : ""; n.textContent = t || ""; n.hidden = !t;
@@ -4234,7 +4270,7 @@ ${SHEET_JS}(function () {
     if (!tick) tick = setInterval(progress, 1000);
   }
   function fill() {
-    var o = view(last) || {}, w = words(o), song = songOf(o, w), base = bar.getAttribute("data-base") || "";
+    var o = view(last) || {}, w = words(o), base = bar.getAttribute("data-base") || "";
     /* THE BIG SLEEVE (the owner, 2026-10-13: "more like the way WiiM
        shows", design A of docs/design/now-sleeve): while Spotify plays
        here, the 640 sleeve across the top and the song in two lines, track
@@ -4243,14 +4279,19 @@ ${SHEET_JS}(function () {
     var big = w.tone === "live" && o.sleeve ? String(o.sleeve) : "", al = sheet.querySelector(".nbal");
     sheet.querySelector(".nbpanel").classList.toggle("big", !!big);
     sheet.querySelector(".nbs1").textContent = big && o.track ? o.track : w.one;
-    al.textContent = big ? [o.artists, o.album].filter(Boolean).join(" \\u00b7 ") : ""; al.hidden = !al.textContent;
-    sheet.querySelector(".nbs2").textContent = w.two;
+    /* Paused from here (2026-11-02): the sleeve, artist and album the pause kept. */
+    var held = w.tone === "held" && o.paused ? o.paused : null;
+    al.textContent = big ? [o.artists, o.album].filter(Boolean).join(" \\u00b7 ")
+      : held ? [held.artists, held.album].filter(Boolean).join(" \\u00b7 ") : ""; al.hidden = !al.textContent;
+    /* The speaker has its own row, and a DJ theirs: this line is what is left. */
+    var s2 = sheet.querySelector(".nbs2"), at = o.state === "playing" ? o.device : o.state === "lan" ? o.speaker : "";
+    s2.textContent = at && w.two.indexOf(at + " \\u00b7 ") === 0 ? w.two.slice(at.length + 3) : w.two;
     /* THE STREAM'S QUALITY (2026-10-25): the speaker's own numbers, while it plays. */
     var qp = sheet.querySelector(".nbq");
     qp.textContent = w.tone === "live" ? qualityWords(qualityFor(o, last)) : ""; qp.hidden = !qp.textContent;
     /* THE SLEEVE (design A): Spotify's picture of the record, when the
        answer carries one; the note otherwise. */
-    var cv = sheet.querySelector(".nbcv"), art = big || (w.tone === "live" && o.art ? String(o.art) : "");
+    var cv = sheet.querySelector(".nbcv"), art = big || (w.tone === "live" && o.art ? String(o.art) : held && held.art ? String(held.art) : "");
     var img = cv.querySelector("img");
     if (art) { if (!img) { img = document.createElement("img"); img.alt = ""; cv.textContent = ""; cv.appendChild(img); } if (img.getAttribute("src") !== art) img.setAttribute("src", art); }
     else if (img) { cv.innerHTML = cv.getAttribute("data-note") || ""; }
@@ -4265,7 +4306,7 @@ ${SHEET_JS}(function () {
        the program's. */
     var who = (w.tone === "live" || w.tone === "held") && o.state === "playing" ? o.who
       : o.state === "lan" && o.who ? o.who : null, dj = sheet.querySelector(".nbdj");
-    dj.hidden = !who;
+    dj.hidden = !who; s2.hidden = !!who;
     if (who) {
       var kind = who.kind, from = who.program ? "“" + who.program.title + "”"
         : kind === "guest" ? "guest DJ on " + who.btn : kind === "house" ? "house DJ on " + who.btn
@@ -4304,18 +4345,15 @@ ${SHEET_JS}(function () {
     }
     if (noteFor && noteFor !== String(o.track || "")) note("");
     /* THE LINKS: the service's own mark, then its buttons. */
-    var sb = sheet.querySelector(".nbspot"), lst = listOf(o, w), lb = sheet.querySelector(".nblist");
-    sb.hidden = !song;
-    if (song) { sb.setAttribute("href", song.url); sb.setAttribute("aria-label", "Open " + song.title + " in Spotify"); }
+    var lst = listOf(o, w), lb = sheet.querySelector(".nblist");
     lb.hidden = !lst;
     if (lst) lb.setAttribute("href", lst.url);
-    sheet.querySelector(".nbspotify").hidden = !song && !lst;
     /* NOT SPOTIFY HERE: MAYBE TIDAL (the owner, 2026-09-24). The Tidal
        guest's playlist, in the Tidal app; with the home helper on, only
        while its reading says Tidal (tidalOffer has the rule). */
     var td = tidalOffer(o, last), tb = sheet.querySelector(".nbtidal");
     var showT = !!td;
-    sheet.querySelector(".nbtidalrow").hidden = !showT; tb.hidden = !showT;
+    tb.hidden = !showT;
     if (showT) { tb.setAttribute("href", td.url); tb.setAttribute("aria-label", "Open " + td.name + " in Tidal"); }
     /* THE SPEAKERS: three, then the rest behind More (design A). A tap
        while Spotify plays moves the music, so the label says so. */
@@ -4329,6 +4367,14 @@ ${SHEET_JS}(function () {
     sheet.querySelector(".nblbl").textContent = last && last.state === "playing" || radio ? "Move to" : "Play on";
     var box = sheet.querySelector(".nbchips"); box.textContent = "";
     var names = rooms(), shown = names.filter(function (n, i) { return allRooms || i < 3 || n === cur; });
+    /* THE ROW (Option 2): the speaker's name opens the buttons under it. */
+    var spk = sheet.querySelector(".nbspk");
+    sheet.querySelector(".nbrow").hidden = !names.length && !lst && !showT;
+    spk.hidden = !names.length; spk.disabled = names.length < 2;
+    sheet.querySelector(".nbspkn").textContent = cur || "Choose a speaker";
+    var openNow = pickOpen && names.length > 1;
+    sheet.querySelector(".nbpick").hidden = !openNow;
+    spk.setAttribute("aria-expanded", openNow ? "true" : "false");
     shown.forEach(function (name) {
       var b = document.createElement("button");
       b.type = "button"; b.textContent = name;
@@ -4343,13 +4389,14 @@ ${SHEET_JS}(function () {
         var stays = !from && was && was.state === "lan" && was.lanState === "play" && norm(was.speaker) !== norm(name) ? was : null;
         pickSet(slugOf(name));
         document.dispatchEvent(new CustomEvent("house:pick"));
+        pickOpen = false;
         fill();
         if (from) move(name, from);
         else if (stays && stays.station && stays.hands && isWiim(name)) hmove(name, stays);
         else if (stays) say2(stays.station && stays.hands ? stays.station + " stays on the " + stays.speaker + ": the radio moves only between the WiiMs"
           : (stays.source || "That") + " stays on the " + stays.speaker + ": only Spotify moves between speakers");
-        /* The buttons were redrawn; keep focus on the one just chosen. */
-        var on = sheet.querySelector('.nbchips button[aria-pressed="true"]'); if (on) on.focus({ preventScroll: true });
+        /* The buttons have folded away; focus goes back to what opened them. */
+        sheet.querySelector(".nbspk").focus({ preventScroll: true });
       });
       box.appendChild(b);
     });
@@ -4391,7 +4438,7 @@ ${SHEET_JS}(function () {
     throttled: "Spotify's quota — nothing was asked", off: "This DJ is not on an endless preset now",
     failed: "That did not reach the DJ — try again" };
   var SAY_TOWARD = { making: "A new set is on its way — a few minutes", busy: "Another guest DJ is playing — ask on the DJ's page",
-    "day-cap": SAY_STEER["day-cap"], failed: SAY_STEER.failed };
+    "day-cap": SAY_STEER["day-cap"], throttled: SAY_STEER.throttled, failed: SAY_STEER.failed };
   function toward(who, words, box) {
     Array.prototype.forEach.call(box.querySelectorAll("button"), function (x) { x.disabled = true; });
     note("Asking…");
@@ -4524,6 +4571,7 @@ ${SHEET_JS}(function () {
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-steer]"), function (b) { b.addEventListener("click", steer); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-tune]"), function (b) { b.addEventListener("click", tuneOpen); });
     sheet.querySelector(".nbmain").addEventListener("click", function () { if (disc && !disc.disabled) disc.click(); });
+    sheet.querySelector(".nbspk").addEventListener("click", function () { pickOpen = !pickOpen; fill(); });
   }
   /* MOVE WHAT IS PLAYING (the owner, 2026-09-24): a speaker tapped here
      while Spotify plays on another takes the music, as choosing a device in
@@ -4594,7 +4642,7 @@ ${SHEET_JS}(function () {
   };
   function openSheet(e) {
     sheet = sheet || document.getElementById("nbsheet"); if (!sheet) return;
-    opener = e && e.currentTarget; wirePanel(); if (tuneShut) tuneShut(""); fill();
+    opener = e && e.currentTarget; wirePanel(); if (tuneShut) tuneShut(""); pickOpen = false; fill();
     sheetCtl = sheetCtl || window.houseSheet(sheet, backToOpener); sheetCtl.open(); progress();
     /* A tap focuses the panel itself, so no row wears a ring (the owner,
        2026-09-24: two blue lines round the first row); Enter or Space on
@@ -5191,7 +5239,11 @@ const WALL_LIVE = `<script>
   var PLAY = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>';
   var PAUSE = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>';
   var sel = document.getElementById("wdev");
-  var timer = null, touched = Date.now(), asked = 0, busy = false, done = false, note = null;
+  /* THE LINE THE PAGE CAME WITH IS THE NOTE (the owner, 2026-10-31: the
+     quota's warning twice on Loaded). The first poll, 30 seconds in, added its
+     own copy above playerLine's; this way it rewrites that one, and a good
+     answer takes it away. */
+  var timer = null, touched = Date.now(), asked = 0, busy = false, done = false, note = main.querySelector(".quietline[data-player]");
   function say(words) {
     if (!note) {
       note = document.createElement("p"); note.className = "quietline"; note.setAttribute("role", "status");
@@ -5266,7 +5318,9 @@ const WALL_LIVE = `<script>
        bar must still say so. */
     if (window.__nowbar) window.__nowbar(o);
     if (o.notice) {
-      if (o.state === "throttled") { say(o.notice); done = true; stop(); }
+      /* The poll stops only with nothing left to hear: with the helper's line
+         open the speakers still change, and a look asks Spotify nothing. */
+      if (o.state === "throttled") { say(o.notice); if (!(o.lan && o.lan.hands)) { done = true; stop(); } }
       else if (first) say(o.notice);
       return;
     }
@@ -7524,7 +7578,8 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
       : sr ? `${sr.lanState === "stop" ? "Stopped" : "Paused"} · Spotify`
       // With the helper reading the speakers, quiet is quiet; without it,
       // only Spotify is known (the review, 2026-10-09: "Nothing Spotify can see").
-      : playing?.unknown ? (noLogin ? "Spotify not signed in yet" : "Spotify could not be read") : lan ? "Not playing" : "Not on Spotify";
+      : lan?.speakers?.[sp.name]?.state === "unreachable" ? "Not answering the helper"
+      : playing?.unknown ? (noLogin ? "Spotify not signed in yet" : login?.out ? "Spotify signed the house out" : "Spotify could not be read") : lan ? "Not playing" : "Not on Spotify";
     const from = here ? (/^Spotify's pick/.test(live.from ?? "") ? live.from : `From ${live.from}${live.onPreset ? (live.endless ? " · endless" : "") : " — not a preset"}`) : hold ? heldFrom(hold)
       : sr ? (sr.preset ? heldFrom({ preset: sr.preset }) : HELPER_SAID) : "";
     const state = `${on ? " on" : ""}${pick ? " pick" : ""}`;
@@ -7905,7 +7960,7 @@ const SPEAKERS_LIVE = `<script>
         location.reload(); return;
       }
     }
-    if (o.state === "throttled") { done = true; stop(); }
+    if (o.state === "throttled" && !(o.lan && o.lan.hands)) { done = true; stop(); }
     var playing = o.state === "playing" && o.track;
     var held = playing;
     /* The bar's own pause, on its speaker's block (2026-09-23). */
@@ -7941,7 +7996,8 @@ const SPEAKERS_LIVE = `<script>
       set(b.querySelector(".seyebrow"), here ? "Playing now · Spotify" : ln ? (lnOn ? "Playing now" : "Paused") + " · " + (ln.station || LAN_SOURCE[ln.source] || ln.source || "not Spotify")
         : hold ? "Paused · Spotify"
         : sr ? srWord + " · Spotify"
-        : o.notice ? (o.state === "nologin" ? "Spotify not signed in yet" : "Spotify could not be read") : o.lan ? "Not playing" : "Not on Spotify");
+        : o.lan && o.lan.speakers && (o.lan.speakers[b.getAttribute("data-speaker")] || {}).state === "unreachable" ? "Not answering the helper"
+        : o.notice ? (o.state === "nologin" ? "Spotify not signed in yet" : o.state === "signedout" ? "Spotify signed the house out" : "Spotify could not be read") : o.lan ? "Not playing" : "Not on Spotify");
       var now = b.querySelector(".snow");
       if (sr) {
         var st = (sr.track || "") + (sr.artists ? " — " + sr.artists : "");
@@ -7975,7 +8031,7 @@ const SPEAKERS_LIVE = `<script>
         set(b.querySelector(".smeta"), here ? from : stoppedFrom);
       } else {
         if (now) now.remove();
-        set(b.querySelector(".smeta"), o.notice ? o.notice + "." : b.hasAttribute("data-other") ? QUIET_OTHER : (b.getAttribute("data-quiet") || QUIET));
+        set(b.querySelector(".smeta"), o.notice ? o.notice.replace(/\\.$/, "") + "." : b.hasAttribute("data-other") ? QUIET_OTHER : (b.getAttribute("data-quiet") || QUIET));
       }
     });
     /* The key that is playing, by litKey's rule (the server's, above). */
@@ -8091,7 +8147,7 @@ export function spkWords(name) {
   var n = String(name || "").replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; });
   return /^everywhere$/i.test(name) ? "Plays <b>everywhere</b>" : "Plays on the <b>" + n + "</b>";
 }
-export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, usedSec = 0, cap = 60, idleMs = 30000, beatMs = 30000, rateCents = 5, loaded = true, owed = 0, talk = true, hmark = null }) {
+export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, usedSec = 0, cap = 60, idleMs = 30000, beatMs = 30000, rateCents = 5, loaded = true, owed = 0, talk = true, hmark = null, asks = null }) {
   const idleSec = Math.max(10, Math.round((Number(idleMs) || 30000) / 1000));
   const chooser = devices.map((d) =>
     `<option${d === defaultDevice ? " selected" : ""}>${esc(d)}</option>`).join("");
@@ -8104,7 +8160,12 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
 <main class="page djpage talk tabbed" data-base="${esc(base)}" data-idle="${Number(idleMs) || 30000}" data-beat="${Number(beatMs) || 30000}" data-rate="${Number(rateCents) || 5}">
   ${pageHead("Talk", `
     <p><b>Hold the button and speak.</b> Let go and it answers out loud. Ask a DJ for a set, change what is playing, turn it down, find something new — in whatever language you speak.</p>
-    <p><b>Before a playlist changes or a new set starts</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>
+    ${asks ? `<p><b>A set you ask a DJ for</b> is made by the house after the call: you can hang up as soon as Talk says it's on its way. Hang up while it is still asking and the line stays open until the ask is in. It goes on ${
+      asks.length ? `preset ${asks.map((g) => asks.length > 1 ? `${esc(g.btn)} (${esc(g.label)})` : esc(g.btn)).join(" or ")}` : "the DJ's preset"
+    } in place of the set there, about five minutes later, and starts on the speaker you named, unless something else has started playing since: then it waits for a press.${
+      asks.some((g) => g.label === "Tidal") ? " A Tidal set starts only on a WiiM, with the home helper on." : ""} It doesn't ask for a yes first: asking is the yes.</p>
+    <p><b>Before it rewrites a playlist on the call</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`
+    : `<p><b>Before a playlist changes or a new set starts</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`}
     <p><b>The line under the button</b> says where music goes unless you name another speaker. Change it from the bar at the bottom: its sliders button opens the speakers. Every speaker in the house is equal.</p>
     <p><b>The line is on the clock while it is open</b>, talking or not, at ${Number(rateCents) || 5} cents a minute; the house has ${cap} minutes a day. The meter in the card counts this line and the day. <b>Hang up</b> when you are done, or the line hangs up by itself ${idleSec} seconds after it has finished answering — never while it is still working.</p>`, helperMark(hmark))}
   <section class="djhead talkcard" aria-label="Talk">
@@ -8177,8 +8238,16 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   // closes the line as soon as nothing is in flight, finished or not.
   var HEARD_WATCH_MS = 10000, lastHeard = 0, leaving = false;
   var pendingOutputs = {};
+  // HANG UP FINISHES WHAT IS ON ITS WAY (2026-11-05: a hang-up 30 seconds in
+  // lost an ask Talk had already promised; the ask went in at 31 seconds on
+  // the next try). Hang up while the backend or a tool is working holds the
+  // line until the work is in, thirty seconds at most; a second press, or
+  // holding the button to talk again, ends the wait. The ask's own line is
+  // what the page says when it hangs up.
+  var finishing = 0, FINISH_MS = 30000, askLine = null;
+  var FINISH_WORDS = "Finishing what you asked, then hanging up…";
 
-  function say(t) { state.textContent = t; }
+  function say(t) { state.textContent = finishing && live ? FINISH_WORDS : t; }
   function idleWords() { return pressed ? "Listening." : (talked ? "Thinking…" : "Hold the button and speak."); }
   // Every event carries an id, and the ones that matter are acknowledged
   // by it (session.input_audio.muted / unmuted, session.instructions.appended).
@@ -8232,6 +8301,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   }
   function idle() {
     clearTimeout(idleTimer); idleTimer = null; inflight.deadline = 0;
+    if (live && finishing && ((!busy() && !Object.keys(pendingOutputs).length) || Date.now() > finishing)) { close("hangup"); return; }
     if (live && leaving && !pressed && !busy()) { close("away"); return; }
     if (!live || pressed || !inflight.finished || busy()) return;
     inflight.deadline = Date.now() + IDLE_MS;
@@ -8414,10 +8484,16 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
       output = out && out.output != null ? out.output
         : JSON.stringify({ error: (out && out.error) || ("The desk answered " + res.status + ".") });
     } catch (e) { output = JSON.stringify({ error: "The desk could not be reached." }); }
+    if (item.name === "ask_dj") {
+      try { var told = JSON.parse(output); if (told && told.status === "sent" && told.said) askLine = String(told.said).replace(/\\s*You can hang up\\.\\s*$/, ""); } catch (e) {}
+    }
     box.outputs[callId] = output;
     box.waiting -= 1;
-    rested("tool", callId);
+    /* The outputs go back before the tool counts as done, so a hang-up
+       waiting on it sees the continuation, not a gap (the next step of the
+       same ask may still be coming). */
     flush(dId);
+    rested("tool", callId);
     if (live) say(idleWords());
   }
   // The outputs of one response go back together, once the response has
@@ -8464,6 +8540,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     if (e) e.preventDefault();
     if (pressed) return;
     pressed = true; lastHeard = Date.now(); leaving = false;
+    if (finishing) { finishing = 0; hangup.textContent = "Hang up"; }
     hold.classList.add("down"); hold.setAttribute("aria-pressed", "true");
     if (e && e.pointerId != null && hold.setPointerCapture) { try { hold.setPointerCapture(e.pointerId); } catch (x) {} }
     if (live) { you.textContent = ""; desk.textContent = ""; lastSpeaker = null; }
@@ -8493,9 +8570,9 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   // asked to close; the page does not wait on either to say it is over.
   function close(why) {
     if (!pc || closing) return;
-    closing = true;
+    closing = true; finishing = 0;
     var words = why === "quiet" ? "Hung up after " + Math.round(IDLE_MS / 1000) + " quiet seconds."
-      : why === "away" ? "Hung up when you left the page." : "Hung up.";
+      : why === "away" ? "Hung up when you left the page." : (askLine ? askLine + " Hung up." : "Hung up.");
     say("Closing…");
     done();
     send({ type: "session.close" });
@@ -8513,7 +8590,16 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
         .then(function (r) { return r.json(); }).then(showMinutes).catch(function () {});
     } catch (e) {}
   }
-  hangup.addEventListener("click", function () { release(); close("hangup"); });
+  hangup.addEventListener("click", function () {
+    release();
+    if (live && !finishing && busy()) {
+      finishing = Date.now() + FINISH_MS;
+      hangup.textContent = "Hang up now";
+      say(FINISH_WORDS);
+      return;
+    }
+    close("hangup");
+  });
   // What the close means, from OpenAI's reason. A close this page did not
   // ask for is the ledger's: the day's minutes ran out, or a beat went
   // missing long enough for the line to count as dead.
@@ -8533,6 +8619,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   }
   function teardown() {
     live = false; closing = false; pressed = false; talked = false; pendingUnmute = null; pendingMute = null;
+    finishing = 0; askLine = null; hangup.textContent = "Hang up";
     clearTimeout(idleTimer); clearTimeout(startTimer); clearInterval(beatTimer); clearTimeout(ackTimer); clearInterval(meterTimer);
     idleTimer = null; inflight = { responses: {}, tools: {}, continuation: false, finished: false, deadline: 0 }; pendingOutputs = {};
     if (startedAt) tickMeter();
@@ -8766,7 +8853,8 @@ function endlessNow(dj, e, { steer = false } = {}) {
     : e.lane ? "Not playing. Tap Play to carry on where the set stopped."
     : `Not playing. Press ${e.btn} on the remote, or tap Play.`;
   const say = e.making || e.steering || (e.nostart && !e.playing) ? now : "";
-  const parts = [say ? `
+  const parts = [e.blocked ? `
+    <p class="endspent">Spotify is limiting this account's requests for about ${esc(e.blocked)} more (quota exceeded), so Play here is refused until then. The preset on the speaker still works.</p>` : "", say ? `
     <p class="endnow">${esc(say)}</p>` : "", e.toSave ? saveCard(e) : "", e.leaving ? `
     <p class="endspent">${esc(e.leaving)} takes over preset ${esc(String(e.btn))} when it stops playing.</p>` : "", e.spent ? `
     <p class="endspent">Today's ${esc(String(e.spent))} DJ runs are used up. ${e.playing
@@ -9173,7 +9261,7 @@ export function renderDjRoom({
       `on one now. ${composer ? "Ask for a set below" : "Ask Claude for one"}` +
       (shelf?.offerable ? ", or put one of their programs back from the shelf." : "."),
     throttled: "Spotify is limiting this account's requests (quota exceeded), " +
-      "so Play is refused and nothing can be moved or written until it lifts. " +
+      "so Play on Spotify is refused and nothing on Spotify can be moved or written until it lifts. " +
       "The page keeps checking.",
   };
   const unplayable = !!(problem && problem.kind !== "unreachable");
@@ -9240,7 +9328,7 @@ export function renderDjRoom({
     : "";
   const REQ_LINES = {
     pending: auto
-      ? "Pending — Claude has not made this set yet. Usually ready in " +
+      ? "Pending — the curator has not made this set yet. Usually ready in " +
         "five to fifteen minutes. This page checks on its own; nothing will " +
         "play until someone presses Play."
       // No promise of a time, because nothing is coming on its own. It says
@@ -9249,22 +9337,22 @@ export function renderDjRoom({
       : `On the list for ${esc(dj.name)}. Nobody is making it yet — these are ` +
         "filled when somebody ASKS Claude for them. Opening the app does not " +
         "do it on its own. Reload to see if it has been.",
-    claimed: "Claude is making this set right now. This page checks on its " +
+    claimed: "The curator is making this set right now. This page checks on its " +
       "own; nothing will play until someone presses Play.",
     // Only reachable in an automatic house: it means nobody picked it up when
     // something should have. Left as it was.
-    slow: "Taking longer than usual — Claude has not picked this up yet. It " +
+    slow: "Taking longer than usual — the curator has not picked this up yet. It " +
       "keeps being asked while this page is open, and again on the hour. You " +
       "can also withdraw it and ask again.",
     // A claim that died before writing. Real either way — a person can claim
     // by hand — but only the automatic house asks again by itself.
     retrying: auto
-      ? "The first attempt did not finish. Claude is asked again — at " +
+      ? "The first attempt did not finish. The curator is asked again — at " +
         "once while this page is open, and again on the hour. Nothing will play " +
         "until someone presses Play."
       : "The first attempt did not finish, and nothing was written. It is back " +
         "on the list to be asked for again.",
-    checking: "Claude started making this set and the result is being " +
+    checking: "The curator started making this set and the result is being " +
       "sorted out — the playlist may already have it. This page checks on " +
       "its own.",
     changed: "This set was made for the request below, but the playlist " +
@@ -9339,6 +9427,10 @@ export function renderDjRoom({
     : request.state === "declined"
     ? `${esc(request.djName ?? "The DJ")} passed on this one${request.reason && !request.justPassed
         ? `: “${esc(request.reason)}”` : "."}`
+    // WAITING ON SPOTIFY, NOT ON THE CURATOR (the deep review, 2026-10-31):
+    // these said "it keeps being asked", and nothing rings during a block.
+    : request.throttledMinutes && ["pending", "slow", "retrying"].includes(request.state)
+    ? `Waiting for Spotify.${throttledLine}${auto ? " It is made after that." : ""} Nothing will play until someone presses Play.${quietLine}`
     : (REQ_LINES[request.state] ?? "") + throttledLine + quietLine;
   // THE REQUEST ROW (option A, chosen from the canvas 2026-09-05). One row
   // under the block, in a Requests section beside the ask: the words that
@@ -9431,8 +9523,9 @@ export function renderDjRoom({
       esc(t.dur ?? "")}</span></li>`).join("");
   const problemLine = problem?.kind === "throttled"
     ? `<p class="problem" role="status">Spotify is limiting this account's requests${
-        problem.wait ? ` for about ${esc(problem.wait)} more` : ""} (quota exceeded), so Play is
-      refused and nothing can be moved or written until it lifts. The page keeps checking.</p>`
+        problem.wait ? ` for about ${esc(problem.wait)} more` : ""} (quota exceeded), so Play on Spotify is
+      refused and nothing on Spotify can be moved or written until it lifts.${
+        composer?.services?.some((s) => s.name === "tidal") ? " A set asked for on Tidal goes ahead." : ""} The page keeps checking.</p>`
     // Off a guest, the block already says so, and the ask card is right
     // below it (board A, 2026-09-25): the paragraph only repeated both.
     : problem?.kind === "offguest" && composer ? ""

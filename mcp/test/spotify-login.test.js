@@ -315,6 +315,19 @@ test("the bar says signed out instead of unreachable, and list_requests tells th
   assert.equal(quiet.spotify_login, undefined);
 });
 
+test("signed out, Loaded's line says that and not an outage", async () => {
+  const e = env();
+  const held = JSON.parse(await e.TOKENS.get("spotify")).refresh_token;
+  await e.PROGRAMS.put(SPOTIFY_OUT_KEY, JSON.stringify({ at: "2027-04-16T13:00:00Z", rt: await tokenMark(held) }));
+  forgetAccessTokens();
+  const f = fakeSpotify({ refresh: () => new Response('{"error":"invalid_grant"}', { status: 400 }) });
+  try {
+    const html = await (await worker.fetch(new Request(`https://x.test/buttons/${KEY}`), e)).text();
+    assert.match(html, /<p class="quietline" role="status" data-player>Spotify has signed this house out/);
+    assert.ok(!/could not be reached just now/.test(html));
+  } finally { f.restore(); forgetAccessTokens(); }
+});
+
 // THE PRACTICE INSTALL (2026-10-19): a house opened before its first Spotify
 // sign-in said "Can't reach Spotify right now".
 test("a new house's bar says Spotify is not signed in yet, not unreachable", async () => {

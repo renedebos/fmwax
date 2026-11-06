@@ -99,6 +99,8 @@ const SAMPLES = {
     who: { dj: "pub-rock", name: "Pub Rock", kind: "guest", btn: 3, endless: true } } } } },
   "the helper off": { state: "quiet", helper: "off", lan: undefined },
   "throttled": { state: "throttled", mins: 40 },
+  "throttled, Tidal read by the helper": { state: "throttled", mins: 40, notice: "Spotify is limiting", lan: { at: t, hands: true, speakers: {
+    "Pro Plus": { state: "pause", source: "Tidal", track: "My Funny Valentine", artists: "Chet Baker" } } } },
   "unknown": { state: "unknown" },
   "nothing at all": {},
 };

@@ -2717,3 +2717,25 @@ test("a program opened from a filtered Shelf keeps the filter: its back link, Lo
   const d = await post("unkeep", { slug: "b", dj: "the-librarian" });
   assert.match(d.headers.get("location"), /&dj=the-librarian$/);
 });
+
+// A REFUSAL IS NO VERDICT ON A TRACK (the deep review, 2026-10-31): in a block
+// every track was "not a track Spotify will return".
+test("a program made in a Spotify block is refused as that, and accuses no track", async () => {
+  const e = env();
+  const f = installFetch();
+  const real = globalThis.fetch;
+  try {
+    await e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 600000 }));
+    const before = f.calls.length;
+    await assert.rejects(() => callTool(e, "make_librarian_program", program(), { remaining: 40 }), /Nothing was published/);
+    assert.equal(f.calls.length, before, "no track is looked up");
+    // The first refusal, with no note yet: the same, not a wrong track.
+    await e.PROGRAMS.delete("spotify:throttled");
+    globalThis.fetch = async (url, init) => new URL(String(url)).pathname.startsWith("/v1/tracks/")
+      ? new Response(JSON.stringify({ error: { status: 429, message: "QUOTA_EXCEEDED" } }), { status: 429, headers: { "retry-after": "40000" } })
+      : real(url, init);
+    await assert.rejects(() => callTool(e, "make_librarian_program", program(), { remaining: 40 }),
+      (err) => !/will return/.test(err.message));
+  } finally { globalThis.fetch = real; f.restore(); }
+});
+

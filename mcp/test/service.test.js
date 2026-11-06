@@ -5,8 +5,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import worker, { __test } from "../worker.js";
-import { makeEnv, buttons, installFetch, installTidalFetch, track, PID, TPID } from "./harness.js";
+import realWorker, { __test } from "../worker.js";
+import { makeEnv, buttons, installFetch, installTidalFetch, track, PID, TPID, withSheet } from "./harness.js";
+const worker = withSheet(realWorker);
 
 const { house } = __test;
 const { parseAliases, callTool, reachableDj, shelfUnplaceable, undoToSnapshot } = __test;

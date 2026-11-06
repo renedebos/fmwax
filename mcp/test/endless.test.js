@@ -7,7 +7,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { __test } from "../worker.js";
+import worker, { __test } from "../worker.js";
 import { makeEnv, installFetch, track } from "./harness.js";
 
 const { endlessWatch, endlessReport, parseEndless, endlessLeft } = __test;
@@ -165,6 +165,113 @@ test("list_requests reports the watch: mode, sessions and a readable log", async
 
 // ---- stage 2: the top-up is real ----------------------------------------------
 
+// A LIST CHANGED UNDER A SESSION (the deep review, 2026-10-31). Put back from a
+// backup, the way back every write advertises, or edited in the Spotify app:
+// the session held the list it read at the start, so every look said "track not
+// in the list", and no top-up, no end and no pause ever came.
+test("a song not on the list has the list read again, and the look carries on from the new one", async () => {
+  const player = { now: { pid: PL, at: 1 } };
+  const sp = spotifyAt(player);
+  try {
+    const e = env();
+    let t = Date.parse("2026-09-24T02:00:00Z");
+    await endlessWatch(e, t);
+    sp.f.state.contents = [50, 51, 52].map((n) => ({ ...track(`t${n}`), duration_ms: 5 * MIN }));
+    player.now = { pid: PL, at: 51 };
+    t += 10 * MIN;
+    await endlessWatch(e, t);
+    const log = e.STATION.endless.log;
+    assert.ok(log.some((r) => /track 2 of 3, 10 min left/.test(r.detail ?? "")), JSON.stringify(log.slice(-3)));
+    assert.equal(events(e).at(-1), "would-topup", "and the short list asks for more");
+  } finally { sp.restore(); }
+});
+
+test("that second read happens once a run of misses, not every look", async () => {
+  const player = { now: { pid: PL, at: 1 } };
+  const sp = spotifyAt(player);
+  const reads = () => sp.f.calls.filter((c) => /\/playlists\/[^/]+\/(items|tracks)/.test(c)).length;
+  try {
+    const e = env();
+    let t = Date.parse("2026-09-24T02:00:00Z");
+    await endlessWatch(e, t);
+    const first = reads();
+    // A song queued by hand: Spotify still names the playlist.
+    player.now = { pid: PL, at: 99 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    assert.equal(reads(), first + 1, "the first miss reads");
+    assert.match(e.STATION.endless.log.at(-1).detail, /track not in the list/);
+    t += 10 * MIN; await endlessWatch(e, t);
+    t += 10 * MIN; await endlessWatch(e, t);
+    assert.equal(reads(), first + 1, "the next ones do not");
+    // Back on the list, and the next miss may read again.
+    player.now = { pid: PL, at: 2 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    player.now = { pid: PL, at: 98 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    assert.equal(reads(), first + 2);
+  } finally { sp.restore(); }
+});
+
+// THE SPEAKERS ANSWER FIRST (the deep review, 2026-10-31): 48 reads a day with
+// nobody home, half of a quiet day. A look is put off only on two words
+// together: the helper's, that no WiiM is on Spotify, and the house's last
+// Spotify answer, that nothing played there. The helper cannot see an Echo or
+// the iPhone; that answer can, and any start sent from here forgets it.
+const SPEAKERS = { "Pro Plus": { state: "idle" }, Ultra: { state: "pause", source: "Tidal" } };
+const heard = (e, at, speakers = SPEAKERS) => { e.STATION.endless.helper = JSON.stringify({ at, speakers }); };
+function helperEnv() {
+  const e = env();
+  e.HELPER_SECRET = "helper-secret-000000000000";
+  e.WIIM_SPEAKERS = JSON.stringify({ "Pro Plus": "192.168.4.45", Ultra: "192.168.4.69" });
+  return e;
+}
+const T0 = Date.parse("2026-09-24T02:00:00Z");
+
+test("idle, with the speakers saying nothing is on Spotify: one look in three hours, not six", async () => {
+  const sp = spotifyAt({ now: null });
+  try {
+    const e = helperEnv();
+    await endlessWatch(e, T0);
+    assert.equal(sp.reads(), 1, "the first look");
+    for (let m = 30; m < 180; m += 10) {
+      heard(e, T0 + m * MIN);
+      assert.equal((await endlessWatch(e, T0 + m * MIN)).outcome, "idle");
+    }
+    assert.equal(sp.reads(), 1, "none while they say so");
+    heard(e, T0 + 180 * MIN);
+    await endlessWatch(e, T0 + 180 * MIN);
+    assert.equal(sp.reads(), 2, "and the backstop, for a set started in the Spotify app on an Echo");
+  } finally { sp.restore(); }
+});
+
+test("idle: the half-hour look stands whenever the speakers cannot vouch for it", async () => {
+  const lookAt30 = async (prepare, firstPlayer = null) => {
+    const player = { now: firstPlayer };
+    const sp = spotifyAt(player);
+    try {
+      const e = helperEnv();
+      await endlessWatch(e, T0);
+      player.now = null;
+      heard(e, T0 + 30 * MIN);
+      await prepare(e);
+      await endlessWatch(e, T0 + 30 * MIN);
+      return sp.reads();
+    } finally { sp.restore(); }
+  };
+  assert.equal(await lookAt30(() => {}), 1, "the control: quiet, so no look");
+  assert.equal(await lookAt30((e) => heard(e, T0)), 2, "the helper has gone quiet");
+  assert.equal(await lookAt30((e) => heard(e, T0 + 30 * MIN, { ...SPEAKERS, Ultra: { state: "play", source: "Spotify" } })), 2, "a WiiM on Spotify");
+  assert.equal(await lookAt30((e) => heard(e, T0 + 30 * MIN, { ...SPEAKERS, Ultra: { state: "play" } })), 2, "playing, source not said");
+  assert.equal(await lookAt30((e) => heard(e, T0 + 30 * MIN, { ...SPEAKERS, Ultra: { state: "unreachable" } })), 2, "a WiiM not answering");
+  assert.equal(await lookAt30((e) => heard(e, T0 + 30 * MIN, { "Pro Plus": { state: "idle" } })), 2, "a WiiM not read at all");
+  assert.equal(await lookAt30((e) => { e.PLAYER_REUSE = "off"; }), 2, "the house switched the helper's word off");
+  assert.equal(await lookAt30((e) => { e.STATION.endless.player = JSON.stringify({ forgotAt: 1 }); }), 2, "a start was sent from here: the kept answer is forgotten");
+  assert.equal(await lookAt30(() => {}, { pid: null, at: 1 }), 2, "the last answer had music playing, on an Echo or the iPhone");
+  assert.equal(await lookAt30((e) => {
+    const d = JSON.parse(e.STATION.endless.doc); d.lastLook = 0; e.STATION.endless.doc = JSON.stringify(d);
+  }), 2, "a Play from a page asks for a look now");
+});
+
 const { callTool, endlessJobs } = __test;
 const T = (n) => `spotify:track:${String(n).padStart(22, "x")}`;
 function liveEnv(over = {}) {
@@ -252,6 +359,94 @@ test("extend_endless appends the job's songs to the playing preset, drops recent
     assert.equal(had.length, 9);
     assert.ok(![T(1), T(2), T(3), T(4)].some((u) => had.includes(u)));
     void uris;
+  } finally { bell.restore(); sp.restore(); }
+});
+
+// Sessions (the owner, 2026-11-02): a top-up is told the acts of the batch
+// before, a set that brings them back goes back once, and the batch moves on.
+test("a Sessions top-up is told the last batches' acts, and one that brings them back is sent back once", async () => {
+  const { station } = await import("../station.js");
+  const player = { now: { pid: PL, at: 0 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv({ dj: "sessions" });
+    let t = NOW0 + 10 * MIN;
+    await endlessWatch(e, t);
+    player.now = { pid: PL, at: 8 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    const [job] = await endlessJobs(e);
+    assert.deepEqual(job.acts_last_batches, ["Someone"], "the list so far, before a first top-up");
+    await station(e, "seen-put", { rows: [[T(1), "Someone", "A Song", "An Album", 200000],
+      [T(2), "Free", "All Right Now", "Fire and Water", 200000], [T(3), "Faces", "Stay with Me", "A Nod", 200000]] });
+    await assert.rejects(callTool(e, "extend_endless", { job_id: job.job_id, uris: [T(2), T(1), T(3)] }, { remaining: 40 }),
+      /Not written[^]*song 2 is by an act from the last two batches \(Someone\)/);
+    const out = await callTool(e, "extend_endless", { job_id: job.job_id, uris: [T(2), T(1), T(3)] }, { remaining: 40 });
+    assert.equal(out.status, "added", "the next call is written: the ask may leave too few acts");
+    assert.deepEqual(out.written_as_sent, ["song 2 is by an act from the last two batches (Someone)"]);
+    assert.deepEqual(JSON.parse(e.STATION.endless.doc).sessions["4"].batches, [3], "the batch is what landed");
+  } finally { bell.restore(); sp.restore(); }
+});
+
+test("another DJ's job carries no last batch", async () => {
+  const player = { now: { pid: PL, at: 0 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    let t = NOW0 + 10 * MIN;
+    await endlessWatch(e, t);
+    player.now = { pid: PL, at: 8 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    assert.equal((await endlessJobs(e))[0].acts_last_batches, undefined);
+  } finally { bell.restore(); sp.restore(); }
+});
+
+// A SKIP FROM THE PANEL ASKS AT ONCE (the owner, 2026-11-02: "okay", after
+// Sessions' set was skipped from song 6 to its last between two looks and ran
+// out three minutes after the late one asked).
+test("a skip from the panel that leaves the set short asks for a top-up at once; one early in the set does not", async () => {
+  const player = { now: { pid: PL, at: 2 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => (new URL(String(u)).pathname === "/v1/me/player/next" ? new Response(null, { status: 204 }) : inner(u, init));
+  const KEY = "abcdefabcdefabcdefabcdef";
+  try {
+    const e = liveEnv();
+    e.PROGRAM_LIBRARY_KEY = KEY;
+    e.ROOM_DEVICES = JSON.stringify(["Pro Plus"]);
+    await endlessWatch(e, Date.now());
+    assert.equal((await endlessJobs(e)).length, 0, "track 3 of 10: nothing asked");
+    const skip = () => worker.fetch(new Request(`https://x.test/buttons/${KEY}/wiim/transport`, { method: "POST",
+      body: new URLSearchParams({ do: "next", device: "Pro Plus" }), headers: { origin: "https://x.test", accept: "application/json" } }), e).then((r) => r.json());
+    assert.deepEqual(await skip(), { ok: true, code: "ok" });
+    assert.equal((await endlessJobs(e)).length, 0, "35 minutes after it: the look asks in time");
+    player.now = { pid: PL, at: 6 };
+    assert.deepEqual(await skip(), { ok: true, code: "ok" });
+    const jobs = await endlessJobs(e);
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].kind, "topup");
+    assert.equal(bell.rung.length, 1, "the doorbell rang");
+    assert.match(e.STATION.endless.log.at(-1).detail, /^15 min left after a skip: asked for 45 min more of vibe/);
+    await skip();
+    assert.equal((await endlessJobs(e)).length, 1, "one job at a time");
+  } finally { globalThis.fetch = inner; bell.restore(); sp.restore(); }
+});
+
+test("a skip asks nothing for a list the watch has not seen, one already asked for, or another playlist", async () => {
+  const { endlessAfterSkip } = await import("../endless.js");
+  const player = { now: { pid: PL, at: 8 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    assert.equal(await endlessAfterSkip(e, { pid: PL, uri: "spotify:track:t8" }), null, "no session yet: the look's");
+    await endlessWatch(e, Date.now());
+    const asked = (await endlessJobs(e)).length;
+    assert.equal(asked, 1, "the look itself asked: two songs left");
+    assert.equal(await endlessAfterSkip(e, { pid: PL, uri: "spotify:track:t8" }), null, "already asked");
+    assert.equal(await endlessAfterSkip(e, { pid: "SOMEOTHERPLAYLIST00001", uri: "spotify:track:t8" }), null, "not an endless list");
   } finally { bell.restore(); sp.restore(); }
 });
 
@@ -457,7 +652,7 @@ function ageJobs(e, ms) {
   e.STATION.endless.doc = JSON.stringify(doc);
 }
 test("Start fresh landing more than 25 minutes after the tap: the list is replaced for the next press, and nothing starts", async () => {
-  const player = { now: { pid: PL, at: 5 } };
+  const player = { now: null };
   const sp = spotifyAt(player);
   const bell = doorbell();
   const inner = globalThis.fetch;
@@ -1048,4 +1243,68 @@ test("four songs left asks for more even with minutes to spare, as a set skipped
     t += 10 * MIN; await endlessWatch(e, t);
     assert.ok(events(e).includes("topup"), "three songs left: asked, whatever the minutes");
   } finally { bell.restore(); sp.restore(); }
+});
+
+// A LATE START FRESH AND A LISTENER (the deep review, 2026-10-31). Past its 25
+// minutes it is a set for the next press, so with the preset being played it
+// follows on the end, as a fresh set that found the preset pressed again does.
+test("a Start fresh landing late, with the preset being played: the list stays and the songs go on its end", async () => {
+  const player = { now: null };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    assert.equal((await __test.endlessStartFresh(e, { button: 4, device: "Pro Plus" })).status, "asked");
+    ageJobs(e, 30 * MIN);
+    player.now = { pid: PL, at: 2 };
+    await endlessWatch(e, Date.now());
+    const before = uriList(sp);
+    const [job] = await endlessJobs(e);
+    const out = await callTool(e, "extend_endless", { job_id: job.job_id, uris: [T(7), T(8), T(9)] }, { remaining: 40 });
+    assert.equal(out.status, "added");
+    assert.deepEqual(uriList(sp), [...before, T(7), T(8), T(9)]);
+  } finally { bell.restore(); sp.restore(); }
+});
+
+// A house zone where it is about noon now (Etc/GMT's sign is the other way
+// round), for a test whose clock starts an hour back and must stay on one house
+// day: on Pacific time this one failed from about 00:26 to 00:50, when its
+// later watch fell on a new day and gave the day's runs back (seen 2026-11-05).
+function noonZone(now = Date.now()) {
+  const east = 12 - new Date(now).getUTCHours();
+  return east === 0 ? "UTC" : `Etc/GMT${east > 0 ? "-" : "+"}${Math.abs(east)}`;
+}
+
+// THE WATCH LEAVES A CLAIMED JOB ALONE (the deep review, 2026-10-31): it let a
+// top-up go while the curator's write was on its way, and asked for another.
+test("a top-up a curator is writing is not let go at its 25 minutes, so one top-up lands, not two", async () => {
+  const player = { now: { pid: PL, at: 0 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  const inner = globalThis.fetch;
+  try {
+    const e = liveEnv();
+    e.HOUSE_TZ = noonZone();
+    let t = Date.now() - 60 * MIN;
+    await endlessWatch(e, t);
+    player.now = { pid: PL, at: 8 };
+    t += 10 * MIN;
+    await endlessWatch(e, t);
+    const [job] = await endlessJobs(e);
+    let looked = false;
+    globalThis.fetch = async (u, init = {}) => {
+      if (!looked && init.method === "POST" && /\/playlists\/[^/]+\/items$/.test(new URL(String(u)).pathname)) {
+        looked = true;
+        await endlessWatch(e, t + 26 * MIN);
+      }
+      return inner(u, init);
+    };
+    const out = await callTool(e, "extend_endless", { job_id: job.job_id, uris: [T(1), T(2), T(3), T(4)] }, { remaining: 40 });
+    globalThis.fetch = inner;
+    assert.equal(looked, true);
+    assert.equal(out.status, "added");
+    assert.ok(!events(e).includes("topup-expired"), events(e).join(", "));
+    assert.equal((await endlessJobs(e)).length, 0, "and no second job is waiting");
+    assert.equal(JSON.parse(e.STATION.endless.doc).runs, 1);
+  } finally { globalThis.fetch = inner; bell.restore(); sp.restore(); }
 });

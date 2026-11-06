@@ -11,10 +11,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import vm from "node:vm";
-import worker from "../worker.js";
-import { barWords, songOf, listOf } from "../programs.js";
+import realWorker from "../worker.js";
+import { barWords, listOf } from "../programs.js";
 import { ROSTER } from "../djs.js";
-import { makeEnv, installFetch, track, buttons } from "./harness.js";
+import { makeEnv, installFetch, track, buttons, withSheet } from "./harness.js";
+const worker = withSheet(realWorker);
 import { ARCHIVE } from "../archive-identity.js";
 
 const KEY = "abcdefabcdefabcdefabcdef";
@@ -118,9 +119,9 @@ async function barMatrix(withTalk) {
       assert.match(barHtml, /<button type="button" class="nbmore" aria-haspopup="dialog" aria-controls="nbsheet" aria-label="Speaker, Spotify and more">/, `${path}: and so does the sliders button`);
       assert.equal((barHtml.match(/<button/g) ?? []).length, 3, `${path}: three buttons in the bar`);
       // The panel after the tab bar, empty until opened (design A,
-      // 2026-09-25): skip either side of the pause, the DJ row, the
-      // speakers, the links; no Speakers tab row, the tab bar has it.
-      assert.match(html, /<\/nav><div class="nbsheet" id="nbsheet" hidden>[\s\S]*?data-skip="prev"[\s\S]*?class="nbtb nbmain"[\s\S]*?data-skip="next"[\s\S]*?class="nbdj"[\s\S]*?class="nbchips"/, `${path}: the panel`);
+      // 2026-09-25; Option 2, 2026-11-02): skip either side of the pause, the
+      // speaker's row, then the DJ; no Speakers tab row, the tab bar has it.
+      assert.match(html, /<\/nav><div class="nbsheet" id="nbsheet" hidden>[\s\S]*?data-skip="prev"[\s\S]*?class="nbtb nbmain"[\s\S]*?data-skip="next"[\s\S]*?class="nbspk"[\s\S]*?class="nbchips"[\s\S]*?class="nbdj"/, `${path}: the panel`);
       assert.ok(!html.includes('<span>Speakers tab</span>'), `${path}: no Speakers tab row`);
       assert.match(barHtml, /<button type="button" class="nbdisc" data-pause="[^"]+\/wiim\/transport"/, `${path}: and it is the pause`);
       // And the drag hides it with the tab bar, or it would sit over the drop
@@ -161,7 +162,7 @@ test("the bar's script is real JavaScript, and its words are the server's own", 
     const src = html.match(/<script[^>]*>([\s\S]*?window\.__nowbar[\s\S]*?)<\/script>/)?.[1];
     assert.ok(src, "the DJs tab carries the bar's script");
     new vm.Script(src);  // throws on a syntax error, which is the whole point
-    const inlined = eval(`(${src.match(/var words = ([\s\S]*?);\n  var songOf/)[1]})`);
+    const inlined = eval(`(${src.match(/var words = ([\s\S]*?);\n  var listOf/)[1]})`);
     for (const o of [
       { state: "playing", track: "Cry Tough", artists: "Alton Ellis", device: "Ultra", preset: { btn: 8, name: "The Selector" } },
       { state: "paused", track: "Cry Tough", artists: "Alton Ellis", device: "Ultra", preset: { btn: 8, name: "The Selector" } },
@@ -549,18 +550,16 @@ test("every kept row, setlist or essay, opens the page that carries its own dele
   } finally { f.restore(); }
 });
 
-test("the strip opens the record it names in Spotify, and only then (the song-link canvas, A, 2026-09-23)", () => {
-  const url = "https://open.spotify.com/track/cs";
-  const live = { state: "playing", track: "Cold Sweat", artists: "James Brown", device: "Pro Plus", song: url };
-  assert.deepEqual(songOf(live, barWords(live)), { url, title: "Cold Sweat" });
-  // Held by the bar's own pause: the record it names.
-  const held = { state: "quiet", paused: { track: "Cry Tough", device: "Ultra", song: url } };
-  assert.deepEqual(songOf(held, barWords(held)), { url, title: "Cry Tough" });
-  // Quiet, elsewhere, unknown, throttled: nothing to open, the strip opens Speakers.
-  for (const o of [{ state: "quiet" }, { state: "quiet", speaker: "Ultra", elsewhere: "Pro Plus" },
-    { state: "unknown" }, { state: "throttled", mins: 3 }, { state: "playing", track: "X" }]) {
-    assert.equal(songOf(o, barWords(o)), null, JSON.stringify(o));
-  }
+// NEVER A LINK TO THE SONG (the owner, 2026-11-02, on the iPhone): the Spotify app
+// took one as "play this", from 0:00 on its album, and an endless set was lost.
+test("the panel offers the playlist and never the song, in one row with the speaker", async () => {
+  const P = await import("../programs.js");
+  assert.equal(P.songOf, undefined);
+  const html = P.renderDeck({ base: "/buttons/k", tiles: [], speakers: [] });
+  assert.ok(!/nbspot|Open the song in Spotify|open\.spotify\.com\/track/.test(html), "no song link anywhere in the bar");
+  assert.match(html, /<div class="nbrow" hidden><button type="button" class="nbspk" aria-expanded="false" aria-controls="nbpick">/);
+  assert.match(html, /<a class="nbout nblist" href="#"[^>]*aria-label="Open the playlist in Spotify" hidden>/);
+  assert.match(html, /<div class="nbpick" id="nbpick" hidden>/, "the speakers stay folded until the row is tapped");
 });
 
 test("the panel also opens the playlist the record plays from, and only then (the owner, 2026-09-23)", () => {

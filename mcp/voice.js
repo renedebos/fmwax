@@ -178,7 +178,9 @@ export function parseToolCall(body, allowed) {
 // device outside the house's list through pause). The name must be one of
 // the house's own, matched case-insensitively and whole. Every speaker on
 // the list passes alike (the owner, 2026-09-11).
-const STARTS = new Set(["play_playlist", "play_program", "play_uris"]);
+// A set asked of a DJ (MC-36) names its speaker too: the house starts it there
+// when it lands.
+const STARTS = new Set(["play_playlist", "play_program", "play_uris", "ask_dj"]);
 const SPEAKER_TOOLS = new Set([...STARTS, "playback_control"]);
 export function speakerRule(name, args, devices) {
   if (!SPEAKER_TOOLS.has(name)) return null;
@@ -209,7 +211,9 @@ export function canonicalDevice(args, devices) {
 // exactly VOICE_PROMPT. Loading it starts nothing, so the one place the voice
 // says "what is starting" is told so.
 export const ARCHIVE_WHO = `${ARCHIVE.who}, live, ${ARCHIVE.years}`;
-export function voicePrompt({ archive = null } = {}) {
+// TALK TAKES THE ORDER (MC-36): with `asks`, a set asked of a DJ is filed for
+// the house's curator and made after the call; without, the prompt is as it was.
+export function voicePrompt({ archive = null, asks = false } = {}) {
   const a = archive?.btn ? archive : null;
   return `# Role and tone
 You are the voice of a house music desk: calm, warm, brief, never fawning.
@@ -262,7 +266,12 @@ When the person asks for something to play, that IS the yes: have the
 backend do it at once, and say in a few words what is starting. Ask first
 only before a DJ's preset playlist or a guest preset is rewritten, or when you had to guess
 what they meant. Volume, mute, pause, resume and skip need no
-confirmation either. Reading and looking up never do.${a ? ` The archive
+confirmation either. Reading and looking up never do.${asks ? ` A set asked
+of a DJ needs no yes either: the house makes it after the call. But nothing
+is asked until the backend's answer comes back, and a hang-up before it loses
+the ask: until then say only that you are asking ("Asking Hank…"), never that
+it is on its way, where or when it will play, or that they can hang up. When
+the answer comes, say its line as it gives it.` : ""}${a ? ` The archive
 is loaded onto preset ${a.btn}, and the backend starts it through the house's
 helper when it can: say it is playing only when the backend says it started;
 otherwise that it is loaded and to press ${a.btn}.` : ""}
@@ -283,11 +292,34 @@ export const VOICE_PROMPT = voicePrompt();
 // existed: a set asked of a DJ goes to their own playlist, and confirming
 // covers that playlist alone. With a guest live, a DJ's set goes onto the
 // guest for its service, and the confirmation covers the guests too.
-function whereASetGoes(replay, guests) {
+// TALK TAKES THE ORDER (MC-36): with `asks`, a set asked of a DJ is ask_dj,
+// made by the curator after the call; the rest of the rule is as it was.
+function askRule(guests) {
+  const where = guests.length ? ` (${guests.map((g) => `preset ${g.btn} for a ${g.label} set`).join(", ")})` : "";
+  return `A SET ASKED OF A DJ BY NAME — a length, a mood or a subject for them: "an
+hour of acoustic grunge from Sessions", "Hank, something for cooking", "a set
+from Gatefold" — is ask_dj, never made on the call: the house's curator makes
+it after the call, so the person can hang up. No get_dj and no search first.
+Pass \`dj\`, \`words\` (what they asked for, without the DJ's name or the
+length; "your pick" when they left it to the DJ), \`minutes\` when they said a
+length, \`avoid\` when they said what to leave out, and \`device\`, the speaker.${
+  guests.some((g) => g.label === "Tidal") ? ` \`service\` "tidal" only when they said Tidal.` : ""} It lands on
+the requests preset${where} in place of the set there, and the house starts it
+on \`device\` as it lands, unless something else has started playing since.
+\`keep\` true when they asked to keep it or put it on the shelf. The ask is
+the yes: no confirmation. Call ask_dj before you say anything about the set,
+with no words of your own first: a hang-up before its answer loses the ask.
+Pass the DJ's name as the person said it, even when it came through oddly
+("DJ Pup Rock"): the house finds the DJ it is nearest to, or says there is
+none and lists the DJs: then call ask_dj again at once with the one that was
+meant, and ask the person only when none is near. Then say the one line in
+\`said\`, as it is.`;
+}
+function whereASetGoes(replay, guests, asks = false) {
   if (!guests.length) {
-    return `A set asked OF A DJ BY NAME is written straight onto that DJ's own playlist —
+    return `${asks ? askRule(guests) : `A set asked OF A DJ BY NAME is written straight onto that DJ's own playlist —
 their preset's (a DJ with no preset has nowhere for a set: say so), with replace_playlist,
-and then started with play_playlist if the person wants it now. A set asked
+and then started with play_playlist if the person wants it now.`} A set asked
 for with NO DJ named ("play some Prince", "something for cooking") goes onto
 the "${replay}" playlist — never over a DJ's preset, which is theirs — and
 is started from there.`;
@@ -298,7 +330,7 @@ is started from there.`;
   // named no DJ played from the replay playlist, which no preset holds, and
   // nothing said so. The report says it now, and offers the Spotify guest.
   const spotifyGuest = guests.find((g) => g.label === "Spotify") ?? null;
-  return `A set asked OF A DJ BY NAME is written onto the guest preset for its
+  return `${asks ? askRule(guests) : `A set asked OF A DJ BY NAME is written onto the guest preset for its
 service:
 ${list}.
 Write it with replace_playlist, replacing whichever DJ's set is there, with
@@ -306,7 +338,7 @@ dj set to that DJ and ask to their words, so the preset says whose set it is
 and More like this can follow them. A DJ
 who holds a preset of their own still gets it on that preset${
   guests.length === 1 ? ", and a set on another service has nowhere to go" : ""}.
-Then it is started with play_playlist if the person wants it now. A set asked
+Then it is started with play_playlist if the person wants it now.`} A set asked
 for with NO DJ named ("play some Prince", "something for cooking") goes onto
 the "${replay}" playlist — never over a guest or a DJ's preset — and is
 started from there. Say so when you report it: it is playing from the house's
@@ -440,7 +472,8 @@ all night": no DJ is named, but endless is always a DJ's. Never a set on the
 `;
 }
 
-export function backendPrompt({ devices = [], defaultDevice = "", replay = "replay", guests = [], endless = [], archive = null } = {}) {
+export function backendPrompt({ devices = [], defaultDevice = "", replay = "replay", guests = [], endless = [], archive = null,
+  asks = false } = {}) {
   return `# Role
 You are the backend for a spoken conversation in a house with a set of DJ
 characters and speakers. You are helping an assistant that is talking; its
@@ -453,7 +486,8 @@ get_dj with their name and, as ask, what the person asked for; read the brief
 and curate AS them — what they program by, what they refuse, how long their
 sets run, how they sequence. A roll_call in the answer is acts that fit the
 ask: a guide, not a whitelist. Never invent a DJ. If no DJ is named, curate as
-yourself.
+yourself.${asks ? ` A set ASKED of a DJ is not curated here: it is ask_dj, as
+"Where a set goes" says, with no get_dj first.` : ""}
 
 # Tools
 Read-only tools (now_playing, recently_played, list_devices, get_dj,
@@ -479,7 +513,7 @@ the speaker in \`device\`. A number said aloud ("volume thirty", "set it to
 say that the speaker may have a fixed output and offer to pause instead.
 
 # Where a set goes
-${whereASetGoes(replay, guests)} To adjust a set that is playing, call now_playing
+${whereASetGoes(replay, guests, asks)} To adjust a set that is playing, call now_playing
 and read_playlist (it reports what is LEFT after the current track), then
 rewrite what is left with replace_playlist, keeping the current track at the head.
 "Put it back" or "undo that" is restore_playlist: show first, then confirm.
@@ -489,10 +523,13 @@ A PROGRAMME is a set with notes: a page a person reads later, kept on the
 house's shelf. Two DJs write them — the Librarian and Gatefold —
 through the one write_program tool, with the DJ's key in \`dj\`; the others have no
 writer, so a set asked of them is a playlist only, and say so if asked for
-notes. To write one: get_dj, resolve the tracks with search_tracks, then
+notes. ${asks ? `A NEW program is ask_dj with that DJ and \`keep\` true (\`notes\`
+"long" when they asked for the long read): the curator writes it after the
+call, songs and notes, and it lands on the requests preset and the shelf.
+write_program is only for keeping what a preset already holds, below.` : `To write one: get_dj, resolve the tracks with search_tracks, then
 write_program with the prose written AS the DJ. Publishing does not touch
 any preset: pass load_button only when the person said they want it on the
-preset now.
+preset now.`}
 "What is on the shelf" is list_programs; "put that back on the preset" is
 activate_program with the program's id. To keep what a preset holds as
 a page: read_playlist for the tracks, then the DJ's writer with those exact

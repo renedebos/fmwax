@@ -6,9 +6,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import worker from "../worker.js";
+import realWorker from "../worker.js";
 import { roomPlaying, sleeveOf } from "../now.js";
-import { makeEnv, installFetch, buttons } from "./harness.js";
+import { makeEnv, installFetch, buttons, withSheet } from "./harness.js";
+const worker = withSheet(realWorker);
 
 const IMGS = [640, 300, 64].map((w) => ({ url: `https://i.scdn.co/image/s${w}`, width: w, height: w }));
 const st = (extra = {}) => ({

@@ -361,7 +361,14 @@ export function houseStub(env) {
 // while it restarts on new code, which a deploy causes (2026-10-17: the
 // first save after one answered 500). Only for calls that are safe to make
 // twice; a claim or a recovery is never repeated.
+// A write to the settings drops this isolate's kept copy, before and after
+// (MC-37 step C, below).
 export async function houseFetch(env, path, init = undefined) {
+  const writes = SETTINGS_WRITES.has(path) && String(init?.method ?? "GET").toUpperCase() !== "GET";
+  if (writes) forgetKeptSettings(env);
+  try { return await houseFetchOnce(env, path, init); } finally { if (writes) forgetKeptSettings(env); }
+}
+async function houseFetchOnce(env, path, init) {
   let r;
   try {
     r = await houseStub(env).fetch(`https://house${path}`, init);
@@ -418,17 +425,42 @@ async function putDoc(env, settings, from, varsFp) {
 // choices (`page`) go on top, name by name. `__settings` says which this
 // request read, for the owner's look below.
 export const SETTINGS_READ_MS = 1500;
+// THE SETTINGS KEPT A FEW SECONDS (MC-37 step C, the owner, 2026-11-02:
+// "go"). The stopwatch found this document's read 33-135 ms on every request,
+// the pages' 30-second check included, for settings that change a few times
+// a month. A music page or its check (worker.js says which) takes this
+// isolate's copy while it is under SETTINGS_KEEP_MS old; every other request
+// reads the store as before and leaves its answer here, and a write from this
+// isolate drops it. A copy read from before a write is never kept after it
+// (the generation). Another isolate's copy can show a change that much late:
+// a Tune slider, a page key just renewed.
+export const SETTINGS_KEEP_MS = 10_000;
+const KEPT_DOC = new WeakMap(); // HOUSE binding -> { doc, at }
+const KEPT_GEN = new WeakMap(); // HOUSE binding -> writes seen here
+const SETTINGS_WRITES = new Set(["/settings", "/keys", "/page", "/page-many", "/restore"]);
+export function forgetKeptSettings(env) {
+  if (typeof env?.HOUSE !== "object") return;
+  KEPT_DOC.delete(env.HOUSE);
+  KEPT_GEN.set(env.HOUSE, (KEPT_GEN.get(env.HOUSE) ?? 0) + 1);
+}
 // The page's choices and the house's keys as this isolate last read them,
 // per house (Codex, 2026-10-17): a store that does not answer in time must
 // not hand the default speaker back to the file, nor close the connector's
 // door, for that one request.
 const LAST_PAGE = new WeakMap();
-export async function withSettings(env, ctx) {
+export async function withSettings(env, ctx, { keepMs = 0 } = {}) {
   if (!env?.HOUSE) return env;
   const vars = settingsOf(env);
+  const b = typeof env.HOUSE === "object" ? env.HOUSE : null;
   let doc;
   try {
-    doc = await readDoc(env, SETTINGS_READ_MS);
+    const kept = b && keepMs > 0 ? KEPT_DOC.get(b) : null;
+    if (kept && Date.now() - kept.at < keepMs) doc = kept.doc;
+    else {
+      const gen = b ? KEPT_GEN.get(b) ?? 0 : 0;
+      doc = await readDoc(env, SETTINGS_READ_MS);
+      if (b && (KEPT_GEN.get(b) ?? 0) === gen) KEPT_DOC.set(b, { doc, at: Date.now() });
+    }
   } catch {
     const last = (typeof env.HOUSE === "object" && LAST_PAGE.get(env.HOUSE)) || { page: {}, keys: {} };
     return { ...env, ...last.page, ...last.keys, __vars: vars, __page: last.page, __keys: Object.keys(last.keys),
@@ -473,11 +505,13 @@ export async function renewHouseKey(env, name) {
   const said = await r.json().catch(() => null);
   if (!r.ok || !said?.ok) throw new Error(`the house could not make a new ${name} (${r.status})`);
   if (typeof env.HOUSE === "object") LAST_PAGE.delete(env.HOUSE);
+  forgetKeptSettings(env);
   return said.renewed.includes(name);
 }
 // Forget this isolate's last known page and keys (a restore just wrote them).
 export function forgetLastKnown(env) {
   if (typeof env?.HOUSE === "object") LAST_PAGE.delete(env.HOUSE);
+  forgetKeptSettings(env);
 }
 export async function giveHouseKey(env, name, value) {
   const r = await houseFetch(env, "/keys", { method: "POST", headers: { "content-type": "application/json" },

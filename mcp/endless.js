@@ -6,7 +6,7 @@ import { sameName } from "./programs.js";
 import { houseDay, houseTz } from "./voice.js";
 import { station } from "./station.js";
 import { findDj, guestBusyWords, guestFor, guestForPlaylistId, house } from "./house.js";
-import { dropPauseNoteFor, pickCheap, speakerFor } from "./now.js";
+import { dropPauseNoteFor, nothingOnSpotify, pickCheap, speakerFor } from "./now.js";
 import { startPlaylistOnDevice } from "./playback.js";
 import { replacePlaylistSafely } from "./playlists.js";
 import { arrivingSet, dropTile, parseSpeakers, readReadings, wearFace, writeMark } from "./room.js";
@@ -15,7 +15,7 @@ import {
 } from "./services.js";
 import { emitRequestEvent } from "./writes.js";
 import { rollCallSlice } from "./rollcall.js";
-import { tuningWords } from "./tuning.js";
+import { tunedSpacing, tuningWords } from "./tuning.js";
 
 
 // THE ENDLESS DJ (MC-22, tasks/done/mc22-endless-dj.md). Press 4 and Sunny plays
@@ -58,6 +58,7 @@ import { tuningWords } from "./tuning.js";
 //     presets: [{ button, dj, playlist, hours, topupMinutes, batchMinutes,
 //                 freshMinutes, noRepeatSongs }] }
 export const ENDLESS_IDLE_MS = 29 * 60 * 1000;
+export const ENDLESS_QUIET_MS = 179 * 60 * 1000;
 // A top-up or steer job the curator has not answered in this long is
 // dropped, and the next look may ask again (each ask counts against the
 // day's runs).
@@ -270,6 +271,78 @@ export function endlessHow(j, djName) {
   return `Continue the set playing on preset ${j.btn}: about ${j.minutes} minutes AS ${who}, in their brief, ` +
     `not a new opening.${turn} It is APPENDED; nothing is replaced.`;
 }
+// The acts on a session's last `n` batches, the songs the last writes added
+// (the owner, 2026-11-02: with one, Queen and Neil Young came back every other
+// batch). Fewer batches known than that, at a session's start (a fresh set or
+// the songs kept), is all of the list.
+export const batchSizes = (sess) => (Array.isArray(sess?.batches) ? sess.batches
+  : Number(sess?.batch) ? [Number(sess.batch)] : []);
+export function lastBatchActs(sess, n = 1) {
+  const tracks = Array.isArray(sess?.tracks) ? sess.tracks : [];
+  const want = Math.max(1, Number(n) || 1), sizes = batchSizes(sess);
+  const take = sizes.length >= want ? sizes.slice(-want).reduce((a, b) => a + (Number(b) || 0), 0) : tracks.length;
+  return [...new Set(tracks.slice(-(take || tracks.length))
+    .map((t) => String(t?.[2] ?? "").split(" — ")[0].split(", ")[0]).filter(Boolean))];
+}
+// A TOP-UP ASKED FOR, by the watch's look or a skip (below): the day's runs
+// spent, nothing; live, a job for the curator, its doorbell rung once the
+// state is written; in watch mode, the line it would have been.
+function askTopup(cfg, state, p, s, { now, leftMin, bells, say, why = "" }) {
+  if ((state.runs ?? 0) >= cfg.dailyRuns) {
+    s.pending = true;
+    s.dayCapped = true;
+    say(p.button, "day-cap", `${cfg.dailyRuns} runs today already: no top-up`);
+  } else if (cfg.mode === "live") {
+    const id = `endless-${p.button}-${now}`;
+    endlessFile(state, { id, kind: "topup", btn: p.button, dj: p.dj, playlist: p.playlist,
+      minutes: p.batchMinutes, at: now, ...(s.steer?.words ? { words: s.steer.words } : {}) }, bells);
+    s.pending = id;
+    say(p.button, "topup", `${leftMin} min left${why}: asked for ${p.batchMinutes} min more of ${p.dj}${
+      s.steer?.words ? `, steered: "${s.steer.words}"` : ""}`);
+  } else {
+    s.pending = true;
+    state.runs = (state.runs ?? 0) + 1;
+    say(p.button, "would-topup", `${leftMin} min left${why}: ${p.batchMinutes} min more of ${p.dj}`);
+  }
+}
+
+// A SKIP FROM THE PANEL ASKS AT ONCE (the owner, 2026-11-02: "okay"). Sessions'
+// "80's" set went from song 6 to its last in about fifteen minutes of skips;
+// the 22:50 look saw 3 minutes left, and the list ran out before the curator
+// answered. The panel's skip knows the song it left and the list it was in:
+// when what follows it is under the preset's top-up minutes, or four songs or
+// fewer, the top-up is asked now, as the next look would have, instead of up
+// to ten minutes on. A session the watch has not seen yet waits for its look.
+// Skips in the Spotify app or on a remote still wait for the look.
+export async function endlessAfterSkip(env, { pid, uri, now = Date.now() }) {
+  const cfg = parseEndless(env);
+  if (cfg?.mode !== "live" || !pid || !uri || !env?.STATION) return null;
+  const bells = [], events = [];
+  const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
+  const out = await endlessUpdate(env, (state) => {
+    bells.length = 0;
+    events.length = 0;
+    endlessDay(env, state, now);
+    const p = endlessPresets(env, cfg, state).find((x) => x.playlist === pid);
+    if (!p || (p.lane && state.lane?.ready === false)) return { abort: true };
+    const s = state.sessions[String(p.button)];
+    if (!s || s.pending || s.capped || s.dayCapped || s.stopped || !Array.isArray(s.tracks)) return { abort: true };
+    if (now - (Number(s.start) || now) >= p.hours * 3600e3) return { abort: true };
+    const at = endlessLeft(s.tracks, uri, 0, s.idx ?? 0);
+    if (!at) return { abort: true };
+    // What follows the song skipped: the one now playing and the rest.
+    const leftMs = Math.max(0, at.leftMs - (Number(s.tracks[at.idx]?.[1]) || 0));
+    const after = Math.max(0, at.of - at.idx - 2);
+    if (!(leftMs < p.topupMinutes * 60000 || after <= 4)) return { abort: true };
+    askTopup(cfg, state, p, s, { now, leftMin: Math.round(leftMs / 60000), bells, say, why: " after a skip" });
+    return {};
+  });
+  if (out?.abort) return null;
+  await endlessRing(env, bells, say);
+  await endlessLog(env, events);
+  return events;
+}
+
 // The jobs the curator should take, as list_requests shows them. One another
 // run holds (its lease) is not offered.
 // DEEP DIVE'S RESEARCH (2026-10-18; the trial, docs/research/
@@ -533,6 +606,8 @@ export async function endlessJobs(env, { folders = researchFolders(env), heard =
     // words, or for a top-up or a fresh set a spread of acts not played lately.
     const who = findDj(env, j.dj);
     const roll = rollCallSlice(who?.key ?? j.dj, { words: j.words ?? "", recent: avoid, seed: j.id, brief: who?.brief });
+    const batches = kind === "topup" ? tunedSpacing(env, who)?.batchActs : null;
+    const lastActs = batches ? lastBatchActs(state.sessions?.[String(j.btn)], batches) : [];
     // The guest DJ's words, looked up once, then read back (2026-10-18):
     // Deep Dive's artist always; anyone else's when the words are an artist.
     const subject = laneSubject(state, j.btn);
@@ -555,6 +630,7 @@ export async function endlessJobs(env, { folders = researchFolders(env), heard =
     return { job_id: j.id, kind, dj: j.dj, minutes: j.minutes, preset: j.btn,
       ...(askNearby ? { send_nearby: NEARBY_ASK } : {}),
       ...(j.words ? { steer: j.words } : {}), ...(j.when ? { when: j.when } : {}), ...(last ? { ends_with: last } : {}),
+      ...(lastActs.length ? { acts_last_batches: lastActs } : {}),
       how: endlessHow({ ...j, kind }, who?.name), avoid, ...(roll ? { roll_call: roll } : {}),
       // The DJ's tuning as it stands when the job is read (MC-32), the same
       // words get_dj gives, so the job and the brief cannot disagree.
@@ -981,7 +1057,13 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
   }
   const active = Object.values(state.sessions).some(Boolean);
   // Idle: one look every half hour. A session: every run (ten minutes).
-  if (!active && now - (Number(state.lastLook) || 0) < ENDLESS_IDLE_MS) {
+  // Every three hours while the speakers say there is nothing to look at
+  // (nothingOnSpotify, the deep review, 2026-10-31), the backstop for a set
+  // started in the Spotify app on an Echo. A Play from a page zeroes lastLook.
+  const since = now - (Number(state.lastLook) || 0);
+  const wait = !active && state.lastLook && since >= ENDLESS_IDLE_MS && since < ENDLESS_QUIET_MS &&
+    await nothingOnSpotify(env, now) ? ENDLESS_QUIET_MS : ENDLESS_IDLE_MS;
+  if (!active && since < wait) {
     if (swept) {
       let ok = false;
       try { ok = await endlessSave(env, state); } catch { ok = false; }
@@ -1038,12 +1120,29 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
       // may have been refused, throttled or never woken.
       const job = s.pending && typeof s.pending === "string" ? state.jobs[s.pending] : null;
       if (s.pending && typeof s.pending === "string" && !job) s.pending = false;
-      if (job && !job.done && now - job.at > ENDLESS_JOB_MS) {
+      // Not one a curator is writing right now (the deep review, 2026-10-31):
+      // its songs landed, and the look's new job landed a second top-up.
+      if (job && !job.done && now - job.at > ENDLESS_JOB_MS && !(job.claimed && now - job.claimed < ENDLESS_LEASE_MS)) {
         say(p.button, "topup-expired", `no top-up landed in ${Math.round(ENDLESS_JOB_MS / 60000)} min; the next look may ask again`);
         delete state.jobs[s.pending];
         s.pending = false;
       }
       let at = endlessLeft(s.tracks, st?.item?.uri, st?.progress_ms, s.idx ?? 0);
+      // A LIST CHANGED UNDER THE SESSION (the deep review, 2026-10-31): put
+      // back from a backup or edited in the Spotify app, while this holds the
+      // list read at the start, so every look missed and no top-up, end or
+      // pause came. Read again once a run of misses: autoplay's songs past the
+      // end would otherwise cost a read every look.
+      if (at) delete s.reread;
+      else if (Array.isArray(s.tracks) && !s.reread) {
+        s.reread = true;
+        try {
+          s.tracks = await endlessTracks(env, p.playlist);
+          at = endlessLeft(s.tracks, st?.item?.uri, st?.progress_ms, 0);
+        } catch (e) {
+          say(p.button, "tracks-failed", String(e?.message ?? e).slice(0, 200));
+        }
+      }
       const ageMin = Math.round((now - s.start) / 60000);
       // PAST THE END (measured 2026-09-23, 20:30): when the list runs out the
       // speaker's own autoplay carries on — Madonna after Sunny's last song —
@@ -1096,23 +1195,7 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
         // the top-up landed after autoplay had taken over. So a set also
         // asks when four songs or fewer are left, whatever their minutes say.
         } else if ((at.leftMs < p.topupMinutes * 60000 || at.of - at.idx - 1 <= 4) && !s.pending) {
-          if ((state.runs ?? 0) >= cfg.dailyRuns) {
-            s.pending = true;
-            s.dayCapped = true;
-            say(p.button, "day-cap", `${cfg.dailyRuns} runs today already: no top-up`);
-          } else if (cfg.mode === "live") {
-            // A job for the curator; its doorbell rings once this is written.
-            const id = `endless-${p.button}-${now}`;
-            endlessFile(state, { id, kind: "topup", btn: p.button, dj: p.dj, playlist: p.playlist,
-              minutes: p.batchMinutes, at: now, ...(s.steer?.words ? { words: s.steer.words } : {}) }, bells);
-            s.pending = id;
-            say(p.button, "topup", `${leftMin} min left: asked for ${p.batchMinutes} min more of ${p.dj}${
-              s.steer?.words ? `, steered: "${s.steer.words}"` : ""}`);
-          } else {
-            s.pending = true;
-            state.runs = (state.runs ?? 0) + 1;
-            say(p.button, "would-topup", `${leftMin} min left: ${p.batchMinutes} min more of ${p.dj}`);
-          }
+          askTopup(cfg, state, p, s, { now, leftMin, bells, say });
         }
       }
       state.sessions[key] = s;
@@ -1292,8 +1375,8 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   const start = async (pl, label) => {
     try {
       const r = await startPlaylistOnDevice(env, { id: pl, name: label, catalog: "spotify" }, device, budget);
-      const ok = r?.preset_safe || r?.unverified ? "ok" : "stuck";
-      if (ok === "ok") await looked();
+      const ok = r?.preset_safe ? "ok" : r?.unverified ? "sent" : "stuck";
+      if (ok !== "stuck") await looked();
       return ok;
     } catch (e) {
       return sleptThrough(e) ? "asleep" : "failed";
@@ -1505,7 +1588,7 @@ export async function endlessStartFresh(env, { button, device }) {
   await endlessLog(env, events);
   return { status: "asked" };
 }
-export async function endlessPageSteer(env, { button, words }) {
+export async function endlessPageSteer(env, { button, words, leaveWords = false }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
   if (await throttledUntil(env)) return { status: "throttled" };
@@ -1531,9 +1614,17 @@ export async function endlessPageSteer(env, { button, words }) {
       const s = state.sessions[String(p.button)] ?? { start: now, misses: 0, topups: 0, device: pl?.device?.name ?? null };
       s.steer = { words: text, at: now };
       state.sessions[String(p.button)] = s;
+      // CHANGE IT UP LEAVES THE WORDS (the owner, 2026-10-31: pressed on
+      // Sessions days after "acoustic grunge" by voice, and heard no change).
+      // Every job the lane files carries its subject, so a change stayed
+      // inside it. A DJ who needs no words lets them go here, top-ups too; one
+      // who is told what to play (Deep Dive's artist, Genre's genre) keeps them.
+      const left = leaveWords && state.lane && p.button === state.lane.btn && !findDj(env, p.dj)?.needsWords
+        ? state.lane.words ?? null : null;
+      if (left) { delete state.lane.words; delete state.lane.nearby; }
       endlessFile(state, { id: `endless-${p.button}-steer-${now}`, kind: "steer", btn: p.button, dj: p.dj,
         playlist: p.playlist, minutes: steerMinutes(p), at: now, words: text, when: "next" }, bells);
-      say(p.button, "steer", `"${text}", from the DJ page`);
+      say(p.button, "steer", `"${text}", from the DJ page${left ? `, leaving "${left}" behind` : ""}`);
       return { status: "asked" };
     });
   } catch { return { status: "failed" }; }
@@ -1595,8 +1686,10 @@ export async function steerWrite(env, p, player, uris, { now = false, budget = n
 // Since stage 6 (2026-09-26) that is the endless presets alone: the guests'
 // re-save ledger went with the checklist, and a guest's name or playlist
 // changed in config shows on the Speakers keys from the speakers' own reading.
-export async function tabOwed(env) {
-  return endlessOwedCount(env);
+// `state` and `recs`, when the caller has them in hand or on their way (the
+// Loaded page, MC-37 step B): values or promises, read here otherwise.
+export async function tabOwed(env, { state = null, recs = null } = {}) {
+  return endlessOwedCount(env, { state, recs });
 }
 // THE ENDLESS PRESETS A SPEAKER STILL NAMES FOR THE DJ WHO LEFT (MC-24):
 // [{ btn, name, speakers: [{ name, slug }] }] — the app renamed the
@@ -1609,12 +1702,12 @@ export function endlessOwed(env, slots, recs) {
     return row && !sameName(row.name, x.name);
   }) })).filter((o) => o.speakers.length);
 }
-export async function endlessOwedCount(env) {
+export async function endlessOwedCount(env, { state = null, recs: known = null } = {}) {
   const cfg = parseEndless(env);
   if (cfg?.mode !== "live" || !env?.STATION) return 0;
   try {
-    const slots = endlessSlots(env, cfg, await endlessLoad(env));
-    const recs = await readReadings(env, parseSpeakers(env));
+    const slots = endlessSlots(env, cfg, await (state ?? endlessLoad(env)));
+    const recs = await (known ?? readReadings(env, parseSpeakers(env)));
     // Presets, not presets times speakers (the review, 2026-10-09: three
     // presets owed on two speakers read as a bare "6").
     return endlessOwed(env, slots, recs).length;

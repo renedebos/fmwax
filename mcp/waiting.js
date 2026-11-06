@@ -7,8 +7,10 @@
 // may be, without waiting for the hour the quiet check-in note waits.
 // A fresh set is left out: it is for the next press and may wait for the
 // hourly check by design.
-import { station } from "./station.js";
+import { getRequestRecord, station } from "./station.js";
 import { endlessLoad, parseEndless } from "./endless.js";
+import { findDj } from "./house.js";
+import { askService, throttledUntil } from "./services.js";
 
 export const WAITING_MS = 20 * 60 * 1000;
 const DAY_MS = 24 * 3600e3;
@@ -27,6 +29,19 @@ export async function workWaiting(env, now = Date.now()) {
         .filter((j) => j && j.kind !== "fresh" && now - (Number(j.at) || now) > WAITING_MS);
     }
   } catch { jobs = []; }
+  // A SPOTIFY BLOCK IS NOT A QUIET CURATOR (the deep review, 2026-10-31): the
+  // curator was told to leave that work, and the pages blamed its plan's limit
+  // on an owner watching a Spotify block. Tidal's asks still count: they are
+  // not behind it, so one left waiting really is the curator.
+  if ((asks.length || jobs.length) && await throttledUntil(env)) {
+    jobs = [];
+    const onSpotify = await Promise.all(asks.map(async (r) => {
+      let rec = null;
+      try { rec = await getRequestRecord(env, r.id); } catch { rec = null; }
+      return askService(env, findDj(env, r.dj), rec) === "spotify";
+    }));
+    asks = asks.filter((_, i) => !onSpotify[i]);
+  }
   if (!asks.length && !jobs.length) return null;
   const since = Math.min(...asks.map((r) => Number(r.created_at)), ...jobs.map((j) => Number(j.at)));
   return { asks: asks.length, jobs: jobs.length, since };

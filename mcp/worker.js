@@ -40,7 +40,8 @@ import {
 } from "./toollist.js";
 import { callTool } from "./tools.js";
 import { refireWaiting } from "./writes.js";
-import { houseClaimed, withSettings } from "./settings.js";
+import { SETTINGS_KEEP_MS, houseClaimed, withSettings } from "./settings.js";
+import { stopwatch, withTimings } from "./timing.js";
 
 // The request claim ledger's class must be exported from the entry module or
 // the Durable Object binding has nothing to instantiate. The Worker's own use
@@ -81,7 +82,10 @@ export default {
   async fetch(request, env, ctx) {
     // One tally per request, on a COPY of env: an isolate serves many requests
     // at once and a shared Map would mix them together.
-    env = { ...env, __kvTally: new Map(), __spotifyTally: new Map() };
+    // And one stopwatch (timing.js, MC-37), which the owner's pages answer
+    // with as a Server-Timing header.
+    const watch = stopwatch();
+    env = { ...env, __kvTally: new Map(), __spotifyTally: new Map(), __watch: watch };
     try {
       // The house's settings from its own store (MC-31, settings.js), the
       // vars underneath, once the house is claimed (before that the store is
@@ -89,8 +93,15 @@ export default {
       // which read no setting. The tallies ride along: the copy keeps the
       // same Maps.
       const path = new URL(request.url).pathname;
-      if (path !== "/health" && await houseClaimed(env)) env = await withSettings(env, ctx);
-      return await handleRequest(request, env, ctx);
+      // The music pages and their 30-second check take a copy of the
+      // settings up to a few seconds old (MC-37 step C); the setup pages, the
+      // Spotify sign-in, the connectors and every write read the store.
+      const kept = request.method === "GET" && /^\/(buttons|notes)\//.test(path) && !/^\/buttons\/[^/]+\/spotify(\/|$)/.test(path);
+      // The stylesheet (MC-37 step D) reads no setting either.
+      const bare = path === "/health" || /^\/app\.[0-9a-f]{8}\.css$/.test(path);
+      if (!bare && await houseClaimed(env)) env = await withSettings(env, ctx, kept ? { keepMs: SETTINGS_KEEP_MS } : undefined);
+      watch.lap("settings");
+      return withTimings(await handleRequest(request, env, ctx), watch, path);
     } finally {
       // After the response, never in front of it. A counter that adds latency
       // to a page load has bought the wrong thing.

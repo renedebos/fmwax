@@ -10,6 +10,8 @@ import { makeEnv, installFetch, track } from "./harness.js";
 import { setBreaks, titleBase } from "../setcheck.js";
 import { station } from "../station.js";
 import { PERSONAS } from "../djs.js";
+import { tunedSpacing } from "../tuning.js";
+import { lastBatchActs } from "../endless.js";
 
 const { callTool, endlessJobs } = __test;
 const b = () => ({ remaining: 40 });
@@ -160,4 +162,42 @@ test("a chat write's send-back lapses after its window; a request's keeps the we
   assert.equal((await station(e, "seen-get", { key: "write:p:vibe", uris: [], sent_within_ms: 15 * 60000 })).sent_back, false);
   assert.deepEqual(await station(e, "sent-back-day", {}), { ok: true, requests: 1, endless: 0, chat_and_talk: 1 },
     "a used send-back still counts for the day");
+});
+
+// Queen at 1, 11 and 21 of a 28-song list, once a batch, and every hour's count
+// held (the owner, 2026-11-02, "Agreed"). "David Bowie & The Spiders From Mars"
+// is the David Bowie of the next batch.
+test("Sessions keeps the last two batches' acts out of a top-up, under any billing", () => {
+  const S = PERSONAS.sessions.spacing;
+  assert.deepEqual(setBreaks([T("Queen", "a"), T("Free", "b"), T("Faces", "c")], S, { lastActs: ["Queen", "Rod Stewart"] }),
+    ["song 1 is by an act from the last two batches (Queen)"]);
+  assert.deepEqual(setBreaks([T("Queen", "a"), T("Free", "b"), T("Rod Stewart", "c")], S, { lastActs: ["Queen", "Rod Stewart"] }),
+    ["songs 1, 3 are by an act from the last two batches (Queen, Rod Stewart)"]);
+  assert.deepEqual(setBreaks([T("David Bowie", "a"), T("Free", "b")], S, { lastActs: ["David Bowie & The Spiders From Mars"] }),
+    ["song 1 is by an act from the last two batches (David Bowie)"]);
+  assert.deepEqual(setBreaks([T("Queen", "a"), T("Free", "b")], { ...S, batchActs: true }, { lastActs: ["Queen"] }),
+    ["song 1 is by an act from the batch before (Queen)"], "one batch, said as one");
+  assert.deepEqual(setBreaks([T("Free", "b"), T("Faces", "c")], S, { lastActs: ["Queen"] }), []);
+  assert.deepEqual(setBreaks([T("Queen", "a"), T("Free", "b")], S), [], "no batch before, nothing counted");
+  assert.deepEqual(setBreaks([T("Queen", "a"), T("Free", "b")], GENRE, { lastActs: ["Queen"] }), [], "Sessions' rule, not Genre's");
+});
+
+test("the listener's tuning keeps the batch rule, unless it says any", () => {
+  const S = { key: "sessions", spacing: PERSONAS.sessions.spacing };
+  const tuned = (same) => tunedSpacing({ DJ_TUNING: JSON.stringify({ sessions: { same } }) }, S);
+  assert.equal(tuned("rarely")?.batchActs, 2);
+  assert.equal(tuned("any")?.batchActs, undefined, "any means any");
+});
+
+test("the last batches are what the last writes added, or the whole list until that many are known", () => {
+  const u = "spotify:track:x";
+  const tracks = [[u, 1, "Queen — A"], [u, 1, "Neil Young — B"], [u, 1, "Rod Stewart — C"], [u, 1, "Marc Bolan, T. Rex — D"], [u, 1, "Rod Stewart — E"]];
+  assert.deepEqual(lastBatchActs({ tracks, batches: [2, 1, 2] }, 2), ["Rod Stewart", "Marc Bolan"], "the last two writes, 1 and 2 songs");
+  assert.deepEqual(lastBatchActs({ tracks, batches: [2, 1, 2] }, 1), ["Marc Bolan", "Rod Stewart"]);
+  assert.deepEqual(lastBatchActs({ tracks, batches: [2] }, 2), ["Queen", "Neil Young", "Rod Stewart", "Marc Bolan"],
+    "one write known: the kept songs before it are the other batch");
+  assert.deepEqual(lastBatchActs({ tracks, batch: 3 }, 1), ["Rod Stewart", "Marc Bolan"], "a session written before the change");
+  assert.deepEqual(lastBatchActs({ tracks }, 2), ["Queen", "Neil Young", "Rod Stewart", "Marc Bolan"]);
+  assert.deepEqual(lastBatchActs({ tracks: null }, 2), []);
+  assert.deepEqual(lastBatchActs(undefined), []);
 });

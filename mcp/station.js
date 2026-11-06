@@ -1,3 +1,5 @@
+import { timed } from "./timing.js";
+
 // The station ledger: who may touch a request, and what is true of it.
 //
 // Request RECORDS live in KV (the PROGRAMS namespace) like everything else
@@ -1521,7 +1523,9 @@ export async function station(env, op, args = {}, { unbudgeted = false } = {}) {
     body: JSON.stringify({ op, args }),
   });
   try {
-    return await (await call()).json();
+    // Timed whole, the answer read included (timing.js, MC-37): the object
+    // answers one call at a time, so a wait here can be a queue behind others.
+    return await timed(env, "ledger", call().then((r) => r.json()));
   } catch (err) {
     // A deploy resets the Durable Object under an in-flight call, and the
     // caller gets an error rather than an answer — measured the hard way

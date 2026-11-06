@@ -490,8 +490,8 @@ test("the now bar (MC-21) on the Speakers page is filled at paint, in the route'
     // spend a second player read on one view.
     const html = await page(e, `/buttons/${KEY}/wiim`);
     assert.match(html, new RegExp(`<div class="nowbar" data-nowbar data-now="/buttons/${KEY}/playing\\?fresh=1" data-base="/buttons/${KEY}" data-o="[^"]+">`), "filled, not a skeleton, and the answer kept for the pick");
-    // The record's door is in the panel now; the answer carries it.
-    assert.match(html, /data-o="[^"]*https:\/\/open\.spotify\.com\/track\/cs/);
+    // No door to the song: Spotify's app restarts it (2026-11-02).
+    assert.ok(!/data-o="[^"]*open\.spotify\.com\/track/.test(html));
     assert.ok(!/<div class="nowbar[^>]*data-fill/.test(html), "and nothing for the script to fetch");
     assert.match(html, /window\.__nowbar = paint;/, "but the script is here for the page's own poll to hand answers to");
     assert.match(html, /<span class="nb1">Cold Sweat · James Brown<\/span>/);
@@ -944,7 +944,7 @@ test("/playing names a live guest's band by its number, and a quick player light
         // nothing of the roster — the now bar, on every tab — can print
         // "preset 1, DJ Guest" without reassembling it from a DJ key.
         preset: { btn: 1, name: "DJ Guest" }, track: "Cold Sweat", artists: "James Brown",
-        device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus", song: "https://open.spotify.com/track/cs",
+        device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus",
         list: "https://open.spotify.com/playlist/GUESTSPOTIFY0000000001" });
     assert.equal((await (await worker.fetch(get(`/buttons/${KEY}/playing`), darkEnv())).json()).btn, null,
       "a dark guest lights nothing");

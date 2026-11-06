@@ -9,6 +9,7 @@
 import { advance, decideSubmit, prunable, decideClaim, destinationHolder, waitingOn,
   voiceDecide, voiceDue, voiceTotals, voiceEndFor, voiceSweepDecide,
   helperPutDoc, playerPutDoc, playerForgetDoc, keptPlayerOut } from "../station.js";
+import { APP_CSS } from "../programs.js";
 
 export function makeKV(initial = {}) {
   const store = new Map(Object.entries(initial));
@@ -746,4 +747,21 @@ export function buttons(map, { catalog = "spotify" } = {}) {
     if (playlist === true) return { button, archive: true };
     return { button, dj: HOUSE[button], playlist, catalog };
   }));
+}
+
+// THE APP'S STYLESHEET, PUT BACK (MC-37 step D, 2026-11-02): the app's pages
+// link one shared sheet and keep only their own rules inline. A test that
+// reads a page's styling reads it as the browser assembles it: the sheet,
+// then the page's own rules, in one block as they were written before.
+export function inlineSheet(html) {
+  return String(html).replace(/<link rel="stylesheet" href="\/app\.[0-9a-f]{8}\.css">(?:\n<style>([\s\S]*?)<\/style>)?/,
+    (_, own = "") => `<style>${APP_CSS}${own}</style>`);
+}
+// The worker, its HTML answers read with the sheet put back.
+export function withSheet(worker) {
+  return { ...worker, fetch: async (...args) => {
+    const r = await worker.fetch(...args);
+    if (!String(r.headers.get("content-type") ?? "").startsWith("text/html")) return r;
+    return new Response(inlineSheet(await r.text()), { status: r.status, statusText: r.statusText, headers: r.headers });
+  } };
 }

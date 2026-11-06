@@ -253,6 +253,61 @@ test("the bar's disc: pause while the helper reads play, play while it reads pau
   });
 });
 
+// A BLOCK STOPS WHAT SPOTIFY SAYS, NOT WHAT THE SPEAKER SAYS (the owner,
+// 2026-10-31: the bar "blocked and stuck on Tidal", the helper on). The page's
+// own view(), run as the page runs it, on the house's own answer.
+test("Spotify's quota: the bar keeps what the helper reads, and its pause and play go on working", async () => {
+  const e = env();
+  const f = installFetch();
+  try {
+    await send(e, { speakers: [
+      { name: "Pro Plus", state: "pause", source: "Tidal", track: "My Funny Valentine", artists: "Chet Baker" },
+      { name: "Ultra", state: "play", source: "Spotify", track: "Take On Me", artists: "a-ha" }] });
+    const asked = [];
+    e.STATION.endless.hands = async (a) => { asked.push(a); return { ok: true, reading: { name: "Pro Plus", state: "play", source: "Tidal", track: "My Funny Valentine" } }; };
+    await e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 600000 }));
+    const req = (path, init) => worker.fetch(new Request(`https://x.test/buttons/${KEY}${path}`, init), e);
+    const o = await (await req("/playing")).json();
+    assert.equal(o.state, "throttled");
+    assert.equal(o.lan.hands, true, "the answer carries the helper's reading through a block");
+    const loaded = await (await req("")).text();
+    const view = new Function("spotifyRest", `var who = null;
+      function picked() { return { name: who, other: false }; }
+      function norm(s) { return String(s || "").toLowerCase(); }
+      function lanFrom() { return ""; }
+      ${loaded.match(/function view\(o\) \{[\s\S]*?\n  \}(?=\n  var last = null;)/)[0]}
+      return function (o, name) { who = name; return view(o); };`)(spotifyRest);
+    const tidal = view(o, "Pro Plus");
+    assert.equal(tidal.state, "lan");
+    assert.equal(tidal.hands, true, "so the disc takes it");
+    assert.equal(barWords(tidal).one, "Paused · My Funny Valentine");
+    assert.equal(barWords(tidal).tone, "held");
+    // Spotify playing, and a speaker with no reading: not known, as before.
+    assert.equal(view(o, "Ultra").state, "throttled");
+    assert.equal(view({ ...o, lan: undefined }, "Pro Plus").state, "throttled", "the helper off");
+    // The press itself: no quota gate in its way, no Spotify call.
+    const before = f.calls.length;
+    const press = await (await req("/wiim/transport", { method: "POST", headers: { accept: "application/json", origin: "https://x.test" },
+      body: new URLSearchParams({ do: "hplay", device: "Pro Plus" }) })).json();
+    assert.deepEqual(press, { ok: true, code: "ok" });
+    assert.deepEqual(asked, [{ cmd: "resume", speaker: "Pro Plus" }]);
+    assert.equal(f.calls.length, before, f.calls.slice(before).join(", "));
+    // Both polls go on while the helper's line is open, and stop without it.
+    assert.match(loaded, /if \(o\.state === "throttled"\) \{ say\(o\.notice\); if \(!\(o\.lan && o\.lan\.hands\)\) \{ done = true; stop\(\); \} \}/);
+    assert.match(await (await req("/wiim")).text(), /if \(o\.state === "throttled" && !\(o\.lan && o\.lan\.hands\)\) \{ done = true; stop\(\); \}/);
+  } finally { f.restore(); }
+});
+
+test("a WiiM the helper cannot reach is said so on its block, not called not playing", async () => {
+  const e = env();
+  const f = installFetch();
+  try {
+    await send(e, { speakers: [{ name: "Pro Plus", state: "idle" }, { name: "Ultra", state: "unreachable" }] });
+    const html = await (await worker.fetch(new Request(`https://x.test/buttons/${KEY}/wiim`), e)).text();
+    assert.match(html, /Not answering the helper/);
+  } finally { f.restore(); }
+});
+
 // STAGE 3: ANY KEY. The Speakers page offers the keys the Spotify path
 // cannot start while the helper's line is open, and the helper presses them.
 test("the helper presses a key 1-12 and nothing else", async () => {

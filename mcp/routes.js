@@ -2,7 +2,7 @@
 // Split out of worker.js on 2026-09-26 (consolidation).
 import { RULES_MD } from "./rules.js";
 import {
-  TEMPLATE_VERSION, clock, renderProgram, standfirst, renderLibrary, renderRoom,
+  APP_CSS, APP_CSS_PATH, TEMPLATE_VERSION, clock, renderProgram, standfirst, renderLibrary, renderRoom,
   PAUSED_WORDS, renderDjRoom, tuneForm, renderRefusal, renderSpeakersNow, shutWords, helperKeyWords, renderUse, renderRules, renderSpotify,
   renderReadings, renderDeck, renderTalk, plural, waitWords, serviceLink, sameName, renderWhichDj, renderSetup,
 } from "./programs.js";
@@ -19,9 +19,9 @@ import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCh
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
 import { READ_ENVELOPE, READ_ACTION, CONTROL_PORT, CONTROL_PATH } from "./keymap.js";
-import { CATALOGS } from "./catalog.js";
+import { askByVoice, fileAsk } from "./asks.js";
 import {
-  station, stationStub, normalizeRequest, makeRequestId, fingerprintUris, putRequestRecord,
+  station, stationStub, fingerprintUris, putRequestRecord,
   getRequestRecord,
 } from "./station.js";
 import {
@@ -29,13 +29,13 @@ import {
   stationWindow,
 } from "./archive.js";
 import {
-  deckLane, endlessAssign, endlessBar, endlessJson, endlessLoad, endlessLogRows, endlessNoStart, endlessOnDeck, endlessOnPage,
+  deckLane, endlessAfterSkip, endlessAssign, endlessBar, endlessJson, endlessLoad, endlessLogRows, endlessNoStart, endlessOnDeck, endlessOnPage,
   endlessOwed, endlessPageSteer, endlessPresets, endlessSlots, endlessStartFresh,
   endlessUpdate, forgetPreset, houseDjRoom, MAX_HOUSE_DJS, parseEndless, playEndless, readNoStart, retiredKey,
   nextPressWords, sleptThrough, startsOn, tabOwed, tabState, talkEndless, talkOn, toSaveKey, vibeHourWords,
 } from "./endless.js";
 import {
-  askDay, askedTag, atWords, destinationFor, djPlaces, djSlotsExist, findDj, guestAlias,
+  askDay, askedTag, atWords, djPlaces, djSlotsExist, findDj, guestAlias,
   GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, guestLabel, helperKeyFlash, house,
   houseClockWords, liveGuests, loadedWords, newestOn, parseButtons, pastTheList, playableKeys, presetFlash,
   presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash,
@@ -62,8 +62,8 @@ import {
 } from "./room.js";
 import {
   PLAYER_DEADLINE_MS, PLAYER_PENDING, WALL_PLAYER_WAIT_MS, catalogFor,
-  houseCatalogNames, kvOps, minutesLeft, playerState, playlistItems, programsKV, reachableDj,
-  deviceDisplayName, nameDevice, resolveDevice, setService, spotify, spotifyCalls,
+  houseCatalogNames, kvJson, kvMany, kvOps, minutesLeft, playerState, playlistItems, programsKV, reachableDj,
+  askService, deviceDisplayName, nameDevice, resolveDevice, spotify, spotifyCalls,
   subrequest, throttledUntil, tokensKV, totalDuration, withBudget, curatorQuietSince, curatorSeenAt, stampCurator, spotifyLogin,
   CURATOR_SEEN_KEY, fold,
 } from "./services.js";
@@ -72,7 +72,7 @@ import {
   flashFor, listProgramSummaries, moveTo, pickImage, playedFlash, programBaseUrl,
   playShelfSet, programCatalog, programSpotifyUris, shelfElsewhere, shelfFilter, shelfFilterQs, shelfFind, shelfState,
 } from "./shelf.js";
-import { VOICE_TOOLS, VOICE_WRITERS, voiceFunctions, voiceWriterCall, writerKindFor } from "./toollist.js";
+import { VOICE_TOOLS, VOICE_WRITERS, askDjOn, voiceFunctions, voiceWriterCall, writerKindFor } from "./toollist.js";
 import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
@@ -127,6 +127,9 @@ async function pauseNoted(env, envB, st, deviceName, boxes) {
   const noted = {
     at: Date.now(), device: deviceName, track: p?.track ?? null, artists: p?.artists ?? null,
     uri: p?.uri ?? null, pid: p?.pid ?? null, positionMs: Number(st.progress_ms) || 0,
+    // The sleeve and the album, from the same read (the owner, 2026-11-02:
+    // "why does the bar not show the cover" a few minutes into a pause).
+    ...(p?.art ? { art: p.art } : {}), ...(p?.album ? { album: p.album } : {}),
     // A request's DJ goes with its pause, so "Paused" names them too.
     ...(bar.preset ? { preset: { ...bar.preset, ...(bar.guest && bar.who?.kind === "request" && bar.who.name
       ? { dj: bar.who.name } : {}) } } : bar.from ? { from: bar.from } : {}),
@@ -157,7 +160,7 @@ const HELPER_REMOVED_SAID = {
 function talkStarted(name, args, out) {
   if (name === "play_playlist" || name === "play_program") return true;
   if (name === "playback_control") return args?.action === "resume";
-  if (name === "play_endless") return TALK_ENDLESS_STARTS.has(out?.status) && (!out?.start || out.start === "ok");
+  if (name === "play_endless") return TALK_ENDLESS_STARTS.has(out?.status) && (!out?.start || out.start === "ok" || out.start === "sent");
   if (name === "play_archive") return out?.started === true;
   return false;
 }
@@ -341,6 +344,17 @@ export async function handleRequest(request, env, ctx) {
         headers: { "content-type": "image/png", "cache-control": "public, max-age=86400" },
       });
     }
+    // THE APP'S STYLESHEET (MC-37 step D): public, as the icons are; its name
+    // carries its contents, so a phone keeps it for a year and a deploy that
+    // changes a rule gives it a new name. An older name gets today's rules,
+    // kept for no time, so a page that asks for it is never left bare.
+    if (/^\/app\.[0-9a-f]{8}\.css$/.test(url.pathname)) {
+      if (request.method !== "GET" && request.method !== "HEAD") return new Response("styles answer GET only\n", { status: 405 });
+      return new Response(request.method === "HEAD" ? null : APP_CSS, {
+        headers: { "content-type": "text/css; charset=utf-8", "x-content-type-options": "nosniff",
+          "cache-control": url.pathname === APP_CSS_PATH ? "public, max-age=31536000, immutable" : "no-cache" },
+      });
+    }
     const m3u = url.pathname.match(/^\/archive\/([A-Za-z0-9_-]{1,64})\.m3u$/);
     if (m3u) {
       // A ROTATING SET, if one is parked on this key: the speaker's own re-read
@@ -368,9 +382,11 @@ export async function handleRequest(request, env, ctx) {
             }
             // Every ask is stamped, moved or not — this is the measurement of
             // how often the device actually comes back, and it rides along
-            // rather than costing a write of its own.
+            // rather than costing a write of its own. Only below the top (the
+            // deep review, 2026-10-31): at 40 the length stops changing, so
+            // "every fourth" was every ask, on an address that needs no key.
             station.asks = [...(station.asks ?? []), now].slice(-40);
-            if (win.moved || (station.asks.length % 4) === 0) {
+            if (win.moved || (station.asks.length < 40 && station.asks.length % 4 === 0)) {
               try { await tokensKV(env).put(STATION_KEY(m3u[1]), JSON.stringify(station)); }
               catch { /* the window repeats rather than skipping: safe either way */ }
             }
@@ -508,7 +524,8 @@ export async function handleRequest(request, env, ctx) {
       "referrer-policy": "no-referrer",
       "x-robots-tag": "noindex, nofollow",
       "content-security-policy":
-        "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
+        // 'self' for the app's stylesheet (MC-37 step D).
+        "default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
         "font-src https://fonts.gstatic.com; " +
         // 'self' is the house's own address.
         // The services' hosts stay for the shelf rows' sleeves, which are the
@@ -1132,7 +1149,9 @@ export async function handleRequest(request, env, ctx) {
       // An error is NOT silence. A token failure or a Spotify 5xx used to fall
       // to null and print "quiet on this account" — a confident claim about a
       // state the server had just failed to read.
+      const watch = env.__watch;
       const throttle = await throttledUntil(env);
+      watch?.lap("throttle");
       // The RAW read, which every page maps with roomPlaying (there was a
       // second mapping, roomHeld, that saw a paused session; gone 2026-09-22,
       // see roomPlaying): the house's kept answer while the helper says it
@@ -1147,12 +1166,53 @@ export async function handleRequest(request, env, ctx) {
       // What the speakers hold, as a phone last read them: a KV read each.
       const boxes = parseSpeakers(env);
       const readingsP = readReadings(env, boxes);
+      // THE TAIL'S READS, STARTED NOW (MC-37 step B, 2026-11-02): the stopwatch
+      // found the reads after the tiles waited for each other, about 250 ms in
+      // a row. Those that need neither the tiles nor the player start here,
+      // beside them, and are awaited below where the page needs each, in the
+      // order it always did, so an error still surfaces where it did. The
+      // endless state, the helper's view and the readings are read once and
+      // shared, where each was read up to three times. A promise the page
+      // never reaches (an earlier error) is never an unhandled rejection.
+      const started = (p) => { if (typeof p?.catch === "function") p.catch(() => {}); return p; };
+      const endlessLive = parseEndless(env)?.mode === "live" && !!env.STATION;
+      const endP = started(endlessLive ? endlessLoad(env) : null);
+      const logP = started(endlessLive ? endlessLogRows(env, 200) : null);
+      const hvP = started(helperView(env));
+      const owedP = started(tabOwed(env, { state: endP, recs: readingsP }));
+      const quietP = started(curatorQuiet());
+      // The Tidal request heard by the helper, lit from the first paint
+      // (the review, 2026-09-26: it waited for the 30-second poll).
+      const lanBandP = (async () => { try { const hv = await hvP;
+        return hv.lan ? await lanOnGuest(env, hv.lan, await guestHolders(env)) : null; } catch { return null; } })();
 
       // ONE READ of the tile cache for the whole wall, and at most one write
       // after it. Eleven keys meant eleven writes a page load against a free
       // tier of a thousand a day (2026-09-06).
-      const tiles = { map: await readTiles(env), dirty: false };
-      const tileRows = await pooled(roomRoster(env), 6, async (r) => {
+      // THE PER-PRESET KEYS IN ONE READ (MC-37 step A): what each preset holds
+      // (`current:`), who and what is on a live guest (`on:`, `ask:`), and each
+      // house DJ's playlist mark for its row below, asked together beside the
+      // tile cache instead of one call each. The keys are the ones the rows
+      // below would read; a key the read missed is read as before.
+      const roster = roomRoster(env);
+      const preKeys = [];
+      for (const r of roster) {
+        if (r.empty || r.fixed || (r.guest && !r.live) || r.key === "archive") continue;
+        if (r.guest) { preKeys.push(`current:${r.playlist}`, `on:${r.playlist}`, `ask:${r.playlist}`, `mark:${r.playlist}`); continue; }
+        if (r.zone === "bench") continue;
+        const pid = configuredPlaylistId(env, r.button);
+        // The mark too: a tile read fresh checks it (driftOf).
+        if (pid) preKeys.push(`current:${pid}`, `mark:${pid}`);
+      }
+      const ecfg = parseEndless(env);
+      if (ecfg?.mode === "live") for (const p of ecfg.presets) if (p.playlist) preKeys.push(`mark:${p.playlist}`);
+      const kvp = programsKV(env);
+      const [tilesMap, pre] = await Promise.all([readTiles(env), kvMany(kvp, preKeys).catch(() => null)]);
+      const preText = (k) => (pre?.has(k) ? pre.get(k) : kvp.get(k).catch(() => null));
+      const preJson = (k) => (pre?.has(k) ? kvJson(pre.get(k)) : kvp.get(k, { type: "json" }).catch(() => null));
+      const preMark = (pid) => (pre?.has(`mark:${pid}`) ? kvJson(pre.get(`mark:${pid}`)) : undefined);
+      const tiles = { map: tilesMap, dirty: false };
+      const tileRows = await pooled(roster, 6, async (r) => {
         // An empty button and a bench DJ both cost nothing to draw. Neither
         // has a face and neither has a set worth summarising here, and a tile
         // read is two calls against a ceiling of fifty — a bench of thirty
@@ -1171,14 +1231,13 @@ export async function handleRequest(request, env, ctx) {
         // reads, and never djForPlaylistId, which cannot map a guest.
         if (r.guest) {
           const gpid = r.playlist;
-          const kv = programsKV(env);
           const [gtile, gslug, on, ask] = await Promise.all([
             !throttle
-              ? tileFor(envB, catalogFor(envB, r.catalog), gpid, budget, tiles, { serveStale: true }).catch(() => null)
+              ? tileFor(envB, catalogFor(envB, r.catalog), gpid, budget, tiles, { serveStale: true, mark: preMark(gpid) }).catch(() => null)
               : (tiles.map[gpid] ?? null),
-            kv.get(`current:${gpid}`).catch(() => null),
-            kv.get(`on:${gpid}`, { type: "json" }).catch(() => null),
-            kv.get(`ask:${gpid}`, { type: "json" }).catch(() => null),
+            preText(`current:${gpid}`),
+            preJson(`on:${gpid}`),
+            preJson(`ask:${gpid}`),
           ]);
           return { ...r, cover: null, archive: false, pid: gpid, slug: gslug, on, ask,
             count: gtile?.count ?? null, startable: r.catalog === "spotify", onWall: true };
@@ -1207,9 +1266,9 @@ export async function handleRequest(request, env, ctx) {
         const pid = configuredPlaylistId(env, r.button);
         const [tile, slug] = await Promise.all([
           // Throttled: the cached tile or nothing — a read would only fail.
-          pid && !throttle ? tileFor(envB, catalogFor(envB, r.catalog), pid, budget, tiles, { serveStale: true })
+          pid && !throttle ? tileFor(envB, catalogFor(envB, r.catalog), pid, budget, tiles, { serveStale: true, mark: preMark(pid) })
             : pid ? (tiles.map[pid] ?? null) : null,
-          pid ? programsKV(env).get(`current:${pid}`).catch(() => null) : null,
+          pid ? preText(`current:${pid}`) : null,
         ]);
         // Count, runtime and the `stale` marker that qualified them went with
         // the meta line; the tile cache still carries all three for the DJ
@@ -1257,13 +1316,33 @@ export async function handleRequest(request, env, ctx) {
         if (ctx?.waitUntil) ctx.waitUntil(refresh().catch(() => {}));
         else await refresh();
       }
+      watch?.lap("tiles");
       const summaries = await summariesP;
+      watch?.lap("shelf");
       // The player gets a short wait, then the page goes out without it,
       // marked pending; the read carries on behind the response.
       const early = await Promise.race([playingP,
         new Promise((r) => setTimeout(() => r(PLAYER_PENDING), WALL_PLAYER_WAIT_MS))]);
       const playing = early === PLAYER_PENDING ? { pending: true } : early;
+      watch?.lap(playing?.pending ? "player-pending" : "player");
       if (playing?.pending && ctx?.waitUntil) ctx.waitUntil(playingP);
+      // And the two that need the player's answer, started the moment it is
+      // known (MC-37 step B). THE NOW BAR (MC-21). Three cases, none of which
+      // spends a read this page did not already make. Pending — the player had
+      // not answered in 250 ms and the page is going out without it — leaves
+      // the bar a skeleton with NO fetch of its own: this page's poll asks
+      // /playing at once for a pending page and hands the answer to the bar, so
+      // a second fetch from the bar would be the double read Codex found.
+      // Otherwise the raw read is in hand and instant.
+      const tg = guestFor(env, "tidal");
+      const hkeyP = started(tg?.live ? helperKeyFor(env, request, tg.btn, playing?.pending ? undefined : playing,
+        { hv: hvP, recs: readingsP }) : null);
+      const barP = started(playing?.pending ? null : (async () => {
+        const recs = await readingsP;
+        if (throttle) return nowAnswer(env, request, null, { recs, throttle, hv: await hvP });
+        const pNow = await rawPlayerP.then(roomPlaying).catch(() => ({ unknown: true }));
+        return nowAnswer(env, request, pNow, { recs, hv: await hvP, note: await pauseNoteBeside(env, pNow) });
+      })());
       // WHAT A LIVE GUEST HOLDS, IN WORDS (MC-18 stage 4): the DJ its record
       // names, the programme's title or the request's own words, and since
       // when, in the house's own clock. The record and the pointers are the
@@ -1323,14 +1402,15 @@ export async function handleRequest(request, env, ctx) {
       // count on the Speakers chip — the same count every tab shows, the
       // endless presets a speaker still names for the DJ who left included
       // (the owner, 2026-09-24: the badge was on Speakers and not here).
-      const owed = await tabOwed(env);
+      const owed = await owedP;
+      watch?.lap("owed");
       // A GUEST'S PLAY COMES BACK HERE (MC-18 stage 4), its outcome a code and
       // the guest a number, both checked before a word of either is printed.
       // "ok" says nothing: the band shows what is playing.
       const playedCode = String(url.searchParams.get("played") ?? "");
       const playedGuest = Object.values(house(env).guest ?? {})
         .find((g) => g && String(g.btn) === url.searchParams.get("g")) ?? null;
-      const played = playedGuest && ["sent", "stuck", "asleep", "failed"].includes(playedCode)
+      const played = playedGuest && ["sent", "stuck", "asleep", "failed", "signedout"].includes(playedCode)
         ? { code: playedCode, name: playedGuest.name,
             on: parseRoomDevices(env).find((d) => d === (url.searchParams.get("on") ?? "")) ?? null }
         : null;
@@ -1338,6 +1418,7 @@ export async function handleRequest(request, env, ctx) {
       // The asks under the guests' bands, in words; and the music, when it is
       // on none of the bands, said over the wall (2026-09-13).
       const { asks: guestAskRows, sig: asksSig } = await asksP;
+      watch?.lap("asks");
       const asks = guestAskRows.map((a) => {
         const iso = Number.isFinite(a.row.created_at) ? new Date(a.row.created_at).toISOString() : null;
         return { btn: a.btn, dj: a.row.dj, djName: house(env).djs[a.row.dj]?.name ?? null, state: a.row.state,
@@ -1349,23 +1430,13 @@ export async function handleRequest(request, env, ctx) {
       // from which preset, and the two said it twice. The readings are
       // already on their way for the bands and the bar.
       const recsNow = await readingsP;
-      // THE NOW BAR (MC-21). Three cases, none of which spends a read this
-      // page did not already make. Pending — the player had not answered in
-      // 250 ms and the page is going out without it — leaves the bar a
-      // skeleton with NO fetch of its own: this page's poll asks /playing at
-      // once for a pending page and hands the answer to the bar, so a second
-      // fetch from the bar would be the double read Codex found. Otherwise
-      // the raw read is in hand and instant.
-      const barNow = playing?.pending ? null
-        : throttle ? await nowAnswer(env, request, null, { recs: recsNow, throttle })
-        : await (async () => {
-          const pNow = await rawPlayerP.then(roomPlaying).catch(() => ({ unknown: true }));
-          return await nowAnswer(env, request, pNow, { recs: recsNow, note: await pauseNoteBeside(env, pNow) });
-        })();
+      watch?.lap("readings");
+      const barNow = await barP;
+      watch?.lap("bar");
       // The one speaker (MC-28): the bar's answer's, or — the page going out
       // before the player answered — the rule without Spotify's read.
-      const pickNow = barNow?.pick ?? pickFor(env, request, null, (await helperView(env)).lan);
-      const tg = guestFor(env, "tidal");
+      const pickNow = barNow?.pick ?? pickFor(env, request, null, (await hvP).lan);
+      watch?.lap("pick");
       // THE GUEST DJ'S BAND (the owner, 2026-09-25: "build it"): what 3 plays
       // if pressed — who, from which set, since when — from the ledger alone.
       let lane = null;
@@ -1373,7 +1444,7 @@ export async function handleRequest(request, env, ctx) {
         const lcfg = parseEndless(env);
         const lp = lcfg?.mode === "live" ? lcfg.presets.find((x) => x.lane) : null;
         if (lp && env.STATION) {
-          const lst = await endlessLoad(env);
+          const lst = await endP;
           const ldj = lst.lane?.dj && lst.lane.ready !== false ? findDj(env, lst.lane.dj) : null;
           lane = { btn: lp.button, playlist: lp.playlist,
             ...(ldj ? { djKey: ldj.key, djName: ldj.name, program: lst.lane.program?.title ?? null, words: lst.lane.words ?? null,
@@ -1381,6 +1452,7 @@ export async function handleRequest(request, env, ctx) {
             making: !!Object.values(lst.jobs ?? {}).some((j) => j?.btn === lp.button && j?.kind === "fresh" && !j.done) };
         }
       } catch { lane = null; }
+      watch?.lap("guest-dj");
       // THE HOUSE DJs (2026-10-24, the owner's A of docs/design/loaded-house:
       // "show request (1-2), guest 3 and then the presets with house DJs"):
       // each house DJ's preset and what a press would do, from the ledger, its
@@ -1390,16 +1462,16 @@ export async function handleRequest(request, env, ctx) {
       try {
         const hcfg = parseEndless(env);
         if (hcfg?.mode === "live" && env.STATION) {
-          const hst = await endlessLoad(env);
+          const hst = await endP;
           const slots = endlessSlots(env, hcfg, hst).sort((a, b) => a.button - b.button);
           if (slots.length) {
-            const rows = await endlessLogRows(env, 200);
+            const rows = await logP;
             const pidNow = playing && !playing.unknown ? playing.pid ?? null : null;
             houseRows = await Promise.all(slots.map(async (sl) => {
               const dj = findDj(env, sl.dj);
               const here = !!pidNow && pidNow === sl.playlist;
               const bar = here ? await endlessBar(env, sl.button, null, hst).catch(() => null) : null;
-              const mark = here ? null : await programsKV(env).get(`mark:${sl.playlist}`, { type: "json" }).catch(() => null);
+              const mark = here ? null : await preJson(`mark:${sl.playlist}`);
               const tuned = dj ? tuningSummary(env, dj.key) : "";
               return { btn: sl.button, djKey: dj?.key ?? sl.dj, djName: dj?.name ?? sl.dj, here,
                 does: here ? (bar?.last ? `The last songs${bar.until ? `: it ends about ${bar.until}` : ""}`
@@ -1413,17 +1485,22 @@ export async function handleRequest(request, env, ctx) {
           }
         }
       } catch { houseRows = null; }
+      watch?.lap("house-djs");
+      // Read before the page is drawn, in the order the page asked for them,
+      // so each has its lap.
+      const quiet = await quietP;
+      watch?.lap("curator");
+      const hkey = await hkeyP;
+      watch?.lap("helper-key");
+      const lanBand = await lanBandP;
+      watch?.lap("lan-band");
       return roomPage(renderRoom({
-        base, notesHref: `/notes/${key}`, now: barNow, lane, house: houseRows, quiet: await curatorQuiet(),
-        hkey: tg?.live ? await helperKeyFor(env, request, tg.btn, playing?.pending ? undefined : playing) : null, hflash: helperKeyFlash(env, url),
+        base, notesHref: `/notes/${key}`, now: barNow, lane, house: houseRows, quiet,
+        hkey, hflash: helperKeyFlash(env, url),
         defaultDevice: fallbackDevice(env), devices: parseRoomDevices(env), pick: pickNow?.name ?? null,
         playing, tiles: tileRows, owed, talk: talkOn(env), loaded: boxes.length > 0, played, guestsAt, paused: url.searchParams.get("paused"),
         speakers: boxes.map(({ name, slug }) => ({ name, slug })), ...readingsShown(env, recsNow),
-        asks, asksSig,
-        // The Tidal request heard by the helper, lit from the first paint
-        // (the review, 2026-09-26: it waited for the 30-second poll).
-        lanBand: await (async () => { try { const hv = await helperView(env);
-          return hv.lan ? await lanOnGuest(env, hv.lan, await guestHolders(env)) : null; } catch { return null; } })(),
+        asks, asksSig, lanBand,
       }));
     }
 
@@ -1641,6 +1718,13 @@ export async function handleRequest(request, env, ctx) {
             if (!st?.device?.id || st.is_playing !== true || fold(st.device.name) !== fold(box.name)) code = "gone";
             else {
               await spotify(envB, "POST", verb === "next" ? "/me/player/next" : "/me/player/previous", { params: { device_id: st.device.id } });
+              // A skip forward on an endless list may leave it short: asked
+              // now, after the answer goes out (endlessAfterSkip).
+              const pid = String(st.context?.uri ?? "").match(/^spotify:playlist:([A-Za-z0-9]{22})$/)?.[1] ?? null;
+              if (verb === "next" && pid && st.item?.uri) {
+                const ask = endlessAfterSkip(env, { pid, uri: st.item.uri }).catch(() => null);
+                if (ctx?.waitUntil) ctx.waitUntil(ask); else await ask;
+              }
             }
           } catch (e) {
             code = e?.status === 404 ? "gone" : "failed";
@@ -2012,6 +2096,8 @@ export async function handleRequest(request, env, ctx) {
         return roomPage(renderTalk({
           base, devices, defaultDevice, used, usedSec, cap: CAP_MINUTES, idleMs: IDLE_CLOSE_MS, beatMs: BEAT_MS,
           rateCents: VOICE_CENTS_PER_MINUTE, ...(await tabState(env)), hmark: await helperView(env),
+          // Where a DJ's set asked by voice lands, when Talk files it (MC-36).
+          asks: askDjOn(env) ? liveGuests(env) : null,
         }));
       }
       if (request.method !== "POST") return say(405, { error: "This door only answers POST." });
@@ -2052,9 +2138,11 @@ export async function handleRequest(request, env, ctx) {
         };
         const body = {
           session: {
-            model: VOICE_MODEL, instructions: voicePrompt({ archive: talkArchive(env) }),
+            model: VOICE_MODEL, instructions: voicePrompt({ archive: talkArchive(env), asks: askDjOn(env) }),
             delegation: { type: "responses", responses: {
               model: backendModel(env), instructions: backendPrompt({ devices, defaultDevice,
+                // A DJ's set filed for the curator (MC-36), where asks are on.
+                asks: askDjOn(env),
                 replay: env.PROGRAM_REPLAY_PLAYLIST || "replay",
                 // The live guests (MC-18 stage 3): none while every guest is
                 // dark, and then the prompt is exactly what it was.
@@ -2172,6 +2260,19 @@ export async function handleRequest(request, env, ctx) {
       const voiceArgs = { ...(parsed.args ?? {}) };
       if (parsed.name === "play_archive") delete voiceArgs.request_id;
       const argsIn = canon ? { ...voiceArgs, device: canon } : voiceArgs;
+      // TALK TAKES THE ORDER (MC-36): a DJ's set filed for the curator, as the
+      // Ask form files it, so a hang-up loses nothing. Nothing starts yet (the
+      // house starts it when it lands), so no speaker is stamped.
+      if (parsed.name === "ask_dj") {
+        try {
+          const out = await askByVoice({ ...envB, __via: "talk" }, ctx, argsIn);
+          console.log(`talk:tool cap=${cap.slice(0, 8)} ask_dj ${out.status} (${JSON.stringify(argsIn).slice(0, 160)})`);
+          return say(200, { output: JSON.stringify(out) });
+        } catch (err) {
+          console.log(`talk:tool cap=${cap.slice(0, 8)} ask_dj error: ${String(err?.message ?? err).slice(0, 200)}`);
+          return say(200, { error: talkErrorWords(err) });
+        }
+      }
       let call;
       try { call = voiceWriterCall(parsed.name, argsIn); }
       catch (err) { return say(200, { error: talkErrorWords(err) }); }
@@ -2210,24 +2311,31 @@ export async function handleRequest(request, env, ctx) {
       // reading of the speakers, which is how Read again comes back to a page
       // that shows it. KV only, never Spotify.
       const [holders, recs] = await Promise.all([guestHolders(env), readReadings(env, parseSpeakers(env))]);
+      env.__watch?.lap("guests");
       const newest = newestOn(Object.values(holders).filter((h) => !h.failed).map((h) => h.on));
       const readAt = newestOn(Object.values(recs).filter(Boolean));
       // And the asks under the guests' bands, only for a page showing one in
       // flight (?asks=1): a ledger read a poll is worth it only then.
       const askSig = url.searchParams.get("asks") === "1" ? (await guestAsks(env, holders)).sig : null;
+      if (askSig !== null) env.__watch?.lap("asks");
       const extra = { ...(newest ? { guestsAt: newest } : {}), ...(readAt ? { readAt } : {}),
         ...(askSig !== null ? { asks: askSig } : {}) };
       const throttle = await throttledUntil(env);
+      env.__watch?.lap("throttle");
       // THE HOUSE'S KEPT ANSWER FIRST (MC-29): one ledger call brings the
       // helper's reading and the kept Spotify answer, and a read happens only
       // when the helper says something changed or a cap ran out. ?fresh=1 is
       // the now bar's re-check after its own pause, and always reads.
       const got = await helperGot(env);
+      env.__watch?.lap("helper");
       const p = throttle ? null : await housePlayer(withBudget(env, { remaining: 4 }),
         { fresh: url.searchParams.get("fresh") === "1", deadlineMs: PLAYER_DEADLINE_MS, got })
         .then(roomPlaying).catch(() => ({ unknown: true }));
-      return say(200, { ...extra, ...(await nowAnswer(env, request, p, { recs, holders, throttle, hv: helperViewOf(env, got),
-        note: throttle ? null : await pauseNoteBeside(env, p) })) });
+      env.__watch?.lap("player");
+      const answer = await nowAnswer(env, request, p, { recs, holders, throttle, hv: helperViewOf(env, got),
+        note: throttle ? null : await pauseNoteBeside(env, p) });
+      env.__watch?.lap("answer");
+      return say(200, { ...extra, ...answer });
     }
 
     // WHICH DJ? (the owner, 2026-10-01: "replace every dj on one map with
@@ -2604,7 +2712,7 @@ export async function handleRequest(request, env, ctx) {
           await writeTiles(env, { [pid]: tile });
           try {
             await programsKV(env).put(`items:${pid}`,
-              JSON.stringify({ tracks, liveUris, tile, at: Date.now() }), { expirationTtl: 120 });
+              JSON.stringify({ tracks, liveUris, tile, at: Date.now() }), { expirationTtl: ITEMS_TTL_MS / 1000 });
           } catch { /* cache */ }
           if (!tracks.length) problem = { kind: "empty" };
           // Edited in the service's own app since this server wrote it. The
@@ -2657,7 +2765,7 @@ export async function handleRequest(request, env, ctx) {
               try {
                 await programsKV(env).put(`items:${pid2}`, JSON.stringify({
                   tracks: list2, liveUris: read2.items.map((t) => t?.uri ?? null),
-                  tile: { count: read2.total }, at: Date.now() }), { expirationTtl: 120 });
+                  tile: { count: read2.total }, at: Date.now() }), { expirationTtl: ITEMS_TTL_MS / 1000 });
               } catch { /* cache */ }
             }
             second = { catalog: other, service: catalogFor(env, other).label,
@@ -2991,6 +3099,11 @@ export async function handleRequest(request, env, ctx) {
             const waitGuest = row.waiting_for && ["pending", "slow", "retrying"].includes(plain)
               ? guestForPlaylistId(env, row.destination) : null;
             const state = waitGuest ? "waiting" : plain;
+            // SPOTIFY'S BLOCK IS ONLY A SPOTIFY ASK'S (the owner, 2026-10-31: a
+            // Sessions set asked for on Tidal "cannot be written", a minute
+            // before it landed). The ask's service, as fulfill_request reads
+            // it, not this page's, which is where the DJ lives.
+            const askThrottle = askService(env, dj, rec) === "spotify" ? (throttle ?? spotifyNote) : null;
             // The self-refresh yields to anything on the page a reload would
             // take away: a retry's ?on= room (asleep/stuck/failed) or the
             // undo form's snapshot key.
@@ -3012,7 +3125,7 @@ export async function handleRequest(request, env, ctx) {
               refresh: !holding && (auto || state === "claimed"),
               // Said on the row while it stands: the set is not being made
               // because Spotify will not take the write, and for how long.
-              throttledMinutes: throttle ? minutesLeft(throttle) : null,
+              throttledMinutes: askThrottle ? minutesLeft(askThrottle) : null,
               // Withdrawal is for a request nobody is working: never picked
               // up, or picked up by a claim that died before writing — the
               // ledger dismisses both. A live claim would be refused, so the
@@ -3031,7 +3144,7 @@ export async function handleRequest(request, env, ctx) {
             // at fulfill_request, and a writer's run now reads Wikipedia for
             // ten minutes or more first, so at three the page woke a second
             // run that curated the same request in parallel.
-            if (env.AUTOFULFILL_ENABLED === "true" && rec && !throttle && state !== "waiting"
+            if (env.AUTOFULFILL_ENABLED === "true" && rec && !askThrottle && state !== "waiting"
                 && (state === "retrying" || (state !== "claimed" && ageMin >= 20))) {
               const nudges = Array.isArray(rec.nudges) ? rec.nudges : [];
               const last = nudges.length ? Date.parse(nudges[nudges.length - 1]) : 0;
@@ -3280,6 +3393,8 @@ export async function handleRequest(request, env, ctx) {
           making: fresh ? (fresh.device || true) : jobs.some((j) => j.kind === "fresh") ? "new" : false,
           steering: jobs.some((j) => j.kind === "steer"),
           list: listLink(endlessP.playlist), devices: rooms,
+          // A house DJ's page has no tracklist to carry the block's line.
+          ...(spotifyNote && problem?.kind !== "throttled" ? { blocked: waitWords(minutesLeft(spotifyNote)) } : {}),
           leaving: endlessP.queued ? (findDj(env, endlessP.queued)?.name ?? endlessP.queued) : null,
           // The day's runs used up (the owner, 2026-09-23: say so when it is).
           spent: doc.day === houseDay(env, Date.now()) && (doc.runs ?? 0) >= endlessCfg.dailyRuns
@@ -3310,9 +3425,14 @@ export async function handleRequest(request, env, ctx) {
         const btnNow = endlessP?.button ?? n;
         const cap = `Today's ${endlessCfg.dailyRuns} DJ runs are used up. Try again tomorrow.`;
         const askedW = String(url.searchParams.get("w") ?? "").replace(/\s+/g, " ").trim().slice(0, 120) || null;
+        // Spotify took the start and the read-back failed: Loaded's words for it.
+        const sentWords = `Spotify accepted the request to start ${dj.name}${on ? ` on the ${on}` : ""}, but the check ` +
+          "afterwards failed: it may well be playing. Listen, or reload this page in a moment.";
         const ENDLESS_LINES = {
           "fresh-asked": `A fresh set of ${dj.name} is being made. It starts${on ? ` on the ${on}` : ""} in a few minutes.`,
           "start-ok": `${dj.name} is playing on the ${on ?? "speaker"}.`,
+          "start-sent": sentWords,
+          "lane-sent": sentWords,
           "start-stuck": `Spotify took it, but the ${on ?? "speaker"} is not playing it. Tap Play it now again.`,
           "start-asleep": shutWords(on, speakerKind(env, on), "tap Play it now again")
             ?? `The ${on ?? "speaker"} still did not answer: it is asleep. Wake it and tap Play it now again. Nothing was changed.`,
@@ -3579,6 +3699,12 @@ export async function handleRequest(request, env, ctx) {
       // anyway, deepening the lockout, and said "Nothing changed").
       const throttleE = await throttledUntil(env);
       if (throttleE) {
+        // The bar's panel asks by fetch, and took this page for "try again"
+        // while its own words for a block went unused (the deep review).
+        if (/application\/json/.test(request.headers.get("accept") ?? "")) {
+          return new Response(JSON.stringify({ ok: false, code: "throttled" }), { status: 503, headers: {
+            "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+        }
         return roomRefuse(503,
           `Spotify is limiting this account's requests for about ${waitWords(minutesLeft(throttleE))} ` +
           "more (quota exceeded), so this site cannot start or change an endless DJ until then. " +
@@ -3738,8 +3864,8 @@ export async function handleRequest(request, env, ctx) {
           out.device = device;
           try {
             const r = await startPlaylistOnDevice(env, { id: p.playlist, name: p.name, catalog: "spotify" }, device, { remaining: 16 });
-            out.status = r?.preset_safe || r?.unverified ? "ok" : "stuck";
-            if (out.status === "ok") {
+            out.status = r?.preset_safe ? "ok" : r?.unverified ? "sent" : "stuck";
+            if (out.status !== "stuck") {
               await endlessNoStart(env, p.button, null);
               // The next run of the watch looks, rather than the next idle
               // look up to half an hour on: a session is counted from then.
@@ -3751,7 +3877,7 @@ export async function handleRequest(request, env, ctx) {
           }
         }
       } else if (what === "more" || what === "change") {
-        out = p ? await endlessPageSteer(env, { button: p.button, words: steerWords }) : { status: "off" };
+        out = p ? await endlessPageSteer(env, { button: p.button, words: steerWords, leaveWords: what === "change" }) : { status: "off" };
         if (out.status === "off" || out.status === "not-playing") {
           const r = await programSteer();
           if (r.status !== "not-playing" || !p) out = r;
@@ -3759,7 +3885,7 @@ export async function handleRequest(request, env, ctx) {
       }
       // The now panel's steer (2026-09-25) asks by fetch and stays put.
       if (/application\/json/.test(request.headers.get("accept") ?? "") && (what === "more" || what === "change")) {
-        return new Response(JSON.stringify({ ok: out.status === "asked" || out.status === "ok", code: out.status }), { headers: {
+        return new Response(JSON.stringify({ ok: ["asked", "ok", "sent"].includes(out.status), code: out.status }), { headers: {
           "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
       }
       q.set("endless", `${what}-${out.status}`);
@@ -3785,159 +3911,28 @@ export async function handleRequest(request, env, ctx) {
         return roomRefuse(403,
           `This form was submitted from ${origin}, not from ${url.origin}.`);
       }
-      // An old key is its DJ's (the merges, 2026-10-13), so a request is
-      // filed under the key the ledger and the Shelf read.
+      // An old key is its DJ's (the merges, 2026-10-13): the page it goes
+      // back to is the one the ledger and the Shelf read.
       const slugKey = house(env).djs[roomAsk[2]]?.key ?? roomAsk[2];
-      // THE ARCHIVE TAKES REQUESTS NOW (2026-09-07). It used to refuse them —
-      // "it replays what was already made" — which was true when it had no DJ
-      // and a set meant three takes chosen by hand. It has a DJ and a rotating
-      // set of any length, so asking it is the same act as asking Hank. The
-      // page's slug stays `archive`; the request is filed against the persona,
-      // because that is who curates it.
-      const archiveAsk = slugKey === "archive";
-      const dj = archiveAsk
-        ? house(env).djs[ARCHIVE_DJ]
-        : house(env).djs[slugKey];
-      if (!dj) return roomRefuse(404, `No DJ named "${slugKey.slice(0, 60)}".`);
-      if (archiveAsk && !house(env).archive) {
-        return roomRefuse(400, "This house has no archive preset for a set to land on.");
-      }
-      if (!archiveAsk && !reachableDj(env, dj)) {
-        return roomRefuse(400,
-          `${dj.name}'s sets are made from the house's own recordings — ask for one ` +
-          "on the archive's own page.");
-      }
-      if (!env.STATION) {
-        return roomRefuse(500, "The request ledger is not configured here.");
-      }
-
-      let mood = "", length = "", avoid = "", keep = false, service = null, notes = null;
+      let fields = {};
       try {
         const form = await request.formData();
-        // The rendered inputs are single-line; control characters can only
-        // arrive by hand-built POST, and the request boundary says they never
-        // reach the store. Stripped rather than refused: a pasted stray
-        // newline should not bounce a human.
-        const clean = (v) => String(v ?? "")
-          .replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2060\ufeff]/g, " ")
-          .replace(/\s+/g, " ").trim();
-        mood = clean(form.get("mood")).slice(0, 300);
-        length = clean(form.get("length"));
-        avoid = clean(form.get("avoid")).slice(0, 200);
-        // The ONLY value that means yes is the one the rendered box sends. An
-        // unticked checkbox sends no field at all, so absent is false without
-        // asking — which is the fail-safe this feature needs in the direction
-        // that matters: nothing is kept unless it was asked for, and a
-        // hand-built POST cannot turn it on with a truthy-looking string.
-        keep = form.get("keep") === "1";
-        // SHORT NOTES OR THE LONG READ (the owner, 2026-10-18): only for a
-        // writer's set that is kept, and only a value the form offers.
-        const saidNotes = clean(form.get("notes")).toLowerCase();
-        if (keep && !archiveAsk && writerKindFor(env, dj) && ["short", "long"].includes(saidNotes)) notes = saidNotes;
-        // WHICH SERVICE, for a benched DJ in a mixed house (2026-09-10). Only
-        // a value the form itself offers is kept; anything else — a service
-        // this house has not got, a tenant's ask, a hand-built POST — reads
-        // as no choice, and fulfilment takes the house's default. Never from
-        // the words: those are taste, and "on Tidal" typed there is ignored
-        // by design.
-        const said = clean(form.get("service")).toLowerCase();
-        if (!archiveAsk && !dj.button && CATALOGS.includes(said) &&
-            houseCatalogNames(env).includes(said) && houseCatalogNames(env).length > 1) {
-          service = said;
-        }
-      } catch { /* no body reads as empty, and empty is refused below */ }
-      const back = (code) => new Response(null, {
+        fields = { mood: form.get("mood"), length: form.get("length"), avoid: form.get("avoid"),
+          // The ONLY value that means yes is the one the rendered box sends. An
+          // unticked checkbox sends no field at all, so absent is false without
+          // asking — which is the fail-safe this feature needs in the direction
+          // that matters: nothing is kept unless it was asked for, and a
+          // hand-built POST cannot turn it on with a truthy-looking string.
+          keep: form.get("keep") === "1", notes: form.get("notes"), service: form.get("service") };
+      } catch { /* no body reads as empty, and empty is refused there */ }
+      // The filing itself is shared with Talk's ask_dj (MC-36, asks.js).
+      const out = await fileAsk(env, ctx, { slug: slugKey, ...fields });
+      if (out.refuse) return roomRefuse(out.refuse.status, out.refuse.say);
+      return new Response(null, {
         status: 303,
-        headers: { location: `${base}/${slugKey}?ask=${code}`,
+        headers: { location: `${base}/${slugKey}?ask=${out.code}`,
           "cache-control": "no-store" },
       });
-      if (!mood) return back("blank");
-      // The rendered select offers exactly these four; anything else is a
-      // hand-built POST, and refusing tells the truth about what happened.
-      //
-      // 120 was added 2026-09-04: a 12" mix runs six to nine minutes and a
-      // two-hour set of them is about twenty tracks, well inside the 100 this
-      // path allows. The 30/38 ceiling that bounds a PUBLISHED PROGRAMME does
-      // not apply here — that one pays a resolve subrequest per track name,
-      // and a listener request arrives with its URIs already resolved.
-      if (!["30", "60", "90", "120"].includes(length)) {
-        return roomRefuse(400,
-          "The length must be one of the form's own choices: 30, 60, 90 or 120.");
-      }
-
-      const id = makeRequestId();
-      const normalized = normalizeRequest(`${mood} :: ${length} :: ${avoid}`);
-      // The words land in KV BEFORE the gate. The other order needed a
-      // rollback when the record write failed, and rollback loses a race: a
-      // twin submission answered "already" against a row whose record then
-      // never materialized. This way any row the ledger accepts has its
-      // record readable first — and a REFUSED submission strands only an
-      // orphan record that its own TTL drains, which no page ever reads
-      // (rendering goes through the ledger).
-      try {
-        await putRequestRecord(env, { id, dj: archiveAsk ? ARCHIVE_DJ : slugKey, mood,
-          length: Number(length), avoid: avoid || null,
-          // Written only when true, so an unticked box and every record made
-          // before this existed read the same way — absent. The ledger holds
-          // claims, leases and state and this is none of them: it is what the
-          // person asked for, which is what the record is for.
-          ...(keep ? { keep: true } : {}),
-          // Written only when chosen, so a record from before the choice
-          // existed and one where it did not apply read the same way — absent.
-          ...(service ? { service } : {}),
-          // Written only when chosen, likewise: a writer's kept set's notes.
-          ...(notes ? { notes } : {}),
-          at: new Date().toISOString() });
-      } catch {
-        return back("unavailable");
-      }
-      let decision;
-      try {
-        // WHERE THE SET IS BOUND (MC-18 stage 2): the live guest on the ask's
-        // service, else on the house's default — shown on the row while it
-        // waits; the claim stamps where the write really goes. None for an
-        // ask of a DJ who holds a preset, for the archive, and for every ask
-        // while no guest is live, which leaves this call as it was.
-        // Since stage 3, the lookup every door makes (destinationFor).
-        const bound = archiveAsk ? null : destinationFor(env, dj, setService(env, { asked: service }));
-        if (bound && !dj.button && !bound.guest) return back("nowhere");
-        const destination = bound?.guest ? bound.pl.id : null;
-        decision = await station(env, "submit",
-          { id, dj: archiveAsk ? ARCHIVE_DJ : slugKey, normalized, ...(destination ? { destination } : {}) });
-      } catch {
-        return back("unavailable");
-      }
-      if (!decision?.ok) {
-        return back(decision?.code === "duplicate" ? "already"
-          : decision?.code === "outstanding" ? "busy"
-          : decision?.code === "household-cap" ? "full" : "unavailable");
-      }
-      // The wake-up event, after record and row both exist — and only while
-      // autofulfillment is switched on, which is a SEPARATE switch from the
-      // composer's: requests can be collected quietly before any Claude is
-      // wired to answer them. A failed emit is flagged on the record and the
-      // request stays honestly pending for the hourly sweep.
-      if (env.AUTOFULFILL_ENABLED === "true") {
-        const ring = (async () => {
-          const emitted = await emitRequestEvent(env, id);
-          if (!emitted) {
-            try {
-              // Re-put on the SHORT clock on purpose — the record is
-              // milliseconds old and still pending. This spread-and-flag
-              // pattern must never be copied to a post-settle path, where it
-              // would silently shrink 90 days to 30.
-              const rec = await getRequestRecord(env, id);
-              if (rec) await putRequestRecord(env, { ...rec, dispatch: "failed" });
-            } catch { /* the sweep needs no flag; this is for the operator */ }
-          }
-        })();
-        // Behind the visitor's redirect when the platform allows; inline in
-        // the node tests, which call fetch without a ctx and assert on the
-        // emit deterministically.
-        if (ctx?.waitUntil) ctx.waitUntil(ring);
-        else await ring;
-      }
-      return back("sent");
     }
 
     // The lifecycle's exits: withdraw a pending request, or acknowledge a
@@ -4231,7 +4226,9 @@ export async function handleRequest(request, env, ctx) {
         // message, so a sleeping WiiM read as an error in the service. The
         // speaker being missing from the Connect list is its own outcome: the
         // fix is a nudge on the device, not a retry here.
-        played = err?.noSuchDevice ? "asleep" : "failed";
+        // Loaded has the words for a sign-out; the other pages' "failed" stands.
+        played = err?.noSuchDevice ? "asleep"
+          : err?.code === "spotify-signed-out" && target.guest && !target.preset && !toSpeakers ? "signedout" : "failed";
       }
       // AN ENDLESS PLAYLIST, STARTED HERE (2026-09-27): the next run of the
       // watch looks, as after a DJ page's Play. Left to the idle look, a short
@@ -4459,8 +4456,9 @@ export async function handleRequest(request, env, ctx) {
       // Play stops whatever the bar is naming. Until now nothing on this
       // screen said what that was.
       //
+      const shelfBlock = await throttledUntil(env);
       return new Response(renderLibrary(rows, {
-        onAir, action: `${base}/activate`, flash, play, open,
+        onAir, action: `${base}/activate`, flash, play, open, blocked: shelfBlock ? waitWords(minutesLeft(shelfBlock)) : null,
         archiveBtn: house(env).archive?.btn ?? null,
         // The durable home for the delete. A request row ages out at 90 days
         // and its card goes with it; a kept page never expires, so the shelf
@@ -4485,7 +4483,8 @@ export async function handleRequest(request, env, ctx) {
           // form-action 'self', not 'none': this page posts back to itself to
           // put a program on the button. Everything else stays shut.
           "content-security-policy":
-            "default-src 'none'; style-src 'unsafe-inline' https://fonts.googleapis.com; " +
+            // 'self' for the app's stylesheet (MC-37 step D).
+            "default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
             // The two hosts the services serve album art from, and no other.
             // Still no scripts.
             "font-src https://fonts.gstatic.com; img-src 'self' https://i.scdn.co https://resources.tidal.com; " +

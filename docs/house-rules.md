@@ -24,7 +24,8 @@ this page to every house, so a few marks make it fit the one reading it:
   preset), `newdj` (house DJs can be added from a DJ's page: the setup page
   made them), `archive`, `talk` (an OpenAI key), `helper` (a home helper has
   reported), `lastfm` (a Last.fm key, the `LASTFM_KEY` secret), `chatgpt`
-  (ChatGPT is the curator, chosen on the setup page) and `history`
+  (ChatGPT is the curator, chosen on the setup page), `talkasks` (Talk
+  hands a DJ's set to the curator: Talk, asks and a curator) and `history`
   (house.json `rules.history`: this house keeps its own history).
 - `{default speaker}`, `{requests presets}`, `{guest preset}`, `{house
   presets}`, `{endless presets}`, `{archive preset}`, `{archive asks}`,
@@ -36,7 +37,7 @@ this page to every house, so a few marks make it fit the one reading it:
 
 ## Questions
 
-- **Why did it play on that speaker?** It plays where you last chose, for half an hour. After that it follows the music, and with nothing playing it uses the {default speaker}.
+- **Why did it play on that speaker?** It plays where you last chose, for half an hour. After that it follows the music, and with nothing playing it uses the last speaker you chose, or else the {default speaker}.
 - {if requests} **Where does a set I ask for go?** On {requests presets}, replacing what was there. Tick **Keep** and it goes on the Shelf for good.
 - {if endless} **When does a DJ add songs?** When 30 minutes or 4 songs are left: 45 minutes more, up to 4 hours a start. The house has 12 endless runs a day; a set you ask for doesn't count.
 - {if endless} **Why did the music stop?** An endless set plays out after 4 hours of top-ups, or once the day's 12 endless runs are spent. Spotify can also refuse for a while; the pages say how long.
@@ -46,6 +47,7 @@ this page to every house, so a few marks make it fit the one reading it:
 - {if tidal} **What can't it do?** Move Tidal between speakers, or make a start quieter: your amp sets the volume, so "mute" pauses instead.
 - {if no tidal} **What can't it do?** Make a start quieter: your amp sets the volume, so "mute" pauses instead.
 - {if no talk} **Why is there no Talk tab?** Talk needs an OpenAI key. The owner can add one on the setup page.
+- {if talkasks} **Can I hang up after asking Talk for a set?** Yes, as soon as it says the DJ is making it and which preset it goes on. Hang up sooner and the line stays open the few seconds the ask needs, then hangs up by itself (press Hang up again to stop at once). The house makes the set after the call, as it makes one asked for on a DJ's page, and starts it on the speaker you named, unless something else has started playing by then.
 
 ## Which speaker
 
@@ -67,8 +69,8 @@ the same speaker, picked like this:
    [house.json `devices.default`; the page's choice in the house's storage,
    `PAGE_SETTINGS`]
 
-Spotify moves between speakers: "Move to" in the bar's menu, or a speaker
-picked on a DJ's page while that DJ plays, where the list says "Move to" too
+Spotify moves between speakers: tap the speaker in the bar's menu and pick
+another under "Move to", or pick a speaker on a DJ's page while that DJ plays, where the list says "Move to" too
 (since 2026-10-24). On the page of a DJ who isn't playing, a pick only says
 where their Play goes, and the music playing stays where it is.
 
@@ -129,8 +131,9 @@ asks; "resume" brings it back (since 2026-10-16).
 - **Paused:** the app believes a pause only if **the app itself sent it**, or
   **the speaker itself says so** through the home helper. Spotify's own
   "paused" can be stale (it says "paused" long after the speaker has moved on
-  to another source). The bar remembers its own pause for **one hour**, and
-  its play button starts that music again where it stopped.
+  to another source). The bar remembers its own pause for **one hour**, with
+  the song's cover, artist and album (since 2026-11-02), and its play button
+  starts that music again where it stopped.
 - {if helper} **Stopped on Spotify** (since 2026-09-29): Spotify lets go of a
   WiiM that sits stopped and then sees nothing there, while the WiiM app still
   shows the song. With the helper on, the page says what the speaker says:
@@ -149,7 +152,11 @@ asks; "resume" brings it back (since 2026-10-16).
   have ended, or after **30 seconds** for an Echo or the phone, **2 minutes**
   when nothing plays, and **5 minutes** at most. The Use page counts what it
   saved. [now.js `PLAYER_REUSE_*`; off: house.json `player.reuse: false`]
-- {if tidal} **The Tidal button** in the bar's menu (the Tidal Requests
+- **The Spotify icon** at the right of the speaker in the bar's menu opens the
+  playlist in the Spotify app, and the music carries on. There's no link to the
+  song: Spotify's app takes one as "play this", from the start, on its album,
+  and an endless set is lost (measured 2026-11-02).
+- {if tidal} **The Tidal icon** in the same place (the Tidal Requests
   playlist, to open in the Tidal app) shows only while Spotify isn't playing
   on that speaker. With the helper on, that's only while the helper reads
   Tidal there (since 2026-09-28). Without it, only once Spotify has answered,
@@ -184,6 +191,13 @@ and once more **4 seconds** later if Spotify didn't answer.
   Requests or Spotify's own picks after a list runs out (since 2026-10-13).
 - **Top-up:** when **30 minutes or 4 songs** are left, the DJ adds **45
   minutes** more. [house.json `endless`: `topupMinutes`, `batchMinutes`]
+  The house looks every 10 minutes; a skip from the app's bar asks at once
+  when it leaves the set that short (since 2026-11-02). Skips in the Spotify
+  app or on a remote wait for the next look.
+- {if helper} **A set started in the Spotify app on an Echo or a phone** can
+  go up to **3 hours** before the DJ notices it and tops it up, unless you open
+  the app, which brings that down to about 10 minutes. A press on a WiiM, or
+  a Play from the app, is noticed within about 10 minutes.
 - **At most 4 hours of top-ups a start**, then the set plays out.
 - **12 endless runs a day** across all endless presets: top-ups, fresh sets
   and steers. A set you ask for doesn't count. After that, no new songs until
@@ -195,7 +209,8 @@ and once more **4 seconds** later if Spotify didn't answer.
   is that song), never the same song back to back, and the DJ's own
   spacing: Genre and Sessions never play an act twice in a row or three
   times an hour, Soul never three in a row from one act, Vibe one song an act, Deep Dive
-  never two from one album in a row. A set that breaks one goes back to be
+  never two from one album in a row. Sessions' top-ups leave out the acts of
+  the last two batches (since 2026-11-02). A set that breaks one goes back to be
   fixed, once; then it plays as sent, and the log says what it held. A set
   of one song's versions isn't counted against it, nor an hour of one
   artist asked of Soul (since 2026-10-18).
@@ -212,6 +227,12 @@ and once more **4 seconds** later if Spotify didn't answer.
   about **45 minutes** in the new direction replace what was queued, starting
   after the song that's playing: a top-up's worth, so one tap is one endless
   run (since 2026-09-28). It jumps in at once only if you say "now".
+- **Words you gave a guest DJ** ("acoustic grunge") stay on every set and
+  top-up. **Change it up** lets go of them, unless the DJ has to be told what
+  to play, like Deep Dive's artist (since 2026-10-31). More like this and
+  Start fresh keep them, and no button touches your Tune sliders. Sessions has
+  a box beside Play endless for new words, as Vibe and Soul do (since
+  2026-10-31): new words make a new set, and an empty box carries on.
 - {if talk} When Talk picks the songs itself it sends about 25, costing no
   run, and the DJ tops up from there.
 - {if requests} On a request set, a spoken steer waits for the set to end,
@@ -225,8 +246,9 @@ and once more **4 seconds** later if Spotify didn't answer.
 - **Start fresh** (on a DJ's page, under **More**): a new one-hour set, started on the
   speaker you picked as soon as it's made. If it takes longer than **25
   minutes**, it's only put on the preset for the next press: a late set never
-  starts music by itself. Tapping Start fresh again starts the 25 minutes
-  over. A guest DJ's opening works the same way (since 2026-10-02).
+  starts music by itself. If that preset is playing by then, its songs go on
+  the end of the list instead (since 2026-10-31). Tapping Start fresh again
+  starts the 25 minutes over. A guest DJ's opening works the same way (since 2026-10-02).
 - {if no chatgpt} **Who makes the songs:** the curator, Claude in the cloud.
   Each tap or ask wakes it, and it also checks in every hour.
 - {if chatgpt} **Who makes the songs:** the curator, ChatGPT: a Work chat in
@@ -240,7 +262,8 @@ and once more **4 seconds** later if Spotify didn't answer.
   with when the curator last checked in. The usual reason is a Claude or
   ChatGPT plan that has hit its limit: the curator carries on when the limit
   resets. The pages call it "the curator", since a house's curator can also
-  be ChatGPT.
+  be ChatGPT. During a Spotify block, work waiting on Spotify doesn't count:
+  the pages say Spotify is why (since 2026-10-31).
 - {if guest} **The guest DJ ({guest preset}):** playing someone endless who
   has no preset of their own makes them the guest. They start at once from
   their newest program, or make an opening (about four minutes).
@@ -267,10 +290,15 @@ and once more **4 seconds** later if Spotify didn't answer.
   Genre ask that names jazz or a jazz style ("piano jazz", "bebop", "bossa
   nova"). Not smooth, acid or nu jazz, which it never held: those, and every
   other genre, work from the brief alone. **Sessions has one too** (since
-  2026-10-26): 2,543 session releases by series (Peel and BBC, MTV
+  2026-10-26): 2,642 lines by series (Peel and BBC, MTV
   Unplugged, Tiny Desk, 2 Meter Sessions, Spotify Sessions, Audiotree Live,
   Austin City Limits, Like A Version, VH1 Storytellers), gathered from
-  MusicBrainz and not read one by one; a slice of it crosses the series.
+  MusicBrainz and not read one by one; a slice of it crosses the series, and
+  a decade in your words ("70's hits", "seventies") fills half of it from that
+  decade's sessions (since 2026-11-02).
+  Added by hand: 108 albums called Unplugged that aren't titled MTV, each
+  one ticked by the owner (since 2026-10-31). Any other album that only says
+  Unplugged stays out.
   The other DJs work from their briefs alone until they get one.
   [tasks/rollcalls/]
 - A set you ask for (a length, a mood, a subject) goes on **{requests
@@ -337,15 +365,30 @@ and once more **4 seconds** later if Spotify didn't answer.
 - **Sessions plays bands live in a small room** (since 2026-10-26): radio
   and TV sessions, never the studio record. John Peel's and the BBC's, MTV
   Unplugged, NPR's Tiny Desk, 2 Meter Sessions, Spotify Sessions, Audiotree
-  Live, Austin City Limits, triple j's Like A Version and VH1 Storytellers;
-  never a karaoke or tribute version, a contest entry, a festival stage or
-  a concert album from a hall. A set crosses the series and the decades (at
-  least four series an hour, Audiotree at most a quarter), about half of it
-  songs you know in their session version, and every set looks for a
-  session out in the last month. Name a series, years or a genre to keep
-  to it ("Peel sessions from the eighties", "only unplugged", "sixties
-  bands", "only hip-hop"): sixties bands play in sessions of any year,
-  while "recorded in the sixties" leaves only the BBC's and Peel's.
+  Live, Austin City Limits, Sessions at West 54th (since 2026-10-30), Live
+  at Third Man Records (since 2026-10-30), Rockpalast from a small room
+  (since 2026-10-30), triple j's Like A Version and VH1 Storytellers; never a
+  karaoke or tribute
+  version, a contest entry, a festival stage or a concert album from a hall.
+  Outside the series a live take counts, at most two an hour, when its title
+  or album names a club of about 1,000 people or fewer, or a TV or radio
+  studio (since 2026-11-02). A bare "Live" doesn't, nor do bigger rooms:
+  Paradiso, the Apollo, the Bataclan, the Ryman. Name a series and there are
+  none.
+  A best-of counts when its title names the series, whether one act's or
+  many acts'. Rockpalast counts only where the title names WDR's studio,
+  Harmonie Bonn, Zeche Bochum or Markthalle Hamburg, so never its halls or
+  open-air shows. A set crosses the series and the decades (at
+  least four series an hour, Audiotree at most a quarter, no other series
+  more than a third unless you named it, the BBC's and Peel's counted as
+  one), about half of it songs you know in their session version, and every
+  set looks for a session out in the last month. Name a series, years or a
+  genre to keep to it ("Peel sessions from the eighties", "only unplugged",
+  "sixties bands", "only hip-hop"): sixties bands play in sessions of any
+  year, while "recorded in the sixties" leaves only the BBC's and Peel's.
+  "Seventies hits" is the decade's songs, mostly real hits, in sessions of any
+  year, a newer band's cover among them; under a decade the new session is
+  such a cover, and when none fits the set goes without and says so.
 - {if guest} **Anything live asked for endless** ("something unplugged",
   "Tiny Desk all night") is **Sessions**, the guest DJ on {guest preset}
   (since 2026-10-26).
@@ -507,6 +550,27 @@ even in silence.**
   is finished first. If the phone stops the page altogether, the house
   hangs up within a minute and a half (since 2026-10-24).
 
+{if talkasks} **A set you ask a DJ for by voice is made after the call**
+(since 2026-11-04). Talk hands it to the curator the way a DJ's Ask form
+does, says who is making it, and you can hang up: leaving the page or
+locking the phone loses nothing. Talk says it's on its way only once the
+house has the ask (since 2026-11-05); until then it says it is asking. Hang up while it is still asking and
+the line stays open until the ask is in, thirty seconds at most. A DJ's name
+heard a letter off ("DJ Pup Rock") still finds that DJ. It lands on {requests presets}, in place
+of the set there, usually within five minutes. **It starts by itself on the
+speaker you named** (since 2026-11-05), if it lands within 25 minutes of
+asking and nothing else has started playing since: music somebody chose in
+between is never cut off, and the set then waits for a press of its preset.
+Talk doesn't ask "are you sure" first: asking is the yes. Its length is the
+one you said, rounded to 30, 60, 90 or 120 minutes, and an hour when you
+said none. Ask to keep it and it goes on the Shelf as well. Made on the call
+as before: a set with no DJ named, a change to what's playing ("more
+upbeat") and "keep it" for a set already there. [asks.js `startAsked`;
+voice.js `askRule`; house.js `findSpokenDj`; the Talk page's `finishing`]
+
+{if tidal} A Tidal set asked by voice starts by itself only on a WiiM, with
+the home helper on, which presses its preset; anywhere else, press it.
+
 **Talk changes only the house's own playlists** (since 2026-10-25): its
 presets', its DJs' and the ones it keeps. Any other playlist on the
 Spotify account it can play or read out, never change.
@@ -527,8 +591,18 @@ needs no yes.
 The app runs on a Spotify developer account with a daily allowance. If
 Spotify refuses ("quota exceeded"), the app stops asking for as long as
 Spotify says (**15 minutes** if it doesn't say). Pages say "not known for
-about N minutes" and Play is refused until then. The **Use** page (at the
-foot of the Speakers tab) shows the calls made in the last 24 hours.
+about N minutes" and Play on Spotify is refused until then. The **Use** page
+(at the foot of the Speakers tab) shows the calls made in the last 24 hours.
+
+{if tidal} A set asked for on Tidal goes ahead during a block: Tidal isn't
+behind Spotify's limit. A set asked for on Spotify waits, and is made after
+the block, without being asked again.
+
+{if helper} While Spotify is blocked and the home helper is on, the bar still
+shows Tidal, the radio and the archive, and still pauses and plays them. It
+can also restart a Spotify preset that has stopped. The preset keys on the
+Speakers tab all work. A Spotify preset that's playing shows as "not known"
+until the block lifts.
 
 **The Spotify sign-in lasts six months** (Spotify's rule), then Spotify signs
 the house out and nothing on Spotify works until someone signs in again. The

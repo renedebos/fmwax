@@ -113,6 +113,18 @@ function yearsOf(ask) {
   const plain = [...t.matchAll(/\b(19\d\d|20\d\d)\b/g)].map((m) => Number(m[1])).filter((y) => y !== since);
   return { since, plain };
 }
+// A DECADE IN AN ASK (the "70's hits" audit, 2026-11-02): the year it starts,
+// or null. yearsOf reads a whole year, so "70's", "70s", "1970s" and "seventies"
+// all brought a roll call with no words at all: Katy Perry for the seventies.
+const DECADE_WORDS = { sixties: 1960, seventies: 1970, eighties: 1980, nineties: 1990 };
+export function decadeOf(ask) {
+  const t = String(ask ?? "").toLowerCase().replace(/[‘’]/g, "'");
+  const said = t.match(/\b(sixties|seventies|eighties|nineties)\b/)?.[1];
+  if (said) return DECADE_WORDS[said];
+  const y = Number(t.match(/(?<!\d)((?:19|20)?\d0)'?s\b/)?.[1] ?? NaN);
+  if (Number.isNaN(y)) return null;
+  return y >= 1000 ? y : y >= 30 ? 1900 + y : 2000 + y;
+}
 // The same shuffle for the same seed, so a job's slice does not change between reads.
 function shuffled(list, seed) {
   let h = 2166136261;
@@ -176,7 +188,18 @@ export function rollCallSlice(djKey, { words = "", recent = [], seed = "", brief
     .filter((x) => x.s > 0)
     .sort((x, y) => y.s - x.s || (spread ? (fresh(y.e) - fresh(x.e)) || (order.get(x.e) ?? x.i) - (order.get(y.e) ?? y.i) : x.i - y.i))
     .map((x) => x.e);
-  const fits = ranked(rc.in).slice(0, FITS);
+  const matched = ranked(rc.in);
+  // A ROLL CALL OF SERIES READS A DECADE by the session's own years. With a
+  // series named too ("Peel sessions from the eighties") the decade goes first.
+  // Alone it takes half the slice, because a decade's lines are the BBC's and
+  // Peel's nearly all, and "70's hits" is the seventies' songs in sessions of
+  // any year: the rest stays the spread, or the set turns all BBC.
+  const decade = VOCAB[key] ? decadeOf(words) : null;
+  const inDecade = (e) => { const a = startYear(e); return !!a && a <= decade + 9 && (endYear(e) ?? a) >= decade; };
+  const lately = (e) => (fresh(e) ? 0 : 1);
+  const fits = decade == null ? matched.slice(0, FITS)
+    : ws.length ? [...matched.filter(inDecade), ...matched.filter((e) => !inDecade(e))].slice(0, FITS)
+    : shuffled(rc.in.filter(inDecade), seed).sort((x, y) => lately(x) - lately(y)).slice(0, FITS / 2);
   const pool = shuffled(rc.in.filter((e) => !fits.includes(e) && fresh(e)), seed);
   let fill = [...pool.filter(unnamed), ...pool.filter((e) => !unnamed(e))];
   if (spread) {

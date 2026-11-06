@@ -87447,6 +87447,699 @@ export const ROLL_CALLS = {
     "reason": "VH1 Storytellers: 'The Doors and Guests: VH1 Storytellers'",
     "branch": "VH1 Storytellers",
     "group": "VH1 Storytellers"
+   },
+   {
+    "name": "10 Years",
+    "years": "2013",
+    "reason": "Unplugged: 'Live & Unplugged At The Tennessee Theatre'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "18 Summers",
+    "years": "2002",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "8 Graves",
+    "years": "2021-2022",
+    "reason": "Unplugged: 'Unplugged at The Tannery Studios'; 'Everyday Oblivion (Unplugged at The Tannery Studios)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Airbag",
+    "years": "2021",
+    "reason": "Unplugged: 'A Day in the Studio / Unplugged in Oslo'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Alanis Morissette",
+    "years": "1999",
+    "reason": "Unplugged: 'Live / Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Alicia Keys",
+    "years": "2005",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "All Sinners",
+    "years": "2025",
+    "reason": "Unplugged: 'We Are the Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Allan Rayman",
+    "years": "2017-2025",
+    "reason": "Unplugged: 'Unplugged At CBC'; 'Verona Unplugged' and 1 more",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Archive",
+    "years": "2004",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Arise Roots, Felton Music Hall",
+    "years": "2022",
+    "reason": "Unplugged: 'Arise Roots (Unplugged: Live at Felton Music Hall)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Arrested Development",
+    "years": "1993",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Bananafishbones",
+    "years": "2015",
+    "reason": "Unplugged: 'Live & Unplugged im Kurhaus Bad Tölz'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Banda Tierra Sagrada",
+    "years": "2019",
+    "reason": "Unplugged: 'Corridos Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Big Fat Snake",
+    "years": "2017",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Blind Petition",
+    "years": "2017",
+    "reason": "Unplugged: 'Law & Order unplugged LIVE'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Boo Boo Davis",
+    "years": "2016",
+    "reason": "Unplugged: 'Live and Almost Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Coldville",
+    "years": "2020",
+    "reason": "Unplugged: 'Listening Room (Live & Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Crushead",
+    "years": "2007",
+    "reason": "Unplugged: 'White Suit (The Unplugged Show)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Crvena Jabuka",
+    "years": "1999-2014",
+    "reason": "Unplugged: 'Riznice sjećanja (Unplugged Live)'; 'Bivše djevojčice, bivši dječaci (Unplugged live u Lisinskom)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Dan Gladiš and Bangladesh",
+    "years": "2025",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Dance With A Stranger",
+    "years": "1999",
+    "reason": "Unplugged: 'Unplugged Hits!'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Daoko",
+    "years": "2022",
+    "reason": "Unplugged: 'Daoko Live Unplugged in Sogetsu Hall'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Dawn Of Solace",
+    "years": "2022",
+    "reason": "Unplugged: 'Notes of Perdition (Unplugged Studio Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "De/Vision",
+    "years": "2002",
+    "reason": "Unplugged: 'Live (Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Devin Townsend",
+    "years": "2011",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Die Happy",
+    "years": "2005",
+    "reason": "Unplugged: 'Four And More - Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Die Toten Hosen",
+    "years": "2005",
+    "reason": "Unplugged: 'Nur zu Besuch: Die Toten Hosen Unplugged im Wiener Burgtheater - Das komplette Konzert'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Dissidenten",
+    "years": "2013",
+    "reason": "Unplugged: 'How Long Is Now? (Unplugged Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Egregor",
+    "years": "2019",
+    "reason": "Unplugged: 'Arica Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Eric Church",
+    "years": "2016",
+    "reason": "Unplugged: 'Mr. Misunderstood On The Rocks: Live & (Mostly) Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Eric Clapton",
+    "years": "1992",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "ERNEST",
+    "years": "2023",
+    "reason": "Unplugged: 'ERNEST & The Fellas Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Fokofpolisiekar",
+    "years": "2021",
+    "reason": "Unplugged: 'The Sound of Fokof Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Francois van Coke",
+    "years": "2020",
+    "reason": "Unplugged: 'Unplugged in Kaapstad (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "G&G Sindikatas",
+    "years": "2017",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Galderia",
+    "years": "2017",
+    "reason": "Unplugged: 'Radio Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "George Benson",
+    "years": "2013",
+    "reason": "Unplugged: 'Unplugged in Africa (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Giancane",
+    "years": "2020",
+    "reason": "Unplugged: 'Unplugged In San Lorenzo (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Gilberto Gil",
+    "years": "1994",
+    "reason": "Unplugged: 'Unplugged (Ao Vivo)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Godhead",
+    "years": "2010",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Green River Ordinance",
+    "years": "2014",
+    "reason": "Unplugged: 'The Collection - Live & Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Gregor Meyle",
+    "years": "2025",
+    "reason": "Unplugged: 'Gregor Meyle & Band - Eine Nacht in Hamburg (Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Hak Baker",
+    "years": "2018",
+    "reason": "Unplugged: 'Misfits (Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Harri Stojka & Gitancoeur",
+    "years": "2002",
+    "reason": "Unplugged: 'Unplugged (Remaster)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Herbert Grönemeyer",
+    "years": "1995-2025",
+    "reason": "Unplugged: 'Unplugged Herbert (Remastered 2016)'; 'Kernstücke Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Holograf",
+    "years": "1996",
+    "reason": "Unplugged: '69% unplugged (Live Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "I The Mighty",
+    "years": "2019",
+    "reason": "Unplugged: 'Unplugged in LA'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Ice Nine Kills",
+    "years": "2020",
+    "reason": "Unplugged: 'Undead & Unplugged: Live From The Overlook Hotel'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Il Giardino Dei Semplici",
+    "years": "2009",
+    "reason": "Unplugged: 'Napoli Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jamey Johnson",
+    "years": "2009",
+    "reason": "Unplugged: 'Unplugged at Studio 330'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jay Wheeler, DJ Nelson",
+    "years": "2019",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jeff Daniels",
+    "years": "2004",
+    "reason": "Unplugged: 'Live and Unplugged To Benefit The Purple Rose Theatre'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jeremy Camp",
+    "years": "2005",
+    "reason": "Unplugged: 'Live Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jesús Adrián Romero",
+    "years": "2004",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Joe Stamm",
+    "years": "2020",
+    "reason": "Unplugged: 'Stories: Live & Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Johnny Clegg",
+    "years": "2014",
+    "reason": "Unplugged: 'Best, Live & Unplugged at the Baxter Theatre, Cape Town'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Joker James",
+    "years": "2021",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Jose \"Papo\" Rivera",
+    "years": "2005",
+    "reason": "Unplugged: 'Unplugged Evento Historico'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Kensington",
+    "years": "2021",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "King Weird",
+    "years": "2017",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Kingdom Come",
+    "years": "2011",
+    "reason": "Unplugged: 'Live & Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Klone",
+    "years": "2017",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "La Edición de Culiacán",
+    "years": "2017",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Lau",
+    "years": "2021",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Majke",
+    "years": "2008",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Marco Ragni",
+    "years": "2013",
+    "reason": "Unplugged: 'On Air: Live Unplugged At Diamond Radio'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Marillion",
+    "years": "2018",
+    "reason": "Unplugged: 'Unplugged at the Walls (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Mat Kearney",
+    "years": "2020",
+    "reason": "Unplugged: 'Until We Meet Again... (Live Unplugged)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Neil Young",
+    "years": "1993",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Paul McCartney",
+    "years": "1991",
+    "reason": "Unplugged: 'Unplugged - The Official Bootleg'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Per Gessle",
+    "years": "2021",
+    "reason": "Unplugged: 'Late Night Concert - Unplugged Cirkus'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Phatfish",
+    "years": "2002",
+    "reason": "Unplugged: 'Hope - Phatfish Unplugged Live'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "PJ Morton",
+    "years": "2018",
+    "reason": "Unplugged: 'Gumbo Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Red",
+    "years": "2022",
+    "reason": "Unplugged: 'Until We Have Faces Live and Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Rod Stewart",
+    "years": "1993",
+    "reason": "Unplugged: 'Unplugged....And Seated'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Ron Pope",
+    "years": "2010",
+    "reason": "Unplugged: 'Ron Pope: Live and Unplugged in New York'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Salmo",
+    "years": "2023",
+    "reason": "Unplugged: 'Salmo Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Sister Hazel",
+    "years": "2016",
+    "reason": "Unplugged: 'Unplugged from Daryl's House Club'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Sleeping With Sirens",
+    "years": "2016",
+    "reason": "Unplugged: 'Live and Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Soul Asylum",
+    "years": "2023-2026",
+    "reason": "Unplugged: 'The Complete Unplugged - NYC '93'; 'MPLS Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Superchrist",
+    "years": "2003",
+    "reason": "Unplugged: 'Unplugged at Factory Sunday, March 9, 2003'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "SX",
+    "years": "2021",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "SYML",
+    "years": "2025",
+    "reason": "Unplugged: 'Paris Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Terra Naomi",
+    "years": "2012",
+    "reason": "Unplugged: 'Live & Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Civil Wars",
+    "years": "2013",
+    "reason": "Unplugged: 'Vh1 Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Corrs",
+    "years": "1999",
+    "reason": "Unplugged: 'The Corrs Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Glorious Sons",
+    "years": "2019",
+    "reason": "Unplugged: 'An Unplugged Evening With (Live At Longboat Hall)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Inspector Cluzo",
+    "years": "2020",
+    "reason": "Unplugged: 'The Organic Farmers Season : Unplugged Live'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Korgis",
+    "years": "2006",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Smith Street Band",
+    "years": "2021",
+    "reason": "Unplugged: 'Unplugged in Wombat State Forest'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "The Struts",
+    "years": "2017-2023",
+    "reason": "Unplugged: 'Live And Unplugged'; 'Unplugged At EastWest'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Tom Beck",
+    "years": "2014",
+    "reason": "Unplugged: 'Unplugged in Köln'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Toots & The Maytals",
+    "years": "2013",
+    "reason": "Unplugged: 'Unplugged On Strawberry Hill'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Tre Allegri Ragazzi Morti",
+    "years": "2014",
+    "reason": "Unplugged: 'Unplugged (Live)'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "UB40 featuring Ali, Astro & Mickey",
+    "years": "2016",
+    "reason": "Unplugged: 'Unplugged'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Ulf Lundell",
+    "years": "2011",
+    "reason": "Unplugged: 'Unplugged Solo'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Violent Femmes",
+    "years": "2017",
+    "reason": "Unplugged: '2 Mics & the Truth: Unplugged & Unhinged in America'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Willy DeVille",
+    "years": "2011",
+    "reason": "Unplugged: 'Unplugged in Berlin'",
+    "branch": "Unplugged",
+    "group": "Unplugged"
+   },
+   {
+    "name": "Wirtz",
+    "years": "2014-2020",
+    "reason": "Unplugged: 'Unplugged'; 'Live & Unplugged im Gibson Club Frankfurt' and 1 more",
+    "branch": "Unplugged",
+    "group": "Unplugged"
    }
   ],
   "not": []

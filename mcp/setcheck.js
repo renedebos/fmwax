@@ -17,12 +17,14 @@ const fold = (s) => String(s ?? "").toLowerCase().normalize("NFKD").replace(/[̀
 export const titleBase = (t) => fold(t).replace(/[([][^)\]]*[)\]]/g, " ").replace(/\s+-\s+.*$/, "")
   .replace(/[^a-z0-9]+/g, "");
 const HOUR_MS = 60 * 60 * 1000;
+// An act under any billing: "David Bowie & The Spiders From Mars" is Bowie.
+const actOf = (name) => fold(name).split(/,| & /)[0].trim();
 
 // `tracks`: the set in playing order, each { uri, lead, title, album, ms } or
 // null for one the ledger never saw. `before`: the song already last on the
-// list, for a top-up. `spacing`: the DJ's countable rules (djs.js). The
-// breaks, in words, at most six.
-export function setBreaks(tracks, spacing = null, { before = null } = {}) {
+// list, for a top-up. `lastActs`: the acts on the batch before, for a top-up.
+// `spacing`: the DJ's countable rules (djs.js). The breaks, in words, at most six.
+export function setBreaks(tracks, spacing = null, { before = null, lastActs = [] } = {}) {
   const out = [];
   const list = tracks.map((t) => (t ? { ...t, base: titleBase(t.title), who: fold(t.lead), disc: fold(t.album) } : null));
   const known = list.filter(Boolean);
@@ -69,6 +71,20 @@ export function setBreaks(tracks, spacing = null, { before = null } = {}) {
     });
   }
   if (spacing && !oneArtist) {
+    // An act from the batch before (Sessions, the owner, 2026-11-02: Queen came
+    // back once a batch, at 1, 11 and 21, and every hour's count held). The
+    // send-back is the "unless the ask leaves too few acts": a set that cannot
+    // do better is sent again and written.
+    if (spacing.batchActs && lastActs?.length) {
+      const was = new Set(lastActs.map(actOf));
+      const back = list.flatMap((t, i) => (t?.who && was.has(actOf(t.lead)) ? [i] : []));
+      if (back.length) {
+        const n = Math.max(1, Number(spacing.batchActs) || 1);
+        const span = n === 1 ? "the batch before" : `the last ${["two", "three", "four"][n - 2] ?? n} batches`;
+        const who = [...new Set(back.map((i) => list[i].lead))].join(", ");
+        out.push(`${back.length === 1 ? `song ${back[0] + 1} is` : `songs ${back.map((i) => i + 1).join(", ")} are`} by an act from ${span} (${who})`);
+      }
+    }
     // Too many in a row by one act, counting the list's last song.
     if (spacing.artistRun) {
       const off = prev?.who ? 1 : 0;

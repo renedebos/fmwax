@@ -202,9 +202,9 @@ export function tunedSpacing(env, dj) {
   const base = dj?.spacing ?? null;
   const v = dj?.key ? tuningOf(env, dj.key).same : undefined;
   if (!v) return base;
-  const { artistRun, artistPerHour, artistPerSet, say, ...rest } = base ?? {};
+  const { artistRun, artistPerHour, artistPerSet, batchActs, say, ...rest } = base ?? {};
   if (v === "any") return Object.keys(rest).length ? rest : null;
-  return { ...rest, artistRun: 1, artistPerHour: v === "rarely" ? 1 : 2,
+  return { ...rest, ...(batchActs ? { batchActs } : {}), artistRun: 1, artistPerHour: v === "rarely" ? 1 : 2,
     say: `never two songs by one act in a row, and no act more than ${v === "rarely" ? "once" : "twice"} an hour (the listener's tuning)` };
 }
 

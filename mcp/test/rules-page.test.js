@@ -94,7 +94,8 @@ test("docs/house-rules.md leaves no mark unread, in a house with everything and 
   const blanks = { "default speaker": "Pro Plus", "requests presets": "1", "guest preset": "3", "house presets": "4, 5",
     "endless presets": "3, 4, 5", "archive preset": "6", "archive asks": "a song or a show", "talk minutes": "60", "time zone": "Pacific Time",
     "notes default": "short notes" };
-  const words = ["requests", "tidal", "endless", "housedj", "guest", "newdj", "archive", "talk", "helper", "history", "lastfm", "chatgpt"];
+  const words = ["requests", "tidal", "endless", "housedj", "guest", "newdj", "archive", "talk", "helper", "history", "lastfm", "chatgpt",
+    "talkasks"];
   for (const on of [true, false]) {
     const doc = rulesDoc(RULES_MD, { tags: Object.fromEntries(words.map((w) => [w, on])), blanks });
     const out = doc.sections.map((s) => `${s.summary ?? ""} ${s.body.join(" ")}`).join(" ") + doc.questions.map((q) => q.q + q.a).join(" ");
@@ -145,7 +146,7 @@ test("a fresh house: Spotify only, Hank on 2, the guest DJ on 3, no Talk, no dat
   assert.ok(!/Tidal/.test(text), "no Tidal anywhere");
   assert.ok(!/minutes of Talk/.test(text) && !html.includes('<span class="rfh">Talk</span>'), "no Talk number and no Talk fold");
   assert.match(text, /Why is there no Talk tab\?/);
-  assert.match(text, /with nothing playing it uses the Living Room/);
+  assert.match(text, /with nothing playing it uses the last speaker you chose, or else the Living Room/);
   assert.match(text, /Other services and the radio/, "the house without a helper is told what one adds");
   assert.ok(!/since \d/.test(text), "no dates in a house without its history");
   assert.ok(!/Six DJs became three/.test(text));

@@ -2,4 +2,4 @@
 // repository; a copy made by tools/copy/make-copy.mjs has the commit it was
 // made from here, which the setup page compares with the public repository's
 // newest (updates.js) to say when a newer version is out.
-export const VERSION = "d2417876f0e967d9f86fdf30a4b6ae30aa18c6de";
+export const VERSION = "b8a5d8a3b387d3f85ea6812b75e90fe4425cd0c5";

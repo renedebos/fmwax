@@ -17,12 +17,12 @@ import {
 import {
   ENDLESS_LEASE_MS, steerMinutes, endlessDay, endlessFile, endlessGuard,
   endlessJobs, endlessLoad, endlessLog, endlessNoStart, endlessPresets, endlessReport,
-  endlessRing, endlessTracks, endlessUpdate, endlessWrote, laneLock, laneUndo, laneUnlock,
+  endlessRing, endlessTracks, endlessUpdate, endlessWrote, batchSizes, lastBatchActs, laneLock, laneUndo, laneUnlock,
   endlessSlots, parseEndless, playEndless, programStill, sleptThrough, startsOn, steerWrite,
   RESEARCH_STEPS, cleanResearch, folderOut, heardLately, keepResearch, laneSubject, nearbyOf, researchFolders, researchIfArtist,
 } from "./endless.js";
 import {
-  aliasForPlaylistId, anyLiveGuest, contextLabel, destinationFor, djForPlaylistId, findDj,
+  aliasForPlaylistId, anyLiveGuest, contextLabel, destinationFor, djForPlaylistId, findDj, findSpokenDj,
   guestAlias, guestFor, guestForPlaylistId, guestLabel, guestNote, guestPhrase, house, howToPlay,
   legacyAliasFor, programDj,
 } from "./house.js";
@@ -48,10 +48,15 @@ import {
   PROGRAM_TITLE_MAX, PROGRAM_TOOLS, writerKindFor,
 } from "./toollist.js";
 import { activateProgram, askLine, refireWaiting, reviseProgram, settleRecord } from "./writes.js";
+import { ASK_START_CALLS, asksToStart, startAsked } from "./asks.js";
 import { fromRecord, sendBackWords, setBreaks } from "./setcheck.js";
 import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
 import { ARCHIVE } from "./archive-identity.js";
+
+// A DJ NAMED: by voice, the name was heard, so a near miss finds its DJ
+// (findSpokenDj); typed, it must be the DJ's name, as it always was.
+const djNamed = (env, name) => (env?.__via === "talk" ? findSpokenDj(env, name) : findDj(env, name));
 
 // TALK WRITES ONLY THE HOUSE'S OWN PLAYLISTS (the locks review, 2026-10-25).
 // Talk is opened with the household's page key, and its playlist tools took
@@ -76,7 +81,7 @@ export function talkMayWrite(env, pl) {
 // ledger saw it in search_tracks, checked; sent back if it breaks one and
 // was not sent back already. A ledger that cannot answer counts nothing.
 // `stamped`: a send-back was waiting under this key, which this call answers.
-async function countRules(env, key, uris, spacing, last, { withinMs = 0 } = {}) {
+async function countRules(env, key, uris, spacing, last, { withinMs = 0, lastActs = [] } = {}) {
   let got = null;
   try {
     got = await station(env, "seen-get", { key, uris: [...uris, ...(last?.[0] ? [last[0]] : [])],
@@ -85,7 +90,7 @@ async function countRules(env, key, uris, spacing, last, { withinMs = 0 } = {}) 
   if (!got?.ok) return { breaks: [], sendBack: false, stamped: false };
   const tracks = uris.map((u) => got.tracks?.[u] ?? null);
   const before = last ? got.tracks?.[last[0]] ?? fromRecord(last) : null;
-  const breaks = setBreaks(tracks, spacing, { before });
+  const breaks = setBreaks(tracks, spacing, { before, lastActs });
   const stamped = !!got.sent_back;
   if (!breaks.length || stamped) return { breaks, sendBack: false, stamped };
   try { await station(env, "sent-back", { key }, { unbudgeted: true }); } catch { return { breaks, sendBack: false, stamped }; }
@@ -156,7 +161,7 @@ export async function callTool(env, name, args, budget) {
           note: "Call again with a name for the full brief before curating.",
         };
       }
-      const dj = findDj(env, args.name);
+      const dj = djNamed(env, args.name);
       if (!dj) {
         throw new Error(
           `no DJ called "${args.name}". Available: ` +
@@ -637,7 +642,8 @@ export async function callTool(env, name, args, budget) {
       // THE RULES THE HOUSE COUNTS (setcheck.js, 2026-10-18): sent back once,
       // then written as sent with the breaks said.
       const last = kind === "topup" && Array.isArray(before) ? before.at(-1) ?? null : null;
-      const counted = await countRules(env, `job:${jobId}`, keep, tunedSpacing(env, findDj(env, p.dj)), last);
+      const counted = await countRules(env, `job:${jobId}`, keep, tunedSpacing(env, findDj(env, p.dj)), last,
+        { lastActs: kind === "topup" ? lastBatchActs(state.sessions?.[bkey], tunedSpacing(env, findDj(env, p.dj))?.batchActs) : [] });
       if (counted.sendBack) {
         await release();
         throw new Error(sendBackWords(djName, tunedSpacing(env, findDj(env, p.dj)), counted.breaks));
@@ -651,7 +657,9 @@ export async function callTool(env, name, args, budget) {
       const startOn = startsOn(job);
       // PRESSED AGAIN SINCE (Codex, 2026-09-24): a fresh set asked for after
       // one session must not replace the list a newer one is playing.
-      const newerSession = kind === "fresh" && !job.device && (Number(state.gen?.[bkey]) || 0) !== (Number(job.gen) || 0);
+      // A Start fresh past its 25 minutes is such a set too (the deep review,
+      // 2026-10-31): it had replaced the list under a listener, unsaid.
+      const newerSession = kind === "fresh" && !startOn && (Number(state.gen?.[bkey]) || 0) !== (Number(job.gen) || 0);
       // And at the write itself, under the lane's lease (Codex's code review 1):
       // no takeover can land between this check and the write.
       const lockId = p.lane ? `job-${jobId}` : null;
@@ -676,7 +684,7 @@ export async function callTool(env, name, args, budget) {
           logEvents.push({ event: "steer-landed", detail: `${keep.length} songs replace the ${out.replaced} queued${out.jumped ? `; started on ${out.jumped}` : ", after the playing song"}` });
           result = { status: "steered", replaced: out.replaced, ...(out.jumped ? { started_on: out.jumped } : {}),
             note: "What was queued after the playing song is replaced. Report one line and stop." };
-        } else if (kind === "fresh" && (job.device || (!onIt && !newerSession))) {
+        } else if (kind === "fresh" && (startOn || (!onIt && !newerSession))) {
           // STAGE 3: the list is replaced, with a backup first, for the next
           // press — or, from Start fresh, started at once on the named speaker.
           const out = await replacePlaylistSafely(env, { pl: { id: p.playlist, name: djName, catalog: "spotify", via: "endless" },
@@ -793,6 +801,8 @@ export async function callTool(env, name, args, budget) {
             // rather than judging "past the end" from one without the new songs.
             sess.tracks = tracks ?? null;
             if (sess.pending === jobId) sess.pending = false;
+            sess.batches = [...batchSizes(sess), keep.length].slice(-4);
+            delete sess.batch;
             if (kind !== "steer") sess.topups = (sess.topups ?? 0) + 1;
           }
           // A landed job need not be kept: its record is the log line below.
@@ -822,14 +832,14 @@ export async function callTool(env, name, args, budget) {
     // playing song, and on a program after the program ends. `now` and
     // `replace_rest` only when the listener said so outright.
     case "play_endless": {
-      const who = findDj(env, String(args.dj ?? ""));
+      const who = djNamed(env, String(args.dj ?? ""));
       if (!who) throw new Error(`no DJ called "${String(args.dj ?? "").slice(0, 40)}". get_dj lists them.`);
       const device = String(args.device ?? "").trim() || env.DEFAULT_DEVICE || parseRoomDevices(env)[0] || "";
       if (!device) throw new Error("name a speaker: list_devices shows them.");
       const words = String(args.words ?? "").replace(/\s+/g, " ").trim().slice(0, 120) || null;
       const r = await playEndless(env, { dj: who.key, device, budget, words,
         when: args.when === "now" || args.when === "next" ? args.when : null });
-      const bad = r.start && r.start !== "ok";
+      const bad = r.start && r.start !== "ok" && r.start !== "sent";
       const SAID = {
         started: `${who.name} is the guest DJ on the ${device}, from their newest program; new songs follow as it runs low.`,
         "carry-on": `${who.name} carries on as the guest DJ on the ${device}, where the set stopped.`,
@@ -856,7 +866,9 @@ export async function callTool(env, name, args, budget) {
         ...(r.status === "own-preset" && words ? { words_unused: true } : {}),
         ...(r.start ? { start: r.start } : {}),
         said: bad ? (r.start === "asleep" ? `The ${device} did not answer: it is asleep. Wake it and ask again.`
-          : `Spotify took it, but the ${device} is not playing it. Ask again.`) : (SAID[r.status] ?? SAID.failed) };
+          : `Spotify took it, but the ${device} is not playing it. Ask again.`)
+          : r.start === "sent" ? `Spotify accepted the start on the ${device}, but the check afterwards failed: it may well be playing.`
+          : (SAID[r.status] ?? SAID.failed) };
     }
 
     case "steer_endless": {
@@ -1044,6 +1056,13 @@ export async function callTool(env, name, args, budget) {
       // settled, because the catalog is the first thing that has to be right.
       let record = null;
       try { record = await getRequestRecord(env, requestId); } catch { /* label only */ }
+      // A set asked by voice starts when it lands (MC-36): its calls are
+      // reserved here, before the claim, or it would land and not start.
+      if (asksToStart(record) && budget && need + ASK_START_CALLS > budget.remaining && !budget.critical) {
+        throw new Error(
+          `this set was asked by voice and starts when it lands: ${need + ASK_START_CALLS} lookups, but only ` +
+          `${budget.remaining} are left in this request — make this call on its own`);
+      }
       const asked = String(record?.service ?? "").toLowerCase();
       const dest = destinationFor(env, dj, setService(env, { asked, uris: args.uris }));
       // Nowhere to land: no preset of their own and no live requests preset
@@ -1269,6 +1288,18 @@ export async function callTool(env, name, args, budget) {
       // THE RE-FIRE (MC-18 decision 9): this set is on the guest now, so the
       // oldest request waiting on it is rung again at once, not at the sweep.
       const refired = commit?.ok && destination ? await refireWaiting(env, destination) : null;
+      // 6. THE START WHEN IT LANDS (MC-36, deploy 2): a set asked by voice
+      // starts on the speaker it named, best effort, after the record.
+      let start = null;
+      if (commit?.ok) {
+        try {
+          start = await startAsked(env, { requestId, record, pid, catalog: cat.name,
+            btn: dest.guest ? dest.guest.btn : dj.button, name: pl.name, budget });
+        } catch (e) {
+          start = { not_started: String(record?.device ?? ""), why: `the start failed (${String(e?.message ?? e).slice(0, 80)})` };
+        }
+        if (start) console.log(`ask-start ${requestId.slice(0, 8)} ${start.started_on ? `on ${start.started_on}` : `not on ${start.not_started}: ${start.why}`}`);
+      }
       if (!commit?.ok) {
         return { status: "written-unrecorded", request_id: requestId,
           playlist: pl.name, id: pid, tracks: args.uris.length,
@@ -1287,13 +1318,20 @@ export async function callTool(env, name, args, budget) {
         ...(out.warnings.length ? { warnings: out.warnings } : {}),
         ...(refired ? { rang_waiting_request: refired } : {}),
         ...(counted.breaks.length ? { written_as_sent: counted.breaks } : {}),
-        note: (dj.button
+        ...(start?.started_on ? { started_on: start.started_on } : {}),
+        ...(start?.not_started ? { not_started: { on: start.not_started, why: start.why } } : {}),
+        note: (start?.started_on
+          // MC-36: asked by voice, and started where it was asked.
+          ? `The set is on ${dj.button ? "the DJ's button" : guestPhrase(env, pid)}, replacing the set that was there, ` +
+            `and the house started it on the ${start.started_on}, where the listener asked for it by voice.`
+          : dj.button
           ? "The set is on the DJ's button and the page will show Ready. " +
             "Nothing was started — the listener presses Play themselves."
           // MC-18 stage 3: on the guest for its service, over the set before.
           : `The set is on ${guestPhrase(env, pid)}, replacing the set that was there, and ` +
-            `the page will show Ready. Nothing was started — preset ${dest.guest.btn} plays it on ` +
-            "its next press" + (cat.name === "spotify" ? "." : "; nothing here can start Tidal.")) +
+            `the page will show Ready. Nothing was started${start?.not_started ? ` on the ${start.not_started}: ${start.why}` : ""} — ` +
+            `preset ${dest.guest.btn} plays it on its next press` +
+            (cat.name === "spotify" || start ? "." : "; nothing here can start Tidal.")) +
           // Said HERE because this is where the curator is looking, which
           // means the feature does not depend on a routine prompt somewhere
           // else having been told about it.
@@ -1815,6 +1853,15 @@ export async function callTool(env, name, args, budget) {
       const limit = Math.max(1, Math.min(asked, Math.floor(90 / args.queries.length)));
 
       const cat = houseCatalog(env, args.catalog);
+      // A BLOCK IS NOT A BURST (the deep review, 2026-10-31): every query was
+      // sent, refused, waited on and sent again. A Tidal search is not behind it.
+      if (cat.name === "spotify") {
+        const throttle = await throttledUntil(env);
+        if (throttle) {
+          throw new Error(`Spotify is limiting this account's requests (quota exceeded) for about ` +
+            `${waitWords(minutesLeft(throttle))} more. Nothing was searched. Do not retry now.`);
+        }
+      }
       // What each result is, for the rule check at the write (setcheck.js).
       const seen = [];
       const look = async (query) => {
@@ -1838,7 +1885,8 @@ export async function callTool(env, name, args, budget) {
             // give up on this query rather than hammering on behalf of the rest.
             // Not on a catalog whose transport paces and retries itself: this
             // would be the third try, made while holding a lane.
-            if (e.status !== 429 || cat.paced) throw e;
+            // Nor on a wait this long, which is a quota and not a burst.
+            if (e.status !== 429 || cat.paced || e.retryAfter > 30) throw e;
             const wait = Math.min((e.retryAfter || 1) * 1000, 5000);
             await new Promise((r) => setTimeout(r, wait));
             return { query, results: await look(query) };
@@ -2478,6 +2526,13 @@ export async function callTool(env, name, args, budget) {
       // the set's service, else their crate there — null when there is none.
       const dest = destinationFor(env, dj, setCatObj.name);
       if (loadButton && !dj.button && !dest.guest) throw noButton();
+      if (setCatObj.name === "spotify") {
+        const throttle = await throttledUntil(env);
+        if (throttle) {
+          throw new Error(`Spotify is limiting this account's requests (quota exceeded) for about ` +
+            `${waitWords(minutesLeft(throttle))} more, so its tracks cannot be checked. Nothing was published. Do not retry now.`);
+        }
+      }
       const { tracks: resolved, suspect } = await resolveProgramTracks(
         env, setCatObj, claims, budget);
 

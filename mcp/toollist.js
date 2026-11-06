@@ -5,7 +5,7 @@ import { CATALOGS } from "./catalog.js";
 import { findDj, house } from "./house.js";
 import { PERSONAS } from "./djs.js";
 import { ARCHIVE } from "./archive-identity.js";
-import { artistLookupOn, lastfmOn } from "./services.js";
+import { artistLookupOn, houseCatalogNames, lastfmOn } from "./services.js";
 
 // Last.fm's one verb (lastfm.js), for a house with the key: here, not
 // imported from there, which would bring this file in a loop.
@@ -2059,7 +2059,18 @@ export const VOICE_TOOLS = new Set([
   // lists, and callTool refuses them elsewhere. play_archive's request_id
   // stays the connector's: the voice settles no listener request.
   "search_archive", "play_archive",
+  // TALK TAKES THE ORDER (MC-36, the owner, 2026-10-27/31): a set asked of a
+  // DJ is filed for the curator, as the Ask form files it, so it is made with
+  // no phone open. Not a connector tool: only the voice has it, and only
+  // where askDjOn holds.
+  "ask_dj",
 ]);
+// Where Talk files a DJ's set for the curator (MC-36, the plan's default 5):
+// asks are on and the curator is woken for them, with the ledger to hold
+// them. Anywhere else Talk makes a set on the call, as it always did.
+export function askDjOn(env) {
+  return env?.REQUESTS_ENABLED === "true" && env?.AUTOFULFILL_ENABLED === "true" && !!env?.STATION;
+}
 // The voice's one writer: the DJ's key, and the programme in the shape the
 // writers share (their schemas differ only in their prose). 2026-10-13: the
 // Bootlegger, the Correspondent, the Engineer and Baddie were cut (the
@@ -2225,6 +2236,11 @@ export const VOICE_BRIEFS = {
     "(a DJ's key, \"button 4\", \"replay\"), an id or an exact name. The old contents are saved " +
     "first and restore_playlist puts them back. Pass URIs from search_tracks, checked. For a set asked " +
     "of a DJ by name, pass `dj` (their key) and `ask` (the person's words).",
+  // Where ask_dj is offered (MC-36): a DJ's NEW set is filed, never written here.
+  replace_playlist_asks: "Replace a playlist's tracks with an ordered list of URIs. `playlist` is an alias " +
+    "(a DJ's key, \"button 4\", \"replay\"), an id or an exact name. The old contents are saved " +
+    "first and restore_playlist puts them back. Pass URIs from search_tracks, checked. A NEW set asked of a DJ " +
+    "is ask_dj, never this; when rewriting a DJ's set that is playing, pass `dj` (their key) and `ask`.",
   keep_set: "Keep the set on a requests preset on the Shelf, when the person says keep it / save it: " +
     "`service` spotify (default) or tidal: the requests preset for that service, a `title` in the DJ's voice and a one-line " +
     "`intro`. The tracks are read from the preset; only a set with a DJ can be kept. Nothing plays.",
@@ -2256,7 +2272,37 @@ export const VOICE_BRIEFS = {
     "`how_to_hear_it` what to say. Otherwise it only changes what the archive preset plays when pressed.",
   play_playlist: "Start a playlist on a speaker, from the top: `playlist` is an alias (a DJ's key, " +
     "\"button 4\", \"replay\"), an id or an exact name; `device` the speaker's exact name.",
+  ask_dj: "Ask a DJ for a new set, made by the house's curator after the call, so the person can hang up: " +
+    "`dj` by name, `words` what they asked for, `minutes` (60 when they said none), `avoid`, `device` the speaker. " +
+    "It lands on the requests preset in place of the set there and starts on `device` as it lands; `keep` puts it on " +
+    "the Shelf too. " +
+    "No get_dj or search first. Say the one line in `said`.",
 };
+// ask_dj's arguments (MC-36): the Ask form's fields, and the speaker the set
+// starts on when it lands. `service` only where the house
+// has both, as the form's switch.
+function askDjTool(env) {
+  const both = houseCatalogNames(env).length > 1;
+  return {
+    name: "ask_dj", description: VOICE_BRIEFS.ask_dj,
+    inputSchema: {
+      type: "object",
+      properties: {
+        dj: { type: "string", description: "The DJ's name, as the person said it." },
+        words: { type: "string", description: "What they asked for, in their words, without the DJ's name or the " +
+          "length; \"your pick\" when they left it to the DJ." },
+        minutes: { type: "integer", description: "The length they said, in minutes: 30, 60, 90 or 120." },
+        avoid: { type: "string", description: "Anything they said to leave out." },
+        keep: { type: "boolean", description: "True when they asked to keep it or put it on the shelf." },
+        notes: { type: "string", enum: ["short", "long"], description: "A kept set from the Librarian or Gatefold: " +
+          "\"long\" when they asked for the long read." },
+        ...(both ? { service: { type: "string", enum: ["spotify", "tidal"], description: "Only when they named the service." } } : {}),
+        device: VOICE_DEVICE,
+      },
+      required: ["dj", "words", "device"],
+    },
+  };
+}
 export function voiceFunctions(env) {
   const all = toolsWithMeta(env);
   // The one writer, built from the Librarian's schema (the writers share one
@@ -2272,7 +2318,8 @@ export function voiceFunctions(env) {
       required: ["dj", ...(first.inputSchema.required ?? [])],
     }),
   }] : [];
-  return [...all, ...writer]
+  const ask = askDjOn(env) ? [askDjTool(env)] : [];
+  return [...all, ...writer, ...ask]
     .filter((t) => VOICE_TOOLS.has(t.name))
     .map((t) => {
       let parameters = t.inputSchema;
@@ -2292,7 +2339,8 @@ export function voiceFunctions(env) {
         const { request_id: _r, ...rest } = parameters.properties;
         parameters = { ...parameters, properties: rest };
       }
-      return { type: "function", name: t.name, description: VOICE_BRIEFS[t.name] ?? t.description, parameters };
+      const brief = ask.length && t.name === "replace_playlist" ? VOICE_BRIEFS.replace_playlist_asks : VOICE_BRIEFS[t.name];
+      return { type: "function", name: t.name, description: brief ?? t.description, parameters };
     });
 }
 export function briefSchema(node) {

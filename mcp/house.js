@@ -14,6 +14,7 @@ import { ROOM_ARCHIVE_TILE, fallbackDevice, parseRoomDevices, parseSpeakers, rea
 import { PLAYLIST_PARSERS, SNAP_TTL_S, catalogFor, fold, lastfmOn, parseAliases, programsKV, withBudget } from "./services.js";
 import { shelfElsewhere } from "./shelf.js";
 import { curatorKind } from "./curator-events.js";
+import { askDjOn } from "./toollist.js";
 
 // ------------------------------------------------------------------ DJs
 //
@@ -477,6 +478,8 @@ export async function rulesFacts(env) {
       lastfm: lastfmOn(env),
       // ChatGPT is the house's curator (MC-31 6b): its rules page says so.
       chatgpt: curatorKind(env) === "chatgpt",
+      // Talk files a DJ's set for the curator (MC-36).
+      talkasks: talk && askDjOn(env),
     },
     blanks: {
       "default speaker": fallbackDevice(env) || "speaker chosen at setup",
@@ -916,6 +919,48 @@ export function findDj(env, ref) {
   const loose = roster.filter(
     (dj) => startsAWord(dj.name) || dj.aliases.some(startsAWord));
   return loose.length === 1 ? loose[0] : null;
+}
+
+// A NAME HEARD, NOT TYPED (2026-11-05: Talk heard "DJ Pup Rock", get_dj
+// refused it, and the ask went in 15 seconds later; at 20:35 "DJ Sol" was
+// lost the same way). Only for the voice's doors: findDj first, then without
+// a spoken "DJ", then one letter off (two in a name of eight or more; three
+// letters at least), and only when ONE DJ is that close. A name no
+// DJ is near still fails, as findDj's does: a DJ we do not have must not
+// quietly become another.
+export function findSpokenDj(env, ref) {
+  const heard = String(ref ?? "");
+  const exact = findDj(env, heard);
+  if (exact) return exact;
+  const bare = heard.replace(/^\s*(?:dj|deejay)\b[\s.]*/i, "").replace(/[\s.]+(?:dj|deejay)\s*$/i, "").trim();
+  if (bare && bare !== heard.trim()) {
+    const hit = findDj(env, bare);
+    if (hit) return hit;
+  }
+  const squash = (s) => String(s).normalize("NFD").replace(/\p{M}/gu, "").toLowerCase().trim()
+    .replace(/^the\s+/, "").replace(/[^a-z0-9]/g, "");
+  const needle = squash(bare);
+  if (needle.length < 3) return null;
+  const allowed = needle.length >= 8 ? 2 : 1;
+  let best = null, bestD = Infinity, tie = false;
+  for (const dj of Object.values(house(env).djs)) {
+    const d = Math.min(...[dj.key, dj.name, ...dj.aliases].map((n) => editDistance(needle, squash(n))));
+    if (d < bestD) { best = dj; bestD = d; tie = false; }
+    else if (d === bestD && best && dj.key !== best.key) tie = true;
+  }
+  return best && bestD <= allowed && !tie ? best : null;
+}
+// Letters to add, drop or change to turn one word into the other.
+function editDistance(a, b) {
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const row = [i];
+    for (let j = 1; j <= b.length; j++) {
+      row[j] = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = row;
+  }
+  return prev[b.length];
 }
 
 // Whose programme this is.

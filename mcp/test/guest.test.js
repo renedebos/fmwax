@@ -12,6 +12,7 @@ import worker, { __test } from "../worker.js";
 import { makeEnv, installFetch, installTidalFetch, track, putTile } from "./harness.js";
 import { station } from "../station.js";
 import { PERSONAS } from "../djs.js";
+import { workWaiting } from "../waiting.js";
 
 const {
   callTool, parseButtons, house, parseAliases, guestFor, guestForPlaylistId, legacyAliasFor,
@@ -944,3 +945,149 @@ test("keep_set keeps the set on a requests preset under the DJ it names, once; a
       /names no DJ/);
   } finally { f.restore(); }
 });
+
+// THE WORDS FOLLOW THE ASK, NOT THE DJ'S HOME (the owner, 2026-10-31: Sessions
+// lives on Spotify's preset 3, a set was asked for on Tidal, and its card said
+// it "cannot be written" until Spotify's block lifted; it landed a minute later).
+test("in a Spotify block, a Tidal ask is neither told to wait nor left unrung; a Spotify ask is", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  const rings = [];
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => {
+    if (String(u).startsWith("https://api.anthropic.com/")) { rings.push(JSON.parse(init.body).text); return Response.json({ type: "routine_fire" }); }
+    return inner(u, init);
+  };
+  try {
+    const e = await crated(liveEnv({ REQUESTS_ENABLED: "true", AUTOFULFILL_ENABLED: "true",
+      REQUEST_ROUTINE_ID: "trig_test", REQUEST_ROUTINE_TOKEN: "routine-token" }));
+    await e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 600000 }));
+    await seedAsk(e, "r-tidal", "dr-funkenstein", { service: "tidal" });
+    await seedAsk(e, "r-spotify", "hank");
+    for (const row of e.STATION.rows.values()) row.created_at = Date.now() - 30 * 60000;
+    const page = async (dj) => {
+      const html = await (await worker.fetch(new Request(`https://x.test/buttons/${KEY}/${dj}`), e)).text();
+      await new Promise((r) => setImmediate(r));
+      return html;
+    };
+    const tidal = await page("dr-funkenstein");
+    assert.match(tidal, /Taking longer than usual/, "the card is the waiting one");
+    assert.ok(!/so the set cannot be written until then/.test(tidal), "Spotify's block is not this set's");
+    assert.equal(rings.length, 1, "and the curator is asked again");
+    const spotify = await page("hank");
+    assert.match(spotify, /so the set cannot be written until then/);
+    assert.equal(rings.length, 1, "a ring would only meet the block");
+  } finally { globalThis.fetch = inner; td.restore?.(); f.restore(); }
+});
+
+// SPOTIFY'S BLOCK, ON THE PAGES (the deep review, 2026-10-31).
+const block = (e) => e.PROGRAMS.put("spotify:throttled", JSON.stringify({ until: Date.now() + 600000 }));
+const pageOf = async (e, path) => (await worker.fetch(new Request(`https://x.test${path}`), e)).text();
+const askHouse = () => crated(liveEnv({ REQUESTS_ENABLED: "true", AUTOFULFILL_ENABLED: "true",
+  REQUEST_ROUTINE_ID: "trig_test", REQUEST_ROUTINE_TOKEN: "routine-token" }));
+const aged = (e) => { for (const row of e.STATION.rows.values()) row.created_at = Date.now() - 30 * 60000; };
+
+test("a block is not a quiet curator: Spotify's waiting work is not counted, Tidal's is", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  try {
+    const e = await askHouse();
+    await seedAsk(e, "r-spotify", "hank");
+    aged(e);
+    assert.equal((await workWaiting(e)).asks, 1, "no block: a late ask is the curator's");
+    await block(e);
+    assert.equal(await workWaiting(e), null, "in a block it is Spotify's");
+    await seedAsk(e, "r-tidal", "dr-funkenstein", { service: "tidal" });
+    aged(e);
+    assert.equal((await workWaiting(e)).asks, 1, "a late Tidal ask is not behind the block");
+    const q = await callTool(e, "list_requests", {}, b());
+    assert.equal(q.waiting_too_long.asks, 1);
+    assert.match(q.stop, /Requests on Tidal go ahead/);
+  } finally { td.restore?.(); f.restore(); }
+});
+
+test("in a block, a Spotify ask's card and Loaded's line name Spotify and blame nobody", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  try {
+    const e = await askHouse();
+    await seedAsk(e, "r-spotify", "hank");
+    aged(e);
+    await block(e);
+    const dj = await pageOf(e, `/buttons/${KEY}/hank`);
+    assert.match(dj, /Waiting for Spotify\./);
+    assert.match(dj, /so the set cannot be written until then\. It is made after that\. Nothing will play until someone presses Play\./);
+    assert.ok(!/keeps being asked|plan has hit its limit/.test(dj), "not the curator's fault, and nothing is ringing");
+    const loaded = await pageOf(e, `/buttons/${KEY}`);
+    assert.match(loaded, /its Play buttons are refused until then; the presets on the speakers still work/);
+    assert.ok(!/Play would be refused|plan may have hit its limit/.test(loaded));
+  } finally { td.restore?.(); f.restore(); }
+});
+
+test("the Shelf says so in a block, and speaks of Tidal only when it has Tidal sets", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  try {
+    const e = liveEnv();
+    await seedProgram(e, "s1", "hank", ["spotify:track:aaaaaaaaaaaaaaaaaaaaaa"]);
+    assert.ok(!/is limiting this account/.test(await pageOf(e, `/notes/${KEY}`)), "no block, no line");
+    await block(e);
+    const one = await pageOf(e, `/notes/${KEY}`);
+    assert.match(one, /so Play on a Spotify set is refused until then\./);
+    assert.ok(!/Tidal sets are not affected/.test(one));
+    await seedProgram(e, "t1", "hank", ["tidal:track:1"]);
+    assert.match(await pageOf(e, `/notes/${KEY}`), /Tidal sets are not affected\./);
+  } finally { td.restore?.(); f.restore(); }
+});
+
+test("search_tracks in a block: Spotify's refuses before it calls, Tidal's goes ahead, and a quota's 429 is not sent twice", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  const inner = globalThis.fetch;
+  try {
+    const e = liveEnv();
+    await block(e);
+    const before = f.calls.length;
+    await assert.rejects(callTool(e, "search_tracks", { queries: [{ query: "x" }], catalog: "spotify" }, b()), /Nothing was searched/);
+    assert.equal(f.calls.length, before, "no call to Spotify");
+    const tidal = await callTool(e, "search_tracks", { queries: [{ query: "x" }], catalog: "tidal" }, b());
+    assert.equal(tidal.results?.[0]?.error, undefined, JSON.stringify(tidal).slice(0, 200));
+    // The first refusal of a quota: no note yet, and a wait no retry can sit out.
+    await e.PROGRAMS.delete("spotify:throttled");
+    let searches = 0;
+    globalThis.fetch = async (u, init = {}) => {
+      if (new URL(String(u)).pathname === "/v1/search") {
+        searches += 1;
+        return new Response(JSON.stringify({ error: { status: 429, message: "QUOTA_EXCEEDED" } }), { status: 429, headers: { "retry-after": "40000" } });
+      }
+      return inner(u, init);
+    };
+    await assert.rejects(callTool(e, "search_tracks", { queries: [{ query: "a" }, { query: "b" }], catalog: "spotify" }, b()), /lookups failed/);
+    assert.equal(searches, 2, "once each");
+  } finally { globalThis.fetch = inner; td.restore?.(); f.restore(); }
+});
+
+// ONE REFUSED READ IS NO PROOF (the deep review, 2026-10-31): a read-back that
+// failed once wrote no tracklist, and the ticked Keep was settled as lost.
+test("a read-back refused once is read again, so a ticked Keep has its tracklist", async () => {
+  const f = installFetch({ contents: [track("old")], fail: { [`GET /playlists/${GS}/items`]: [null, "boom"] } });
+  const td = installTidalFetch({ contents: ["9"] });
+  try {
+    const e = await crated(liveEnv());
+    await seedAsk(e, "r-keep", "hank", { keep: true });
+    const out = await callTool(e, "fulfill_request", { request_id: "r-keep", uris: uris("h1", "h2") }, b());
+    assert.equal(out.status, "ready", JSON.stringify(out));
+    assert.equal(out.verified, "confirmed");
+    assert.ok(await e.PROGRAMS.get("fulfilled:r-keep"), "the tracklist is recorded");
+  } finally { td.restore?.(); f.restore(); }
+});
+
+test("a band's Play after Spotify signed the house out says that, not that Spotify refused it", async () => {
+  const f = installFetch({ contents: [track("old")] });
+  const td = installTidalFetch({ contents: ["9"] });
+  try {
+    const html = await pageOf(liveEnv(), `/buttons/${KEY}?played=signedout&g=1&on=Pro+Plus`);
+    assert.match(html, /Spotify has signed the house out, so nothing was started\. Reconnect it on Speakers, under Spotify\./);
+  } finally { td.restore?.(); f.restore(); }
+});
+

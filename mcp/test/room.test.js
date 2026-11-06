@@ -6,10 +6,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import worker, { __test } from "../worker.js";
+import realWorker, { __test } from "../worker.js";
 import { PERSONAS, ROSTER } from "../djs.js";
 import { renderProgram, renderDjRoom, waitWords } from "../programs.js";
-import { makeEnv, installFetch, installTidalFetch, track, buttons, HOUSE, TPID, putTile, getTile } from "./harness.js";
+import { makeEnv, installFetch, installTidalFetch, track, buttons, HOUSE, TPID, putTile, getTile, withSheet } from "./harness.js";
+const worker = withSheet(realWorker);
 import { ARCHIVE } from "../archive-identity.js";
 
 const { callTool } = __test;
@@ -2018,7 +2019,7 @@ test("an open request replaces the composer with an open request row in Requests
   const f = installFetch({ contents: [track("t1")] });
   try {
     const html = await (await worker.fetch(get(`/buttons/${KEY}/hank?ask=sent`), e)).text();
-    assert.match(html, /Pending — Claude has not made this set yet/);
+    assert.match(html, /Pending — the curator has not made this set yet/);
     assert.match(html, /Request sent to Hank\./, "the 303's code became the flash line");
     assert.ok(!html.includes('class="reqform askcard"'), "one request per DJ: the ask card yields to the row");
     // Option A (2026-09-05): the request lives in the Requests section UNDER
@@ -2054,7 +2055,7 @@ test("a claimed request says so, and a missing record degrades to a plain card",
   const f = installFetch({ contents: [track("t1")] });
   try {
     const html = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
-    assert.match(html, /Claude is making this set right now/);
+    assert.match(html, /The curator is making this set right now/);
     assert.ok(!html.includes("undefined"), "no record, no echo, no debris");
   } finally { f.restore(); }
 });
@@ -2091,9 +2092,9 @@ test("a claimed row with a dead lease reads as retrying, not as work in progress
     // attempt did not finish" — rather than "pending … usually ready in five
     // to fifteen minutes", which the owner watched for half an hour.
     assert.match(html, /<span class="reqword">retrying<\/span>/);
-    assert.match(html, /The first attempt did not finish\. Claude is asked again/);
+    assert.match(html, /The first attempt did not finish\. The curator is asked again/);
     assert.ok(!html.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<div class="nowbar[\s\S]*?<\/div>/, "").includes("right now"), "no claimant is known to be running");
-    assert.ok(!html.includes("Claude has not made this set yet"));
+    assert.ok(!html.includes("the curator has not made this set yet"));
     assert.match(html, /request\/dismiss/, "the ledger dismisses a dead claim, so the page offers it");
     assert.ok(!html.includes('class="reqform askcard"'), "still one request per DJ");
   } finally { f.restore(); }
@@ -3465,7 +3466,7 @@ test("a 429 from Spotify leaves a note for as long as it says, and the pages the
   try {
     const before = Date.now();
     const html = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
-    assert.match(html, /Spotify is limiting this account's requests for about (9|10) minutes more \(quota exceeded\), so Play is\s+refused/, "the tracklist's problem line, with the wait");
+    assert.match(html, /Spotify is limiting this account's requests for about (9|10) minutes more \(quota exceeded\), so Play on Spotify is\s+refused/, "the tracklist's problem line, with the wait");
     assert.ok(html.includes(`/buttons/${KEY}/hank/play`) === false, "Play would be refused: no form");
     const note = await e.PROGRAMS.get(THROTTLE_KEY, { type: "json" });
     assert.ok(note.until >= before + 600 * 1000 && note.until <= Date.now() + 600 * 1000, "the wait Spotify said");
@@ -3503,8 +3504,12 @@ test("a 429 from Spotify leaves a note for as long as it says, and the pages the
 test("the DJ page's tracklist read is cached for five minutes, and a stale entry is read past", async () => {
   const e = env();
   const f = installFetch({ contents: [track("t1"), track("t2")] });
+  const ttls = [];
+  const put = e.PROGRAMS.put.bind(e.PROGRAMS);
+  e.PROGRAMS.put = async (k, v, o) => { if (String(k).startsWith("items:")) ttls.push(o?.expirationTtl); return put(k, v, o); };
   try {
     await worker.fetch(get(`/buttons/${KEY}/hank`), e);
+    assert.deepEqual(ttls, [300], "KV keeps it as long as the page trusts it (120 undid the five minutes below)");
     const reads = () => f.calls.filter((c) => c === `GET /playlists/${P(2)}/items`).length;
     assert.equal(reads(), 1);
     const again = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
@@ -3629,7 +3634,7 @@ test("while the note stands, Play and pause refuse in words before anything is s
     const dj = await (await worker.fetch(get(`/buttons/${KEY}/hank`), e)).text();
     assert.match(dj, /Track t1/);
     assert.ok(!dj.includes('class="go big"'), "no play circle");
-    assert.match(dj, /for about 20 minutes more \(quota exceeded\), so Play is\s+refused/);
+    assert.match(dj, /for about 20 minutes more \(quota exceeded\), so Play on Spotify is\s+refused/);
   } finally { f.restore(); }
 });
 
@@ -3828,7 +3833,7 @@ test("a slow player: the wall goes out first, and /playing names the band, the t
       // No WiiMs named in this house, so every room is an "other" one, and
       // since 2026-09-23 the bar may pause any room Spotify plays on.
       artists: "James Brown", device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus",
-      song: "https://open.spotify.com/track/cs", list: "https://open.spotify.com/playlist/0000000000000000000002" });
+      list: "https://open.spotify.com/playlist/0000000000000000000002" });
     assert.equal(sp.reads, 1, "the wall's own read answers the page's question: Spotify is asked once");
   } finally { sp.restore(); f.restore(); }
 });
@@ -3873,7 +3878,7 @@ test("/playing answers GET only, on the key, and says quiet, not ours, unknown a
       // No band, no guest and no speaker preset: no `preset` field at all
       // (MC-21) — the bar prints the "from" words instead.
       { speakers: [], others: ROOM_OTHERS, pick: { name: "Pro Plus", slug: "pro-plus", why: "music" }, state: "playing", dj: null, btn: null, from: "an album", track: "Cold Sweat", album: "A", artists: "James Brown", device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus",
-        song: "https://open.spotify.com/track/cs" });
+        });
   } finally { sp.restore(); f2.restore(); }
   // Spotify refusing the account: the throttle note speaks, and nothing is read.
   const e3 = env();

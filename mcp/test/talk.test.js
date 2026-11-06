@@ -173,8 +173,10 @@ test("a session: the offer goes to OpenAI inside the documented shape, and an an
     assert.match(r.instructions, /the "replay" playlist/, "the house's replay alias, from config");
     assert.equal(r.tool_choice, "auto");
     const fns = r.tools.filter((t) => t.type === "function").map((t) => t.name).sort();
-    // This house has no archive preset, so the archive's two are not offered.
-    assert.deepEqual(fns, [...__test.VOICE_TOOLS].filter((n) => !/_archive$/.test(n)).sort(), "exactly the voice's tools");
+    // This house has no archive preset, so the archive's two are not offered, and
+    // takes no asks, so neither is ask_dj (MC-36).
+    assert.deepEqual(fns, [...__test.VOICE_TOOLS].filter((n) => !/_archive$/.test(n) && n !== "ask_dj").sort(),
+      "exactly the voice's tools");
     // The one writer (MC-17): the Librarian's shape (the Professor's until the owner cut
     // him, 2026-10-15) with the DJ's key first, every field's description cut to a
     // sentence, and none of the make_<dj>_program tools beside it. Three writers from

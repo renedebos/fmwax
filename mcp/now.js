@@ -2,7 +2,7 @@
 // home helper's readings, the one answer every page reads (nowAnswer), the bar's
 // pause note, and the one rule for which speaker (pickFor).
 // Split out of worker.js on 2026-09-26 (consolidation).
-import { waitWords, serviceLink, PICK_FIRM_S } from "./programs.js";
+import { BLOCK_WORDS, waitWords, serviceLink, PICK_FIRM_S } from "./programs.js";
 import { station } from "./station.js";
 import {
   atWords, endlessNamed, findDj, guestFor, guestHolders, houseClockWords, ownPresetKeys, playingFromWords, speakerPresetFor,
@@ -64,14 +64,10 @@ function posOf(st) {
 // mode 31 for Spotify Connect) is on the LAN. So a paused session is drawn
 // as what it honestly is from here: nothing Spotify can be SEEN playing.
 // roomPlaying already says exactly that, and every page maps with it.
-// THE PLAYING RECORD'S DOOR (2026-09-23, the song-link canvas, A): its
-// open.spotify.com address, from the uri the player read already carries.
-// No call; null for anything that is not a Spotify track or episode.
-export function songLink(uri) {
-  const m = /^spotify:(track|episode):([A-Za-z0-9]+)$/.exec(String(uri ?? ""));
-  return m ? `https://open.spotify.com/${m[1]}/${m[2]}` : null;
-}
-// The playlist the record plays from, the same way: its id is in the read.
+// NO LINK TO THE SONG (the owner, 2026-11-02, on the iPhone): the Spotify app
+// takes a track link as "play this", from 0:00 on its album, which restarted the
+// song and lost an endless set. The playlist's link leaves the music alone.
+// Its id is in the read, so it costs no call.
 export function listLink(pid) {
   return /^[A-Za-z0-9]{22}$/.test(String(pid ?? "")) ? `https://open.spotify.com/playlist/${pid}` : null;
 }
@@ -193,6 +189,23 @@ export async function housePlayer(env, { fresh = false, deadlineMs = 0, got, sha
   if (share) rememberPlayer(env, read);
   return read;
 }
+// NOTHING FOR THE WATCH TO LOOK AT (the deep review, 2026-10-31: its idle looks
+// were 48 of a quiet day's 92 calls). Two words together, and no Spotify call:
+// the helper's, fresh, that every WiiM answered and none is on Spotify; and the
+// house's kept answer, that nothing played. The helper cannot see an Echo or
+// the iPhone. The kept answer can, and every start sent from here forgets it,
+// so "none kept" means look.
+export async function nothingOnSpotify(env, now = Date.now()) {
+  if (env.PLAYER_REUSE === "off") return false;
+  const got = await helperGot(env);
+  const speakers = helperViewOf(env, got, now).lan?.speakers;
+  const wiims = parseSpeakers(env);
+  if (!speakers || !wiims.length || !got?.player || got.player.st?.is_playing === true) return false;
+  return wiims.every(({ name }) => {
+    const r = speakers[name];
+    return !!r && r.state !== "unreachable" && !(r.state === "play" && (!r.source || /^spotify/i.test(r.source)));
+  });
+}
 
 // WHERE A PAGE'S HELPER PRESS GOES (MC-25): key `btn` on the WiiM the phone
 // picked, or the house's default one when the pick is an Echo or the phone —
@@ -200,15 +213,17 @@ export async function housePlayer(env, { fresh = false, deadlineMs = 0, got, sha
 // speaker whose reading shows nothing saved on that key.
 // The WiiM is the one speaker (MC-28, pickFor) when that is a WiiM; `p` is
 // the player when the page read it, else the memo stands in (pickCheap).
-export async function helperKeyFor(env, request, btn, p = undefined) {
+// `hv` and `recs`, when the caller has them in hand or on their way (the
+// Loaded page, MC-37 step B): values or promises, read here otherwise.
+export async function helperKeyFor(env, request, btn, p = undefined, { hv: knownHv = null, recs = null } = {}) {
   if (!Number.isInteger(btn) || btn < 1 || btn > 12) return null;
-  const hv = await helperView(env);
+  const hv = await (knownHv ?? helperView(env));
   if (!hv.lan?.hands) return null;
   const boxes = parseSpeakers(env);
   const pick = (p === undefined ? await pickCheap(env, request, hv) : pickFor(env, request, p, hv.lan))?.name ?? null;
   const box = boxes.find((b) => b.name === pick) ?? boxes.find((b) => b.name === env.DEFAULT_DEVICE) ?? boxes[0];
   if (!box) return null;
-  const rows = (await readReadings(env, [box]))[box.slug]?.presets;
+  const rows = (await (recs ?? readReadings(env, [box])))?.[box.slug]?.presets;
   if (Array.isArray(rows) && !rows.some((r) => r.btn === btn)) return null;
   // `elsewhere`: the phone picked another speaker (an Echo, the phone), so
   // the button must say where it plays.
@@ -420,7 +435,7 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
     // bar says "Not known for about N minutes" and must not have to read
     // a number out of prose to do it.
     return { ...also, state: "throttled", mins, notice: "Spotify is limiting this account's requests for about " +
-      `${waitWords(mins)} more (quota exceeded) — what is playing cannot be read and Play would be refused until then` };
+      `${waitWords(mins)} more (quota exceeded) — ${BLOCK_WORDS}` };
   }
   // SIGNED OUT (MC-31 stage 0b): a player that cannot be read because
   // Spotify ended the house's sign-in says that, on every tab's bar.
@@ -460,7 +475,6 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
     // As read, not moved on: two polls on one kept read give one answer
     // (MC-29). The page counts on from `at`.
     ...(p.pos ? { pos: p.pos } : {}), ...(who ? { who } : {}),
-    ...(songLink(p.uri) ? { song: songLink(p.uri) } : {}),
     ...(listLink(p.pid) ? { list: listLink(p.pid) } : {}),
     live: p.device && rooms.includes(p.device) ? p.device : null,
     // What the now bar's pause may name, by the transport route's rules.
@@ -526,7 +540,10 @@ export async function pauseNoteBeside(env, p) {
 export function pausedFor(env, note) {
   if (!note) return null;
   return { track: note.track ?? null, artists: note.artists ?? null, device: note.device ?? null,
-    ...(songLink(note.uri) ? { song: songLink(note.uri) } : {}),
+    // The sleeve and the album the pause kept (2026-11-02), Spotify's own
+    // picture host only, as roomPlaying reads it.
+    ...(/^https:\/\/i\.scdn\.co\//.test(String(note.art ?? "")) ? { art: note.art } : {}),
+    ...(note.album ? { album: String(note.album) } : {}),
     ...(listLink(note.pid) ? { list: listLink(note.pid) } : {}),
     ...(note.preset ? { preset: note.preset } : note.from ? { from: note.from } : {}),
     again: !!((note.pid || note.uris?.length) && pausableSpeaker(env, note.device)) };

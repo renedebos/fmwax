@@ -600,8 +600,8 @@ test("the bar's panel carries an Open in Tidal row, shown only while the speaker
   try {
     const e = env();
     const html = await page(e, `/buttons/${KEY}/vibe`);
-    // Design A (2026-09-25): Tidal's own mark, then a Playlist button.
-    assert.match(html, /<div class="nblinks nbtidalrow" hidden><span class="nbmark"><svg[^>]*aria-label="Tidal">[\s\S]*?<a class="nblb nbtidal" href="#"[^>]*hidden>/);
+    // Option 2 (2026-11-02): Tidal's own mark, at the right of the speaker's row.
+    assert.match(html, /<a class="nbout nbtidal" href="#"[^>]*aria-label="Open the playlist in Tidal" hidden><svg[^>]*aria-label="Tidal">/);
     assert.ok(html.includes(`var tidalOffer = ${inlineFn(tidalOffer)};`), "the bar runs the function tested below");
     assert.match(html, /var td = tidalOffer\(o, last\), tb = sheet\.querySelector\("\.nbtidal"\);\s*var showT = !!td;/);
   } finally { sp.restore(); }
@@ -689,3 +689,24 @@ test("a bar with no poll of its own reads once more after a failed read, past th
     assert.deepEqual(await run([{ state }]), { asked: [first], painted: [state] }, `${state} is an answer`);
   }
 });
+
+// SPOTIFY TOOK IT, AND THE CHECK FAILED (the deep review, 2026-10-31): the page
+// said "is playing", where Loaded has always said it may well be.
+test("a Play whose read-back failed says so, and the watch still looks", async () => {
+  const sp = spotify({ now: null });
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => {
+    const url = new URL(String(u));
+    if (url.pathname === "/v1/me/player" && (init.method ?? "GET") === "GET") return new Response("down", { status: 500 });
+    return inner(u, init);
+  };
+  try {
+    const e = env();
+    const r = await worker.fetch(new Request(`https://x.test/buttons/${KEY}/vibe/endless`, { method: "POST",
+      body: new URLSearchParams({ do: "start", device: "Pro Plus" }) }), e);
+    assert.match(r.headers.get("location"), /endless=start-sent/);
+    assert.match(await page(e, r.headers.get("location")), /Spotify accepted the request to start Vibe on the Pro Plus, but the check afterwards failed: it may well be playing\./);
+    assert.equal(doc(e).lastLook, 0);
+  } finally { globalThis.fetch = inner; sp.restore(); }
+});
+
