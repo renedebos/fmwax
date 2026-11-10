@@ -143,9 +143,9 @@ export function sayExamples(env) {
     `Always "for" or "to" right after "${ALEXA_INVOCATION}": without it, Alexa never passes the sentence on.`,
     "Say it a little slowly: a sentence said fast can miss the skill altogether.",
     "\"And keep it\" was once heard as \"and Cupid\": \"and put it on the shelf\" is safer.",
-    ...(own ? [`"Fresh" works only on its own: "${nm(own)}, honky tonk, fresh" asks for a set of "honky tonk fresh".`] : []),
+    ...(own ? [`"Fresh" works only on its own: "${nm(own)}, new funk, fresh" asks for a set of "new funk fresh".`] : []),
     `"Alexa, open ${ALEXA_INVOCATION}" is refused under Alexa+: say it all in one breath.`,
     "\"Hush\" and \"carry on\" often go to Alexa itself: the bar's pause is the sure way.",
-  ], checks: own && asks ? [{ ask: { dj: own, words: "honky tonk fresh" }, expect: { kind: "ask-dj", words: "honky tonk fresh" } }] : [] });
+  ], checks: own && asks ? [{ ask: { dj: own, words: "new funk fresh" }, expect: { kind: "ask-dj", words: "new funk fresh" } }] : [] });
   return { invocation: ALEXA_INVOCATION, sections, notes };
 }
