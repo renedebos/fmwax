@@ -29,6 +29,7 @@ h2 .n{flex:0 0 auto;width:1.9rem;height:1.9rem;border-radius:50%;background:var(
 p{margin:.5rem 0}
 ol,ul{margin:.5rem 0;padding-left:1.25rem}
 li{margin:.35rem 0}
+ol ul{margin:.3rem 0}
 .note{font-size:.875rem;color:var(--ink3)}
 .key{display:block;width:100%;margin:.6rem 0;padding:.8rem;border-radius:12px;background:var(--tint);border:1px solid var(--rule);font:600 1.05rem/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere;user-select:all;color:var(--ink)}
 .row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.6rem 0 0}
@@ -71,26 +72,38 @@ noscript p{color:var(--warm);font-weight:600}
 
   <section aria-labelledby="h2">
     <h2 id="h2"><span class="n">2</span>Deploy to Cloudflare</h2>
-    <p>Signed in to other Cloudflare or GitHub accounts in this browser? Then open this page in a private window, so
-      your house can't land on the wrong account. (The key is made again there: use that one.)</p>
-    <div class="row"><a class="btn" id="deploy" target="_blank" rel="noopener"
-      href="https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax">Deploy to Cloudflare</a></div>
+    <p>The button in step 1 opens Cloudflare in a new tab. <b>Keep this tab open beside it</b>: you come back here for
+      each step, and once to press the button a second time.</p>
+    <p class="note">Signed in to other Cloudflare or GitHub accounts in this browser? Then open this page in a private
+      window first, so your house can't land on the wrong account. (The key is made again there: use that one.)</p>
     <ol>
-      <li><b>Sign in to Cloudflare.</b> A form called <i>Set up your application</i> opens.</li>
-      <li><b>Connect GitHub.</b> Under <b>Git account</b>, click <b>New GitHub connection</b>, sign in, choose
-        <b>All repositories</b>, then <b>Install &amp; Authorize</b>.</li>
-      <li><b>Cloudflare now shows "Select a repository". Don't pick anything there.</b> Come back to this page and
-        press <b>Deploy to Cloudflare</b> again. The form opens once more, with your GitHub account filled in.</li>
-      <li><b>Change three things on the form</b>, and leave the rest. The form scrolls inside its own box.
+      <li><b>Press the button, and sign in to Cloudflare.</b> A form called <i>Set up your application</i> opens.
+        <div class="row"><a class="btn" id="deploy" target="_blank" rel="noopener"
+          href="https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax">Deploy to Cloudflare</a></div></li>
+      <li><b>Connect GitHub.</b> On the form, click the <b>Git account</b> box to open its list.
+        <ul>
+          <li><b>Your GitHub name is in the list:</b> choose it, and skip to step 4.</li>
+          <li><b>It is not:</b> choose <b>New GitHub connection</b>, sign in to GitHub, choose <b>All repositories</b>,
+            then click <b>Install &amp; Authorize</b>.</li>
+          <li><b>GitHub shows a settings page with a greyed-out Save button,</b> and no Install: Cloudflare is already
+            connected to your GitHub. Change nothing there, and go on to step 3.</li>
+        </ul></li>
+      <li><b>Cloudflare may now show "Select a repository". Don't pick anything there.</b> Press the button again, here.
+        The form opens once more: click the <b>Git account</b> box and choose your GitHub name from the list. The rest
+        of the form then appears.
+        <div class="row"><a class="btn" target="_blank" rel="noopener"
+          href="https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax">Deploy to Cloudflare, again</a></div></li>
+      <li><b>Change four things on the form</b>, and leave the rest. The form scrolls inside its own box.
         <table>
           <tr><th>Create private Git repository</th><td>Check this box.</td></tr>
           <tr><th>The two <i>Select KV namespace</i> boxes</th><td>In each, choose <b>+ Create new</b>. Name the first
             <code>fmwax-house-tokens</code> and the second <code>fmwax-house-programs</code>.</td></tr>
           <tr><th>SETUP_KEY</th><td>Paste your key from step 1. <button type="button" class="quiet" id="copy2">Copy the key</button></td></tr>
+          <tr><th>Enable Preview builds</th><td>Near the bottom. Switch it <b>off</b> if it is on.</td></tr>
         </table>
       </li>
-      <li>Click <b>Deploy</b> and wait about a minute, until the log ends with <b>Success! Build completed</b>. A few
-        lines above that is your house's address. It looks like <code>https://fmwax-house.your-name.workers.dev</code>.</li>
+      <li>Click <b>Deploy</b> and wait about a minute, until the log ends with <b>Success! Build completed</b>. Then
+        click <b>Copy build log</b>, at the top right of the log, and go on to step 3 here.</li>
     </ol>
     <p class="note">Pictures of the form, and what to do if the build fails:
       <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md#step-2-press-the-deploy-button">Start here, step 2</a>.</p>
@@ -98,9 +111,12 @@ noscript p{color:var(--warm);font-weight:600}
 
   <section aria-labelledby="h3">
     <h2 id="h3"><span class="n">3</span>Open your setup page</h2>
-    <p>Paste your house's address here. The button opens its setup page with your key already filled in: there, click
-      <b>Claim this house</b>.</p>
-    <label for="addr">Your house's address</label>
+    <p>Paste the build log you just copied into this box: the page finds your house's address in it. Then the button
+      opens your house's setup page with your key already filled in. There, click <b>Claim this house</b>.</p>
+    <p class="note">Or paste the address alone. In the log it is the line that starts with <code>https://</code> and ends
+      with <code>workers.dev</code>, a few lines above <i>Success</i>. Cloudflare's own pages may say "No URLs enabled":
+      the address works all the same.</p>
+    <label for="addr">The build log, or your house's address</label>
     <input type="text" id="addr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
       placeholder="https://fmwax-house.your-name.workers.dev">
     <div class="row"><a class="btn" id="open" aria-disabled="true" href="#">Open my setup page</a></div>
@@ -148,6 +164,11 @@ noscript p{color:var(--warm);font-weight:600}
   function originOf(text) {
     var t = String(text || "").trim();
     if (!t) return null;
+    // A whole build log pasted in (Cloudflare's "Copy build log"): the house's
+    // address is the workers.dev one in it (the owner's test, 2026-11-09: in
+    // the log it is plain text, and Cloudflare's overview shows no link).
+    var inLog = t.match(/https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)+\.workers\.dev/i);
+    if (inLog && t.length > inLog[0].length + 8) return inLog[0].toLowerCase();
     if (!/^[a-z]+:\/\//i.test(t)) t = "https://" + t;
     try { var u = new URL(t); return u.protocol === "https:" && u.hostname.indexOf(".") > 0 ? u.origin : null; } catch (e) { return null; }
   }
@@ -156,11 +177,11 @@ noscript p{color:var(--warm);font-weight:600}
     if (o) {
       open.href = o + "/setup#" + encodeURIComponent(key);
       open.setAttribute("aria-disabled", "false");
-      said3.textContent = "";
+      said3.textContent = "Your house: " + o;
     } else {
       open.href = "#";
       open.setAttribute("aria-disabled", "true");
-      said3.textContent = addr.value.trim() ? "That doesn't look like an address. It starts with https:// and ends with workers.dev." : "";
+      said3.textContent = addr.value.trim() ? "No address found in that. It starts with https:// and ends with workers.dev." : "";
     }
   }
   addr.addEventListener("input", link);

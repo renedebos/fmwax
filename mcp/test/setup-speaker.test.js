@@ -137,7 +137,10 @@ test("a WiiM Spotify lists under its id is found by the name the house knows it 
     const page = await (await go(e, "/setup/speaker?find=1", { cookie: me })).text();
     assert.match(page, /value="Ultra" checked> Ultra<\/label>/, "found, by the name the house noted");
     assert.doesNotMatch(page, new RegExp(`value="${hexB}" checked`), "not offered as a speaker to keep under its code");
-    assert.match(page, /One speaker without a name/);
+    assert.match(page, /First: one speaker has no name/);
+    // The owner's test, 2026-11-09: said before the list it is missing from, with one save.
+    assert.ok(page.indexOf("First: one speaker has no name") < page.indexOf("Keep these speakers"), "above the list and its button");
+    assert.match(page, /<button form="snames" class="sgo" type="submit"[^>]*>Save the name<\/button>/);
     assert.match(page, new RegExp(`name="id" value="${hexB}"`));
     assert.match(page, /code ending a48c/);
   } finally { globalThis.fetch = inner; f.restore(); }
@@ -238,5 +241,37 @@ test("a nameless speaker can be played on, to hear which one it is (the owner's 
     assert.deepEqual(sent.at(-1), { device_ids: [hex], play: true });
     const back = await (await go(e, r.headers.get("location"), { cookie: me })).text();
     assert.match(back, /<p class="setsaid" role="status">Playing on the speaker with the code ending a48c: listen for which one it is/);
+  } finally { globalThis.fetch = inner; f.restore(); }
+});
+
+// SEVERAL NAMES IN ONE SAVE (the owner's test, 2026-11-09: two WiiMs without a
+// name were two saves, and read as one going missing after the other).
+test("two nameless speakers are named in one save; a box left empty is skipped; two alike are refused", async () => {
+  const { installFetch } = await import("./harness.js");
+  const a = "aaaaaaaa11112222", b = "bbbbbbbb33334444";
+  const f = installFetch();
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init) => String(u).endsWith("/me/player/devices")
+    ? Response.json({ devices: [{ id: a, name: a }, { id: b, name: b }, { id: "echo-1", name: "Dining Room" }] })
+    : inner(u, init);
+  try {
+    const e = await house();
+    delete e.ROOM_DEVICES;
+    delete e.DEFAULT_DEVICE;
+    const me = await owner(e);
+    const post = (pairs) => worker.fetch(new Request(`${ORIGIN}/setup/name`, { method: "POST", redirect: "manual",
+      headers: { cookie: me, origin: ORIGIN }, body: new URLSearchParams(pairs) }), e, null);
+    const page = await (await go(e, "/setup/speaker?find=1", { cookie: me })).text();
+    assert.match(page, /First: 2 speakers have no name/);
+    assert.match(page, />Save the names<\/button>/);
+    assert.equal((await post([["id", a], ["name", "Den"], ["id", b], ["name", "den"]])).status, 409, "two alike");
+    assert.equal((await post([["id", a], ["name", ""], ["id", b], ["name", ""]])).status, 400, "none given");
+    const r = await post([["id", a], ["name", "Ultra"], ["id", b], ["name", "Pro Plus"]]);
+    assert.equal(r.status, 303);
+    assert.equal(r.headers.get("location"), "/setup/speaker?find=1&named=Ultra%2C%20Pro%20Plus");
+    const after = await (await go(e, "/setup/speaker?find=1", { cookie: me })).text();
+    assert.match(after, /value="Ultra" checked> Ultra/);
+    assert.match(after, /value="Pro Plus" checked> Pro Plus/);
+    assert.doesNotMatch(after, /have no name|has no name/);
   } finally { globalThis.fetch = inner; f.restore(); }
 });

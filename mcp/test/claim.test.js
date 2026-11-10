@@ -132,7 +132,7 @@ test("the recovery code is a password a phone can keep: offered to save when sho
   assert.ok(save, "a form to save it");
   assert.match(save, /<input class="vh sethouse" type="text" name="house" autocomplete="username"/, "kept under the house's address");
   assert.ok(save.includes(`type="password" name="code" autocomplete="new-password" value="${code}"`), "the code itself, as a new password");
-  assert.match(save, /<button class="sgo" type="submit">Save it in this phone's passwords<\/button>/);
+  assert.match(save, /<button class="sgo" type="submit">Save it in my passwords<\/button>/);
   assert.match(claimed, /hs\[k\]\.value = location\.host/, "the address filled in by the page");
   assert.match(claimed, /new PasswordCredential\(sf\)/, "a browser that can be asked outright is asked");
   // Sent, it goes on to the checklist and reads nothing; from elsewhere, refused.

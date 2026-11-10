@@ -45,18 +45,21 @@ test("a blank house makes its Requests preset on the number chosen, and the hous
     assert.ok(f.calls.includes("POST /me/playlists"), "the playlist is made in Spotify");
     const how = await (await go(e, "/setup/requests?made=1", { cookie: me })).text();
     assert.match(how, /Preset 5, the playlist (&quot;|")Requests(&quot;|")/);
-    // The owner's second run, 2026-10-17: where, which chat, which speaker, and the permission prompts.
-    assert.match(how, /In Claude or ChatGPT on your phone \(or in a browser on a computer\), start a <b>new chat<\/b>/);
-    assert.match(how, /starts it on the\s+Pro Plus, your default speaker/);
-    assert.match(how, /allowing it always \(Claude's\s+<b>Always allow<\/b>\) is fine/);
-    // The onboarding review, 2026-11-09: starter songs, so the save comes first; the quick ask leads.
+    // Rewritten for the eye (the owner's test, 2026-11-09): three numbered blocks, each named for its app.
     assert.ok(f.calls.some((c) => /^POST \/playlists\/NEWREQUESTS00000000001\/(tracks|items)/.test(c)), f.calls.join("\n"));
-    assert.match(how, /<b>Save it on a WiiM device\.<\/b> The house put a few songs in the playlist to start with/);
-    assert.ok(how.indexOf("Save it on a WiiM device") < how.indexOf("Ask a DJ."), "save first");
-    assert.ok(how.indexOf("Vibe, play me 20 minutes") < how.indexOf("Librarian, an introduction"), "the quick ask first");
+    assert.match(how, /Done: a playlist called Requests is in your Spotify account now/);
+    assert.match(how, /<b>The playlist (&quot;|")Requests(&quot;|") is in your Spotify account now\.<\/b> Save it once on preset 5/);
+    const heads = [...how.matchAll(/<h3><span class="reqn">(\d)<\/span>([^<]+)<small>([^<]+)<\/small><\/h3>/g)].map((m) => `${m[1]} ${m[2]} / ${m[3]}`);
+    assert.deepEqual(heads, ["1 Play the playlist on your WiiM / In the Spotify app", "2 Save it on preset 5 / In the WiiM Home app",
+      "3 Ask a DJ for your first set / In Claude or ChatGPT"]);
     // Saved the one way that works: started from the Spotify app, then the song bar's … menu (START-HERE.md §5).
-    assert.match(how, /In the <b>Spotify app<\/b>, open the playlist <b>Requests<\/b> and play it on the\s+WiiM device/);
-    assert.match(how, /tap the song bar at the bottom, then <b>…<\/b>, <b>Preset<\/b>, and <b>5<\/b>/);
+    assert.match(how, /Open the playlist <b>Requests<\/b>\. The house put a few songs in it to start with\./);
+    assert.match(how, /Tap <b>…<\/b>, then <b>Preset<\/b>, then <b>5<\/b>\./);
+    assert.match(how, /starts on the <b>Pro Plus<\/b>, your\s+default speaker/);
+    assert.ok(how.indexOf("Vibe, play me 20 minutes") < how.indexOf("Librarian, an introduction"), "the quick ask first");
+    // The rarer cases, folded away.
+    assert.match(how, /<summary>The playlist is empty, or won(&#39;|')t play<\/summary>\s*<p>Do step 3 first/);
+    assert.match(how, /Allowing it always \(Claude(&#39;|')s <b>Always allow<\/b>\) is\s+fine/);
     // The house now has a live Spotify guest on 5: get_dj names it.
     const { withSettings } = await import("../settings.js");
     const live = await withSettings(e, null);

@@ -650,7 +650,7 @@ export async function handleRequest(request, env, ctx) {
       if (url.pathname === "/setup/requests" && request.method === "GET") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
         return setupPage({ state: "requests", requests: { now: requestsNow(), ready: !!env.SPOTIFY_CLIENT_ID, speaker: env.DEFAULT_DEVICE || null },
-          flash: url.searchParams.get("made") ? "Made. Next: fill it with a DJ's set, then save it on each speaker, as below." : null });
+          flash: url.searchParams.get("made") ? "Done: a playlist called Requests is in your Spotify account now, with a few songs in it. Three steps finish the preset, below." : null });
       }
       // THE CURATOR (the Endless step, part 1, 2026-10-17): its connector's
       // address, the routine's note, and the routine's id and token given
@@ -1041,26 +1041,33 @@ export async function handleRequest(request, env, ctx) {
       }
       if (url.pathname === "/setup/name") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
-        const id = String(form?.get("id") ?? "");
-        const name = String(form?.get("name") ?? "").replace(/[\u0000-\u001f]/g, "").trim();
-        if (!/^[A-Za-z0-9_-]{8,64}$/.test(id) || !name || name.length > 40) {
+        // SEVERAL AT ONCE (the owner's test, 2026-11-09: two WiiMs without a
+        // name were two saves and two reloads, and read as one going missing
+        // after the other): each id with its name, a box left empty skipped.
+        const ids = (form?.getAll("id") ?? []).map(String);
+        const said = (form?.getAll("name") ?? []).map((n) => String(n).replace(/[\u0000-\u001f]/g, "").trim());
+        const pairs = ids.map((id, i) => ({ id, name: said[i] ?? "" })).filter((x) => x.name);
+        if (!pairs.length || pairs.some((x) => !/^[A-Za-z0-9_-]{8,64}$/.test(x.id) || x.name.length > 40)) {
           return setupPage({ state: "speaker", speaker: speakerChoice(), flash: "Give the speaker a name of 1 to 40 characters." }, 400);
         }
-        // One name, one speaker (the trial: two called "Pro Plus").
+        // One name, one speaker (the trial: two called "Pro Plus"), among
+        // the ones sent together too.
         const now = await findSpeakers();
-        const clash = (now.taken ?? []).find((t) => t.name === name.toLowerCase() && t.id !== id);
+        const low = (n) => n.toLowerCase();
+        const clash = pairs.find((x, i) => (now.taken ?? []).some((t) => t.name === low(x.name) && t.id !== x.id) ||
+          pairs.some((y, j) => j !== i && low(y.name) === low(x.name)));
         if (clash) {
           return setupPage({ state: "speaker", speaker: { ...speakerChoice(), found: now.names ?? null, nameless: now.nameless ?? [], noted: now.noted ?? [] },
-            flash: `Another speaker is already called ${name}: give this one its own name.` }, 409);
+            flash: `Another speaker is already called ${clash.name}: give this one its own name.` }, 409);
         }
-        await nameDevice(env, id, name);
+        for (const x of pairs) await nameDevice(env, x.id, x.name);
         // On the house's list too, beside the ones already there.
-        const rooms = [...new Set([...setupRooms(), name])].slice(0, 24);
+        const rooms = [...new Set([...setupRooms(), ...pairs.map((x) => x.name)])].slice(0, 24);
         const fileSays = (env.__vars ?? {}).ROOM_DEVICES;
         const json = JSON.stringify(rooms);
         await choosePageSetting(env, "ROOM_DEVICES", fileSays && JSON.stringify(JSON.parse(fileSays)) === json ? fileSays : json);
         return new Response(null, { status: 303, headers: { "cache-control": "no-store",
-          location: `/setup/speaker?find=1&named=${encodeURIComponent(name)}` } });
+          location: `/setup/speaker?find=1&named=${encodeURIComponent(pairs.map((x) => x.name).join(", "))}` } });
       }
       if (url.pathname === "/setup/rooms") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);

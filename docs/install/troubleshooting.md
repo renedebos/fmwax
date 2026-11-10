@@ -5,7 +5,9 @@ Can't find your problem here? Please report it with [the Install problem form](h
 ## Installing
 
 - **GitHub's sign-up page says "Too many requests".** That's GitHub's own limit, not something you did. Wait 15 minutes, or sign up on your phone with its Wi-Fi turned off.
-- **GitHub shows a settings page with a grey Save button, not Install.** That GitHub account is already connected to another Cloudflare account, and one GitHub account can only be connected to one. Make a new GitHub account for your house.
+- **GitHub shows a settings page with a grey Save button, not Install.** Cloudflare is already connected to that GitHub account. Change nothing there. Press the Deploy button again, click the **Git account** box on the form, and choose your GitHub name. If your name is not in that list, the GitHub account is connected to *another* Cloudflare account, and one GitHub account can only be connected to one: make a new GitHub account for your house.
+- **The form shows only a Git account box that says "Select…".** Click that box and choose your GitHub name: the rest of the form appears then.
+- **Cloudflare's page says "No URLs enabled" or "workers.dev: Disabled".** Your house's address works all the same: it is the `https://…workers.dev` line near the end of the build log.
 - **Cloudflare shows "Select a repository".** That's a detour, not your house's form. Don't pick anything there. Press the Deploy button in [Start here](../../START-HERE.md#step-2-press-the-deploy-button) again: the form opens with your GitHub account filled in.
 - **The build failed.** Cloudflare's page shows which step failed, with its log. Copy the log into the Install problem form (link above).
   - One known cause: the two **Name your KV namespace** boxes had the same name. They must be different, for example `fmwax-house-tokens` and `fmwax-house-programs` (any two different names work). Never choose a name already in the list, even when Cloudflare fills one in for you: it belongs to something else on your Cloudflare account, and the two would mix.

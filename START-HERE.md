@@ -81,18 +81,21 @@ Press **Deploy to Cloudflare** on the start page, or this button:
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
 
 1. **Sign in to Cloudflare.** If it asks which account, pick the one for fmwax. A form called *Set up your application* opens.
-2. **Connect GitHub.** Under **Git account**, click **New GitHub connection**. GitHub opens. Sign in, choose **All repositories**, then click **Install & Authorize**. (You can narrow this later to your fmwax copy only, in GitHub's Settings, Applications.)
-   - If GitHub shows a settings page with a grey **Save** button instead of **Install**, that GitHub account is already connected to another Cloudflare account. Make a new GitHub account (see *Before you start*).
-3. **Cloudflare now shows a page called "Select a repository".** This is a detour. **Don't pick anything on this page**, not even *Clone a public repository*. Instead, press the Deploy button above again (or paste this into the address bar: `https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax`). The fmwax form opens again, now with your GitHub account filled in.
-4. **Change three things on the form, and leave everything else as it is.** The form scrolls inside its own box: scroll down within it to see every part.
+2. **Connect GitHub.** Click the **Git account** box to open its list.
+   - **Your GitHub name is in the list:** choose it, and skip to step 4.
+   - **It is not:** choose **New GitHub connection**. GitHub opens. Sign in, choose **All repositories**, then click **Install & Authorize**. (You can narrow this later to your fmwax copy only, in GitHub's Settings, Applications.)
+   - **GitHub shows a settings page with a grey Save button instead of Install:** Cloudflare is already connected to this GitHub account. Change nothing there, and go on to step 3. If your GitHub name is still missing from the list after step 3, the account is connected to *another* Cloudflare account: make a new GitHub account (see *Before you start*).
+3. **Cloudflare may now show a page called "Select a repository".** This is a detour. **Don't pick anything on this page**, not even *Clone a public repository*. Instead, press the Deploy button again (on the start page, or paste this into the address bar: `https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax`). The fmwax form opens again: click the **Git account** box and choose your GitHub name. The rest of the form then appears.
+4. **Change four things on the form, and leave everything else as it is.** The form scrolls inside its own box: scroll down within it to see every part.
 
    | On the form | What to do |
    |---|---|
    | **Create private Git repository** | Check this box. Your copy doesn't need to be public. |
    | The two **Select KV namespace** boxes | In each, choose **+ Create new**, even if it already shows a name. Then, in the **Name your KV namespace** box that appears below, type **`fmwax-house-tokens`** in the first and **`fmwax-house-programs`** in the second. |
    | **SETUP_KEY** | Paste your setup key (the start page's **Copy the key**). |
+   | **Enable Preview builds** | Near the bottom of the form. Switch it **off** if it is on. |
 
-   What the three look like when they're done:
+   What the first three look like when they're done:
 
    ![The form's top: Create private Git repository, checked](docs/install/images/deploy-form-1-private-repository.png)
 
@@ -102,11 +105,11 @@ Press **Deploy to Cloudflare** on the start page, or this button:
 
    Why the two boxes: they are the two stores your house keeps its data in. Cloudflare suggests the same name for both, and two stores can't share a name, so the deploy would fail. If your Cloudflare account already has stores, Cloudflare may fill in their names: never keep those, because they belong to something else and the data would mix.
 
-   Leave the rest alone: the project name (`fmwax-house`, which becomes the start of your house's address), **SOURCE_REPO** and the filled-in boxes after it, the two commands, **Enable Preview builds** (off), **Protect with Cloudflare Access** (off: it would block Claude and ChatGPT), and **Advanced settings** (closed).
+   Leave the rest alone: the project name (`fmwax-house`, which becomes the start of your house's address), **SOURCE_REPO** and the filled-in boxes after it, the two commands, **Protect with Cloudflare Access** (off: it would block Claude and ChatGPT), and **Advanced settings** (closed).
 
    Then click **Deploy**, at the bottom right.
-5. **Wait about a minute.** The steps turn green one by one. The log underneath ends with **Success! Build completed**. A few lines above that is your house's address. It looks like `https://fmwax-house.your-name.workers.dev`.
-6. **Paste that address into the start page's last box** and click **Open my setup page**. Your house's setup page opens with the key already filled in. (Without the start page: open the address itself. It goes to the setup page.)
+5. **Wait about a minute.** The steps turn green one by one. The log underneath ends with **Success! Build completed**. A few lines above that is your house's address, as plain text. It looks like `https://fmwax-house.your-name.workers.dev`. (Cloudflare's own pages may say "No URLs enabled": the address works all the same.)
+6. **Click Copy build log** (top right of the log), **paste it into the start page's last box**, and click **Open my setup page**. The start page finds the address in the log, and your house's setup page opens with the key already filled in. (Without the start page: copy the address from the log into your browser's address bar. It goes to the setup page.)
 
 If the build fails, see [If something goes wrong](docs/install/troubleshooting.md).
 
@@ -115,7 +118,7 @@ If the build fails, see [If something goes wrong](docs/install/troubleshooting.m
 Your house's setup page opens and asks for the setup key.
 
 1. Click **Claim this house**. The key is already filled in if you came from the start page; if not, paste it. From now on, only a browser you have signed in can change your house's settings.
-2. You are shown a **recovery code**, once. Click **Save it in this phone's passwords**: your browser offers to keep it, like any password. Or copy it into your note. You need it to sign in on your phone or another browser.
+2. You are shown a **recovery code**, once. Click **Save it in my passwords**: your browser offers to keep it, like any password. Or click **Copy the code** and paste it into your note. You need it to sign in on your phone or another browser.
 
 This browser stays signed in for a year.
 

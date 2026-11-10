@@ -5768,6 +5768,24 @@ document.querySelectorAll("time[datetime]").forEach(function (t) {
 // checklist joins it in stage 6. No tab bar: a house being set up has no
 // pages to go to yet.
 const SETUP_CSS = `
+/* THE REQUESTS PRESET'S THREE STEPS (2026-11-09): numbered blocks, each
+   named for the app it happens in, one short line a tap. */
+.use .reqlede{font-size:var(--fs-16);color:var(--ink)}
+.use .reqsteps{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.75rem}
+.use .reqsteps>li{background:var(--ground);border:1px solid var(--rule-soft);border-radius:12px;padding:.9rem 1rem 1rem}
+.use .ucard .reqsteps h3{display:grid;grid-template-columns:auto 1fr;column-gap:.7rem;align-items:center;margin:0 0 .5rem;
+  font-size:var(--fs-16);font-weight:700;letter-spacing:0;text-transform:none;line-height:1.25;color:var(--ink)}
+.use .reqsteps h3 small{grid-column:2;font-size:var(--fs-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.use .reqn{grid-row:span 2;width:2rem;height:2rem;border-radius:50%;background:var(--q-deep);color:var(--q-on-deep);
+  display:flex;align-items:center;justify-content:center;font-family:"Archivo Black","Arial Black",sans-serif;font-size:var(--fs-16);font-weight:400}
+.use .reqsteps ul{margin:0;padding-left:1.2rem;display:grid;gap:.35rem;font-size:var(--fs-16);line-height:1.4;color:var(--ink-2)}
+.use .reqsteps b{color:var(--ink);font-weight:600}
+.use .reqsteps q,.use .reqhelp q{quotes:"“" "”";color:var(--ink);font-weight:600}
+.use .reqmore{margin:.7rem 0 0;padding-top:.6rem;border-top:1px dashed var(--rule-soft);font-size:var(--fs-14);line-height:1.45;color:var(--ink-2)}
+.use .reqhelp{border-top:1px solid var(--rule-soft);margin:.9rem 0 0;padding-top:.2rem}
+.use .reqhelp+.reqhelp{margin-top:0}
+.use .reqhelp summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-size:var(--fs-14);font-weight:600;color:var(--ink)}
+.use .reqhelp p{margin:0 0 .8rem;font-size:var(--fs-14);line-height:1.45;color:var(--ink-2)}
 .use .setform{display:grid;gap:.6rem;margin:1rem 0 0}
 .use .setform label{font-size:var(--fs-14);font-weight:600;color:var(--ink)}
 .use .setform input[type="text"],.use .setform input[type="password"]{width:100%;box-sizing:border-box;border:1.5px solid var(--rule);border-radius:8px;
@@ -5809,6 +5827,8 @@ const SETUP_CSS = `
 .use .setnextstep{border:2px solid var(--q-ink)}
 .use .setrows span.setnote{margin:.4rem 0 0;font-size:var(--fs-12);line-height:1.45;color:var(--ink-2)}
 .use .setunnamed{margin:1rem 0 0;padding:1rem 0 0;border-top:1px solid var(--rule-soft)}
+.use .setunnamed.first{margin:1rem 0;padding:1rem;border:1.5px solid var(--q-ink);border-radius:12px;background:var(--q-tint)}
+.use .setunnamed.first .unote{border-top:0;padding-top:0;margin-top:.2rem;font-size:var(--fs-14);color:var(--ink-2)}
 .use .setunnamed h3{margin:0 0 .3rem;font-size:var(--fs-16);font-weight:700;color:var(--ink);text-transform:none;letter-spacing:0}
 .use .setname{margin:.8rem 0 0}
 .use .setname .setcopy{justify-self:start}
@@ -5903,6 +5923,24 @@ function setupSpeakerHtml({ rooms, current, fileSays, found = null, nameless = [
   // that asks it.
   const finder = found ? `<section class="ucard" aria-labelledby="sfind">
     <h2 id="sfind">The house's speakers<span class="usub">What Spotify sees now, and the ones already kept</span></h2>
+    ${nameless.length ? `<div class="setunnamed first" id="unnamed">
+      <h3>First: ${nameless.length === 1 ? "one speaker has no name" : `${nameless.length} speakers have no name`}</h3>
+      <p class="unote">Some WiiMs show Spotify a code instead of their name, and are not in the list below until you
+        name them. To tell which one it is, tap <b>Play on it</b> and listen: the speaker that starts playing is the
+        one. Then type the name you call it by${nameless.length > 1 ? ", for each, and save them together" : ""}.</p>${
+        triedSaid ? `<p class="setsaid" role="status">${esc(triedSaid)}</p>` : ""}
+      <form id="snames" method="post" action="/setup/name"></form>${nameless.map((u) => `
+      <form class="setform" method="post" action="/setup/identify">
+        <input type="hidden" name="id" value="${esc(u.id)}">
+        <button class="setcopy" type="submit" data-busy="Starting…">Play on it (code ending ${esc(u.id.slice(-4))})</button>
+      </form>
+      <div class="setform setname">
+        <input form="snames" type="hidden" name="id" value="${esc(u.id)}">
+        <label for="n-${esc(u.id)}">Unnamed speaker, code ending ${esc(u.id.slice(-4))}${u.active ? " · <b>playing now</b>" : ""}</label>
+        <input form="snames" type="text" id="n-${esc(u.id)}" name="name" maxlength="40" autocomplete="off" placeholder="Its name, e.g. Living Room WiiM">
+      </div>`).join("")}
+      <div class="setform"><button form="snames" class="sgo" type="submit" data-busy="Saving…">${nameless.length === 1 ? "Save the name" : "Save the names"}</button></div>
+    </div>` : ""}
     ${found.length || rooms.length ? `<form method="post" action="/setup/rooms">
       <fieldset class="setpick">
         <legend>Speakers</legend>${all.map((n) => `
@@ -5926,22 +5964,6 @@ function setupSpeakerHtml({ rooms, current, fileSays, found = null, nameless = [
         <label for="r-${esc(u.id)}">${esc(u.name)}, code ending ${esc(u.id.slice(-4))}${u.active ? " · <b>playing now</b>" : ""}</label>
         <input type="text" id="r-${esc(u.id)}" name="name" required maxlength="40" autocomplete="off" value="${esc(u.name)}">
         <button class="setcopy" type="submit" data-busy="Renaming…">Rename</button>
-      </form>`).join("")}
-    </div>` : ""}
-    ${nameless.length ? `<div class="setunnamed" id="unnamed">
-      <h3>${nameless.length === 1 ? "One speaker" : `${nameless.length} speakers`} without a name</h3>
-      <p class="unote">Some WiiMs show Spotify a code instead of their name. To tell which one it is, tap <b>Play on
-        it</b> and listen: the speaker that starts playing is the one. Then give it the name you call it by.</p>${
-        triedSaid ? `<p class="setsaid" role="status">${esc(triedSaid)}</p>` : ""}${nameless.map((u) => `
-      <form class="setform" method="post" action="/setup/identify">
-        <input type="hidden" name="id" value="${esc(u.id)}">
-        <button class="setcopy" type="submit" data-busy="Starting…">Play on it (code ending ${esc(u.id.slice(-4))})</button>
-      </form>
-      <form class="setform setname" method="post" action="/setup/name">
-        <input type="hidden" name="id" value="${esc(u.id)}">
-        <label for="n-${esc(u.id)}">Unnamed speaker, code ending ${esc(u.id.slice(-4))}${u.active ? " · <b>playing now</b>" : ""}</label>
-        <input type="text" id="n-${esc(u.id)}" name="name" required maxlength="40" autocomplete="off" placeholder="Its name, e.g. Living Room WiiM">
-        <button class="setcopy" type="submit" data-busy="Naming…">Name it</button>
       </form>`).join("")}
     </div>` : ""}
     <p class="unote">A speaker that is not here is asleep or not yet set up for Spotify: play something on it from the
@@ -5978,11 +6000,13 @@ function setupSpotifyAppHtml({ redirect, held, fromSecret }) {
   return `<section class="ucard" aria-labelledby="scard">
     <h2 id="scard">The Spotify app<span class="usub">Once, in Spotify's developer dashboard</span></h2>
     <ol class="sgntext setsteps">
-      <li>Open <a href="https://developer.spotify.com/dashboard" rel="noopener noreferrer">developer.spotify.com/dashboard</a>,
-        sign in with the house's Spotify account, and press <b>Create app</b>.</li>
-      <li>Any name and description. Under <b>Redirect URIs</b> (where Spotify sends you back after signing in), paste
-        this address exactly:
-        <code class="setval">${esc(redirect)}</code><button class="setcopy" type="button" data-copy="${esc(redirect)}" hidden>Copy</button></li>
+      <li>Open <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener noreferrer">developer.spotify.com/dashboard</a>
+        (it opens in a new tab: keep this page open, you come back to it twice). Sign in with the house's Spotify
+        account, and press <b>Create app</b>.</li>
+      <li><b>App name:</b> <b>fmwax</b>. <b>App description:</b> <b>My fmwax house</b>. (Any words work: only you see
+        them.) Under <b>Redirect URIs</b> (where Spotify sends you back after signing in), paste this address exactly:
+        <code class="setval">${esc(redirect)}</code><button class="setcopy" type="button" data-copy="${esc(redirect)}" hidden>Copy</button>
+        Then click <b>Add</b> beside that box on Spotify's form: an address pasted and not added is not kept.</li>
       <li>Tick <b>Web API</b>, agree, and save. On the app's page, copy its <b>Client ID</b>: a public code of 32
         letters and digits (not the Client secret, which the house never needs).</li>
     </ol>
@@ -6102,26 +6126,54 @@ const saveSteps = (playlist, btn) => `In the <b>Spotify app</b>, open the playli
         tap the song bar at the bottom, then <b>…</b>, <b>Preset</b>, and <b>${esc(String(btn))}</b>.`;
 function setupRequestsHtml({ now, ready, speaker = null }) {
   if (now) {
+    // REWRITTEN FOR THE EYE (the owner's test, 2026-11-09: "what is this
+    // page?", then "easier to see and read and comprehend"): what was three
+    // long paragraphs is three numbered blocks, each named for the app it
+    // happens in, one short line a tap; the rarer cases folded away below.
+    const btn = esc(String(now.btn)), name = esc(now.name);
     return `<section class="ucard" aria-labelledby="scard">
-    <h2 id="scard">The Requests preset<span class="usub">Preset ${esc(String(now.btn))}, the playlist "${esc(now.name)}"</span></h2>
-    <p class="sgntext">Every set a DJ is asked for lands in this one playlist, so the preset always plays the latest.</p>
-    <ol class="sgntext setsteps">
-      <li><b>Save it on a WiiM device.</b> The house put a few songs in the playlist to start with, so you can save it
-        right away. ${saveSteps(now.name, now.btn)}
-        <br>Playlist empty, or it won't play? Do step 3 first, then come back to this one.</li>
-      <li><b>Each WiiM device once.</b> The same on your next WiiM device. You never save it again: the house only
-        changes what is in the playlist.</li>
-      <li><b>Ask a DJ.</b> In Claude or ChatGPT on your phone (or in a browser on a computer), start a <b>new chat</b> (an
-        older one may not have the house's tools) and ask: "Vibe, play me 20 minutes for a quiet morning". It writes
-        the set into the playlist, in place of the songs there, and starts it${speaker ? ` on the
-        ${esc(speaker)}, your default speaker (say "on the …" for another)` : ""}.
-        <br>Something to read with it? "Librarian, an introduction to Stax Records, and put it on my Requests preset".
-        <b>This takes a few minutes:</b> the Librarian looks things up and writes notes before the songs are ready, so
-        keep the chat open. The notes are a page on your Shelf.</li>
+    <h2 id="scard">The Requests preset<span class="usub">Preset ${btn}, the playlist "${name}"</span></h2>
+    <p class="sgntext reqlede"><b>The playlist "${name}" is in your Spotify account now.</b> Save it once on preset ${btn}
+      of your WiiM. After that, every set you ask a DJ for goes into it, and preset ${btn} plays the latest.</p>
+    <ol class="reqsteps">
+      <li>
+        <h3><span class="reqn">1</span>Play the playlist on your WiiM<small>In the Spotify app</small></h3>
+        <ul>
+          <li>Open the <b>Spotify app</b> on your phone.</li>
+          <li>Open the playlist <b>${name}</b>. The house put a few songs in it to start with.</li>
+          <li>Play it, and choose <b>your WiiM</b> as the speaker (the device picker shows its name, not your phone).</li>
+        </ul>
+      </li>
+      <li>
+        <h3><span class="reqn">2</span>Save it on preset ${btn}<small>In the WiiM Home app</small></h3>
+        <ul>
+          <li>Open <b>WiiM Home</b> and choose that WiiM.</li>
+          <li>Tap the <b>song bar</b> at the bottom.</li>
+          <li>Tap <b>…</b>, then <b>Preset</b>, then <b>${btn}</b>.</li>
+        </ul>
+        <p class="reqmore">More than one WiiM? Do steps 1 and 2 on each. You never save it again: the house only changes
+          what is in the playlist.</p>
+      </li>
+      <li>
+        <h3><span class="reqn">3</span>Ask a DJ for your first set<small>In Claude or ChatGPT</small></h3>
+        <ul>
+          <li>Start a <b>new chat</b>, on your phone or in a browser.</li>
+          <li>Say or type: <q>Vibe, play me 20 minutes for a quiet morning</q></li>
+          <li>The set takes the place of the songs in the playlist, and starts${speaker ? ` on the <b>${esc(speaker)}</b>, your
+            default speaker` : ""}.</li>
+        </ul>
+        <p class="reqmore">Something to read with it? <q>Librarian, an introduction to Stax Records, and put it on my
+          Requests preset</q>. This takes a few minutes, so keep the chat open. The notes are a page on your Shelf.</p>
+      </li>
     </ol>
-    <p class="unote">The first times, it may ask before it uses the house: allowing it always (Claude's
-      <b>Always allow</b>) is fine for writing the set and for playing it, or it asks every time. If it asks whether to
-      play the set now, say yes.</p>
+    <details class="reqhelp"><summary>The playlist is empty, or won't play</summary>
+      <p>Do step 3 first: the DJ's set fills the playlist. Then come back to steps 1 and 2.</p></details>
+    <details class="reqhelp"><summary>Claude or ChatGPT asks for permission</summary>
+      <p>The first times, it may ask before it uses the house. Allowing it always (Claude's <b>Always allow</b>) is
+        fine for writing the set and for playing it; otherwise it asks every time. If it asks whether to play the set
+        now, say yes.</p></details>
+    <details class="reqhelp"><summary>It started on the wrong speaker</summary>
+      <p>Say where: <q>…on the Kitchen</q>. An older chat may not have the house's tools: start a new one.</p></details>
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
   }
@@ -6568,12 +6620,13 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     <form class="setform setsave" method="post" action="/setup/saved" id="setsave">
       <input class="vh sethouse" type="text" name="house" autocomplete="username" tabindex="-1" aria-hidden="true">
       <input class="vh" type="password" name="code" autocomplete="new-password" value="${esc(recovery)}" tabindex="-1" aria-hidden="true">
-      <button class="sgo" type="submit">Save it in this phone's passwords</button>
+      <button class="sgo" type="submit">Save it in my passwords</button>
     </form>
     <p class="setnext"><button class="setcopy" type="button" id="setcopy" hidden>Copy the code</button>
       <a href="/setup">I have saved it: on to the checklist</a></p>
-    <p class="unote">The phone or browser offers to keep it, as it keeps any password, and fills it in the next
-      time this page asks for it.</p>`)
+    <p class="unote">Your browser (on a computer or a phone) then offers to keep it, as it keeps any password, and
+      fills it in the next time this page asks for it. No offer appears? Use <b>Copy the code</b> and paste it into a
+      note.</p>`)
     : state === "yours" ? setupChecklistHtml(checklist)
     : state === "speaker" ? setupSpeakerHtml(speaker)
     : state === "timezone" ? setupTimezoneHtml(timezone)

@@ -69,7 +69,7 @@ test("the starter songs are three Spotify tracks, and Spotify refusing them stil
     const me = cookieOf(await go(e, "/setup/claim", { method: "POST", form: { key: KEY } }));
     const made = await go(e, "/setup/requests", { method: "POST", form: { button: "1" }, cookie: me });
     assert.equal(made.headers.get("location"), "/setup/requests?made=1");
-    assert.match(await (await go(e, "/setup/requests?made=1", { cookie: me })).text(), /Playlist empty, or it won(&#39;|')t play\? Do step 3 first/);
+    assert.match(await (await go(e, "/setup/requests?made=1", { cookie: me })).text(), /The playlist is empty, or won(&#39;|')t play<\/summary>\s*<p>Do step 3 first/);
   } finally { globalThis.fetch = inner; f.restore(); }
 });
 
@@ -99,6 +99,12 @@ test("the start page makes a key of 32 plain characters, loads nothing from else
   els.addr.on.input();
   assert.equal(els.open.href, `https://fmwax-house.someone.workers.dev/setup#${key}`);
   assert.equal(els.open.attrs["aria-disabled"], "false");
+  // The whole build log pasted in: the address is found in it.
+  els.addr.value = "21:01:52.291 Deployed fmwax-test triggers (0.54 sec) 21:01:52.291 https://fmwax-test.someone.workers.dev 21:01:52.292 schedule: */10 * * * * " +
+    "Cloudflare collects anonymous telemetry. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/x Success! Build completed.";
+  els.addr.on.input();
+  assert.equal(els.open.href, `https://fmwax-test.someone.workers.dev/setup#${key}`);
+  assert.equal(els.said3.textContent, "Your house: https://fmwax-test.someone.workers.dev");
   els.addr.value = "http://plain.example";
   els.addr.on.input();
   assert.equal(els.open.attrs["aria-disabled"], "true", "https only");
