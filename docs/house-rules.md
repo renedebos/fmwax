@@ -25,8 +25,9 @@ this page to every house, so a few marks make it fit the one reading it:
   made them), `archive`, `talk` (an OpenAI key), `helper` (a home helper has
   reported), `lastfm` (a Last.fm key, the `LASTFM_KEY` secret), `chatgpt`
   (ChatGPT is the curator, chosen on the setup page), `talkasks` (Talk
-  hands a DJ's set to the curator: Talk, asks and a curator) and `history`
-  (house.json `rules.history`: this house keeps its own history).
+  hands a DJ's set to the curator: Talk, asks and a curator), `alexa`
+  (maple crate, the private Alexa skill, acts: house.json `alexa.acts`) and
+  `history` (house.json `rules.history`: this house keeps its own history).
 - `{default speaker}`, `{requests presets}`, `{guest preset}`, `{house
   presets}`, `{endless presets}`, `{archive preset}`, `{archive asks}`,
   `{talk minutes}`, `{time zone}` and `{notes default}` are filled in from
@@ -144,22 +145,25 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 
 ## Repeats
 
-> {if endless} A DJ doesn't play a song again until 150 of their others have played.
-> Never the same song twice in one set.
+> {if endless} No song from the last 7 days, and a DJ doesn't play a song again until 150 of their others have played.
+> No song from the last 7 days, and never the same song twice in one set.
 
 {if endless} An endless DJ remembers what they've played, so the same preset, pressed night after night, keeps finding something new.
 
-- {if endless} **150 songs before a repeat.** Each DJ keeps a list of the last **150 songs** they played, and leaves them out of every new set. That's about five evenings of listening, but it's counted in songs, not days. A DJ you play every night can come round to a song again within a week. One you play once a month may not for months. The list belongs to the DJ, not the preset, so it goes with them to another number. [house.json `endless`: `noRepeatSongs`; endless.js `endlessRemember`]
+- **Nothing from this week** (since 2026-11-07). A song played in the last **7 days**, by any DJ on any preset, stays out of a new set, unless you asked for that song by name. Another take of it (a live one, a remaster) is a different song and can play. A set counts once it's on a preset; an undo, or an old set put back, doesn't. [week.js; station.js `played_week`]
+- {if endless} **For an endless DJ, only what played** goes into the week, as with their own list below.
+- **How it's kept to.** Every DJ gets the week's list before making a set. A set asked for on a DJ's page, or by an endless preset, that still holds one is sent back to the DJ once (see the checks below). A set made in Claude, ChatGPT or Talk is written as sent, and the DJ is told which songs were already heard this week, to swap.
+- {if endless} **150 songs before a repeat.** Each DJ keeps a list of the last **150 songs** they played, and leaves them out of every new set. That's about five evenings of listening, but it's counted in songs, not days. A DJ you play every night would come round to a song within a week, which the week's rule above now stops. One you play once a month may not for months. The list belongs to the DJ, not the preset, so it goes with them to another number. [house.json `endless`: `noRepeatSongs`; endless.js `endlessRemember`]
 - {if endless} **Only what played counts.** A song that was on the playlist but never played isn't used up (since 2026-09-25).
 - {if endless} **Nothing the house just played.** Anything heard in the last **3 hours** is left out too, whoever played it: another DJ, the Shelf, the Spotify app itself. This comes from Spotify's own history, which logs a song only after about 30 seconds, so a quick skip doesn't count, and music from another service or the radio isn't in it (since 2026-10-18). [endless.js `HEARD_WINDOW_MS`]
 - {if endless} **Nothing twice on one playlist.** New songs added to a playing set never repeat one already on it.
 - {if guest} **Deep Dive goes through every album** of an artist before any comes round again.
-- {if requests} **A set you ask for starts clean.** It doesn't look at what the DJ played before, so it can hold a song you heard yesterday.
 - {if endless} **What can come back sooner:** another recording of a song you heard (a live take, a remaster) is a new song to Spotify and to the list. And the list holds songs, not artists: an artist you just heard can turn up again in the next set.
 
 **The house checks a set before it plays:** every endless set, every set asked for on a DJ's page (since 2026-10-18), and a set asked of a DJ by name, by voice or in Claude or ChatGPT (since 2026-10-24). A set that names no DJ isn't checked.
 
 - Never the same recording twice.
+- No song from this week, unless you asked for it by name (since 2026-11-07). Checked like this for an endless set and a set asked for on a DJ's page; a set asked by voice or in Claude or ChatGPT is told after it's written instead.
 - Never one song twice in two versions: a remaster, a live take, another mix or edit (since 2026-09-27).
 - Never the same song or title back to back: a song's versions are spread through the set.
 - Each DJ's own spacing of artists. Genre and Sessions never play an act twice in a row, or three times an hour. Soul never plays three in a row from one act. Vibe plays one song an act. Deep Dive never plays two from one album in a row. Sessions' top-ups leave out the acts of the last two batches (since 2026-11-02). The **Same artist** slider changes the spacing.
@@ -216,9 +220,49 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 
 {if tidal} A Tidal set asked by voice starts by itself only on a WiiM, with the home helper on, which presses its preset. Anywhere else, press it.
 
+{if helper} **Talk presses a WiiM's presets** (since 2026-11-08), as maple crate does: "press 12 on the Pro Plus", or by what the preset holds: "put on Radio Paradise". With the home helper on, the WiiM presses it as its remote would, so whatever the key holds plays, a DJ, Tidal, Pandora, the radio, with any settings saved with it (a WiiM Home "Smart Preset" can keep a volume and an EQ with a button; most buttons have none). Talk names what's on the key.
+
+- {if helper} **A preset by name** is the name saved on it, whole, with case and punctuation aside. A name on no preset, or on two, presses nothing, and Talk asks which.
+- {if helper} **"Put on Hank" presses Hank's own preset** when the WiiM's list still names him there. With words ("Hank, something for cooking"), or on an Echo, he starts as before.
+- {if helper} **With the helper off,** a DJ's preset and the Requests preset start through Spotify, without any settings saved with the preset, and Talk says so. Anything else is "press it on the remote". An Echo has no keys: a DJ's preset plays there as its playlist, and the radio is named with the WiiMs it plays on.
+- {if helper} **No "are you sure":** asking is the yes. The app follows that speaker only once the press is confirmed. [talk-press.js; alexa-act.js `presetAct`, `pressOwnKey`, `keyNamed`]
+- {if helper} **What the WiiMs play beside Spotify** (since 2026-11-08): "what's playing" names Tidal and the radio on a WiiM, and which EQ each WiiM plays through ("the Pro Plus is on Dance"). A WiiM on one of its inputs isn't counted as playing. Talk never sets an EQ.
+- {if helper} **Pause and play again on Tidal or the radio** (since 2026-11-08): on the WiiM you name, through the home helper, as maple crate's "hush" and "carry on".
+
+**Talk moves the music** (since 2026-11-08): "move it to the Ultra" carries what Spotify is playing over, the same song at the same place, as the bar's move. Only Spotify moves: Tidal stays where it is, and the bar can move the radio. The app follows the speaker it moved to. [talk-press.js `talkMove`; transport.js `moveOn`]
+
+{if no helper} **A preset by number** ("play preset 5"): a DJ's preset and the Requests preset start through Spotify. Anything else is "press it on the remote"; a home helper would press it on the WiiM.
+
 **Talk changes only the house's own playlists** (since 2026-10-25): its presets', its DJs' and the ones it keeps. Any other playlist on the Spotify account it can play or read out, but never change.
 
 {if archive} **The archive by voice** (since 2026-10-10): ask Talk for {archive asks}. It loads the takes onto **preset {archive preset}** and, when the speaker is a WiiM and the **home helper** is on, has the helper press {archive preset} there, so it starts. Otherwise it says it's loaded and to press {archive preset}, and why (the helper is off, or the speaker is an Echo). For "the show" at a venue in a year with several nights, Talk says how many and asks which. Loading or starting {archive preset} needs no yes.
+
+## Maple crate {if alexa}
+
+> On an Echo: "Alexa, ask maple crate for Hank." Spotify only.
+
+**Maple crate is a private Alexa skill on this house's Echos** (since 2026-11-07). It was called house radio until 2026-11-08, when Alexa began taking "open house radio" for its own radio, then wax room until Alexa+ took "room" for one of the house's rooms (an announcement, Drop In), then wax works until it answered with a film. The name has no music, room, device or brand word in it, and is no title. Start each sentence with "Alexa, ask maple crate for …" or "…to …": without "for" or "to" after the name, Alexa never passes the sentence on (the owner's tries, 2026-11-08). Say it a little slowly: a sentence said fast can miss the skill altogether.
+
+- **A set from a DJ:** "…for Sessions, acoustic grunge, on the Ultra, for two hours". It's asked the way a DJ's Ask form asks, lands on {requests presets}, and starts by itself on the speaker you named, as Talk's does: if it lands within 25 minutes and nothing else has started since. "No …" or "without …" says what to leave out ("no Eagles"). A room may come bare too: "…for Sessions, acoustic piano, living room" (since 2026-11-08). No speaker said: the {default speaker}. No length: an hour.
+- **No DJ named** ("…for something mellow for dinner"): Alexa asks "Which DJ?". Say a name and nothing else; anything else lets the ask go.
+- **A DJ put on:** "…to put on Hank", "…to play Vibe on the Ultra", or a DJ's name alone ("…for Hank"). They start on their own preset, or on the guest DJ's ({guest preset}) if they have none. A length said with only a name is dropped. If another DJ is on the guest preset, Alexa says who: ask again with "now" or "after this song".
+- **A preset by number:** "…to play preset 7". A DJ's preset is that DJ put on; the Requests preset starts the newest set you asked for.
+- {if helper} **With the home helper on, a preset is pressed for real** (since 2026-11-07): "…to play preset 10 on the Ultra" presses 10 on that WiiM, as its remote would, so whatever the key holds plays, with any settings saved with it: a DJ, Tidal, the radio. Alexa says "pressed", and names what the WiiM has on that key. A house DJ put on by name is pressed on their own key too, when the WiiM's list still names them there. With the helper off, presets start as before (without the preset's saved settings), and anything Spotify can't start is "press it on the remote".
+- {if tidal} **Without the home helper, a Tidal preset can't be started by voice:** press it on the remote.
+- **A preset asked of an Echo** (since 2026-11-08): an Echo has no keys. A DJ's preset and the Requests preset start there as their Spotify playlist. A preset that holds the radio, Pandora or Tidal is named, with the WiiMs it plays on: "Preset 10 is KQED, on the radio, which plays only on the Pro Plus and the Ultra." What a key holds is the WiiMs' own word, as the helper or the phone last read it; an old note of what a key once held is never started over it. For the radio on an Echo itself, ask Alexa: "Alexa, play KQED".
+- **Endless with words** (since 2026-11-07): "…for Deep Dive on Michael Jackson, endless" or "…for Gatefold, 1971, all night" puts that DJ on the guest DJ's preset with those words, as the box beside Play endless on their page does. "Endless" said last is what makes it endless; without it, the words make a one-off set. A house DJ with a preset of their own starts it, and the words steer it (since 2026-11-08): "…for Sessions, acoustic grunge, endless" starts Sessions' preset and the new songs come in after the first. Asked again while the set is still being made, Alexa says so rather than making a second.
+- **Now, or after this song:** "…to put on Pub Rock now" (or "…after this song") takes the guest DJ's preset over from the DJ on it. Without either, Alexa says who is on it and stops there.
+- **A fresh start:** "…to start Hank fresh" (or "…for Hank, fresh") makes a new opening set for the preset the DJ is on, as their page's Start fresh does, using one of the day's endless runs. It starts on the speaker once it's made, in about four minutes.
+- **Steering the DJ who's playing,** in one breath with "steer" (since 2026-11-08): "Alexa, ask maple crate to steer the same way" (the bar's More like this), "…to steer somewhere else" (Change it up), or your own words: "…to steer toward Stax", "…to steer it mellower". "…to steer the same way" was tried on the bedroom Echo and reached the DJ (2026-11-08). Without "steer", "more like this", "change it up", "more upbeat" or "fewer hits" said in one breath go to Amazon Music, and "Alexa, open maple crate" first is refused under Alexa+. The new songs come in after the one playing, in a few minutes; over a set you asked for, your own words wait for its end, and the DJ carries on that way after it. Maple crate keeps listening, so the next steer or "go back a song" needs no opening again (until about eight seconds of quiet).
+- **Keep:** "…and put it on the shelf" (or "…and keep it") said last with an ask keeps that set on the Shelf too, like the Ask form's Keep box. Alexa once heard "and keep it" as "and Cupid", so the shelf is the safer way to say it. "…to keep this set", said while a set you asked for plays, does the same for it: the house saves its songs as they are on the preset, and the DJ writes its page in a few minutes.
+- **What's playing:** the song, the speaker and which preset, or that it's paused.
+- {if helper} **The radio and Tidal, through the home helper:** "what's playing" names them, and "hush" and "carry on" pause and resume them on the WiiM. With no speaker named and two WiiMs playing them, Alexa asks which. A WiiM on one of its inputs (the TV's optical, line-in, Bluetooth) isn't music to it: never said as playing, never paused (since 2026-11-08).
+- **Pause, play again, skip, back, move:** in one breath, tried on the bedroom Echo (2026-11-08): "Alexa, ask maple crate to send the music to the Ultra" moves it, and "…for one song back" goes back a song. "Hush" and "carry on" in one breath don't reliably reach the skill (Alexa keeps them for itself; "carry on" once resumed Alexa's own music), and under Alexa+ "Alexa, open maple crate" is refused, so the bar's pause is the sure way; music playing on the Echo you speak to also pauses with Alexa's own "Alexa, pause". "Move music to …" without "ask maple crate to send" is Alexa's own: it moved music Echo to Echo and said "okay" to the Pro Plus without moving anything. The same as the bar's buttons: on the speaker you named, or the one Spotify is playing on. Play again starts what the pause stopped, from where it stopped, never Spotify's own resume.
+- **Not caught:** if maple crate doesn't catch what you said, it says so and keeps listening, so you can say it again without "Alexa" (since 2026-11-08).
+- **Longer than five seconds:** Alexa says what it began (a press on a WiiM, a start anywhere else), and the app shows when it plays.
+- **What to say** (since 2026-11-08): a page from the Talk tab ("?", or the maple crate box) lists the sentences that work, Talk's and maple crate's, each with what it does. The maple crate examples are this house's own DJs, presets and speakers, and every one is checked against the skill's reading.
+- **What it heard** (since 2026-11-08): a box under Talk's button says whether maple crate is on, and shows the last three things it heard, as Alexa passed them on, with what it said back. A word Alexa misheard shows there.
+- **Only Amazon gets in:** every request carries Amazon's signature, and the house checks it before it does anything. Each request is answered once: a copy sent again is refused. [alexa.js; alexa-act.js; alexa-read.js; alexa-sign.js]
 
 ## What the app can see
 

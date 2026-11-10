@@ -8,7 +8,8 @@
 
 import { advance, decideSubmit, prunable, decideClaim, destinationHolder, waitingOn,
   voiceDecide, voiceDue, voiceTotals, voiceEndFor, voiceSweepDecide,
-  helperPutDoc, playerPutDoc, playerForgetDoc, keptPlayerOut } from "../station.js";
+  helperPutDoc, playerPutDoc, playerForgetDoc, keptPlayerOut, weekRepeats, weekList, WEEK_MS,
+  alexaOnceAnswer, ALEXA_SEEN_KEEP_MS, alexaHeardRow, ALEXA_HEARD_KEEP } from "../station.js";
 import { APP_CSS } from "../programs.js";
 
 export function makeKV(initial = {}) {
@@ -407,6 +408,11 @@ export function makeStation() {
   const hits = [];
   const endless = { doc: null, log: [] }; // the endless DJ's watch (MC-22)
   const seen = new Map(), sentBack = new Map();
+  const alexaSeen = new Map(); // maple crate's request ids -> { at, by_call }
+  const alexaHeardRows = []; // what maple crate heard, oldest first
+  // The house's week (week.js): its rows, as the real object's table holds them.
+  const week = [];
+  let weekSeq = 0;
   // The Talk ledger (MC-15), on the same pure reducer the real object runs.
   const sessions = new Map(); // cap -> row
   const hourKey = (now) => new Date(now).toISOString().slice(0, 13);
@@ -524,6 +530,25 @@ export function makeStation() {
     if (op === "endless-list") {
       return { ok: true, rows: endless.log.slice(-Math.min(200, Math.max(1, Number(args.limit) || 40))) };
     }
+    // Maple crate's requests, once each, as the real object keeps them.
+    if (op === "alexa-once") {
+      if (typeof args.id !== "string" || !args.id || typeof args.by !== "string" || !args.by) return { ok: false, code: "bad-request" };
+      for (const [k, r] of alexaSeen) if (r.at < now - ALEXA_SEEN_KEEP_MS) alexaSeen.delete(k);
+      const had = alexaSeen.get(args.id) ?? null;
+      if (!had) alexaSeen.set(args.id, { at: now, by_call: args.by });
+      return alexaOnceAnswer(had, args.by);
+    }
+    if (op === "alexa-heard") {
+      const row = alexaHeardRow(args);
+      if (!row.heard) return { ok: false, code: "bad-request" };
+      alexaHeardRows.push({ at: now, ...row });
+      alexaHeardRows.splice(0, Math.max(0, alexaHeardRows.length - ALEXA_HEARD_KEEP));
+      return { ok: true };
+    }
+    if (op === "alexa-heard-list") {
+      const n = Math.min(ALEXA_HEARD_KEEP, Math.max(1, Number(args.limit) || 3));
+      return { ok: true, rows: alexaHeardRows.slice(-n).reverse() };
+    }
     // The rule check's two tables (setcheck.js), as the real object keeps them.
     if (op === "seen-put") {
       for (const [uri, lead, title, album, ms] of (args.rows ?? []).slice(0, 300)) {
@@ -536,8 +561,25 @@ export function makeStation() {
       for (const u of args.uris ?? []) if (seen.has(u)) tracks[u] = seen.get(u);
       const within = Number(args.sent_within_ms);
       const at = sentBack.get(args.key);
-      return { ok: true, tracks, sent_back: at != null && (!(within > 0) || at >= now - within) };
+      return { ok: true, tracks, sent_back: at != null && (!(within > 0) || at >= now - within),
+        ...(args.played ? { played: weekRepeats(week, args.uris ?? [], { playlist: args.playlist ?? null, now }) } : {}) };
     }
+    // The house's week (week.js), on the same pure rules the real object runs.
+    if (op === "played-log") {
+      const rows = (args.rows ?? []).filter((r) => Array.isArray(r) && r[0]);
+      const uris = rows.map((r) => r[0]);
+      const repeats = args.check === false ? [] : weekRepeats(week, uris, { playlist: args.playlist ?? null, now });
+      const write_id = `${now}-${week.length}`;
+      for (const [uri, label] of rows) {
+        const s = seen.get(uri);
+        week.push({ seq: ++weekSeq, write_id, at: now, uri, label: label || (s?.title ? `${s.lead ? `${s.lead} — ` : ""}${s.title}` : null),
+          dj: args.dj ?? null, btn: Number.isInteger(args.btn) ? args.btn : null, catalog: args.catalog ?? null,
+          playlist: args.playlist ?? null, source: args.source === "played" ? "played" : "written" });
+      }
+      for (let i = week.length - 1; i >= 0; i--) if (week[i].at < now - WEEK_MS) week.splice(i, 1);
+      return { ok: true, repeats, write_id, logged: rows.length };
+    }
+    if (op === "played-list") return { ok: true, ...weekList(week, { now, ...(Number(args.max) > 0 ? { max: Number(args.max) } : {}) }) };
     if (op === "sent-back") { if (args.key) sentBack.set(args.key, now); return { ok: true }; }
     if (op === "sent-used") {
       const at = sentBack.get(args.key);
@@ -619,7 +661,7 @@ export function makeStation() {
       ? { ok: true, row: result.row, note: result.note } : result;
   };
   return {
-    rows, calls, kvops, hits, sessions, endless,
+    rows, calls, kvops, hits, sessions, endless, week,
     idFromName(name) { return name; },
     get() {
       return {
@@ -765,3 +807,12 @@ export function withSheet(worker) {
     return new Response(inlineSheet(await r.text()), { status: r.status, statusText: r.statusText, headers: r.headers });
   } };
 }
+
+// A HOUSE'S TWO REQUESTS PRESETS, for tests: Spotify on 1, Tidal on 2, with
+// made-up playlists. Never read from house.json: the public copy's is a
+// blank house with preset 1 alone, and its tests run there too (the copy
+// script's check, 2026-11-09: five tests failed in the copy on preset 2).
+export const TWO_REQUESTS = [
+  { button: 1, guest: true, live: true, name: "Requests · Spotify", playlist: "RRRRRRRRRRRRRRRRRRRRR1", catalog: "spotify" },
+  { button: 2, guest: true, live: true, name: "Requests · Tidal", playlist: "00000000-0000-4000-8000-000000000002", catalog: "tidal" },
+];

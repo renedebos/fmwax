@@ -6,6 +6,7 @@ import { findDj, house } from "./house.js";
 import { PERSONAS } from "./djs.js";
 import { ARCHIVE } from "./archive-identity.js";
 import { artistLookupOn, houseCatalogNames, lastfmOn } from "./services.js";
+import { parseSpeakers } from "./room.js";
 
 // Last.fm's one verb (lastfm.js), for a house with the key: here, not
 // imported from there, which would bring this file in a loop.
@@ -884,6 +885,13 @@ export const TOOLS = [
       "trip instead of twelve.\n\n" +
       "Still a lookup, not a recommendation engine: name the tracks yourself " +
       "from your own knowledge first.\n\n" +
+      // SEARCH LEAN (the owner, 2026-11-08: 730 of the day's 1,394 Spotify
+      // calls were searches, about 33 a set, 2 to 3 for every song kept).
+      "EVERY QUERY IS ONE SPOTIFY CALL, and the house's Spotify app has a daily quota: past it, " +
+      "nothing on Spotify works for about eleven hours. So search the songs you mean to use, plus a " +
+      "few spares (about a quarter more than the set needs), not a long list to choose from. " +
+      "Re-query only what came back wrong or missing, and never look a song up twice in one job: " +
+      "what an earlier call showed still stands.\n\n" +
       "If the request was for rare or obscure material and a result comes back as " +
       "the artist's most famous song, that is a sign you named the wrong track, " +
       "not a lucky find — go back to your own knowledge and pick a deeper one.\n\n" +
@@ -2064,6 +2072,13 @@ export const VOICE_TOOLS = new Set([
   // no phone open. Not a connector tool: only the voice has it, and only
   // where askDjOn holds.
   "ask_dj",
+  // TALK PRESSES THE BUTTONS (MC-39, the owner, 2026-11-08): a WiiM's preset
+  // pressed as its remote presses it, through the home helper (talk-press.js).
+  // Not a connector tool either: only the voice, only in a house with WiiMs.
+  "press_preset",
+  // And the move (MC-39 deploy 2): what Spotify plays, to another speaker,
+  // as the bar's move. Talk's own as well.
+  "move_music",
 ]);
 // Where Talk files a DJ's set for the curator (MC-36, the plan's default 5):
 // asks are on and the curator is woken for them, with the ledger to hold
@@ -2272,6 +2287,26 @@ export const VOICE_BRIEFS = {
     "`how_to_hear_it` what to say. Otherwise it only changes what the archive preset plays when pressed.",
   play_playlist: "Start a playlist on a speaker, from the top: `playlist` is an alias (a DJ's key, " +
     "\"button 4\", \"replay\"), an id or an exact name; `device` the speaker's exact name.",
+  // MC-39: Talk's own (talk-press.js). And two of the connector's tools
+  // said shorter for the voice, which reads them on every turn: the Volume
+  // and mute rule is in the backend's prompt already, and the archive they
+  // spoke of is off. Together they leave room for press_preset under the
+  // ceiling (test/talk.test.js).
+  press_preset: "Press a preset on a WiiM, as its remote does: whatever the key holds plays, with any " +
+    "settings saved with it. `n` 1-12, or `name`, what is saved on it; `device` the speaker. " +
+    "An answer with `keys` pressed nothing: ask which. Say the line in `said`.",
+  recently_played: "The last 50 plays on the Spotify account, newest first, each with where it came from " +
+    "('button 2 (Hank)', an album). Before re-cutting a button, so a DJ doesn't repeat a set it just played, and " +
+    "when asked what has been on. A play skipped inside 30 seconds isn't kept; Tidal and the radio never show.",
+  playback_control: "Transport control: pause, resume, skip forward or back, or set volume. There is no mute: " +
+    "see Volume and mute.",
+  // Deploy 2: the move, and read_playlist said shorter (its explicit-track
+  // audit is the curator's, not Talk's) to make room for it.
+  move_music: "Move what Spotify is playing to another speaker: the same song carries on there. `device` the " +
+    "speaker. Say the line in `said`.",
+  read_playlist: "List what is in a saved playlist, with durations and a total; for the one playing, also how " +
+    "much is left after the current track. Call it when asked what is on a button, and before replacing anything " +
+    "you did not just write, so you can say what will be lost.",
   ask_dj: "Ask a DJ for a new set, made by the house's curator after the call, so the person can hang up: " +
     "`dj` by name, `words` what they asked for, `minutes` (60 when they said none), `avoid`, `device` the speaker. " +
     "It lands on the requests preset in place of the set there and starts on `device` as it lands; `keep` puts it on " +
@@ -2303,6 +2338,28 @@ function askDjTool(env) {
     },
   };
 }
+// press_preset's arguments (MC-39): one of `n` or `name`, and the speaker.
+// Bounded again in the door (talk-press.js pressArgs), since a schema is only
+// what the model is told.
+function pressPresetTool() {
+  return {
+    name: "press_preset", description: VOICE_BRIEFS.press_preset,
+    inputSchema: {
+      type: "object",
+      properties: {
+        n: { type: "integer", description: "The preset's number, 1-12." },
+        name: { type: "string", description: "Or what is saved on it, as the person said it." },
+        device: VOICE_DEVICE,
+      },
+      required: ["device"],
+    },
+  };
+}
+// move_music's one argument (MC-39 deploy 2): the speaker to move to.
+function moveMusicTool() {
+  return { name: "move_music", description: VOICE_BRIEFS.move_music,
+    inputSchema: { type: "object", properties: { device: VOICE_DEVICE }, required: ["device"] } };
+}
 export function voiceFunctions(env) {
   const all = toolsWithMeta(env);
   // The one writer, built from the Librarian's schema (the writers share one
@@ -2319,7 +2376,8 @@ export function voiceFunctions(env) {
     }),
   }] : [];
   const ask = askDjOn(env) ? [askDjTool(env)] : [];
-  return [...all, ...writer, ...ask]
+  const press = parseSpeakers(env).length ? [pressPresetTool()] : [];
+  return [...all, ...writer, ...ask, ...press, moveMusicTool()]
     .filter((t) => VOICE_TOOLS.has(t.name))
     .map((t) => {
       let parameters = t.inputSchema;

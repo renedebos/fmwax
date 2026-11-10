@@ -50,6 +50,7 @@ import {
 import { activateProgram, askLine, refireWaiting, reviseProgram, settleRecord } from "./writes.js";
 import { ASK_START_CALLS, asksToStart, startAsked } from "./asks.js";
 import { fromRecord, sendBackWords, setBreaks } from "./setcheck.js";
+import { logWeek, repeatsField, weekBreak, weekField } from "./week.js";
 import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
 import { ARCHIVE } from "./archive-identity.js";
@@ -81,16 +82,21 @@ export function talkMayWrite(env, pl) {
 // ledger saw it in search_tracks, checked; sent back if it breaks one and
 // was not sent back already. A ledger that cannot answer counts nothing.
 // `stamped`: a send-back was waiting under this key, which this call answers.
-async function countRules(env, key, uris, spacing, last, { withinMs = 0, lastActs = [] } = {}) {
+// `week`: the playlist a request's or an endless job's set is going to, and
+// the house's week is counted with the rules (NOT THIS WEEK, week.js): a song
+// from it is sent back once like any break, so the curator can swap it before
+// the set lands. A chat write is flagged after it lands instead.
+async function countRules(env, key, uris, spacing, last, { withinMs = 0, lastActs = [], week = null } = {}) {
   let got = null;
   try {
     got = await station(env, "seen-get", { key, uris: [...uris, ...(last?.[0] ? [last[0]] : [])],
-      ...(withinMs ? { sent_within_ms: withinMs } : {}) }, { unbudgeted: true });
+      ...(withinMs ? { sent_within_ms: withinMs } : {}),
+      ...(week ? { played: true, playlist: week.playlist ?? null } : {}) }, { unbudgeted: true });
   } catch { got = null; }
   if (!got?.ok) return { breaks: [], sendBack: false, stamped: false };
   const tracks = uris.map((u) => got.tracks?.[u] ?? null);
   const before = last ? got.tracks?.[last[0]] ?? fromRecord(last) : null;
-  const breaks = setBreaks(tracks, spacing, { before, lastActs });
+  const breaks = [...(week ? weekBreak(env, got.played, uris) : []), ...setBreaks(tracks, spacing, { before, lastActs })].slice(0, 6);
   const stamped = !!got.sent_back;
   if (!breaks.length || stamped) return { breaks, sendBack: false, stamped };
   try { await station(env, "sent-back", { key }, { unbudgeted: true }); } catch { return { breaks, sendBack: false, stamped }; }
@@ -228,6 +234,9 @@ export async function callTool(env, name, args, budget) {
             "about the artist these words name: albums with their original years, and the names they recorded under. " +
             "Take a record's year from here, never from search_tracks' `released`, which is often a reissue." } : {};
         })()),
+        // THE HOUSE'S WEEK (2026-11-07, week.js): every DJ's songs of the
+        // last seven days, which house_rules' NOT THIS WEEK keeps out.
+        ...(await weekField(env)),
         house_rules: HOUSE_RULES,
       };
     }
@@ -425,6 +434,9 @@ export async function callTool(env, name, args, budget) {
       // Sets the house sent back in the last day, by path (MC-33).
       let sentBack = null;
       try { sentBack = await station(env, "sent-back-day", {}, { unbudgeted: true }); } catch { sentBack = null; }
+      // THE HOUSE'S WEEK (week.js) is not here: it rides in get_dj, which the
+      // curator calls before every request and job, and once is enough (the
+      // owner, 2026-11-07: it doubled what a curator reads).
       return {
         requests,
         ...(eventSubs.count ? { event_subscriptions: eventSubs } : {}),
@@ -449,7 +461,9 @@ export async function callTool(env, name, args, budget) {
           "artist's cut of the same riddim or tune, another take is not a repeat (2026-09-25: The Selector read 150 " +
           "avoided songs as used-up riddims and made a 6-song set). Make the minutes asked, three quarters at the " +
           "least: \"a short true set\" is for a listener's narrow request, never for an endless job, whose field is " +
-          "the DJ's whole brief. NO SAME TITLE BACK TO BACK (the owner, 2026-09-27, after The Selector played " +
+          "the DJ's whole brief. Leave out the songs in get_dj's `played_last_7_days` too, every DJ's of the house's week, " +
+          "as house_rules' NOT THIS WEEK says: a set holding one is sent back once. " +
+          "NO SAME TITLE BACK TO BACK (the owner, 2026-09-27, after The Selector played " +
           "three Cuss Cusses in a row): in an endless job no two songs in a row share a title — counting `ends_with`, " +
           "the song already last on the list — whatever the brief says about versions; spread them through the " +
           "set. And never the same recording twice: an extended mix, a remaster or an edit of a record already " +
@@ -643,7 +657,10 @@ export async function callTool(env, name, args, budget) {
       // then written as sent with the breaks said.
       const last = kind === "topup" && Array.isArray(before) ? before.at(-1) ?? null : null;
       const counted = await countRules(env, `job:${jobId}`, keep, tunedSpacing(env, findDj(env, p.dj)), last,
-        { lastActs: kind === "topup" ? lastBatchActs(state.sessions?.[bkey], tunedSpacing(env, findDj(env, p.dj))?.batchActs) : [] });
+        { lastActs: kind === "topup" ? lastBatchActs(state.sessions?.[bkey], tunedSpacing(env, findDj(env, p.dj))?.batchActs) : [],
+          // NOT THIS WEEK (week.js). An endless job's own songs are logged as
+          // they play, by the watch, never here: nothing is logged on write.
+          week: { playlist: p.playlist } });
       if (counted.sendBack) {
         await release();
         throw new Error(sendBackWords(djName, tunedSpacing(env, findDj(env, p.dj)), counted.breaks));
@@ -820,6 +837,7 @@ export async function callTool(env, name, args, budget) {
       if (counted.breaks.length) {
         await endlessLog(env, [{ at: Date.now(), btn: p.button, event: "rules-as-sent", detail: counted.breaks.join("; ").slice(0, 300) }]);
       }
+      console.log(`set: endless ${kind} ${p.dj} on ${p.button} songs=${keep.length}`);
       return { ...result, job_id: jobId, kind, preset: p.button, dj: p.dj, added: keep.length,
         ...(mins != null ? { minutes: mins } : {}),
         ...(dropped.length ? { dropped_as_recent: dropped } : {}),
@@ -1099,10 +1117,13 @@ export async function callTool(env, name, args, budget) {
       }
       // THE RULES THE HOUSE COUNTS (setcheck.js), before anything is
       // claimed: sent back once, then written as sent with the breaks said.
-      const counted = await countRules(env, `req:${requestId}`, args.uris, tunedSpacing(env, dj), null);
-      if (counted.sendBack) throw new Error(sendBackWords(dj.name, tunedSpacing(env, dj), counted.breaks));
       // A tenant's preset, or the live guest (MC-18).
       const pid = dest.guest ? dest.pl.id : configuredPlaylistId(env, dj.alias);
+      // NOT THIS WEEK is counted with them (week.js): a request once written
+      // is settled, so a repeat can only be swapped before the write.
+      const counted = await countRules(env, `req:${requestId}`, args.uris, tunedSpacing(env, dj), null,
+        { week: { playlist: pid } });
+      if (counted.sendBack) throw new Error(sendBackWords(dj.name, tunedSpacing(env, dj), counted.breaks));
       if (!pid) {
         throw new Error(
           `${dj.name} has no configured playlist — BUTTONS needs fixing`);
@@ -1211,6 +1232,10 @@ export async function callTool(env, name, args, budget) {
           backup: out.snapshot.key, what_happened: out.what_happened };
       }
 
+      // THE HOUSE'S WEEK (week.js): the set landed, so its songs are this
+      // week's. Its repeats were counted before the write, with the rules.
+      await logWeek(env, { uris: args.uris, items: out.items, dj: dj.key, catalog: cat.name, playlist: pid, check: false });
+
       if (out.verified === "mismatch") {
         // Only a mismatch is the alarm. "unconfirmed" — a truncated or stale
         // read-back — rides through as ready-with-caveat on purpose:
@@ -1298,7 +1323,10 @@ export async function callTool(env, name, args, budget) {
         } catch (e) {
           start = { not_started: String(record?.device ?? ""), why: `the start failed (${String(e?.message ?? e).slice(0, 80)})` };
         }
-        if (start) console.log(`ask-start ${requestId.slice(0, 8)} ${start.started_on ? `on ${start.started_on}` : `not on ${start.not_started}: ${start.why}`}`);
+        // The ask's trace (MC-38 stage 3): which voice asked, and a start
+        // Spotify took but did not confirm kept apart from a confirmed one.
+        if (start) console.log(`ask-start ${requestId.slice(0, 8)} via=${record?.via ?? "-"} ` +
+          `${start.started_on ? `on ${start.started_on}${start.unverified ? " unverified" : ""}` : `not on ${start.not_started}: ${start.why}`}`);
       }
       if (!commit?.ok) {
         return { status: "written-unrecorded", request_id: requestId,
@@ -1309,6 +1337,7 @@ export async function callTool(env, name, args, budget) {
             "retry — the hourly sweep reconciles the record on its own." };
       }
 
+      console.log(`set: ask ${dj.key ?? dj.name} songs=${args.uris.length}`);
       return {
         status: "ready", request_id: requestId,
         dj: dj.name, playlist: pl.name, id: pid,
@@ -1318,7 +1347,7 @@ export async function callTool(env, name, args, budget) {
         ...(out.warnings.length ? { warnings: out.warnings } : {}),
         ...(refired ? { rang_waiting_request: refired } : {}),
         ...(counted.breaks.length ? { written_as_sent: counted.breaks } : {}),
-        ...(start?.started_on ? { started_on: start.started_on } : {}),
+        ...(start?.started_on ? { started_on: start.started_on, ...(start.unverified ? { start_unverified: true } : {}) } : {}),
         ...(start?.not_started ? { not_started: { on: start.not_started, why: start.why } } : {}),
         note: (start?.started_on
           // MC-36: asked by voice, and started where it was asked.
@@ -1908,6 +1937,9 @@ export async function callTool(env, name, args, budget) {
           `First error: ${failed[0].error}`);
       }
       const unmatched = resolved.filter((r) => !r.error && !r.results.length).map((r) => r.query);
+      // THE SEARCH COUNT (the owner, 2026-11-08): one line a call, so a day's
+      // searches can be laid beside the sets they made (`set:` below).
+      console.log(`search: n=${resolved.length} missed=${unmatched.length} failed=${failed.length} catalog=${cat.name}`);
       if (seen.length && env.STATION) {
         try { await station(env, "seen-put", { rows: seen.slice(0, 300) }, { unbudgeted: true }); } catch { /* not counted, then */ }
       }
@@ -2144,6 +2176,10 @@ export async function callTool(env, name, args, budget) {
           what_happened: out.what_happened,
         };
       }
+      // THE HOUSE'S WEEK (week.js): logged now it landed, and its songs the
+      // week already held said in the answer. Flagged, never refused.
+      const week = await logWeek(env, { uris: args.uris, items: out.items, dj: named?.key ?? null,
+        catalog: catalogOf(env, pl).name, playlist: pl.id });
       // The ask, kept. Programmes keep their reason in the record; a hand-cut
       // set kept twelve records and no reason until this line. Stored only on
       // success, after replacePlaylistSafely cleared the previous one — so an
@@ -2183,6 +2219,7 @@ export async function callTool(env, name, args, budget) {
         // looked like a read, and nothing here had kept a copy.
         previous_contents_saved: `${out.snapshot.total} tracks — restore_playlist can put them back`,
         ...(counted?.breaks.length ? { written_as_sent: counted.breaks } : {}),
+        ...repeatsField(env, week),
         ...(out.warnings.length ? { warnings: out.warnings } : {}),
         note: live
           ? "Contents replaced — and this playlist is what the speaker is " +
@@ -2333,6 +2370,9 @@ export async function callTool(env, name, args, budget) {
           uncertain = 0;
         }
       } catch (e) {
+        // THE HOUSE'S WEEK (week.js): what is confirmed landed is this week's;
+        // a batch that may or may not have is not logged.
+        if (confirmed) await logWeek(env, { uris: args.uris.slice(0, confirmed), catalog: cat.name, playlist: pl.id, check: false });
         // A batch that threw may still have committed — the response is what was
         // lost, not necessarily the write. Say what is known and what is not,
         // because a blind retry of the "missing" tracks can duplicate them.
@@ -2342,6 +2382,9 @@ export async function callTool(env, name, args, budget) {
           (uncertain ? `, and a further ${uncertain} may or may not have landed` : "") +
           ". Read the playlist before retrying, or you may duplicate tracks.");
       }
+      // THE HOUSE'S WEEK (week.js): logged now they landed, and the songs the
+      // week already held said in the answer. Flagged, never refused.
+      const week = await logWeek(env, { uris: args.uris, catalog: cat.name, playlist: pl.id });
       let after = null;
       if (!budget || budget.remaining > 1) {
         try {
@@ -2398,6 +2441,7 @@ export async function callTool(env, name, args, budget) {
             "cleared. Say so — the set on the button is not the published one.",
         } : {}),
         ...(clearWarning ? { warning: clearWarning } : {}),
+        ...repeatsField(env, week),
         note: "Appended to the end. Nothing was removed and nothing was started.",
       };
     }
@@ -2665,6 +2709,9 @@ export async function callTool(env, name, args, budget) {
                 "Say so — do not tell the user the button is loaded.",
         };
       }
+      // THE HOUSE'S WEEK (week.js): a program on a preset is a set like any.
+      const week = await logWeek(env, { uris: resolved.map((t) => t.uri), items: out.items, dj: dj.key,
+        catalog: catalogOf(env, pl).name, playlist: pl.id });
       try {
         await programsKV(env).put(`program:${slug}`,
           JSON.stringify({ ...record, loaded: true }), { metadata: programMeta });
@@ -2679,6 +2726,7 @@ export async function callTool(env, name, args, budget) {
         runtime: record.runtime,
         verified: out.verified,
         previous_contents_saved: `${out.snapshot.total} tracks — restore_playlist can put them back`,
+        ...repeatsField(env, week),
         ...(out.warnings.length ? { warnings: out.warnings } : {}),
         ...(resolved.some((t) => t.unplayable)
           ? { unplayable: resolved.filter((t) => t.unplayable).map((t) => t.title) }

@@ -3,7 +3,7 @@
 import { RULES_MD } from "./rules.js";
 import {
   APP_CSS, APP_CSS_PATH, TEMPLATE_VERSION, clock, renderProgram, standfirst, renderLibrary, renderRoom,
-  PAUSED_WORDS, renderDjRoom, tuneForm, renderRefusal, renderSpeakersNow, shutWords, helperKeyWords, renderUse, renderRules, renderSpotify,
+  PAUSED_WORDS, renderDjRoom, tuneForm, renderRefusal, renderSpeakersNow, shutWords, helperKeyWords, renderUse, renderRules, renderSay, renderSpotify,
   renderReadings, renderDeck, renderTalk, plural, waitWords, serviceLink, sameName, renderWhichDj, renderSetup,
 } from "./programs.js";
 import { DJ_ASKS, GLANCE, GLANCE_NOW, WHICH, WHICH_NEEDS, WHICH_SCRIPTS } from "./djs.js";
@@ -77,6 +77,16 @@ import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
 import { ARCHIVE } from "./archive-identity.js";
+import { ALEXA_BODY_MAX, alexaBox, alexaDoor } from "./alexa.js";
+// The Requests playlist's first songs (the setup page's maker, below): Green
+// Onions (Booker T. & the M.G.'s), Lovely Day (Bill Withers) and Roxette
+// (Dr. Feelgood), by their Spotify ids, checked 2026-11-09.
+export const STARTER_SONGS = ["spotify:track:4fQMGlCawbTkH9yPPZ49kP", "spotify:track:0bRXwKfigvpKZUurwqAlEh",
+  "spotify:track:7zC4pfRgOHd0ueckJs5vjR"];
+import { sayExamples } from "./alexa-say.js";
+import { alexaActs } from "./alexa-act.js";
+import { talkMove, talkOwnKey, talkPressPreset, talkTransport, talkWiims } from "./talk-press.js";
+import { moveOn, pauseNoted, pauseOn, playAgainOn, skipOn } from "./transport.js";
 
 // Deliberately 404, never 401. A 401 tells an MCP client "authenticate with me",
 // which sends claude.ai off to OAuth discovery and dynamic client registration
@@ -114,36 +124,8 @@ export async function readBounded(request, max) {
   return new TextDecoder().decode(all);
 }
 
-// A SPOTIFY PAUSE, WRITTEN DOWN (MC-21): the device Spotify plays on is
-// paused, and what stopped is kept as the bar's pause note, so the bar says
-// "Paused · song" and can play it again. The bar's disc and, since the
-// review of 2026-10-09, the Loaded bands and the DJ page's circle pause
-// through this. The note is null when only the note could not be kept.
-async function pauseNoted(env, envB, st, deviceName, boxes) {
-  await spotify(envB, "PUT", "/me/player/pause", { params: { device_id: st.device.id } });
-  const p = roomPlaying(st);
-  const bar = await nowAnswer(env, null, p, { recs: await readReadings(env, boxes) });
-  const shelf = await shelfQueueFor(env, p);
-  const noted = {
-    at: Date.now(), device: deviceName, track: p?.track ?? null, artists: p?.artists ?? null,
-    uri: p?.uri ?? null, pid: p?.pid ?? null, positionMs: Number(st.progress_ms) || 0,
-    // The sleeve and the album, from the same read (the owner, 2026-11-02:
-    // "why does the bar not show the cover" a few minutes into a pause).
-    ...(p?.art ? { art: p.art } : {}), ...(p?.album ? { album: p.album } : {}),
-    // A request's DJ goes with its pause, so "Paused" names them too.
-    ...(bar.preset ? { preset: { ...bar.preset, ...(bar.guest && bar.who?.kind === "request" && bar.who.name
-      ? { dj: bar.who.name } : {}) } } : bar.from ? { from: bar.from } : {}),
-    // A song on the program twice says nothing about which one
-    // this is, so no play-again then: it would replay the middle
-    // (Codex, 2026-09-24).
-    ...(shelf && shelf.uris.indexOf(p.uri) === shelf.uris.lastIndexOf(p.uri)
-      ? { program: shelf.slug, uris: shelf.uris.slice(shelf.uris.indexOf(p.uri)) } : {}),
-  };
-  try {
-    await programsKV(env).put(PAUSE_NOTE_KEY, JSON.stringify(noted), { expirationTtl: PAUSE_NOTE_MS / 1000 });
-  } catch { return null; /* the pause happened; only the note is lost */ }
-  return noted;
-}
+// A SPOTIFY PAUSE, WRITTEN DOWN (MC-21): `pauseNoted`, in transport.js
+// since MC-38 stage 3, with the bar's other verbs.
 
 // What a Talk call started on its speaker (2026-10-10): the starts, a resume,
 // an endless DJ that took or is being made there, the archive the helper
@@ -207,6 +189,16 @@ export async function handleRequest(request, env, ctx) {
     if (url.pathname === "/health") {
       return Response.json({ ok: true, server: SERVER_INFO });
     }
+    // THE BARE ADDRESS OF A NEW HOUSE goes to its setup page (the onboarding
+    // review, 2026-11-09): Cloudflare's build log ends with the house's
+    // address, and a newcomer who opened it met a "not found" on a house that
+    // had just deployed. Only until the house is claimed: after that, and on
+    // a house with no setup door, the bare address is the usual 404, so a
+    // visitor to it learns nothing (the first deploy sent the owner's own
+    // claimed house's address to /setup).
+    if (url.pathname === "/" && request.method === "GET" && setupOpen(env) && !(await houseClaimed(env))) {
+      return new Response(null, { status: 302, headers: { location: "/setup", "cache-control": "no-store" } });
+    }
 
     // THE HOME HELPER'S DOOR (MC-25). Its own secret, never MCP_SECRET; no
     // secret configured, no door (the same 404 as a wrong guess). It takes a
@@ -236,6 +228,14 @@ export async function handleRequest(request, env, ctx) {
       const kept = await keepReading(env, box, text, "helper");
       return Response.json(kept.ok ? { ok: true, presets: kept.presets.length } : { ok: false, code: kept.bad ? "bad" : "not-kept" },
         { status: kept.ok ? 200 : kept.bad ? 400 : 500 });
+    }
+    // HOUSE RADIO, THE ALEXA DOOR (MC-38, alexa.js). Its own secret in the
+    // address, matched whole; no secret set, no door (the same 404 as a wrong
+    // guess). Stage 1: it says back what it heard and does nothing else.
+    if (url.pathname.startsWith("/alexa/")) {
+      if (!env.ALEXA_SECRET || !sameSecret(url.pathname, `/alexa/${env.ALEXA_SECRET}`)) return notFound();
+      const raw = request.method === "POST" ? await readBounded(request, ALEXA_BODY_MAX) : "";
+      return alexaDoor(request, env, raw, Date.now(), ctx);
     }
     // ITS WIIMS (MC-31 stage 5, 2026-10-19: the helper for other houses). GET:
     // the WiiMs this house names and the addresses it knows (the owner's
@@ -1009,6 +1009,13 @@ export async function handleRequest(request, env, ctx) {
         } catch {
           return again("Spotify would not make the playlist just now. Is the house signed in to Spotify? Try again in a minute.", 503);
         }
+        // A FEW SONGS TO START WITH (the onboarding review, 2026-11-09): an
+        // empty playlist cannot be played, so the preset could not be saved
+        // until the assistant was added and a first set had landed. Three
+        // songs by their ids (no search), so the preset is saved straight
+        // away; the first set a DJ is asked for replaces them. Left out
+        // without a word if Spotify refuses: the page says what to do then.
+        try { await catalogFor(withBudget(env, { remaining: 2 }), "spotify").appendItems(made.id, STARTER_SONGS); } catch { /* an empty Requests, as before */ }
         // The preset list as the page keeps it: the new requests preset, and
         // whatever else the house has on other numbers.
         let list = [];
@@ -1103,6 +1110,15 @@ export async function handleRequest(request, env, ctx) {
       }
       if (url.pathname === "/setup/claim") {
         const out = await claimHouse(env, form?.get("key"));
+        // THE TIME ZONE, WITH THE CLAIM (the onboarding review, 2026-11-09):
+        // the claiming browser's own zone, sent by the form's script, kept
+        // where the house has none, so Core has one step fewer. The Time
+        // zone row stays, done, with its Change. A failed write leaves the
+        // row to do, as before.
+        if (out.ok && !zoneValid(env.HOUSE_TZ)) {
+          const tz = String(form?.get("tz") ?? "").trim();
+          if (zoneValid(tz)) { try { await choosePageSetting(env, "HOUSE_TZ", tz); } catch { /* the row asks */ } }
+        }
         if (out.ok) return setupPage({ state: "claimed", recovery: out.recovery }, 200, out.token);
         // The right key, and the house already claimed: its mark is put back
         // if a claim's write of it was lost.
@@ -1685,90 +1701,18 @@ export async function handleRequest(request, env, ctx) {
         // bar saying Ultra must never stop the Pro Plus. So read the player
         // fresh: if Spotify is not playing on the named speaker any more,
         // nothing is sent ("gone"); if it is, the pause names that device.
-        const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+        // The verbs themselves are transport.js's (MC-38 stage 3), shared with
+        // house radio's door.
         let code = "ok";
         let noted = null;
         if (verb === "again") {
-          const note = await readPauseNote(env);
-          if (!(note?.pid || note?.uris?.length) || fold(note.device) !== fold(box.name)) {
-            code = "expired";
-          } else if (!note.pid) {
-            // A Shelf program: the rest of its list, from the paused song.
-            try {
-              const out = await startUrisOnDevice(env, note.uris, box.name, { remaining: 16 }, { positionMs: note.positionMs });
-              // `unverified` carries a warning too, so it goes first (Codex,
-              // 2026-09-24). A shuffle or repeat warning is still the song
-              // playing; the bar has no words for it and the next pause
-              // notes whatever plays.
-              code = out.unverified ? "sent" : out.warning ? "stuck" : "ok";
-            } catch (err) {
-              code = err?.noSuchDevice ? "asleep" : "failed";
-            }
-            if (code === "ok" || code === "sent") await dropPauseNote(env);
-          } else {
-            try {
-              const out = await startPlaylistOnDevice(env, { id: note.pid, name: note.track ?? "the set", catalog: "spotify" },
-                box.name, { remaining: 16 }, { uri: note.uri, positionMs: note.positionMs });
-              code = out.preset_safe ? "ok" : out.unverified ? "sent" : "stuck";
-            } catch (err) {
-              code = err?.noSuchDevice ? "asleep" : "failed";
-            }
-            if (code === "ok" || code === "sent") await dropPauseNote(env);
-          }
+          ({ code } = await playAgainOn(env, box));
         } else if (verb === "next" || verb === "prev") {
-          // SKIP, FROM THE NOW PANEL (2026-09-25, design A): Spotify only, and
-          // only the speaker the panel names, read fresh as the pause reads
-          // it, so a skip on a panel minutes old never skips another room.
-          const envB = withBudget(env, { remaining: 6 });
-          try {
-            const st = await playerState(envB);
-            if (!st?.device?.id || st.is_playing !== true || fold(st.device.name) !== fold(box.name)) code = "gone";
-            else {
-              await spotify(envB, "POST", verb === "next" ? "/me/player/next" : "/me/player/previous", { params: { device_id: st.device.id } });
-              // A skip forward on an endless list may leave it short: asked
-              // now, after the answer goes out (endlessAfterSkip).
-              const pid = String(st.context?.uri ?? "").match(/^spotify:playlist:([A-Za-z0-9]{22})$/)?.[1] ?? null;
-              if (verb === "next" && pid && st.item?.uri) {
-                const ask = endlessAfterSkip(env, { pid, uri: st.item.uri }).catch(() => null);
-                if (ctx?.waitUntil) ctx.waitUntil(ask); else await ask;
-              }
-            }
-          } catch (e) {
-            code = e?.status === 404 ? "gone" : "failed";
-          }
+          ({ code } = await skipOn(env, ctx, box, verb));
         } else if (verb === "move") {
-          // MOVE WHAT IS PLAYING (the owner, 2026-09-24: "Play on" in the
-          // bar's panel only pointed the app at the Master Bedroom, and the
-          // music carried on on the Pro Plus). Spotify Connect's own
-          // transfer, as the Spotify app does it: same song, same place, the
-          // other speaker. Only while something plays; "quiet" otherwise, and
-          // the tap stays what it was, the speaker for the next Play.
-          const envB = withBudget(env, { remaining: 10 });
-          try {
-            const st = await playerState(envB);
-            if (!st?.device?.id || st.is_playing !== true) code = "quiet";
-            else if (fold(st.device.name) === fold(box.name)) code = "here";
-            else {
-              const { id } = await resolveDevice(envB, box.name);
-              if (!id) throw Object.assign(new Error("no id"), { noSuchDevice: true });
-              await moveTo(envB, id, st);
-            }
-          } catch (e) {
-            code = sleptThrough(e) ? "asleep" : "failed";
-          }
+          ({ code } = await moveOn(env, box));
         } else {
-          const budget = { remaining: 8 };
-          const envB = withBudget(env, budget);
-          try {
-            const st = await playerState(envB);
-            if (!st?.device?.id || st.is_playing !== true || fold(st.device.name) !== fold(box.name)) {
-              code = "gone";
-            } else {
-              noted = await pauseNoted(env, envB, st, box.name, boxes);
-            }
-          } catch (e) {
-            code = e?.status === 404 ? "gone" : "failed";
-          }
+          ({ code, noted } = await pauseOn(env, box, boxes));
         }
         if (json) {
           // An accepted pause answers with what the bar now says, so it can
@@ -2007,6 +1951,20 @@ export async function handleRequest(request, env, ctx) {
         version: versionWords() }));
     }
 
+    // WHAT TO SAY (2026-11-08): Talk and maple crate, with this house's own
+    // examples (alexa-say.js). From the Talk tab; a house with neither has none.
+    const sayPage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/say$/);
+    if (sayPage) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      const crate = !!(env.ALEXA_SECRET && env.ALEXA_SKILL_ID);
+      if (!key || !sameSecret(sayPage[1], key) || (!talkOn(env) && !crate)) return notFound();
+      if (request.method !== "GET") return roomRefuse(405, "The What to say page only answers GET.");
+      return roomPage(renderSay({ base: `/buttons/${key}`, ...(await tabState(env)), talk: talkOn(env),
+        alexa: crate ? { acts: alexaActs(env) } : null, examples: crate ? sayExamples(env) : null,
+        // Talk's presses (MC-39), in a house with WiiMs.
+        presses: parseSpeakers(env).length > 0 }));
+    }
+
     // RECONNECT SPOTIFY (MC-31 stage 0b, 2026-10-16; spotify-login.js). The
     // page, from the Speakers tab's footer; its Reconnect, a plain link and
     // not a form, because the pages' form-action 'self' would stop a form's
@@ -2107,6 +2065,10 @@ export async function handleRequest(request, env, ctx) {
           rateCents: VOICE_CENTS_PER_MINUTE, ...(await tabState(env)), hmark: await helperView(env),
           // Where a DJ's set asked by voice lands, when Talk files it (MC-36).
           asks: askDjOn(env) ? liveGuests(env) : null,
+          // Maple crate's box, in a house with the skill (2026-11-08).
+          crate: await alexaBox(envB),
+          // Talk's presses and the WiiMs' readings (MC-39), in a house with WiiMs.
+          presses: parseSpeakers(env).length > 0,
         }));
       }
       if (request.method !== "POST") return say(405, { error: "This door only answers POST." });
@@ -2159,7 +2121,9 @@ export async function handleRequest(request, env, ctx) {
                 // The endless DJ presets, for the steering rule (MC-23).
                 endless: await talkEndless(env),
                 // The archive preset, for its rule (2026-10-10).
-                archive: talkArchive(env) }),
+                archive: talkArchive(env),
+                // The WiiMs whose presets Talk may press (MC-39).
+                wiims: parseSpeakers(env).map((b) => b.name) }),
               tools: [...voiceFunctions(env), { type: "web_search" }], tool_choice: "auto",
               // Independent lookups may run together (the docs, 2026-09-12).
               parallel_tool_calls: true } },
@@ -2282,14 +2246,41 @@ export async function handleRequest(request, env, ctx) {
           return say(200, { error: talkErrorWords(err) });
         }
       }
+      // TALK PRESSES THE BUTTONS (MC-39, talk-press.js): a WiiM's preset by
+      // number or by what it holds, and a house DJ put on by name pressed on
+      // their own key, as maple crate presses them. The page follows the
+      // speaker only after a press the helper confirmed (or a Spotify start).
+      // A DJ who can't be pressed goes on to play_endless, as before.
+      // Deploy 2: the move (move_music), and a pause or a resume of a WiiM the
+      // helper hears on Tidal or the radio; anything else goes on to Spotify.
+      const TALK_OWN = { press_preset: (e) => talkPressPreset(e, argsIn), play_endless: (e) => talkOwnKey(e, argsIn, canon),
+        move_music: (e) => talkMove(e, canon), playback_control: (e) => talkTransport(e, argsIn, canon) };
+      if (Object.hasOwn(TALK_OWN, parsed.name)) {
+        try {
+          const r = await TALK_OWN[parsed.name]({ ...envB, __via: "talk" });
+          if (r) {
+            console.log(`talk:tool cap=${cap.slice(0, 8)} ${parsed.name} did ${JSON.stringify(r.out.did ?? { keys: r.out.keys?.length ?? 0 }).slice(0, 160)}`);
+            return say(200, { output: JSON.stringify(r.out) }, r.stamp ? { "set-cookie": pickCookie(r.stamp) } : {});
+          }
+        } catch (err) {
+          console.log(`talk:tool cap=${cap.slice(0, 8)} ${parsed.name} error: ${String(err?.message ?? err).slice(0, 200)}`);
+          return say(200, { error: talkErrorWords(err) });
+        }
+      }
       let call;
       try { call = voiceWriterCall(parsed.name, argsIn); }
       catch (err) { return say(200, { error: talkErrorWords(err) }); }
       try {
         // Marked as Talk on its own copy of env (MC-18), as the voice role is
         // at /mcp: a guest's record says "talk" whatever the arguments claim.
-        const out = await callTool({ ...env, __via: "talk" }, call.name, call.args, budget);
+        let out = await callTool({ ...env, __via: "talk" }, call.name, call.args, budget);
         console.log(`talk:tool cap=${cap.slice(0, 8)} ${call.name} ok (${JSON.stringify(call.args).slice(0, 160)})`);
+        // What Spotify can't see (MC-39 deploy 2): each WiiM as the helper
+        // hears it, its EQ and its Tidal or radio, beside Spotify's answer.
+        if (call.name === "now_playing" && out && typeof out === "object" && !Array.isArray(out)) {
+          const wiims = await talkWiims(envB).catch(() => []);
+          if (wiims.length) out = { ...out, wiims };
+        }
         // A START BY VOICE IS A CHOICE (the owner, 2026-10-10: Deep Dive's page
         // opened on the Ultra, chosen earlier, while Talk had started him on
         // the Master Bedroom). A speaker Talk starts music on is stamped as a

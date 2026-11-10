@@ -6106,17 +6106,18 @@ function setupRequestsHtml({ now, ready, speaker = null }) {
     <h2 id="scard">The Requests preset<span class="usub">Preset ${esc(String(now.btn))}, the playlist "${esc(now.name)}"</span></h2>
     <p class="sgntext">Every set a DJ is asked for lands in this one playlist, so the preset always plays the latest.</p>
     <ol class="sgntext setsteps">
-      <li><b>Fill it.</b> In Claude or ChatGPT on your phone (or in a browser on a computer), start a <b>new chat</b> (an
-        older one may not have the house's tools) and ask the Librarian for a programme on something you love, for
-        example: "Librarian, an introduction to Stax Records, and put it on my Requests preset". <b>This takes a few
-        minutes:</b> the Librarian looks things up and writes notes before the songs are ready, so keep the chat open.
-        When it is done, the songs are in the playlist and the notes are a page on your Shelf.
-        <br>In a hurry? Ask any other DJ for a set to play now instead, which is much quicker: "Vibe, play me 20 minutes
-        for a quiet morning". It writes the set into the playlist and starts it${speaker ? ` on the
-        ${esc(speaker)}, your default speaker (say "on the …" for another)` : ""}.</li>
-      <li><b>Save it on a WiiM device.</b> ${saveSteps(now.name, now.btn)}</li>
+      <li><b>Save it on a WiiM device.</b> The house put a few songs in the playlist to start with, so you can save it
+        right away. ${saveSteps(now.name, now.btn)}
+        <br>Playlist empty, or it won't play? Do step 3 first, then come back to this one.</li>
       <li><b>Each WiiM device once.</b> The same on your next WiiM device. You never save it again: the house only
         changes what is in the playlist.</li>
+      <li><b>Ask a DJ.</b> In Claude or ChatGPT on your phone (or in a browser on a computer), start a <b>new chat</b> (an
+        older one may not have the house's tools) and ask: "Vibe, play me 20 minutes for a quiet morning". It writes
+        the set into the playlist, in place of the songs there, and starts it${speaker ? ` on the
+        ${esc(speaker)}, your default speaker (say "on the …" for another)` : ""}.
+        <br>Something to read with it? "Librarian, an introduction to Stax Records, and put it on my Requests preset".
+        <b>This takes a few minutes:</b> the Librarian looks things up and writes notes before the songs are ready, so
+        keep the chat open. The notes are a page on your Shelf.</li>
     </ol>
     <p class="unote">The first times, it may ask before it uses the house: allowing it always (Claude's
       <b>Always allow</b>) is fine for writing the set and for playing it, or it asks every time. If it asks whether to
@@ -6552,11 +6553,12 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     <form class="setform" method="post" action="/setup/claim">
       <label for="skey">Setup key</label>
       <input type="text" id="skey" name="key" required autocomplete="off" autocapitalize="off" spellcheck="false">
+      <input type="hidden" name="tz" id="stz" value="">
       <button class="sgo" type="submit" data-busy="Claiming…">Claim this house</button>
     </form>
-    <p class="unote">The setup key is the one given when the house was deployed: the password you made up in
-      Cloudflare's form, if you used the Deploy button; the install command opens this page with it already filled
-      in. Not taken? Set <b>SETUP_KEY</b> again in Cloudflare (Workers, this house, Settings, Variables and Secrets),
+    <p class="unote">The setup key is the one given when the house was deployed: the key from the start page (or
+      the password you made up) that you pasted into Cloudflare's form, if you used the Deploy button; the install
+      command opens this page with it already filled in. Not taken? Set <b>SETUP_KEY</b> again in Cloudflare (Workers, this house, Settings, Variables and Secrets),
       or run the install command once more with <b>--new-key</b>.
       Claimed it before? Open this page in the browser you claimed it with, and it is yours again.</p>`)
     : state === "claimed" ? card("This house is yours", "Claimed just now, on this browser", `
@@ -6626,6 +6628,8 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
   // (a new key, after everything else was lost) the claim shown open, and
   // first: the recovery code's sign-in is folded away (the first Windows
   // laptop, 2026-10-21: the page led with a box the owner did not need).
+  // This browser's time zone goes with the claim, so a new house has one.
+  try { var z = document.getElementById("stz"); if (z) z.value = Intl.DateTimeFormat().resolvedOptions().timeZone || ""; } catch (e) {}
   var h = location.hash.slice(1), i = document.getElementById("skey"), d = document.getElementById("rekey");
   var s = document.getElementById("signin"), t = document.getElementById("rekeysaid"), b = document.getElementById("rekeyback");
   var u = document.querySelector("#scard .usub");
@@ -7212,6 +7216,87 @@ export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0
     <div class="chips footchips"><a class="chip" href="${esc(base)}/wiim">${icon("back", 16)}Speakers</a></div>
   </footer>
   ${tabBar({ base, active: "speakers", owed, talk, loaded })}
+</main>
+</body>
+</html>
+`;
+}
+
+// WHAT TO SAY (the owner, 2026-11-08): Talk and maple crate, the two ways to
+// ask the house by voice, on one page in the House rules' own cards. The
+// maple crate examples are this house's own, each read through the skill's
+// reader by the node suite (alexa-say.js), each with what it does. From the
+// Talk tab: its "?" and its maple crate box; the Talk tab stays lit on it.
+const SAY_CSS = `
+.say .rcard ul.says{list-style:none;margin:0;padding:0;display:block}
+.say .says li{display:flex;flex-direction:column;gap:.2rem;padding:.7rem 0;border-top:1px solid var(--rule-soft)}
+.say .says li:first-child{border-top:0;padding-top:.2rem}
+.say .slab{font-size:var(--fs-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.say .says q{font-size:var(--fs-16);font-weight:600;line-height:1.35;color:var(--ink);quotes:"“" "”"}
+.say .sres{font-size:var(--fs-14);line-height:1.45;color:var(--ink-2)}
+.say .rcard ul.shape{display:flex;flex-wrap:wrap;gap:.35rem;margin:0;padding:0;list-style:none}
+.say .shape li{font-size:var(--fs-14);font-weight:600;padding:.3rem .65rem;border-radius:999px;background:var(--q-tint);color:var(--q-ink)}
+.say .shape li.lead{background:var(--q-deep);color:var(--q-on-deep)}
+.say .shape li.opt{background:transparent;border:1.5px dashed var(--q-ink)}
+.say .sstate{display:inline-block;margin-left:.4rem;vertical-align:3px;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+  font-size:var(--fs-12);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;
+  background:var(--q-deep);color:var(--q-on-deep)}
+.say .sstate.dry{background:transparent;color:var(--ink-3);border:1.5px solid var(--rule)}
+.say .rq p+p{margin-top:.35rem}
+`;
+export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false }) {
+  const row = (r) => `
+      <li><span class="slab">${esc(r.label)}</span><q>${esc(r.said)}</q><span class="sres">${esc(r.result)}</span></li>`;
+  const card = (s) => `
+  <section class="ucard rcard" aria-labelledby="say-${esc(s.id)}">
+    <h2 id="say-${esc(s.id)}">${esc(s.title)}</h2>${s.sub ? `
+    <p class="rsub">${esc(s.sub)}</p>` : ""}
+    <ul class="says">${s.rows.map(row).join("")}
+    </ul>
+  </section>`;
+  const inv = esc(examples?.invocation ?? "maple crate");
+  const crate = alexa && examples ? `
+  <section class="ucard rcard" aria-labelledby="say-crate">
+    <h2 id="say-crate">Maple crate <span class="sstate${alexa.acts ? "" : " dry"}">${alexa.acts ? "On" : "Dry run"}</span></h2>
+    <p>A private Alexa skill on the house's Echos, Spotify only. Every sentence starts <b>“Alexa, ask ${inv} for …”</b> or <b>“…to …”</b>, in one breath.${
+      alexa.acts ? "" : " It is on a dry run: it says what it would do, and does nothing."}</p>
+    <ul class="shape" aria-label="The sentence, in order">
+      <li class="lead">Alexa, ask ${inv} for</li><li>DJ</li><li>music</li><li>speaker</li><li>length or endless</li><li class="opt">no …</li><li class="opt">and put it on the shelf</li>
+    </ul>
+    <p class="rsub">Only the DJ is needed. Each example below is this house's own, and checked against the skill.</p>
+  </section>${examples.sections.map(card).join("")}${examples.notes.length ? `
+  <section class="ucard rcard" aria-labelledby="say-notes">
+    <h2 id="say-notes">Good to know</h2>${examples.notes.map((n) => `
+    <div class="rq"><h3>${esc(n.title)}</h3>${n.lines.map((l) => `<p>${esc(l)}</p>`).join("")}</div>`).join("")}
+  </section>` : ""}` : "";
+  const talkCard = talk ? `
+  <section class="ucard rcard" aria-labelledby="say-talk">
+    <h2 id="say-talk">Talk</h2>
+    <p><b>Hold the button on the Talk tab and say it your way</b>, in whatever language you speak. Let go and it answers out loud.</p>
+    <ul class="says">
+      <li><span class="slab">A set from a DJ</span><q>Ask Sessions for an hour of acoustic grunge on the Ultra</q><span class="sres">It's made after the call and starts by itself in about five minutes. You can hang up once Talk says it's on its way.</span></li>
+      <li><span class="slab">A DJ put on</span><q>Put Hank on in the master bedroom</q><span class="sres">Hank's own preset starts there.</span></li>
+      <li><span class="slab">Steer</span><q>Make it more upbeat</q><span class="sres">The DJ playing turns that way.</span></li>${presses ? `
+      <li><span class="slab">A preset</span><q>Press 12 on the Pro Plus</q><span class="sres">With the home helper on, the WiiM presses it as its remote would: a DJ, Tidal, the radio, with any settings saved with it.</span></li>
+      <li><span class="slab">A preset by name</span><q>Put on Radio Paradise</q><span class="sres">The preset saved under that name, pressed. Talk asks which if none or two match.</span></li>` : ""}
+      <li><span class="slab">Move it</span><q>Move it to the Ultra</q><span class="sres">The same song carries on there. Spotify only.</span></li>${presses ? `
+      <li><span class="slab">The radio</span><q>What's playing on the Pro Plus?</q><span class="sres">With the home helper on: the station or the song on Tidal or the radio. “Pause” and “play again” work on them too.</span></li>
+      <li><span class="slab">The EQ</span><q>Which EQ is the Pro Plus on?</q><span class="sres">The EQ in use, as the WiiM names it. Talk never changes it.</span></li>` : ""}
+      <li><span class="slab">The music</span><q>Skip this one</q><span class="sres">Pause, skip and what's playing happen at once.</span></li>
+    </ul>
+    <p class="rsub">Before it rewrites a playlist on the call, it says what it will do and waits for a yes.</p>
+  </section>` : "";
+  return `${head("What to say", crate ? `What to say to ${talk ? "Talk and " : ""}${inv}, and what it does.` : "What to say to Talk, and what it does.", ROOM_CSS + USE_CSS + RULES_CSS + SAY_CSS, WALL_FONTS + appMeta(base))}
+<main class="page spk use rules say tabbed">
+  <header class="masthead wallhead">
+    <h1>What to say</h1>
+  </header>
+  <p class="ulede">${talk && crate ? "Two ways to ask the house by voice: Talk, in this app, and maple crate, on the Echos."
+    : crate ? "Ask the house by voice, on the Echos." : "Ask the house by voice, in this app."}</p>${talkCard}${crate}
+  <footer class="roomfoot" id="roomfoot">
+    <div class="chips footchips"><a class="chip" href="${esc(base)}/${talk ? "talk" : "wiim"}">${icon("back", 16)}${talk ? "Talk" : "Speakers"}</a></div>
+  </footer>
+  ${tabBar({ base, active: talk ? "talk" : "speakers", owed, talk, loaded })}
 </main>
 </body>
 </html>
@@ -8177,6 +8262,21 @@ const TALK_CSS = `
 .talk .tspk select{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:var(--fs-16);cursor:pointer;
   -webkit-appearance:none;appearance:none;border:0;margin:0}
 .talk .tspk:focus-within{outline:2px solid currentColor;outline-offset:2px;border-radius:8px}
+/* MAPLE CRATE'S BOX (the owner, 2026-11-08: "on + last heard"): whether the
+   house's Alexa skill is on, the last things it heard and what it said, and
+   the way to What to say. */
+.talk .crate{display:flex;flex-direction:column;gap:.6rem;font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.talk .crate .blabel{display:flex;align-items:center;gap:.5rem;margin:0}
+.talk .crstate{font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-12);font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;background:var(--q-deep);color:var(--q-on-deep)}
+.talk .crstate.dry{background:transparent;color:var(--ink-3);border:1.5px solid var(--rule)}
+.talk .crhow,.talk .crnone{margin:0;font-size:var(--fs-14);line-height:1.45;color:var(--ink-2)}
+.talk .crheard{list-style:none;margin:0;padding:0;display:block}
+.talk .crheard li{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:.6rem;padding:.55rem 0;border-top:1px solid var(--rule-soft)}
+.talk .crheard time{font-size:var(--fs-12);font-weight:600;color:var(--ink-3);font-variant-numeric:tabular-nums;padding-top:.15rem}
+.talk .crheard q{display:block;font-size:var(--fs-16);font-weight:600;line-height:1.3;color:var(--ink);overflow-wrap:anywhere;quotes:"“" "”"}
+.talk .crheard .crsaid{display:block;font-size:var(--fs-14);line-height:1.4;color:var(--ink-2);margin-top:.15rem}
+.talk .crate .chip{align-self:flex-start;border:1.5px solid var(--ink);color:var(--ink);background:transparent}
 .talk .how p{font-size:var(--fs-16);line-height:1.45;margin:0 0 .6rem;color:var(--ink-2)}
 .talk .how p:last-child{margin-bottom:0}
 .talk audio{display:none}
@@ -8187,7 +8287,36 @@ export function spkWords(name) {
   var n = String(name || "").replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; });
   return /^everywhere$/i.test(name) ? "Plays <b>everywhere</b>" : "Plays on the <b>" + n + "</b>";
 }
-export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, usedSec = 0, cap = 60, idleMs = 30000, beatMs = 30000, rateCents = 5, loaded = true, owed = 0, talk = true, hmark = null, asks = null }) {
+// When maple crate heard it, in the house's own time: the hour alone today,
+// the day too before.
+export function crateWhen(at, tz, now = Date.now()) {
+  const zone = tz || "UTC";
+  let day, today, hm;
+  try {
+    day = new Intl.DateTimeFormat("en-US", { timeZone: zone, month: "short", day: "numeric" });
+    hm = new Intl.DateTimeFormat("en-GB", { timeZone: zone, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+    today = day.format(now);
+  } catch { return ""; }
+  const d = day.format(at);
+  return d === today ? hm.format(at) : `${d}, ${hm.format(at)}`;
+}
+function crateBox(base, crate) {
+  if (!crate) return "";
+  const heard = Array.isArray(crate.heard) ? crate.heard : [];
+  const inv = esc(crate.invocation ?? "maple crate");
+  return `
+  <section class="block crate" aria-labelledby="crh">
+    <h2 class="blabel" id="crh">${inv.charAt(0).toUpperCase() + inv.slice(1)} <span class="crstate${crate.acts ? "" : " dry"}">${crate.acts ? "On" : "Dry run"}</span></h2>
+    <p class="crhow">On the Echos, in one breath: “Alexa, ask ${inv} for Hank”.</p>${heard.length ? `
+    <ol class="crheard" aria-label="Last heard">${heard.map((h) => `
+      <li><time datetime="${esc(new Date(h.at).toISOString())}">${esc(crateWhen(h.at, crate.tz, crate.now))}</time><span><q>${esc(h.heard)}</q>${
+        h.said ? `<span class="crsaid">${esc(h.said)}</span>` : ""}</span></li>`).join("")}
+    </ol>` : `
+    <p class="crnone">Nothing heard yet.</p>`}
+    <a class="chip" href="${esc(base)}/say">What to say</a>
+  </section>`;
+}
+export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, usedSec = 0, cap = 60, idleMs = 30000, beatMs = 30000, rateCents = 5, loaded = true, owed = 0, talk = true, hmark = null, asks = null, crate = null, presses = false }) {
   const idleSec = Math.max(10, Math.round((Number(idleMs) || 30000) / 1000));
   const chooser = devices.map((d) =>
     `<option${d === defaultDevice ? " selected" : ""}>${esc(d)}</option>`).join("");
@@ -8206,8 +8335,13 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
       asks.some((g) => g.label === "Tidal") ? " A Tidal set starts only on a WiiM, with the home helper on." : ""} It doesn't ask for a yes first: asking is the yes.</p>
     <p><b>Before it rewrites a playlist on the call</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`
     : `<p><b>Before a playlist changes or a new set starts</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`}
+    ${presses ? `<p><b>A preset, as the remote presses it.</b> “Press 12 on the Pro Plus” or “Put on Radio Paradise” presses that WiiM's button, with whatever is saved on it, its EQ too. With the home helper off, a DJ's preset starts through Spotify without them, and anything else is “press it on the remote”.</p>
+    <p><b>What the WiiMs play.</b> With the home helper on, Talk hears Tidal and the radio on a WiiM, can pause them and play them again, and names the EQ each WiiM plays through. It never changes an EQ.</p>
+    ` : ""}<p><b>Move the music</b>: “Move it to the Ultra” carries on the same song there. Spotify only.</p>
     <p><b>The line under the button</b> says where music goes unless you name another speaker. Change it from the bar at the bottom: its sliders button opens the speakers. Every speaker in the house is equal.</p>
-    <p><b>The line is on the clock while it is open</b>, talking or not, at ${Number(rateCents) || 5} cents a minute; the house has ${cap} minutes a day. The meter in the card counts this line and the day. <b>Hang up</b> when you are done, or the line hangs up by itself ${idleSec} seconds after it has finished answering — never while it is still working.</p>`, helperMark(hmark))}
+    <p><b>The line is on the clock while it is open</b>, talking or not, at ${Number(rateCents) || 5} cents a minute; the house has ${cap} minutes a day. The meter in the card counts this line and the day. <b>Hang up</b> when you are done, or the line hangs up by itself ${idleSec} seconds after it has finished answering — never while it is still working.</p>${crate ? `
+    <p><b>${esc(crate.invocation ?? "maple crate")}</b>, the house's Alexa skill, takes sentences of its own on the Echos. The box under the button shows the last things it heard, and what it said back.</p>` : ""}
+    <p><a href="${esc(base)}/say">What to say</a>, with examples${crate ? " for both" : ""}.</p>`, helperMark(hmark))}
   <section class="djhead talkcard" aria-label="Talk">
     <div class="djtop">
       <button class="chip light hangup" id="hangup" type="button" hidden>Hang up</button>
@@ -8230,7 +8364,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
       <dt>You</dt><dd id="you"></dd>
       <dt>Desk</dt><dd id="desk"></dd>
     </dl>
-  </section>
+  </section>${crateBox(base, crate)}
 
   <audio id="voice" autoplay playsinline></audio>
   ${tabBar({ base, active: "talk", owed, talk, loaded })}

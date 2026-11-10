@@ -13,7 +13,7 @@ import vm from "node:vm";
 
 import { renderTalk } from "../programs.js";
 
-const SAID = "Pub Rock's on it: an hour, starting on the Ultra in about five minutes, unless something else is playing by then. " +
+const SAID = "Pub Rock's on it: an hour, starting on the Ultra in about five minutes, unless something else is started before then. " +
   "It goes on preset 1, in place of the set there. You can hang up.";
 
 function page() {
@@ -142,7 +142,7 @@ test("a hang-up while the ask is on its way waits for it, through a refused name
   assert.ok(toolAt < p.calls.findIndex((c) => c.path === "/talk/closed"), "the ask before the hang-up");
   await p.advance(2600);
   assert.equal(p.state(), "Pub Rock's on it: an hour, starting on the Ultra in about five minutes, unless something else is " +
-    "playing by then. It goes on preset 1, in place of the set there. Hung up.");
+    "started before then. It goes on preset 1, in place of the set there. Hung up.");
   assert.equal(p.el("hangup").textContent, "Hang up", "the button's own name again");
 });
 

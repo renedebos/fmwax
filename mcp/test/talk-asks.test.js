@@ -106,7 +106,7 @@ test("ask_dj files the set as the Ask form would, rings the curator, and says th
     assert.equal(out.preset, 1, "the Spotify requests preset");
     assert.equal(out.minutes, 60, "45 minutes said is the form's hour");
     assert.equal(out.said, "Hank's on it: an hour, starting on the Pro Plus in about five minutes, unless something else is " +
-      "playing by then. It goes on preset 1, in place of the set there. You can hang up.");
+      "started before then. It goes on preset 1, in place of the set there. You can hang up.");
     assert.equal(res.headers.get("set-cookie"), null, "nothing started, so no speaker is stamped");
     const [row] = rows(e);
     assert.equal(rows(e).length, 1);

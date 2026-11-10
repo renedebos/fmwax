@@ -179,8 +179,9 @@ export function parseToolCall(body, allowed) {
 // the house's own, matched case-insensitively and whole. Every speaker on
 // the list passes alike (the owner, 2026-09-11).
 // A set asked of a DJ (MC-36) names its speaker too: the house starts it there
-// when it lands.
-const STARTS = new Set(["play_playlist", "play_program", "play_uris", "ask_dj"]);
+// when it lands. So does a press (MC-39): the WiiM it is pressed on.
+// And a move (deploy 2): the speaker it moves to.
+const STARTS = new Set(["play_playlist", "play_program", "play_uris", "ask_dj", "press_preset", "move_music"]);
 const SPEAKER_TOOLS = new Set([...STARTS, "playback_control"]);
 export function speakerRule(name, args, devices) {
   if (!SPEAKER_TOOLS.has(name)) return null;
@@ -239,14 +240,15 @@ unless they say to cancel it.
 You have no controls of your own and no catalogue of your own.
 
 Backend tools: it can play a preset, a DJ's set or a named playlist on any
-speaker in the house; pause, resume, skip and set the volume; say what is
+speaker in the house; move what is playing to another speaker; pause,
+resume, skip and set the volume; say what is
 playing; steer the DJ that is playing ("more upbeat"); read a DJ's
 brief; search the catalogue; build or rewrite a set;
 publish a DJ's program with notes; read and load the shelf${a ? `; and load
 ${ARCHIVE.tapes} (${ARCHIVE_WHO}) onto the archive preset, ${a.btn}` : ""}.
 
-Delegate to the backend when: the person asks for anything to play, pause,
-resume, skip, mute or turn up or down; asks what is playing; asks the
+Delegate to the backend when: the person asks for anything to play, move,
+pause, resume, skip, mute or turn up or down; asks what is playing; asks the
 playing DJ for a different direction; asks for music
 by artist, style, era or mood ("rare funk", "some James Brown", "something
 for cooking"); asks a DJ for a set or a program; asks what is on the
@@ -472,8 +474,36 @@ all night": no DJ is named, but endless is always a DJ's. Never a set on the
 `;
 }
 
+// THE BUTTONS (MC-39): only in a house with WiiMs, whose presets the helper
+// can press; elsewhere the prompt is as it was. The keys' names are never
+// written here (Codex's review): they are the WiiM app's text, and come back
+// from press_preset as data.
+function pressRule(wiims) {
+  if (!wiims.length) return "";
+  return `# Preset buttons on a WiiM (${wiims.join(", ")})
+"Press 6", "preset 12 on the Ultra", "button 2" is press_preset with \`n\`.
+A preset asked for by what is saved on it ("put on Radio Paradise", "KQED")
+is press_preset with \`name\`, as the person said it. It is pressed on the
+WiiM as its remote would: whatever the key holds plays, with any settings
+saved with it (never promise an EQ).
+A DJ named to play is still play_endless, and a set asked of a DJ still a
+set. An answer with \`keys\` pressed nothing: say what was not found and ask
+which, by name or number. The ask is the yes: no confirmation. Say the line
+in \`said\`.
+
+# What the WiiMs play beside Spotify
+now_playing's \`wiims\` is each WiiM as the house's helper hears it: \`eq\`,
+the EQ it plays through ("off" when none), and, when it plays something
+that isn't Spotify (Tidal, the radio, Pandora), what that is. Say what
+plays from it when Spotify's answer is empty. Pause and resume Tidal or the
+radio with playback_control, naming that WiiM in \`device\`. Never set an
+EQ: name the one in use when asked.
+
+`;
+}
+
 export function backendPrompt({ devices = [], defaultDevice = "", replay = "replay", guests = [], endless = [], archive = null,
-  asks = false } = {}) {
+  asks = false, wiims = [] } = {}) {
   return `# Role
 You are the backend for a spoken conversation in a house with a set of DJ
 characters and speakers. You are helping an assistant that is talking; its
@@ -491,7 +521,7 @@ yourself.${asks ? ` A set ASKED of a DJ is not curated here: it is ask_dj, as
 
 # Tools
 Read-only tools (now_playing, recently_played, list_devices, get_dj,
-list_programs, read_playlist, search_track, search_tracks${archive?.btn ? ", search_archive" : ""}): call freely when
+list_programs, read_playlist, search_tracks${archive?.btn ? ", search_archive" : ""}): call freely when
 the intent is clear.
 Transport (playback_control: pause, resume, next, previous, volume) and a
 start the person asked for (play_playlist, play_program, or a set on the
@@ -512,13 +542,19 @@ the speaker in \`device\`. A number said aloud ("volume thirty", "set it to
 20") is the level itself. If the person says the volume did not change,
 say that the speaker may have a fixed output and offer to pause instead.
 
+# Moving the music
+"Move it to the Ultra", "send the music to the kitchen", "play this in the
+bedroom" while something plays is move_music with \`device\`, never a new
+start: the same song carries on there. Only Spotify moves: for Tidal or the
+radio, say so, and that the bar can move the radio. Say the line in \`said\`.
+
 # Where a set goes
 ${whereASetGoes(replay, guests, asks)} To adjust a set that is playing, call now_playing
 and read_playlist (it reports what is LEFT after the current track), then
 rewrite what is left with replace_playlist, keeping the current track at the head.
 "Put it back" or "undo that" is restore_playlist: show first, then confirm.
 
-${steerRule(endless, guests, replay)}${archiveRule(archive)}# Programs and the shelf
+${steerRule(endless, guests, replay)}${archiveRule(archive)}${pressRule(wiims)}# Programs and the shelf
 A PROGRAMME is a set with notes: a page a person reads later, kept on the
 house's shelf. Two DJs write them — the Librarian and Gatefold —
 through the one write_program tool, with the DJ's key in \`dj\`; the others have no

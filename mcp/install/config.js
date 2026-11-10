@@ -170,6 +170,8 @@ export function viewOf(house, { at = "mcp" } = {}) {
       playerReuseOff: house.player?.reuse === false,
       // The house rules page shows this house's own history (2026-10-18).
       rulesHistory: house.rules?.history === true,
+      // House radio acts (MC-38 stage 3); absent, its door is a dry run.
+      alexaActs: house.alexa?.acts === true,
     },
     values: {
       "worker.name": house.worker.name,

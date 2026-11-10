@@ -95,7 +95,9 @@ export function parseHelperReading(env, body) {
       ...(clip(r.station, 80) ? { station: clip(r.station, 80) } : {}),
       ...(clip(r.track, 200) ? { track: clip(r.track, 200) } : {}),
       ...(clip(r.artists, 200) ? { artists: clip(r.artists, 200) } : {}),
-      ...(qualityIn(r.quality, source) ? { quality: qualityIn(r.quality, source) } : {}) };
+      ...(qualityIn(r.quality, source) ? { quality: qualityIn(r.quality, source) } : {}),
+      // The EQ in use (MC-39), as the speaker names it, or "off".
+      ...(clip(r.eq, 40) && /^[\w .&'’+#()-]+$/.test(clip(r.eq, 40)) ? { eq: clip(r.eq, 40) } : {}) };
   }
   return Object.keys(out).length ? out : null;
 }
@@ -625,6 +627,13 @@ export function speakerFor(request, env) {
 // a WiiM reports for its services); the inputs — line-in, optical, HDMI,
 // Bluetooth, USB — and an unnamed source are not.
 const STREAMING = /^(tidal|qobuz|amazon|deezer|tunein|newtunein|iheart|radio|web stream|airplay|dlna|spotify|soundcloud|napster|pandora|calm radio|archive)/i;
+// MUSIC THE HELPER HEARS THAT SPOTIFY DOESN'T (MC-39, after Codex's review):
+// any named source but Spotify and the WiiM's own inputs, for what voice
+// says is playing and what it may pause. A WiiM left on the TV's optical, a
+// line-in or Bluetooth reads "play" while silent (above), so voice never
+// calls it playing. Wider than STREAMING on purpose: "WiiM radio" is music.
+const INPUTS = /^(line-in|bluetooth|optical|hdmi|usb|coax)/i;
+export const onStream = (r) => !!r?.source && !/spotify/i.test(String(r.source)) && !INPUTS.test(String(r.source).trim());
 // The one speaker without a Spotify read of its own: the house's kept
 // answer while it may be used (MC-29), the helper's readings, the cookie.
 // For pages that must not spend a Spotify call (the Shelf, Talk, the DJs tab).

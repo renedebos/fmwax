@@ -7,6 +7,7 @@
     "test:workerd": "vitest run --config test-workerd/vitest.config.js",
     "config": "node install/config.js",
     "rules": "node install/rules.js",
+    "alexa": "node install/alexa.js",
     "login": "node install/login.js",
     "check:pages": "node dev/pagecheck.mjs",
     "check:door": "node dev/door-check.mjs",

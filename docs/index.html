@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start your fmwax house</title>
+<meta name="description" content="Three steps to put your own fmwax house on Cloudflare: a setup key, the Deploy button, your setup page.">
+<!-- THE START PAGE (the onboarding review, 2026-11-09). START-HERE.md's Steps
+     1 and 2 as one page that can do what a guide on GitHub cannot: make the
+     setup key (a newcomer had to invent 24 characters, and one who skipped
+     that met Cloudflare's form with nothing to paste), hold it across the
+     trip to Cloudflare and GitHub, and open the new house's setup page with
+     the key already in it. Everything happens in this browser: the key is
+     made here, kept in this browser's own storage, and sent nowhere; it
+     reaches the house only in the part of the address after "#", which a
+     browser never sends. No script or font from anywhere else. Served by
+     GitHub Pages from the public copy's docs folder. -->
+<style>
+:root{--bg:#EDEDE8;--card:#F6F6F1;--ink:#14110F;--ink2:#4A4640;--ink3:#77726A;--rule:#D8D6CE;--deep:#2B3D5C;--on:#F6F6F1;--tint:#DDE3EE;--warm:#9A4A1E}
+@media (prefers-color-scheme:dark){:root{--bg:#15171B;--card:#1D2026;--ink:#F0EEE8;--ink2:#C3BFB6;--ink3:#8F8B83;--rule:#33373F;--deep:#C9D5EA;--on:#15171B;--tint:#262C38;--warm:#E0A070}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:40rem;margin:0 auto;padding:2rem 1rem 4rem}
+h1{font-size:1.75rem;line-height:1.15;margin:0 0 .4rem;font-weight:800;letter-spacing:-.01em}
+.lede{margin:0 0 1.5rem;color:var(--ink2)}
+section{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:1.1rem 1.1rem 1.2rem;margin:0 0 1rem}
+h2{display:flex;align-items:center;gap:.6rem;font-size:1.15rem;line-height:1.2;margin:0 0 .6rem;font-weight:800}
+h2 .n{flex:0 0 auto;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--deep);color:var(--on);display:flex;align-items:center;justify-content:center;font-size:1rem}
+p{margin:.5rem 0}
+ol,ul{margin:.5rem 0;padding-left:1.25rem}
+li{margin:.35rem 0}
+.note{font-size:.875rem;color:var(--ink3)}
+.key{display:block;width:100%;margin:.6rem 0;padding:.8rem;border-radius:12px;background:var(--tint);border:1px solid var(--rule);font:600 1.05rem/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow-wrap:anywhere;user-select:all;color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:.6rem 0 0}
+button,a.btn{font:inherit;font-weight:700;min-height:2.75rem;padding:0 1.1rem;border-radius:999px;border:2px solid var(--deep);background:var(--deep);color:var(--on);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;touch-action:manipulation}
+button.quiet{background:transparent;color:var(--deep);border-color:var(--rule);font-weight:600}
+a.btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+label{display:block;font-weight:700;margin:.8rem 0 .3rem}
+input[type=text]{width:100%;font:inherit;padding:.7rem .8rem;border-radius:12px;border:1.5px solid var(--rule);background:var(--bg);color:var(--ink)}
+table{width:100%;border-collapse:collapse;margin:.6rem 0;font-size:.9375rem}
+th,td{text-align:left;vertical-align:top;padding:.5rem .5rem .5rem 0;border-top:1px solid var(--rule)}
+th{width:42%;font-weight:700}
+code{font:600 .9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--tint);padding:.1rem .3rem;border-radius:6px;overflow-wrap:anywhere}
+.said{min-height:1.4em;font-size:.875rem;color:var(--warm);margin:.4rem 0 0}
+a{color:var(--deep)}
+noscript p{color:var(--warm);font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <h1>Start your fmwax house</h1>
+  <p class="lede">Three steps, about ten minutes. Keep this page open until the last one. First time here? Read
+    <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md">Start here</a> for what you need: a free
+    Cloudflare account and a free GitHub account.</p>
+  <noscript><p>This page needs JavaScript to make your key. Without it, make up a password of 24 characters or more,
+    write it in a note, and follow Start here.</p></noscript>
+
+  <section aria-labelledby="h1">
+    <h2 id="h1"><span class="n">1</span>Your setup key</h2>
+    <p>This is your house's password for setting it up. It was made in this browser just now, and nobody else has it.</p>
+    <output class="key" id="key" aria-label="Your setup key">…</output>
+    <div class="row">
+      <button type="button" id="copy">Copy the key</button>
+      <button type="button" class="quiet" id="again">Make a new key</button>
+    </div>
+    <p class="said" id="said" role="status"></p>
+    <p class="note">This browser remembers the key, so you can come back to this page. Paste it into a note of your own
+      too, in case this browser forgets it before you are done. Once your house is claimed, the key has done its work.</p>
+  </section>
+
+  <section aria-labelledby="h2">
+    <h2 id="h2"><span class="n">2</span>Deploy to Cloudflare</h2>
+    <p>Signed in to other Cloudflare or GitHub accounts in this browser? Then open this page in a private window, so
+      your house can't land on the wrong account. (The key is made again there: use that one.)</p>
+    <div class="row"><a class="btn" id="deploy" target="_blank" rel="noopener"
+      href="https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax">Deploy to Cloudflare</a></div>
+    <ol>
+      <li><b>Sign in to Cloudflare.</b> A form called <i>Set up your application</i> opens.</li>
+      <li><b>Connect GitHub.</b> Under <b>Git account</b>, click <b>New GitHub connection</b>, sign in, choose
+        <b>All repositories</b>, then <b>Install &amp; Authorize</b>.</li>
+      <li><b>Cloudflare now shows "Select a repository". Don't pick anything there.</b> Come back to this page and
+        press <b>Deploy to Cloudflare</b> again. The form opens once more, with your GitHub account filled in.</li>
+      <li><b>Change three things on the form</b>, and leave the rest. The form scrolls inside its own box.
+        <table>
+          <tr><th>Create private Git repository</th><td>Check this box.</td></tr>
+          <tr><th>The two <i>Select KV namespace</i> boxes</th><td>In each, choose <b>+ Create new</b>. Name the first
+            <code>fmwax-house-tokens</code> and the second <code>fmwax-house-programs</code>.</td></tr>
+          <tr><th>SETUP_KEY</th><td>Paste your key from step 1. <button type="button" class="quiet" id="copy2">Copy the key</button></td></tr>
+        </table>
+      </li>
+      <li>Click <b>Deploy</b> and wait about a minute, until the log ends with <b>Success! Build completed</b>. A few
+        lines above that is your house's address. It looks like <code>https://fmwax-house.your-name.workers.dev</code>.</li>
+    </ol>
+    <p class="note">Pictures of the form, and what to do if the build fails:
+      <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md#step-2-press-the-deploy-button">Start here, step 2</a>.</p>
+  </section>
+
+  <section aria-labelledby="h3">
+    <h2 id="h3"><span class="n">3</span>Open your setup page</h2>
+    <p>Paste your house's address here. The button opens its setup page with your key already filled in: there, click
+      <b>Claim this house</b>.</p>
+    <label for="addr">Your house's address</label>
+    <input type="text" id="addr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+      placeholder="https://fmwax-house.your-name.workers.dev">
+    <div class="row"><a class="btn" id="open" aria-disabled="true" href="#">Open my setup page</a></div>
+    <p class="said" id="said3" role="status"></p>
+    <p class="note">From there, the setup page is a checklist that ticks itself: Spotify, your speakers, Claude or
+      ChatGPT, and your first preset.</p>
+  </section>
+</main>
+<script>
+(function () {
+  "use strict";
+  var STORE = "fmwax-setup-key";
+  // 31 characters, none that read alike (no i, l, o, 0, 1); 32 of them is
+  // about 158 bits. Drawn without bias: a byte past the last full run of the
+  // alphabet is thrown away.
+  var ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+  function makeKey() {
+    var out = "", top = 256 - (256 % ALPHABET.length), buf = new Uint8Array(64);
+    while (out.length < 32) {
+      crypto.getRandomValues(buf);
+      for (var i = 0; i < buf.length && out.length < 32; i++) if (buf[i] < top) out += ALPHABET[buf[i] % ALPHABET.length];
+    }
+    return out;
+  }
+  function kept() { try { var k = localStorage.getItem(STORE); return k && /^[a-z2-9]{32}$/.test(k) ? k : null; } catch (e) { return null; } }
+  function keep(k) { try { localStorage.setItem(STORE, k); } catch (e) { /* a private window: the page still holds it */ } }
+  var key = kept();
+  if (!key) { key = makeKey(); keep(key); }
+  var box = document.getElementById("key"), said = document.getElementById("said");
+  function show() { box.textContent = key; link(); }
+  function copy() {
+    var done = function () { said.textContent = "Copied. Paste it into a note, then into Cloudflare's form."; };
+    var byHand = function () { said.textContent = "Select the key above and copy it by hand."; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(key).then(done, byHand); else byHand();
+  }
+  document.getElementById("copy").addEventListener("click", copy);
+  document.getElementById("copy2").addEventListener("click", copy);
+  document.getElementById("again").addEventListener("click", function () {
+    if (!confirm("Make a new key? Only do this if you have not pasted the old one into Cloudflare's form yet.")) return;
+    key = makeKey(); keep(key); show();
+    said.textContent = "A new key. The old one is gone from this page.";
+  });
+  // The house's address as typed or pasted: its origin alone, https only.
+  var addr = document.getElementById("addr"), open = document.getElementById("open"), said3 = document.getElementById("said3");
+  function originOf(text) {
+    var t = String(text || "").trim();
+    if (!t) return null;
+    if (!/^[a-z]+:\/\//i.test(t)) t = "https://" + t;
+    try { var u = new URL(t); return u.protocol === "https:" && u.hostname.indexOf(".") > 0 ? u.origin : null; } catch (e) { return null; }
+  }
+  function link() {
+    var o = originOf(addr.value);
+    if (o) {
+      open.href = o + "/setup#" + encodeURIComponent(key);
+      open.setAttribute("aria-disabled", "false");
+      said3.textContent = "";
+    } else {
+      open.href = "#";
+      open.setAttribute("aria-disabled", "true");
+      said3.textContent = addr.value.trim() ? "That doesn't look like an address. It starts with https:// and ends with workers.dev." : "";
+    }
+  }
+  addr.addEventListener("input", link);
+  open.addEventListener("click", function (e) { if (open.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+  show();
+})();
+</script>
+</body>
+</html>

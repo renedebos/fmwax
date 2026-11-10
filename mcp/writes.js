@@ -10,6 +10,7 @@ import {
   anyLiveGuest, destinationFor, guestAlias, guestForPlaylistId, guestLabel, house, programDj,
 } from "./house.js";
 import { replacePlaylistSafely, resolvePlaylist } from "./playlists.js";
+import { logWeek, repeatLine } from "./week.js";
 import {
   catalogFor, foreignUris, houseCatalog, placeOf, playlistRef, programsKV, subrequest,
   withBudget,
@@ -412,6 +413,16 @@ export async function reviseProgram(env, args, budget) {
       written = true;
       undo = out.snapshot.key;
       warnings.push(...out.warnings);
+      // THE HOUSE'S WEEK (week.js): only the songs the revision brought in.
+      // The rest were on the preset already, logged when they were written.
+      const had = new Set(out.snapshot?.uris ?? []);
+      const brought = uris.filter((u) => !had.has(u));
+      const week = brought.length ? await logWeek(env, { uris: brought, items: out.items, dj: dj?.key ?? null,
+        catalog: pl.catalog ?? playlistRef(pl.id)?.catalog ?? null, playlist: pl.id }) : [];
+      if (week.length) {
+        warnings.push(`Already in the house's last 7 days (NOT THIS WEEK): ${week.map((r) => repeatLine(env, r)).join("; ")}. ` +
+          "Swap any the listener did not ask for by name.");
+      }
       // The write cleared `ask:<playlistId>`, as every write does; the kept
       // set's own words go back the way activateProgram puts them back.
       if (rec.ask?.text && rec.requestId) {

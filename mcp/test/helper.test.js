@@ -314,7 +314,8 @@ test("the helper presses a key 1-12 and nothing else", async () => {
   const sent = [];
   const out = await obey({ "Pro Plus": "192.168.4.45" }, { id: "k", cmd: "key", n: 2, speaker: "Pro Plus" },
     async (ip, cmd) => { sent.push(cmd); return "OK"; }, async () => ({ mode: "10", vendor: "Tidal", status: "play", Title: hex("Just Like Honey") }));
-  assert.deepEqual(sent, ["MCUKeyShortClick:2"]);
+  // The press, then (MC-39) one read of the EQ it may have brought.
+  assert.deepEqual(sent, ["MCUKeyShortClick:2", "EQGetBand"]);
   assert.equal(out.reading.source, "Tidal");
 });
 
@@ -911,4 +912,39 @@ test("the house's door: the owner's WiiMs from its file and never rewritten; a p
   // And learns a new address after a move.
   await door(e, { method: "POST", body: JSON.stringify({ speakers: { "Pro Plus": "192.168.4.71" } }) });
   assert.deepEqual((await (await door(e)).json()).speakers, { "Pro Plus": "192.168.4.71" });
+});
+
+// THE EQ IN USE (MC-39, the owner, 2026-11-08): EQGetBand's name, or "off";
+// read fresh after a key, whose Smart Preset may bring its own (4 on the Pro
+// Plus brings Dance, measured), and never written.
+test("the EQ in use: named from EQGetBand, read again after a key press, and in the reading", async () => {
+  const { eqName } = await import("../../helper/fmwax-helper.mjs");
+  assert.equal(eqName({ status: "OK", EQStat: "On", Name: "Dance" }), "Dance");
+  assert.equal(eqName({ status: "OK", EQStat: "Off", Name: "Dance" }), "off");
+  assert.equal(eqName({ status: "Failed" }), null);
+  assert.equal(eqName(null), null);
+  assert.equal(eqName({ EQStat: "On", Name: "cafe java\u0007" }), "cafe java");
+  const sent = [];
+  const send = async (ip, cmd) => { sent.push(cmd); return cmd === "EQGetBand" ? { status: "OK", EQStat: "On", Name: "Dance" } : "OK"; };
+  const read = async () => ({ mode: "31", vendor: "spotify:playlist:AAAAAAAAAAAAAAAAAAAAA4", status: "play" });
+  const key = await obey({ "Pro Plus": "192.0.2.1" }, { id: "k", cmd: "key", n: 4, speaker: "Pro Plus" }, send, read);
+  assert.deepEqual(sent, ["MCUKeyShortClick:4", "EQGetBand"], "the press, then one read of the EQ");
+  assert.equal(key.reading.eq, "Dance");
+  // A pause keeps the last EQ read; it asks the speaker nothing more.
+  sent.length = 0;
+  const pause = await obey({ "Pro Plus": "192.0.2.1" }, { id: "p", cmd: "pause", speaker: "Pro Plus" }, send, read);
+  assert.deepEqual(sent, ["setPlayerCmd:pause"]);
+  assert.equal(pause.reading.eq, "Dance");
+  assert.ok(!sent.some((c) => /^EQ(Load|Set|On|Off|Save)/.test(c)), "never an EQ write");
+});
+
+test("the house keeps a reading's EQ as the speaker names it, and nothing that isn't a name", async () => {
+  const { parseHelperReading } = await import("../now.js");
+  const out = parseHelperReading(env(), { speakers: [
+    { name: "Pro Plus", state: "play", source: "Spotify", eq: "Dance" },
+    { name: "Ultra", state: "stop", eq: "<script>alert(1)</script>" }] });
+  assert.equal(out["Pro Plus"].eq, "Dance");
+  assert.ok(out.Ultra, "the reading is kept");
+  assert.equal(out.Ultra.eq, undefined, "the EQ that isn't a name is dropped");
+  assert.equal(parseHelperReading(env(), { speakers: [{ name: "Pro Plus", state: "play", eq: "R&B" }] })["Pro Plus"].eq, "R&B");
 });

@@ -6,7 +6,8 @@
 // the reading is fresh.
 //
 // It reads each speaker with `getPlayerStatus`, and a radio station's name
-// (2026-10-03) and a stream's quality (2026-10-25) with `getMetaInfo`. Since stage 2 it also keeps
+// (2026-10-03) and a stream's quality (2026-10-25) with `getMetaInfo`, and
+// the EQ in use with `EQGetBand` (2026-11-08, a read; never an EQ write). Since stage 2 it also keeps
 // one line open to the house (a WebSocket, its secret in the header) and
 // takes three commands down it, "pause", "resume" and (stage 3) "key" with
 // a preset number 1-12, for a speaker the house names. Nothing else is ever sent to a speaker, and nothing but the house
@@ -175,8 +176,32 @@ function qualityOf(st, meta) {
   return rate ? { rate, ...(bits ? { bits } : {}), kbps } : null;
 }
 
+// THE EQ IN USE (MC-39, the owner, 2026-11-08: "can talk page read the eq
+// settings"): EQGetBand, a read, names the EQ the speaker plays through for
+// the source in use ("Dance", "Flat", one of the owner's own), or says it is
+// off. Asked at most once a minute, and again when the source changes or a
+// key was pressed (a key's Smart Preset can bring its own EQ: 4 on the Pro
+// Plus brings Dance, measured 2026-11-08). Never set from here.
+const EQ_EVERY_MS = 60_000;
+const EQS = {};
+export function eqName(band) {
+  if (!band || band.status === "Failed") return null;
+  if (String(band.EQStat ?? "").toLowerCase() === "off") return "off";
+  const n = String(band.Name ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, 40);
+  return n || null;
+}
+async function eqOf(name, ip, st, fresh = false, get = wiim) {
+  const was = EQS[name];
+  const mode = st ? String(st.mode ?? "") : null;
+  if (!fresh && was && Date.now() - was.at < EQ_EVERY_MS && was.mode === mode) return was.eq;
+  if (!st && !fresh) return was?.eq ?? null;
+  const eq = eqName(await get(ip, "EQGetBand", true, 2000));
+  EQS[name] = { eq, at: Date.now(), mode };
+  return eq;
+}
+
 // One speaker's getPlayerStatus, in the words the house takes.
-export function readingOf(name, st, presets = null) {
+export function readingOf(name, st, presets = null, eq = null) {
   if (!st) return { name, state: "unreachable" };
   const mode = Number(st.mode);
   const vendor = String(st.vendor ?? "");
@@ -201,7 +226,7 @@ export function readingOf(name, st, presets = null) {
     ...(station ? { station } : {}),
     ...(unhex(st.Title) ? { track: unhex(st.Title) } : {}),
     ...(unhex(st.Artist) ? { artists: unhex(st.Artist) } : {}),
-    ...(quality ? { quality } : {}) };
+    ...(quality ? { quality } : {}), ...(eq ? { eq } : {}) };
 }
 
 // The only speaker commands this helper sends. A command from the house not
@@ -426,7 +451,8 @@ async function readAll(speakers, cfg = null) {
   return Promise.all(Object.entries(speakers).map(async ([name, ip]) => {
     const st = await readSpeaker(ip);
     if (cfg) keepTrack(cfg, name, !!st).catch(() => { /* tried again on the next read */ });
-    return readingOf(name, st, TABLES[name]);
+    const eq = st ? await eqOf(name, ip, st) : null;
+    return readingOf(name, st, TABLES[name], eq);
   }));
 }
 
@@ -464,7 +490,11 @@ export async function obey(speakers, m, send = wiim, read = readSpeaker) {
   const said = await send(ip, cmd, false);
   if (said !== "OK") return { id: m.id, ok: false, code: said == null ? "unreachable" : "failed" };
   await new Promise((r) => setTimeout(r, SETTLE_MS[m.cmd] ?? 600));
-  return { id: m.id, ok: true, reading: readingOf(m.speaker, await read(ip), TABLES[m.speaker]) };
+  const st = await read(ip);
+  // A key may bring its own EQ: read fresh after one (through the same
+  // hands), the last one kept after a pause or a resume.
+  const e = m.cmd === "key" && st ? await eqOf(m.speaker, ip, st, true, send).catch(() => null) : EQS[m.speaker]?.eq ?? null;
+  return { id: m.id, ok: true, reading: readingOf(m.speaker, st, TABLES[m.speaker], e) };
 }
 
 // The line to the house: reconnects on its own, pings every 30 s (the house

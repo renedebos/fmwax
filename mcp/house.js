@@ -480,6 +480,8 @@ export async function rulesFacts(env) {
       chatgpt: curatorKind(env) === "chatgpt",
       // Talk files a DJ's set for the curator (MC-36).
       talkasks: talk && askDjOn(env),
+      // House radio, the private Alexa skill, acts (MC-38 stage 3).
+      alexa: env.ALEXA_ACTS === "on",
     },
     blanks: {
       "default speaker": fallbackDevice(env) || "speaker chosen at setup",

@@ -640,4 +640,56 @@ describe("the rule check's tables against the real binding", () => {
     expect(await call("sent-back-day", { now: T0 + 5 * min })).toEqual({ ok: true, requests: 1, endless: 0, chat_and_talk: 1 });
     expect(await call("sent-back-day", { now: T0 + 25 * 60 * min })).toEqual({ ok: true, requests: 0, endless: 0, chat_and_talk: 0 });
   });
+
+  // THE HOUSE'S WEEK (week.js, 2026-11-07): the SQL behind the node suite's
+  // pure rules — a write logged and checked in one call, a name filled from
+  // seen_tracks, the list deduped, the redo window, and the seven-day prune.
+  test("the house's week: logged, checked, listed once a song, and gone after seven days", async () => {
+    const call = ledger();
+    const min = 60 * 1000, day = 24 * 60 * min;
+    await call("seen-put", { rows: [["spotify:track:b", "Chic", "Good Times", "Risqué", 1]], now: T0 });
+    let got = await call("played-log", { rows: [["spotify:track:a", "Prince — Kiss"], ["spotify:track:b", null]],
+      dj: "soul", btn: 1, catalog: "spotify", playlist: "p1", now: T0 });
+    expect(got).toMatchObject({ ok: true, repeats: [], logged: 2 });
+    expect((await call("played-list", { now: T0 + min })).songs).toEqual(["Prince — Kiss", "Chic — Good Times"]);
+    // The same playlist ten minutes on is the set being fixed; another is a repeat.
+    got = await call("played-log", { rows: [["spotify:track:a", "Prince — Kiss"]], playlist: "p1", now: T0 + 10 * min });
+    expect(got.repeats).toEqual([]);
+    got = await call("seen-get", { uris: ["spotify:track:a", "spotify:track:z"], played: true, playlist: "p2", now: T0 + 20 * min });
+    expect(got.played.map((r) => [r.uri, r.label])).toEqual([["spotify:track:a", "Prince — Kiss"]]);
+    expect((await call("played-list", { now: T0 + 30 * min })).songs).toEqual(["Prince — Kiss", "Chic — Good Times"], "each song once");
+    // Eight days on: a write prunes the week, and nothing is a repeat.
+    got = await call("played-log", { rows: [["spotify:track:b", "Chic — Good Times"]], playlist: "p3", now: T0 + 8 * day });
+    expect(got.repeats).toEqual([]);
+    expect((await call("played-list", { now: T0 + 8 * day })).songs).toEqual(["Chic — Good Times"]);
+  });
+});
+
+// MAPLE CRATE (alexa.js alexaOnce, 2026-11-08): an Alexa request's id is
+// answered once, kept ten minutes, and the first call asking again (station()'s
+// retry after a reset) is still the first.
+describe("maple crate's requests, once each, against the real binding", () => {
+  test("first, its own retry, a copy refused, and the id gone after its keep", async () => {
+    const call = ledger();
+    const min = 60 * 1000;
+    expect(await call("alexa-once", { id: "amzn1.echo-api.request.1", by: "a", now: T0 })).toEqual({ ok: true, first: true });
+    expect(await call("alexa-once", { id: "amzn1.echo-api.request.1", by: "a", now: T0 + 1000 })).toEqual({ ok: true, first: true });
+    expect(await call("alexa-once", { id: "amzn1.echo-api.request.1", by: "b", now: T0 + 5 * min })).toEqual({ ok: true, first: false });
+    expect(await call("alexa-once", { id: "amzn1.echo-api.request.2", by: "b", now: T0 + 5 * min })).toEqual({ ok: true, first: true });
+    expect(await call("alexa-once", { id: "amzn1.echo-api.request.1", by: "c", now: T0 + 11 * min })).toEqual({ ok: true, first: true });
+    expect((await call("alexa-once", { id: "x", now: T0 })).ok).toBe(false);
+  });
+  test("what it heard: the newest twenty kept, listed newest first, an empty one refused", async () => {
+    const call = ledger();
+    for (let i = 1; i <= 22; i++) expect((await call("alexa-heard", { heard: `ask ${i}`, said: i % 2 ? "ok" : null, now: T0 + i })).ok).toBe(true);
+    const rows = (await call("alexa-heard-list", { limit: 3, now: T0 + 30 })).rows;
+    expect(rows).toEqual([{ at: T0 + 22, heard: "ask 22", said: null }, { at: T0 + 21, heard: "ask 21", said: "ok" }, { at: T0 + 20, heard: "ask 20", said: null }]);
+    expect((await call("alexa-heard-list", { limit: 50, now: T0 + 30 })).rows.length).toBe(20);
+    expect((await call("alexa-heard", { heard: " ", now: T0 })).ok).toBe(false);
+  });
+  test("two copies at once: the object's input gate lets exactly one through", async () => {
+    const call = ledger();
+    const both = await Promise.all(["a", "b"].map((by) => call("alexa-once", { id: "amzn1.echo-api.request.9", by, now: T0 })));
+    expect(both.map((r) => r.first).sort()).toEqual([false, true]);
+  });
 });

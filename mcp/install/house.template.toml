@@ -11,6 +11,9 @@
 name = {{worker.name}}
 main = {{paths.main}}
 compatibility_date = {{worker.compatibilityDate}}
+# node:crypto's X509Certificate, for Amazon's signature on house radio's
+# requests (MC-38 stage 2b, alexa-sign.js).
+compatibility_flags = ["nodejs_compat"]
 #{{if account}}
 # The Cloudflare account this house lives in. Named because one sign-in can
 # see more than one account (a practice house's, say), and a deploy cannot
@@ -213,6 +216,14 @@ HOUSE_TZ = {{site.timezone}}
 # Spotify what is playing, as before the house kept one answer and asked the
 # home helper whether it still held. Absent, the kept answer is on.
 PLAYER_REUSE = "off"
+
+#{{end}}
+#{{if alexaActs}}
+# House radio acts (MC-38 stage 3, house.json `alexa.acts: true`): a private
+# Alexa skill's sentences file asks, start DJs and presets, pause, play again,
+# skip and move. Absent, the door only says what it would do. The instant
+# stop needs no deploy: Amazon's console, Test tab, skill testing Off.
+ALEXA_ACTS = "on"
 
 #{{end}}
 #{{if rulesHistory}}

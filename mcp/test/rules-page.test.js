@@ -95,7 +95,7 @@ test("docs/house-rules.md leaves no mark unread, in a house with everything and 
     "endless presets": "3, 4, 5", "archive preset": "6", "archive asks": "a song or a show", "talk minutes": "60", "time zone": "Pacific Time",
     "notes default": "short notes" };
   const words = ["requests", "tidal", "endless", "housedj", "guest", "newdj", "archive", "talk", "helper", "history", "lastfm", "chatgpt",
-    "talkasks"];
+    "talkasks", "alexa"];
   for (const on of [true, false]) {
     const doc = rulesDoc(RULES_MD, { tags: Object.fromEntries(words.map((w) => [w, on])), blanks });
     const out = doc.sections.map((s) => `${s.summary ?? ""} ${s.body.join(" ")}`).join(" ") + doc.questions.map((q) => q.q + q.a).join(" ");

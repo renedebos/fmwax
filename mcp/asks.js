@@ -172,7 +172,7 @@ export function askMinutes(said) {
   if (!Number.isFinite(n) || n <= 0) return 60;
   return ASK_LENGTHS.reduce((best, m) => (Math.abs(m - n) <= Math.abs(best - n) ? m : best));
 }
-const LENGTH_WORDS = { 30: "half an hour", 60: "an hour", 90: "an hour and a half", 120: "two hours" };
+export const LENGTH_WORDS = { 30: "half an hour", 60: "an hour", 90: "an hour and a half", 120: "two hours" };
 
 // WHAT WAS PLAYING, as the start compares it (MC-36, the plan's default 3):
 // Spotify's context while it plays ("tracks" for a queue with none), and the
@@ -209,14 +209,17 @@ function tidalStart(env, got, device) {
   if (!helperViewOf(env, got).lan?.hands) return { why: "the home helper is off, and only it can start Tidal" };
   return { box };
 }
-const onWords = (device) => (/^everywhere$/i.test(device) ? "everywhere" : `on the ${device}`);
+export const onWords = (device) => (/^everywhere$/i.test(device) ? "everywhere" : `on the ${device}`);
 
 // TALK TAKES THE ORDER (MC-36). A set asked of a DJ by voice is filed through
 // the form's door, so the curator makes it and the person can hang up the
 // moment it is filed. Only in a house whose asks are on and whose curator is
 // woken for them (askDjOn, the plan's default 5); the answer carries the one
 // line Talk says. The speaker and what was playing ride the record, so the
-// set starts there when it lands (startAsked, deploy 2).
+// set starts there when it lands (startAsked, deploy 2). House radio files
+// through here too (MC-38 stage 3): `via` "alexa" on its record, "talk" for
+// anything else, so the ledger says which voice asked.
+export const VOICE_VIA = ["talk", "alexa"];
 export async function askByVoice(env, ctx, args = {}) {
   if (!askDjOn(env)) {
     throw new Error("This house has no curator taking asks, so a set is made on the call: get_dj, search_tracks, " +
@@ -242,7 +245,8 @@ export async function askByVoice(env, ctx, args = {}) {
   const device = args.device ? String(args.device) : null;
   const { got, mark } = device ? await markNow(env, device) : { got: null, mark: null };
   const out = await fileAsk(env, ctx, { slug: dj.key, mood: args.words, length: minutes, avoid: args.avoid, keep, notes,
-    service: args.service, extra: { via: "talk", ...(device ? { device } : {}), ...(mark ? { playing: mark } : {}) } });
+    service: args.service, extra: { via: VOICE_VIA.includes(args.via) ? args.via : "talk",
+      ...(device ? { device } : {}), ...(mark ? { playing: mark } : {}) } });
   if (out.refuse) throw new Error(out.refuse.say);
   const n = out.btn;
   const shelf = keep ? " It goes on the Shelf as well." : "";
@@ -252,7 +256,7 @@ export async function askByVoice(env, ctx, args = {}) {
     // 4 min (2026-11-05, ChatGPT the curator).
     sent: device && (!tidal || tidal.box)
       ? `${dj.name}'s on it: ${LENGTH_WORDS[minutes]}, starting ${onWords(device)} in about five minutes, unless ` +
-        `something else is playing by then. It goes on preset ${n}, in place of the set there.${shelf} You can hang up.`
+        `something else is started before then. It goes on preset ${n}, in place of the set there.${shelf} You can hang up.`
       : `${dj.name}'s on it: ${LENGTH_WORDS[minutes]} on preset ${n} in about five minutes, in place of the set there. ` +
         `Press ${n} to hear it${tidal?.why ? `: ${tidal.why}` : ""}.${shelf} You can hang up.`,
     already: "You just asked for that; it's on its way.",
@@ -262,7 +266,8 @@ export async function askByVoice(env, ctx, args = {}) {
     blank: "What should the set be? Ask again with a mood, a subject or an occasion.",
     unavailable: "The house couldn't take the ask just now; try again in a moment.",
   }[out.code];
-  return { status: out.code, dj: dj.name, minutes, ...(out.code === "sent" ? { preset: n } : {}), said };
+  return { status: out.code, dj: dj.name, minutes, ...(out.code === "sent" ? { preset: n, id: out.id } : {}),
+    ...(tidal ? { tidal: !!tidal.box } : {}), said };
 }
 
 // THE START WHEN IT LANDS (MC-36, deploy 2). A set asked by voice starts on
@@ -303,7 +308,9 @@ export async function startAsked(env, { requestId, record, pid, catalog, btn, na
   }
   try {
     const out = await startPlaylistOnDevice(env, { id: pid, name, catalog: "spotify" }, device, budget);
-    return out.preset_safe || out.unverified ? { started_on: device }
+    // A start Spotify took but did not confirm is still a start, marked so
+    // (MC-38 stage 3, Codex's recheck): the ask's trace keeps it apart.
+    return out.preset_safe ? { started_on: device } : out.unverified ? { started_on: device, unverified: true }
       : no("Spotify took the start, but the set is not playing there");
   } catch (e) {
     if (sleptThrough(e)) return no("the speaker did not answer: it is asleep");

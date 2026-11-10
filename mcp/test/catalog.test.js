@@ -767,3 +767,23 @@ test("resolvePlaylist stamps the catalog on what it returns", async () => {
     f.restore();
   }
 });
+
+// SEARCH LEAN (the owner, 2026-11-08: 730 of a day's 1,394 Spotify calls were
+// searches, about 33 a set). The curator is told each query is a call against
+// the day's quota, and every search logs its count for the day's measurement.
+test("search_tracks tells the curator each query is a quota call, and logs how many it made", async () => {
+  const { TOOLS } = await import("../toollist.js");
+  const desc = TOOLS.find((t) => t.name === "search_tracks").description;
+  assert.match(desc, /EVERY QUERY IS ONE SPOTIFY CALL/);
+  assert.match(desc, /about a quarter more than the set needs/);
+  const env = makeEnv();
+  env.BUTTONS = buttons({ 1: P(1), 3: P(3) });
+  const f = installFetch();
+  const lines = [];
+  const was = console.log;
+  console.log = (...a) => lines.push(a.join(" "));
+  try {
+    await callTool(env, "search_tracks", { queries: [{ title: "x" }, { title: "y", artist: "z" }] });
+  } finally { console.log = was; f.restore(); }
+  assert.ok(lines.some((l) => /^search: n=2 missed=\d failed=0 catalog=spotify$/.test(l)), lines.join("\n"));
+});

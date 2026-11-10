@@ -49,7 +49,11 @@ test("a blank house makes its Requests preset on the number chosen, and the hous
     assert.match(how, /In Claude or ChatGPT on your phone \(or in a browser on a computer\), start a <b>new chat<\/b>/);
     assert.match(how, /starts it on the\s+Pro Plus, your default speaker/);
     assert.match(how, /allowing it always \(Claude's\s+<b>Always allow<\/b>\) is fine/);
-    assert.match(how, /<b>Save it on a WiiM device\.<\/b> In the <b>Spotify app<\/b>/);
+    // The onboarding review, 2026-11-09: starter songs, so the save comes first; the quick ask leads.
+    assert.ok(f.calls.some((c) => /^POST \/playlists\/NEWREQUESTS00000000001\/(tracks|items)/.test(c)), f.calls.join("\n"));
+    assert.match(how, /<b>Save it on a WiiM device\.<\/b> The house put a few songs in the playlist to start with/);
+    assert.ok(how.indexOf("Save it on a WiiM device") < how.indexOf("Ask a DJ."), "save first");
+    assert.ok(how.indexOf("Vibe, play me 20 minutes") < how.indexOf("Librarian, an introduction"), "the quick ask first");
     // Saved the one way that works: started from the Spotify app, then the song bar's … menu (START-HERE.md §5).
     assert.match(how, /In the <b>Spotify app<\/b>, open the playlist <b>Requests<\/b> and play it on the\s+WiiM device/);
     assert.match(how, /tap the song bar at the bottom, then <b>…<\/b>, <b>Preset<\/b>, and <b>5<\/b>/);

@@ -16,6 +16,7 @@ import {
 import { emitRequestEvent } from "./writes.js";
 import { rollCallSlice } from "./rollcall.js";
 import { tunedSpacing, tuningWords } from "./tuning.js";
+import { logHeard } from "./week.js";
 
 
 // THE ENDLESS DJ (MC-22, tasks/done/mc22-endless-dj.md). Press 4 and Sunny plays
@@ -190,13 +191,19 @@ export function endlessDay(env, state, now) {
 // the ten songs left when a session stopped, were avoided as if heard — and
 // The Selector, boxed in by 150 songs mostly never played, made a 6-song set.
 // The watch calls this with the list up to the song it saw playing.
+// Answers the songs it added, [uri, label]: heard since the last look, which
+// the watch logs in the house's week (week.js) once its state is saved.
 export function endlessRemember(state, p, tracks) {
   const key = String(p.dj);
   state.history = state.history && typeof state.history === "object" ? state.history : {};
   const had = Array.isArray(state.history[key]) ? state.history[key] : [];
   const seen = new Set(had.map((h) => h[0]));
-  for (const t of tracks ?? []) if (t?.[0] && !seen.has(t[0])) { had.push([t[0], t[2] ?? ""]); seen.add(t[0]); }
+  const added = [];
+  for (const t of tracks ?? []) {
+    if (t?.[0] && !seen.has(t[0])) { had.push([t[0], t[2] ?? ""]); added.push([t[0], t[2] ?? ""]); seen.add(t[0]); }
+  }
   state.history[key] = had.slice(-p.noRepeatSongs);
+  return added;
 }
 // The presets the watch follows, each with who is on it now: the configured
 // slots (the ledger's assignment over the config's first DJ), and the
@@ -1031,6 +1038,9 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
   const events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
   const bells = [], pauses = [];
+  // The songs heard since the last look (endlessRemember), logged in the
+  // house's week once the state that remembers them is saved.
+  const heard = [];
   const out = { bells, renames: [], fresh: [], noFresh: [], trims: [] };
   let state;
   try { state = await endlessLoad(env); } catch { return { outcome: "failed" }; }
@@ -1163,7 +1173,8 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
         // Heard: everything up to the song playing now (all of it, past the end).
         if (Array.isArray(s.tracks)) {
           const from = p.lane ? Number(state.lane?.head) || 0 : 0;
-          endlessRemember(state, p, (at.pastEnd ? s.tracks : s.tracks.slice(0, at.idx + 1)).slice(from));
+          const added = endlessRemember(state, p, (at.pastEnd ? s.tracks : s.tracks.slice(0, at.idx + 1)).slice(from));
+          if (added.length) heard.push({ dj: p.dj, btn: p.button, playlist: p.playlist, tracks: added });
         }
         const leftMin = Math.round(at.leftMs / 60000);
         say(p.button, "look", at.pastEnd ? `past the end: autoplay is playing (${ageMin} min in)`
@@ -1270,6 +1281,7 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
     return { outcome: "conflict" };
   }
   await endlessRing(env, bells, say);
+  await logHeard(env, heard);
   await endlessRename(env, out.renames, say);
   await endlessTrim(env, cfg, out.trims, say);
   for (const x of pauses) {
@@ -1441,14 +1453,15 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
       } catch { at = null; }
       if (at) {
         const head = tracks.slice(0, at.idx + 1);
-        let t;
+        let t, heard = [];
         try {
           t = await endlessUpdate(env, (st) => {
             events.length = 0;
             if (st.laneWrite?.id !== lockId) return { abort: true, status: "moved" };
             if (st.lane?.dj !== playing) return { abort: true, status: "moved" };
-            // What the leaving DJ played counts as theirs, heard.
-            endlessRemember(st, { dj: playing, noRepeatSongs: lane.noRepeatSongs }, head.slice(Number(st.lane.head) || 0));
+            // What the leaving DJ played counts as theirs, heard — and the
+            // house's week's (week.js), logged once this is saved.
+            heard = endlessRemember(st, { dj: playing, noRepeatSongs: lane.noRepeatSongs }, head.slice(Number(st.lane.head) || 0));
             const r = endlessLaneTakeover(env, cfg, st, { dj: who.key, now, head: head.length, words: asked,
               program: { slug: usable.slug, title: usable.title } });
             if (!r.ok) return { abort: true, status: r.status };
@@ -1457,6 +1470,7 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
           });
         } catch { return { status: "failed" }; }
         if (t.abort) return { status: t.status ?? "failed" };
+        await logHeard(env, [{ dj: playing, btn: lane.button, playlist: lane.playlist, tracks: heard }]);
         try {
           const next = [...head.map((x) => x[0]), ...usable.uris];
           const cat = catalogFor(env, "spotify");
@@ -1588,7 +1602,7 @@ export async function endlessStartFresh(env, { button, device }) {
   await endlessLog(env, events);
   return { status: "asked" };
 }
-export async function endlessPageSteer(env, { button, words, leaveWords = false }) {
+export async function endlessPageSteer(env, { button, words, leaveWords = false, by = "from the DJ page" }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
   if (await throttledUntil(env)) return { status: "throttled" };
@@ -1624,7 +1638,7 @@ export async function endlessPageSteer(env, { button, words, leaveWords = false 
       if (left) { delete state.lane.words; delete state.lane.nearby; }
       endlessFile(state, { id: `endless-${p.button}-steer-${now}`, kind: "steer", btn: p.button, dj: p.dj,
         playlist: p.playlist, minutes: steerMinutes(p), at: now, words: text, when: "next" }, bells);
-      say(p.button, "steer", `"${text}", from the DJ page${left ? `, leaving "${left}" behind` : ""}`);
+      say(p.button, "steer", `"${text}", ${by}${left ? `, leaving "${left}" behind` : ""}`);
       return { status: "asked" };
     });
   } catch { return { status: "failed" }; }

@@ -35,8 +35,11 @@ const call = (name, args = {}) =>
 // offered only in a house with an archive preset.
 // ask_dj since 2026-11-04 (MC-36, the owner's six defaults of 2026-10-31): a DJ's set
 // filed for the curator, offered only where asks are on and the curator is woken.
+// press_preset since 2026-11-08 (MC-39, the owner): a WiiM's preset pressed through
+// the home helper, offered only in a house with WiiMs; move_music the same night (deploy 2),
+// what Spotify plays to another speaker, offered everywhere.
 const VOICE_LIST = ["activate_program", "append_to_playlist", "ask_dj", "get_dj", "keep_set", "list_devices", "list_programs",
-  "now_playing", "play_archive", "play_endless", "play_playlist", "play_program", "playback_control", "read_playlist",
+  "move_music", "now_playing", "play_archive", "play_endless", "play_playlist", "play_program", "playback_control", "press_preset", "read_playlist",
   "recently_played", "replace_playlist", "restore_playlist", "search_archive", "search_tracks", "steer_endless",
   "write_program"];
 
@@ -68,8 +71,8 @@ test("/mcp has two doors, the owner's and the curator's: a voice key opens nothi
 test("voiceFunctions is the voice's list in the Responses function shape", () => {
   const e = mcpEnv();
   const fns = __test.voiceFunctions(e);
-  assert.deepEqual(fns.map((f) => f.name).sort(), VOICE_LIST.filter((n) => !/_archive$/.test(n) && n !== "ask_dj"),
-    "no archive and no asks in this house");
+  assert.deepEqual(fns.map((f) => f.name).sort(), VOICE_LIST.filter((n) => !/_archive$/.test(n) && n !== "ask_dj" && n !== "press_preset"),
+    "no archive, no asks and no WiiMs in this house");
   for (const f of fns) {
     assert.equal(f.type, "function");
     assert.equal(typeof f.description, "string");

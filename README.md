@@ -8,9 +8,9 @@ It runs on your own free Cloudflare account. You need Spotify Premium and a paid
 
 ## Install it
 
-Read **[Start here](START-HERE.md)** first. It takes about an hour, all in your browser, and starts with this button (after a password you make up first, so read the guide before you press it):
+Read **[Start here](START-HERE.md)** first. It takes under an hour, all in your browser. Then begin at the start page, which makes your house's setup key and has the Deploy button:
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
+**[Open the start page](https://renedebos.github.io/fmwax/)**
 
 No GitHub account? [Install from a terminal](docs/install/terminal.md) instead.
 

@@ -11,6 +11,9 @@
 name = "fmwax-house"
 main = "worker.js"
 compatibility_date = "2025-06-01"
+# node:crypto's X509Certificate, for Amazon's signature on house radio's
+# requests (MC-38 stage 2b, alexa-sign.js).
+compatibility_flags = ["nodejs_compat"]
 
 # And the workers.dev hostname stays alive. A Custom Domain does not retire it,
 # which is the only reason adding one is safe: a preset that points at an

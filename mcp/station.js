@@ -588,6 +588,42 @@ const SCHEMA = `
     k  TEXT PRIMARY KEY,
     at INTEGER NOT NULL
   );
+  -- THE HOUSE'S WEEK (2026-11-07, week.js): every song a DJ put in front of
+  -- the house in the last seven days, one row a song and one write_id a
+  -- write. A set written to a playlist counts once it landed; an endless
+  -- DJ's songs once they played. Kept seven days, pruned on the next write.
+  CREATE TABLE IF NOT EXISTS played_week (
+    seq      INTEGER PRIMARY KEY AUTOINCREMENT,
+    write_id TEXT NOT NULL,
+    at       INTEGER NOT NULL,
+    uri      TEXT NOT NULL,
+    label    TEXT,
+    dj       TEXT,
+    btn      INTEGER,
+    catalog  TEXT,
+    playlist TEXT,
+    source   TEXT
+  );
+  CREATE INDEX IF NOT EXISTS played_week_uri ON played_week (uri);
+  CREATE INDEX IF NOT EXISTS played_week_at ON played_week (at);
+  -- MAPLE CRATE'S REQUESTS, ONCE EACH (MC-38, Codex's review, 2026-11-08):
+  -- the id of every Alexa request the door let through, and the mark of the
+  -- call that brought it (by_call), so a copy sent again inside Amazon's
+  -- window is refused. Kept ALEXA_SEEN_KEEP_MS, pruned on the next one.
+  CREATE TABLE IF NOT EXISTS alexa_seen (
+    id      TEXT PRIMARY KEY,
+    at      INTEGER NOT NULL,
+    by_call TEXT NOT NULL
+  );
+  -- WHAT MAPLE CRATE HEARD (the owner, 2026-11-08: a box on the Talk tab,
+  -- "on + last heard"): each request's words as Alexa passed them on, and
+  -- what was said back. The newest ALEXA_HEARD_KEEP rows are kept.
+  CREATE TABLE IF NOT EXISTS alexa_heard (
+    seq   INTEGER PRIMARY KEY AUTOINCREMENT,
+    at    INTEGER NOT NULL,
+    heard TEXT NOT NULL,
+    said  TEXT
+  );
 `;
 
 // A week of hours is what the calls table keeps; the refusals, three months.
@@ -595,7 +631,59 @@ const CALLS_KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 const SEEN_KEEP_MS = 2 * 24 * 60 * 60 * 1000;
 const SENT_BACK_KEEP_MS = 7 * 24 * 60 * 60 * 1000;
 const HITS_KEEP_MS = 90 * 24 * 60 * 60 * 1000;
+// An Alexa request's id is kept well past the door's window (alexa.js
+// ALEXA_WINDOW_MS, 150 s either side of its timestamp, so a copy can pass
+// that check up to 300 s after the first): ten minutes.
+export const ALEXA_SEEN_KEEP_MS = 10 * 60 * 1000;
+// Seen before: the first arrival's own call asking again (station()'s one
+// retry after a deploy reset) is still the first; any other call is a copy.
+export const alexaOnceAnswer = (had, by) => ({ ok: true, first: !had || had.by_call === by });
+// The Talk tab shows the last three; a few more are kept for a look back.
+export const ALEXA_HEARD_KEEP = 20;
+export const alexaHeardRow = (args) => ({ heard: String(args?.heard ?? "").replace(/\s+/g, " ").trim().slice(0, 200),
+  said: args?.said == null ? null : String(args.said).replace(/\s+/g, " ").trim().slice(0, 400) });
 export const hourKey = (now) => new Date(now).toISOString().slice(0, 13);
+
+// THE HOUSE'S WEEK (week.js), decided here over plain rows ({ uri, label, at,
+// playlist, dj, btn }) so the object and the node suite's fake run the same
+// rules. A REPEAT is a song of `uris` the week already holds. Not one this
+// playlist took less than half an hour ago: that is the same set being fixed
+// (a send-back answered, "swap song 3", a revise), not a song heard again.
+// Each repeat once, in the set's order, with its newest row.
+export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+export const WEEK_REDO_MS = 30 * 60 * 1000;
+export function weekRepeats(rows, uris, { playlist = null, now = Date.now() } = {}) {
+  const want = new Set(uris);
+  const hit = new Map();
+  for (const r of rows ?? []) {
+    if (!r?.uri || !want.has(r.uri) || !(r.at >= now - WEEK_MS)) continue;
+    if (playlist && r.playlist === playlist && r.at >= now - WEEK_REDO_MS) continue;
+    const had = hit.get(r.uri);
+    if (!had || r.at > had.at) hit.set(r.uri, r);
+  }
+  return [...new Set(uris)].filter((u) => hit.has(u))
+    .map((u) => { const r = hit.get(u); return { uri: u, label: r.label ?? null, at: r.at, dj: r.dj ?? null, btn: r.btn ?? null }; });
+}
+// The week as a DJ reads it: "Artist — Title", the newest write first and a
+// write's songs in their order, each song once
+// (by recording, then by name: two releases of one record read the same).
+// A song the house has no name for is left out of the list, never out of the
+// check. Past `max`, counted rather than listed.
+export const WEEK_LIST_MAX = 400;
+export function weekList(rows, { now = Date.now(), max = WEEK_LIST_MAX } = {}) {
+  const fresh = (rows ?? []).filter((r) => r?.uri && r.at >= now - WEEK_MS)
+    .sort((a, b) => b.at - a.at || (a.seq ?? 0) - (b.seq ?? 0));
+  const uris = new Set(), labels = new Set(), songs = [];
+  let more = 0;
+  for (const r of fresh) {
+    if (uris.has(r.uri)) continue;
+    uris.add(r.uri);
+    if (!r.label || labels.has(r.label)) continue;
+    labels.add(r.label);
+    if (songs.length < max) songs.push(r.label); else more += 1;
+  }
+  return { songs, more };
+}
 
 // ---------------------------------------------------------------------------
 // THE TALK LEDGER (MC-15 stage B, 2026-09-12): the pure half, shared by the
@@ -984,6 +1072,19 @@ export class StationLedger {
       .toArray()[0] ?? null;
   }
 
+  // The week's rows for these songs (week.js), one indexed read a song: a set
+  // is at most a few hundred, and a bound list of that many is past SQLite's
+  // parameter limit here.
+  #weekRows(uris, now) {
+    const out = [];
+    for (const uri of new Set(uris)) {
+      out.push(...this.sql.exec(
+        "SELECT uri, label, at, playlist, dj, btn FROM played_week WHERE uri = ? AND at >= ?",
+        uri, now - WEEK_MS).toArray());
+    }
+    return out;
+  }
+
   // Every claimed row bound for one guest: what the lock, the door's guard
   // and the queue's waiting mark judge with destinationHolder.
   #claimedOn(destination) {
@@ -1254,7 +1355,45 @@ export class StationLedger {
       const within = Number(args.sent_within_ms);
       const span = within > 0 ? Math.min(within, SENT_BACK_KEEP_MS) : SENT_BACK_KEEP_MS;
       const back = key ? this.sql.exec("SELECT at FROM sent_back WHERE k = ? AND at >= ?", key, now - span).toArray()[0] : null;
-      return Response.json({ ok: true, tracks, sent_back: !!back });
+      // And the songs of this set the house's week already holds (week.js),
+      // asked with the rules, so the check costs the set no second call.
+      const played = args.played ? weekRepeats(this.#weekRows(uris, now), uris,
+        { playlist: args.playlist ? String(args.playlist).slice(0, 80) : null, now }) : undefined;
+      return Response.json({ ok: true, tracks, sent_back: !!back, ...(played ? { played } : {}) });
+    }
+    // THE HOUSE'S WEEK (week.js). A write that landed: its songs, checked
+    // against the week as it stood, then added as one write. A song sent with
+    // no name takes the one search_tracks showed, if the ledger still has it.
+    if (op === "played-log") {
+      const rows = (Array.isArray(args.rows) ? args.rows : []).slice(0, 300)
+        .filter((r) => Array.isArray(r) && typeof r[0] === "string" && r[0]);
+      const uris = rows.map((r) => r[0].slice(0, 80));
+      const playlist = args.playlist ? String(args.playlist).slice(0, 80) : null;
+      const repeats = args.check === false ? [] : weekRepeats(this.#weekRows(uris, now), uris, { playlist, now });
+      const writeId = `${now}-${crypto.randomUUID().slice(0, 8)}`;
+      const btn = Number.isInteger(args.btn) ? args.btn : null;
+      rows.forEach(([, label], i) => {
+        let name = label ? String(label).slice(0, 160) : null;
+        if (!name) {
+          const s = this.sql.exec("SELECT lead, title FROM seen_tracks WHERE uri = ?", uris[i]).toArray()[0];
+          if (s?.title) name = `${s.lead ? `${s.lead} — ` : ""}${s.title}`.slice(0, 160);
+        }
+        this.sql.exec(
+          `INSERT INTO played_week (write_id, at, uri, label, dj, btn, catalog, playlist, source)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          writeId, now, uris[i], name, args.dj ? String(args.dj).slice(0, 60) : null, btn,
+          args.catalog ? String(args.catalog).slice(0, 20) : null, playlist,
+          args.source === "played" ? "played" : "written");
+      });
+      this.sql.exec("DELETE FROM played_week WHERE at < ?", now - WEEK_MS);
+      return Response.json({ ok: true, repeats, write_id: writeId, logged: rows.length });
+    }
+    if (op === "played-list") {
+      const got = this.sql.exec(
+        "SELECT seq, uri, label, at FROM played_week WHERE at >= ? ORDER BY at DESC, seq ASC LIMIT 5000",
+        now - WEEK_MS).toArray();
+      const max = Number(args.max) > 0 ? Math.min(Number(args.max), 2000) : undefined;
+      return Response.json({ ok: true, ...weekList(got, { now, ...(max ? { max } : {}) }) });
     }
     if (op === "sent-back") {
       const key = String(args.key ?? "").slice(0, 120);
@@ -1283,6 +1422,29 @@ export class StationLedger {
         if (n) out[n] += 1;
       }
       return Response.json({ ok: true, ...out });
+    }
+    // MAPLE CRATE (alexa.js alexaOnce): a request's id, kept the first time
+    // and answered `first: false` for any other call bringing it again.
+    if (op === "alexa-once") {
+      const id = typeof args.id === "string" ? args.id.slice(0, 200) : "";
+      const by = typeof args.by === "string" ? args.by.slice(0, 64) : "";
+      if (!id || !by) return Response.json({ ok: false, code: "bad-request" });
+      this.sql.exec("DELETE FROM alexa_seen WHERE at < ?", now - ALEXA_SEEN_KEEP_MS);
+      const had = this.sql.exec("SELECT by_call FROM alexa_seen WHERE id = ?", id).toArray()[0] ?? null;
+      if (!had) this.sql.exec("INSERT INTO alexa_seen (id, at, by_call) VALUES (?, ?, ?)", id, now, by);
+      return Response.json(alexaOnceAnswer(had, by));
+    }
+    if (op === "alexa-heard") {
+      const row = alexaHeardRow(args);
+      if (!row.heard) return Response.json({ ok: false, code: "bad-request" });
+      this.sql.exec("INSERT INTO alexa_heard (at, heard, said) VALUES (?, ?, ?)", now, row.heard, row.said);
+      this.sql.exec("DELETE FROM alexa_heard WHERE seq <= (SELECT MAX(seq) FROM alexa_heard) - ?", ALEXA_HEARD_KEEP);
+      return Response.json({ ok: true });
+    }
+    if (op === "alexa-heard-list") {
+      const n = Math.min(ALEXA_HEARD_KEEP, Math.max(1, Number(args.limit) || 3));
+      return Response.json({ ok: true, rows: this.sql.exec(
+        "SELECT at, heard, said FROM alexa_heard ORDER BY seq DESC LIMIT ?", n).toArray() });
     }
     if (op === "kv-count") {
       const ops = Array.isArray(args.ops) ? args.ops.slice(0, 60) : [];

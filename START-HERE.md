@@ -21,7 +21,7 @@ Nothing else is paid. Nothing is shared with the author: everything runs on your
 
 - **A WiiM speaker** (Mini, Pro, Pro Plus, Ultra, Amp…), already set up in the WiiM Home app, on the same Wi-Fi as your phone.
 - **A computer with a web browser**, a laptop or a desktop. Some steps only work in a browser on a computer.
-- **About an hour.** Most of that time is saving presets on the WiiM.
+- **Under an hour.** The two sign-ups and the Spotify step take the longest.
 
 ## Before you start: two free accounts
 
@@ -62,19 +62,21 @@ Nothing else is paid. Nothing is shared with the author: everything runs on your
 
 In this guide, your own fmwax is called **your house**. It has a web address of its own, with pages you can open on your phone.
 
-## Step 1. Make up a password
+## Step 1. Open the start page
 
-Make up a password of **24 characters or more**. Letters and numbers are enough.
+**[Open the start page](https://renedebos.github.io/fmwax/)** and keep it open.
 
-**Write it in a note** (on your computer or phone) before you go on. This is your house's *setup key*. You paste it twice: once into Cloudflare's form, and once to claim your house.
+It makes your house's *setup key*: a password that proves the house is yours. The key is made in your own browser and sent nowhere. The page also has the Deploy button for Step 2, and at the end it opens your house's setup page with the key already filled in.
 
-Paste it each time, don't type it. Cloudflare's form hides what you type, so a wrong character goes unnoticed and locks you out.
+Copy the key into a note of your own too, in case the page is closed before you are done.
+
+*Would you rather make your own?* Any password of **24 characters or more** works. Write it in a note first, and always paste it, never type it: Cloudflare's form hides what you type, so a wrong character goes unnoticed and locks you out.
 
 ## Step 2. Press the Deploy button
 
-If you are signed in to other Cloudflare or GitHub accounts in this browser, open a private (incognito) window first, so fmwax can't land on the wrong account.
+If you are signed in to other Cloudflare or GitHub accounts in this browser, open the start page in a private (incognito) window, so fmwax can't land on the wrong account.
 
-Then press this button:
+Press **Deploy to Cloudflare** on the start page, or this button:
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax)
 
@@ -88,7 +90,7 @@ Then press this button:
    |---|---|
    | **Create private Git repository** | Check this box. Your copy doesn't need to be public. |
    | The two **Select KV namespace** boxes | In each, choose **+ Create new**, even if it already shows a name. Then, in the **Name your KV namespace** box that appears below, type **`fmwax-house-tokens`** in the first and **`fmwax-house-programs`** in the second. |
-   | **SETUP_KEY** | Paste the password from your note. |
+   | **SETUP_KEY** | Paste your setup key (the start page's **Copy the key**). |
 
    What the three look like when they're done:
 
@@ -104,7 +106,7 @@ Then press this button:
 
    Then click **Deploy**, at the bottom right.
 5. **Wait about a minute.** The steps turn green one by one. The log underneath ends with **Success! Build completed**. A few lines above that is your house's address. It looks like `https://fmwax-house.your-name.workers.dev`.
-6. **Copy that address** into a new tab, add **`/setup`** to the end, and press Enter.
+6. **Paste that address into the start page's last box** and click **Open my setup page**. Your house's setup page opens with the key already filled in. (Without the start page: open the address itself. It goes to the setup page.)
 
 If the build fails, see [If something goes wrong](docs/install/troubleshooting.md).
 
@@ -112,7 +114,7 @@ If the build fails, see [If something goes wrong](docs/install/troubleshooting.m
 
 Your house's setup page opens and asks for the setup key.
 
-1. Paste the password from your note, and click **Claim this house**. From now on, only a browser you have signed in can change your house's settings.
+1. Click **Claim this house**. The key is already filled in if you came from the start page; if not, paste it. From now on, only a browser you have signed in can change your house's settings.
 2. You are shown a **recovery code**, once. Click **Save it in this phone's passwords**: your browser offers to keep it, like any password. Or copy it into your note. You need it to sign in on your phone or another browser.
 
 This browser stays signed in for a year.
@@ -127,10 +129,10 @@ Do the steps under **Core** in order:
 
 1. **Spotify.** Your house needs its own free "app" entry in Spotify's developer website, so it can use your Spotify account. The page tells you exactly what to click and what to paste. At the end, you sign in to Spotify.
 2. **Speakers.** Your house finds your speakers through Spotify. Check which ones are WiiM speakers, then pick the one music plays on by default. If a WiiM shows up as a code instead of its name, click **Play on it** to hear which one it is, then name it.
-3. **Time zone.** Filled in from your device's clock.
-4. **Claude or ChatGPT.** This step adds your house to Claude or ChatGPT, so you can ask the DJs. Do it in a web browser on your computer (the phone apps can't add it), at [claude.ai](https://claude.ai) or [chatgpt.com](https://chatgpt.com). The page shows each click. In ChatGPT, set **Authentication** to **None**: your house's address already carries its key. Afterwards it works in the Claude or ChatGPT app on your phone too.
+3. **Time zone.** Already set, from your browser, when you claimed your house. Change it here if it's wrong.
+4. **Claude or ChatGPT.** This step adds your house to Claude or ChatGPT, so you can ask the DJs. Do it in a web browser, at [claude.ai](https://claude.ai) or [chatgpt.com](https://chatgpt.com): a computer's or your phone's browser both work, but the phone *apps* can't add it. The page shows each click. In ChatGPT, set **Authentication** to **None**: your house's address already carries its key. Afterwards it works in the Claude or ChatGPT app on your phone too.
 5. **On your phone.** Open your house's setup address on your phone, and sign in with the recovery code. Then open your house from there and add it to your home screen, so it opens like an app.
-6. **Requests preset.** Choose a preset number for your requests (1 is suggested). Your house makes a playlist for it. Then ask a DJ for a set (see *Your first set*, below), and save that playlist on the preset of each WiiM (see Step 5).
+6. **Requests preset.** Choose a preset number for your requests (1 is suggested). Your house makes a playlist for it, with a few songs in it to start with, so you can save it on the preset of each WiiM right away (see Step 5). Then ask a DJ for a set (see *Your first set*, below): it takes the place of those songs.
 
 ## Step 5. Save a preset on your WiiM
 

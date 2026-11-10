@@ -119,6 +119,11 @@ export const HOUSE_RULES =
   "mistake, because usually it is one. (Found in the wild: two takes of " +
   "Sly's 'Music Lover' back to back in a seven-nights set that never said " +
   "why.)\n\n" +
+  // NOT THIS WEEK (2026-11-07, in the owner's words): the house's week of
+  // songs, every DJ's, which get_dj carries (week.js).
+  "NOT THIS WEEK. A track in played_last_7_days stays out of a new set " +
+  "unless the listener named it. A different take of the same song is " +
+  "fine. If the write reports repeats you didn't intend, swap them.\n\n" +
   // MOVEMENTS ARE NOT REPEATS (Amadeus) and TALK IS A TRACK ONLY WHERE THE
   // BRIEF SAYS SO (Youp, Comedy) went with those DJs, 2026-10-13.
 
@@ -499,7 +504,7 @@ export const PERSONAS = {
     programsBy: "the album",
     colour: { field: "#DCCBA6", ink: "#2F2416" },
     name: "Gatefold",
-    aliases: ["gatefold", "dj gatefold", "albums", "the album one", "lp"],
+    aliases: ["gatefold", "gate fold", "dj gatefold", "albums", "the album one", "lp"],
     summary: "The album is the unit. Sides and runs, as sequenced, from the years when the long-player was the point.",
     brief:
       "PROGRAMS BY the album. The long-player is the unit — roughly Rubber " +
