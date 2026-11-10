@@ -2,9 +2,9 @@
 
 **Radio-style DJs for your WiiM speaker's preset buttons, curated by Claude or ChatGPT.**
 
-Ask for music on your phone, in the Claude app or in ChatGPT: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later it plays on your WiiM. The set also stays on a preset button, so a press on the remote plays it again. Some DJs play endlessly, adding songs as long as you listen. Others write notes to read with their sets.
+Ask for music on your phone, in the FMWAX app, in Claude or ChatGPT: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later a newly created playlist starts on your WiiM. The set also stays on a preset button, so a press on the WiiM remote plays it again. Some of the custom DJs play endlessly, adding new songs as long as you listen. Other DJs write program notes to read with their sets.
 
-It runs on your own free Cloudflare account. You need Spotify Premium and a paid Claude or ChatGPT plan.
+It runs on your own free Cloudflare account. You need Spotify Premium and a paid Claude and/or ChatGPT plan.
 
 ## Install it
 
