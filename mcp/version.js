@@ -2,7 +2,7 @@
 // repository; a copy made by tools/copy/make-copy.mjs has the commit it was
 // made from here, which the setup page compares with the public repository's
 // newest (updates.js) to say when a newer version is out.
-export const VERSION = "a592249921b06d7ff51e0ca18396df418b02b880";
+export const VERSION = "cdb9b1e6445bdba728c51d8964be2e3c0ae86367";
 // The day that copy was made, YYYY-MM-DD in the maker's own zone: what a
 // person reads ("the version of 5 November 2026"; the owner, 2026-11-05).
 // Stamped by the copy script with VERSION.

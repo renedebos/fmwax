@@ -151,9 +151,10 @@ Do the steps under **Level 1 · Ask a DJ** in order:
 3. **Time zone.** Already set, from your browser, when you claimed your house. Change it here if it's wrong.
 4. **Claude or ChatGPT.** This step adds your house to Claude or ChatGPT, so you can ask the DJs. Do it in a web browser, at [claude.ai](https://claude.ai) or [chatgpt.com](https://chatgpt.com): a computer's or your phone's browser both work, but the phone *apps* can't add it. The page shows each click. In ChatGPT, set **Authentication** to **None**: your house's address already carries its key. Afterwards it works in the Claude or ChatGPT app on your phone too.
 5. **On your phone.** Your house has an app of its own. It is a web app: you add it to your home screen, with no app store.
-   1. On your phone, open your house's setup address (the setup page has a button to copy it), and sign in with the recovery code.
-   2. Tap **Open the house**.
-   3. Add it to your home screen. **iPhone:** in Safari, tap Share (the square with the arrow), then **Add to Home Screen**. **Android:** in Chrome, tap ⋮, then **Add to Home screen** or **Install app**.
+   1. Get the setup page's address onto your phone. It is your house's address with `/setup` at the end, for example `https://fmwax-house.your-name.workers.dev/setup`. On the setup page on your computer, the **On your phone** row has it with a **Copy** button (*This page's address, for your phone*): copy it and send it to yourself, in a message or an email.
+   2. Open it on your phone, and sign in with the recovery code.
+   3. Tap **Open the house**.
+   4. Add it to your home screen. **iPhone:** in Safari, tap Share (the square with the arrow), then **Add to Home Screen**. **Android:** in Chrome, tap ⋮, then **Add to Home screen** or **Install app**.
 
    It then opens like any app: what's playing, your speakers and presets, and the DJs. Anyone at home can have it too: open the house in your phone's browser and share that address with them. Whoever has it can use your house, so keep it in the household ([Links are keys](docs/install/privacy.md#links-are-keys)).
 6. **Requests preset.** Choose a preset number for your requests (1 is suggested). Your house makes a playlist for it, with a few songs in it to start with, so you can save it on the preset of each WiiM right away (see Step 5). Then ask a DJ for a set (see *Your first set*, below): it takes the place of those songs.
