@@ -150,7 +150,12 @@ Do the steps under **Level 1 · Ask a DJ** in order:
 2. **Speakers.** Your house finds your speakers through Spotify. Check which ones are WiiM speakers, then pick the one music plays on by default. If a WiiM shows up as a code instead of its name, click **Play on it** to hear which one it is, then name it. If no speaker shows up at all, play any song on your WiiM from the Spotify app (choose the WiiM as the speaker there), then click **find again** on the page.
 3. **Time zone.** Already set, from your browser, when you claimed your house. Change it here if it's wrong.
 4. **Claude or ChatGPT.** This step adds your house to Claude or ChatGPT, so you can ask the DJs. Do it in a web browser, at [claude.ai](https://claude.ai) or [chatgpt.com](https://chatgpt.com): a computer's or your phone's browser both work, but the phone *apps* can't add it. The page shows each click. In ChatGPT, set **Authentication** to **None**: your house's address already carries its key. Afterwards it works in the Claude or ChatGPT app on your phone too.
-5. **On your phone.** Open your house's setup address on your phone, and sign in with the recovery code. Then open your house from there and add it to your home screen, so it opens like an app.
+5. **On your phone.** Your house has an app of its own. It is a web app: you add it to your home screen, with no app store.
+   1. On your phone, open your house's setup address (the setup page has a button to copy it), and sign in with the recovery code.
+   2. Tap **Open the house**.
+   3. Add it to your home screen. **iPhone:** in Safari, tap Share (the square with the arrow), then **Add to Home Screen**. **Android:** in Chrome, tap ⋮, then **Add to Home screen** or **Install app**.
+
+   It then opens like any app: what's playing, your speakers and presets, and the DJs. Anyone at home can have it too: open the house in your phone's browser and share that address with them. Whoever has it can use your house, so keep it in the household ([Links are keys](docs/install/privacy.md#links-are-keys)).
 6. **Requests preset.** Choose a preset number for your requests (1 is suggested). Your house makes a playlist for it, with a few songs in it to start with, so you can save it on the preset of each WiiM right away (see Step 5). Then ask a DJ for a set (see *Your first set*, below): it takes the place of those songs.
 
 ## Step 5. Save a preset on your WiiM
