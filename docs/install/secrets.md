@@ -15,8 +15,8 @@ plain text in `wrangler.toml`, which is a tracked file: nothing goes in
 
 A house made by the terminal installer (`mcp/install/door.js`) is deployed
 with one secret, `SETUP_KEY`, and makes or is given the rest on its setup
-page (*The house's own storage*, below). The owner's house, set up from its
-files, has its secrets pushed by hand. The tables are for that house, and so
+page (*The house's own storage*, below). A house set up from its
+files (the author's own is one) has its secrets pushed by hand. The tables are for such a house, and so
 any house can check what it has and rotate a key on purpose.
 
 ## The core install
@@ -74,7 +74,7 @@ Generated from `house.json`; safe to read, safe to commit.
 | `PROGRAM_BASE_URL` | The address programme links are built from — normally your `workers.dev` address, and a domain if you have one. **Required**: publishing a programme throws without it (`programBaseUrl`, shelf.js), because a record would be stored with no way to say where to read it. Every link is built at read time, so changing this re-points links already sent. |
 | `DEFAULT_DEVICE` | The speaker Play uses when none is named. |
 | `ROOM_DEVICES` | The speakers a Play form may name — a fixed list, so a form field can never aim the account at an arbitrary device. |
-| `TIDAL_COUNTRY` | Two letters, default `NL` — this house's, not a sensible universal default. Which catalogue Tidal answers with, on **every** Tidal call. Wrong value, and records look missing that are not. Set it in `house.json`. |
+| `TIDAL_COUNTRY` | Two letters, default `NL` — the author's country, not a sensible universal default. Which catalogue Tidal answers with, on **every** Tidal call. Wrong value, and records look missing that are not. Set it in `house.json`. |
 | `TIDAL_GAP_MS` | Milliseconds between Tidal calls, default 500. Tidal's limit is real and low; leave it alone unless you measure. |
 | `REQUESTS_ENABLED`, `AUTOFULFILL_ENABLED` | Both `"false"` in a core install. See below. |
 
@@ -111,8 +111,8 @@ recovery code stop. A signed-in owner who has lost only the code makes
 a new one on the checklist ("Make a new recovery code"). The new setup key
 is the way back if the recovery code and every signed-in browser are lost, and it needs the Cloudflare account, which is
 the house's real owner. Never use `PROGRAM_LIBRARY_KEY` for it: that one is
-shared. The owner's house was claimed on 2026-10-16 from the Chromebook
-(its files below).
+shared. A house set up from its files keeps its claim on the install
+machine (its files below).
 
 **The keys a new house keeps itself** (since 2026-10-17): a house deployed
 with only `SETUP_KEY` makes `MCP_SECRET`, `AGENT_SECRET`,
@@ -171,7 +171,7 @@ seven tools only), so it needs no `AGENT_SECRET` in its environment either.
 Rotating the token: generate a new one on the routine's page, push it with
 `wrangler secret put REQUEST_ROUTINE_TOKEN`; the old one stops at once.
 
-**Talking to the room** (MC-15, planned 2026-09-11, `tasks/done/mc15-live-voice.md`)
+**Talking to the room** (MC-15, planned 2026-09-11)
 — a Talk tab where a phone holds a voice conversation and the voice's backend
 calls this server's tools through the Talk page's own door, with a
 short-lived capability per conversation (plays, reads and rewrites
@@ -182,8 +182,7 @@ conversation; the server keeps a
 daily ledger and refuses new sessions past the house's cap. Without the key
 the Talk tab is not drawn and its doors do not exist.
 
-**Last.fm for the DJs** (2026-10-18, `mcp/lastfm.js`; the trial,
-`docs/research/lastfm-trial-2026-10-18.md`) — the curator's `look_up_artist`:
+**Last.fm for the DJs** (2026-10-18, `mcp/lastfm.js`) — the curator's `look_up_artist`:
 who Last.fm's listeners play alongside an artist, and their songs by
 listening, read by the Worker and kept 90 days in KV (`lastfm:<artist>`).
 Needs `LASTFM_KEY`: a free API key from last.fm/api/account/create (an app
@@ -214,7 +213,7 @@ ever be committed.
                                 moment the approval is used
     mcp/.secrets.json           the two generated keys, so the addresses
                                 can be reprinted without a new deploy
-    ~/.config/fmwax-owner/      the owner's house's claim (MC-31): the
+    ~/.config/fmwax-owner/      the claim of a house set up from its files (MC-31): the
                                 spent setup key, the recovery code (it
                                 signs a new browser in at /setup), and
                                 curl's cookie from the claim

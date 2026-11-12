@@ -4,7 +4,7 @@
 
 Ask for music on your phone, in Claude or ChatGPT, and later in the fmwax app too: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later a newly created playlist starts on your WiiM. The set also stays on a preset button, so a press on the WiiM remote plays it again. Some of the DJs play endlessly, adding new songs as long as you listen. Two of the DJs write program notes to read with their sets.
 
-It runs on your own free Cloudflare account. Nothing is shared with the author: everything is on your own accounts.
+It runs on your own free Cloudflare account. Nothing is shared with the author: everything is on your own accounts. [What your house keeps, and who sees it](docs/install/privacy.md) says it in full.
 
 ## What you get, level by level
 

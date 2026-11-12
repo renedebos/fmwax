@@ -197,6 +197,7 @@ On the setup page, click **Download a backup**. It's a small file with your hous
 - **[The home helper](docs/install/home-helper.md)** (an extra, at any level): a small program on a computer at home, so your house can see and press the WiiM's presets.
 - **[Talk](docs/install/talk.md)** (an extra, at any level): ask by voice in your house's app. It needs your own OpenAI API key, paid by the minute.
 - **[Updates](docs/install/updates.md):** how to get a newer version, and which version you have.
+- **[What your house keeps, and who sees it](docs/install/privacy.md).**
 - **[Remove your house](docs/install/remove.md):** how to take it all away again, step by step.
 - **[If something goes wrong](docs/install/troubleshooting.md).**
 
