@@ -35,6 +35,12 @@ The command finds your WiiMs by itself (on a Chromebook this can take two minute
 
 **On a Mac,** a box then asks *Allow "node" to find devices on local networks?* Click **Allow**. It only asks once, and without it the helper can't reach your WiiMs.
 
+## Update it, or after you replace a WiiM
+
+The helper is its own program on that computer, so **an update of your house does not update it**. To bring it up to date, do the three steps of *Set it up* again: download your house's code again (the new version), copy the command from the setup page, and run it. It replaces the old helper and starts the new one.
+
+Do the same when you **replace a WiiM with a new one**. The helper knows each WiiM by its own id, and never takes a different WiiM for one of your rooms by itself. Running the command again is how you tell it.
+
 ## Remove it
 
 - On the setup page, click **Remove the home helper**, while the helper is connected.

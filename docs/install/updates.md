@@ -30,6 +30,10 @@ node install/door.js
 
 It finds the same house (by its name: add `--name` if you gave it one) and updates it. The old folder can go in the bin. With git: `git pull` in your clone, then the same command.
 
+## The home helper is updated separately
+
+Only if you use it. The helper is a separate program on a computer at home, and updating your house does not touch it. When an update's note says the helper changed, set it up again on that computer with the new code: [Update it](home-helper.md#update-it-or-after-you-replace-a-wiim). An older helper keeps working with a newer house in the meantime.
+
 ## After some updates: connect Claude or ChatGPT again
 
 The Claude app remembers the list of your house's tools from when you added it, and doesn't fetch a new one by itself. So when an update changes what your house can do, the update's note says **re-add the connector**. Then:

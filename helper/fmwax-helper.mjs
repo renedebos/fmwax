@@ -407,21 +407,25 @@ export function matchWiims(names, found) {
 }
 
 const MISSES = {}, LAST_SEARCH = {}, SEARCHING = new Set(), CHECKED = {};
-// IS IT STILL THAT SPEAKER (Codex's review, 2026-11-11). A router may lend a
+// IS IT STILL THAT SPEAKER (Codex's reviews, 2026-11-11). A router may lend a
 // speaker's old address to another WiiM, and that one answers every read and
 // obeys every command as readily: a press meant for one room would play in
-// another. So the id learned for a name is checked against the WiiM at its
-// address before each command, and every ten minutes while it is read.
-// true: the same one, or nothing to go by yet (no id learned, or no answer:
-// the command's own reply then says unreachable). false: another WiiM.
-const CHECK_EVERY_MS = 10 * 60_000;
-export async function stillThatSpeaker(known, name, ip, probe = statusEx) {
+// another. So the id learned for a name is asked of the WiiM at its address
+// before each command, and every ten minutes while it is read. A command goes
+// out only to a WiiM that has just said it is that speaker: "same". "other"
+// is another WiiM; "silent" is no answer to the question, asked twice;
+// "unlearned" is a name with no id kept yet.
+const CHECK_EVERY_MS = 10 * 60_000, STRANGER_AGAIN_MS = 60_000;
+export async function whoIsThere(known, name, ip, probe = statusEx) {
   const want = known?.[name]?.uuid;
-  if (!want || !ip) return true;
-  const st = await probe(ip);
-  if (!st?.uuid) return true;
-  return String(st.uuid) === String(want);
+  if (!want || !ip) return "unlearned";
+  let st = await probe(ip);
+  if (!st?.uuid) st = await probe(ip, 3000);
+  if (!st?.uuid) return "silent";
+  return String(st.uuid) === String(want) ? "same" : "other";
 }
+// The names whose address another WiiM holds: nothing read there is theirs.
+const STRANGER = {};
 // Where the speaker of that name answers now, looked for by its id on the
 // old address's network; cfg.speakers and the helper's record follow it.
 async function relocate(cfg, name) {
@@ -438,6 +442,7 @@ async function relocate(cfg, name) {
       saveKnown(known);
       MISSES[name] = 0;
       CHECKED[name] = Date.now();
+      STRANGER[name] = false;
       console.log(new Date().toISOString(), "moved", name, ip, "->", now,
         cfg.learns ? "(the house is told)" : "(the helper follows it; mcp/house.json still says the old address)");
       // A house that learned its WiiMs from the helper learns the new address.
@@ -454,26 +459,37 @@ async function relocate(cfg, name) {
 // What a WiiM at a name's address means for the helper's record. "learn": no
 // id kept yet, or the same id at a new address. "same": nothing to do.
 // "other": a different WiiM answers there, so the one remembered is looked
-// for, and this one is never taken in its place without that.
+// for, and this one is never taken in its place.
 export function whoAnswers(kept, ip, st) {
   if (!st?.uuid) return "same";
   if (!kept?.uuid) return "learn";
   if (String(kept.uuid) !== String(st.uuid)) return "other";
   return kept.ip === ip ? "same" : "learn";
 }
-// A different WiiM may take a name's place only when it calls itself by the
-// name the old one had (and the old one was looked for and not found).
-export function takesItsPlace(kept, name, st) {
-  const fold = (v) => String(v ?? "").trim().toLowerCase();
-  return !!st?.uuid && !!fold(st.DeviceName) && fold(st.DeviceName) === fold(kept?.deviceName ?? name);
-}
 // After each read: learn a speaker's id the first time it answers, look for
 // one that has stopped answering, and now and then make sure the one that
 // answers is still the one remembered. `cfg.speakers` is changed in place,
 // so the reads, the preset tables and the commands all follow a move.
+// A different WiiM is never taken in a speaker's place here, whatever it
+// calls itself: a WiiM that was replaced is learned when its owner runs the
+// helper's setup command again (install/helper.js forgets the old ids).
 async function keepTrack(cfg, name, answered) {
   const known = cfg.known ?? (cfg.known = loadKnown());
   const ip = cfg.speakers[name];
+  if (STRANGER[name]) {
+    // Asked again each minute: the speaker may be back at its address. Until
+    // then it counts as not answering, so it is looked for like one that moved.
+    if (Date.now() - (CHECKED[name] ?? 0) >= STRANGER_AGAIN_MS) {
+      CHECKED[name] = Date.now();
+      const st = await statusEx(ip, 2000);
+      if (st?.uuid && whoAnswers(known[name], ip, st) !== "other") {
+        STRANGER[name] = false; MISSES[name] = 0;
+        console.log(new Date().toISOString(), name, "is back at", ip);
+        return;
+      }
+    }
+    answered = false;
+  }
   if (answered) {
     MISSES[name] = 0;
     const due = !known[name]?.uuid || known[name].ip !== ip || Date.now() - (CHECKED[name] ?? 0) > CHECK_EVERY_MS;
@@ -482,16 +498,10 @@ async function keepTrack(cfg, name, answered) {
     const who = whoAnswers(known[name], ip, st);
     if (who === "learn") { known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known); }
     if (who === "other") {
-      console.error(new Date().toISOString(), "another WiiM answers at", ip, "where", name, "was: looking for", name);
-      if (Date.now() - (LAST_SEARCH[name] ?? 0) < SEARCH_AT_MOST_MS) return;
-      await relocate(cfg, name);
-      // A WiiM that was replaced: the old one is nowhere, and the one at its
-      // address carries its name. Only then is the new id taken, and said.
-      if (cfg.speakers[name] === ip && takesItsPlace(known[name], name, st)) {
-        console.log(new Date().toISOString(), name, "has a new WiiM at", ip, "(the old one is not on this network, and this one has its name)");
-        known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known);
-        CHECKED[name] = Date.now();
-      }
+      STRANGER[name] = true; CHECKED[name] = Date.now();
+      console.error(new Date().toISOString(), "another WiiM answers at", ip, "where", name, "was: looking for", name,
+        "(replaced the WiiM? run the helper's setup command again)");
+      if (Date.now() - (LAST_SEARCH[name] ?? 0) >= SEARCH_AT_MOST_MS) await relocate(cfg, name);
       return;
     }
     if (st?.uuid) CHECKED[name] = Date.now();
@@ -502,19 +512,32 @@ async function keepTrack(cfg, name, answered) {
   if (Date.now() - (LAST_SEARCH[name] ?? 0) < SEARCH_AT_MOST_MS) return;
   await relocate(cfg, name);
 }
-// Before a command from the house: the same check, and a search started at
-// once when it fails, so the next command finds the speaker.
+// Before a command from the house: sent only once the WiiM at the address
+// has said it is that speaker. A name with no id yet is asked and learned
+// here. Another WiiM there starts a search at once, so the next command
+// finds the speaker; no answer sends nothing.
 async function beforeCommand(cfg, name) {
   const known = cfg.known ?? (cfg.known = loadKnown());
-  if (await stillThatSpeaker(known, name, cfg.speakers[name])) return true;
-  console.error(new Date().toISOString(), "not sent:", name, "is not the WiiM at", cfg.speakers[name], "any more. Looking for it.");
-  relocate(cfg, name).catch(() => { /* looked for again on a read */ });
+  const ip = cfg.speakers[name];
+  const who = await whoIsThere(known, name, ip);
+  if (who === "same") { STRANGER[name] = false; return true; }
+  if (who === "unlearned") {
+    const st = ip ? await statusEx(ip, 3000) : null;
+    if (st?.uuid) { known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known); CHECKED[name] = Date.now(); return true; }
+  }
+  if (who === "other") {
+    STRANGER[name] = true; CHECKED[name] = Date.now();
+    console.error(new Date().toISOString(), "not sent:", name, "is not the WiiM at", ip, "any more. Looking for it.");
+    relocate(cfg, name).catch(() => { /* looked for again on a read */ });
+    return false;
+  }
+  console.error(new Date().toISOString(), "not sent: the WiiM at", ip, "did not say it is", name);
   return false;
 }
 
 async function readAll(speakers, cfg = null) {
   return Promise.all(Object.entries(speakers).map(async ([name, ip]) => {
-    const st = await readSpeaker(ip);
+    const st = STRANGER[name] ? null : await readSpeaker(ip);
     if (cfg) keepTrack(cfg, name, !!st).catch(() => { /* tried again on the next read */ });
     const eq = st ? await eqOf(name, ip, st) : null;
     return readingOf(name, st, TABLES[name], eq);

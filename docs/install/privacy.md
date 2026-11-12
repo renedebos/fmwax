@@ -18,7 +18,7 @@ All of it sits in your Cloudflare account:
 - **Your settings and keys:** speakers, presets, DJs, time zone.
 - **The songs played in the last 7 days,** and each endless DJ's last 150 songs, so DJs don't repeat themselves.
 - **A copy of every playlist it rewrites,** for 90 days, so a set can be put back.
-- **What is asked of the DJs** on the DJ pages or by voice, in the asker's own words, and the sets written for it. An ask is kept for up to 90 days.
+- **What is asked of the DJs** on the DJ pages or by voice, in the asker's own words, and the sets written for it. An ask is kept up to 30 days while it waits, and 90 days more once it is answered or turned down.
 - **The pages on the Shelf** (the Librarian's and Gatefold's notes), until you take them off.
 - **What it looked up about an artist,** for 180 days, so the next ask about them is quicker.
 - **Talk:** how many minutes were used each day. Your house keeps no sound and no transcript of a conversation. But a set you ask a DJ for by voice is an ask like any other (above).

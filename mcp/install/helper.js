@@ -300,6 +300,11 @@ if (resolve(REPO) !== resolve(P.app)) {
 writeFileSync(P.remover, `// Takes the fmwax home helper away again, as install/helper.js --remove does.\n` +
   `process.argv.push("--remove");\nawait import("./mcp/install/helper.js");\n`);
 made.push(P.script, P.keymap, P.remover);
+// WHO EACH SPEAKER IS, LEARNED AFRESH (Codex's review, 2026-11-11). The
+// helper never takes another WiiM in a speaker's place by itself, so running
+// this command is how a replaced WiiM is taken: the ids remembered from
+// before are forgotten here, and learned again from the WiiMs it reads.
+if (existsSync(P.known)) { try { writeFileSync(P.known, "{}\n", { mode: 0o600 }); } catch { /* learned over, then */ } }
 say(`   The helper is in ${P.app}, its settings in ${P.envFile}.`);
 
 // 4. Its start, at sign-in (and on Linux from boot, with linger).
