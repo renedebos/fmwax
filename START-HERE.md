@@ -6,12 +6,28 @@ You ask a DJ for music on your phone, typed or spoken, in the Claude app or in C
 
 Claude and ChatGPT work the same way here. Use the one you already have.
 
+## What you get, level by level
+
+You install Level 1 first, in about an hour. Everything after it is added later from your house's setup page, when you want it. **You can stop at any level and it works.**
+
+| Level | What you get | What it needs | Time |
+|---|---|---|---|
+| **Level 1 · Ask a DJ** | Ask any of the eleven DJs for a set, in Claude or ChatGPT. It plays on your WiiM and stays on one preset button, Requests. Your house's own app on your phone. | Spotify Premium. Free Cloudflare and GitHub accounts. Claude or ChatGPT (a free ChatGPT account worked in our test). | about an hour |
+| **Level 2 · DJ presets** | A DJ on a preset button of their own, with an hour of their songs on it from the start. For new songs, ask that DJ for a set. | Nothing more. | a few minutes per added preset |
+| **Level 3 · Endless** | Your DJ presets add songs by themselves for as long as you listen. A guest DJ preset for any DJ. Ask from the DJ pages in your house's app. | A paid plan: Claude Pro or ChatGPT Plus (or higher). | 30 to 45 minutes |
+| **Extra · Home helper** | A small program on a computer at home. While it runs, your house sees what is saved on each WiiM preset, and can press them for you. | A computer at home (Mac, Windows or Linux). It helps whenever that computer is on; it need not stay on. | 15 minutes |
+| **Extra · Talk** | Ask by voice in your house's app: a DJ, a preset, "more like this". | Your own OpenAI API key, paid by the minute (about 5 cents). Not part of ChatGPT Plus. | 10 to 15 minutes |
+
+The extras can be added at any level.
+
+**This guide is Level 1.** Levels 2 and 3 are steps on your house's setup page, for when you want them: [DJ presets](docs/install/dj-presets.md) and [Endless DJs](docs/install/endless.md).
+
 ## What it costs
 
 | | |
 |---|---|
 | **Spotify Premium** | Paid. Spotify only lets an app start music on a speaker for a paying account. |
-| **Claude or ChatGPT** | Paid: Claude Pro (or higher), or ChatGPT Plus (or higher). The free plans have not been tried with fmwax. |
+| **Claude or ChatGPT** | Levels 1 and 2 are best with a paid plan: Claude Pro (or higher), or ChatGPT Plus (or higher). ChatGPT's free plan worked in one test of this guide (November 2026): it made a set and played it, with a lower daily message limit. Claude's free plan has not been tried. **Level 3 (Endless) needs a paid plan.** |
 | **Cloudflare** | Free, no card. Your fmwax runs on your own Cloudflare account. |
 | **GitHub** | Free. Your own copy of fmwax is kept there. |
 
@@ -128,10 +144,10 @@ The setup page is a checklist. Each step ticks itself when your house sees it do
 
 A step marked **?** is one your house can't check for itself, like a preset saved on the WiiM. Check it yourself, by pressing the preset. (The optional [home helper](docs/install/home-helper.md) lets your house see these too.)
 
-Do the steps under **Core** in order:
+Do the steps under **Level 1 · Ask a DJ** in order:
 
 1. **Spotify.** Your house needs its own free "app" entry in Spotify's developer website, so it can use your Spotify account. The page tells you exactly what to click and what to paste. At the end, you sign in to Spotify.
-2. **Speakers.** Your house finds your speakers through Spotify. Check which ones are WiiM speakers, then pick the one music plays on by default. If a WiiM shows up as a code instead of its name, click **Play on it** to hear which one it is, then name it.
+2. **Speakers.** Your house finds your speakers through Spotify. Check which ones are WiiM speakers, then pick the one music plays on by default. If a WiiM shows up as a code instead of its name, click **Play on it** to hear which one it is, then name it. If no speaker shows up at all, play any song on your WiiM from the Spotify app (choose the WiiM as the speaker there), then click **find again** on the page.
 3. **Time zone.** Already set, from your browser, when you claimed your house. Change it here if it's wrong.
 4. **Claude or ChatGPT.** This step adds your house to Claude or ChatGPT, so you can ask the DJs. Do it in a web browser, at [claude.ai](https://claude.ai) or [chatgpt.com](https://chatgpt.com): a computer's or your phone's browser both work, but the phone *apps* can't add it. The page shows each click. In ChatGPT, set **Authentication** to **None**: your house's address already carries its key. Afterwards it works in the Claude or ChatGPT app on your phone too.
 5. **On your phone.** Open your house's setup address on your phone, and sign in with the recovery code. Then open your house from there and add it to your home screen, so it opens like an app.
@@ -157,6 +173,8 @@ Ask in the Claude app or ChatGPT, typed or spoken. Two good first asks:
 - **Quick:** *"Vibe, 20 minutes for a quiet morning, on my Requests preset."*
 - **With notes to read:** *"Librarian, an introduction to Stax Records, and put it on my Requests preset."* This takes a few minutes, because the Librarian looks things up and writes notes before the songs are ready. Keep the chat open. The notes appear on your house's **Shelf**.
 
+The first times, Claude or ChatGPT asks before it uses your house. ChatGPT may add a red **Suspicious Instruction** warning to that box. It is about your house's own notes to the assistant, which say how to pick the songs and when to play them: they come from your house, not from anyone else. **Allow** is fine.
+
 ## Using it
 
 - **Ask for anything.** Three DJs take any ask: **Genre** for a style (*"Genre, an hour of ska"*), **Deep Dive** for an artist (*"Deep Dive, forty minutes of early Prince"*) and **the Librarian** for a subject (*"Librarian, an introduction to Stax"*).
@@ -174,9 +192,12 @@ On the setup page, click **Download a backup**. It's a small file with your hous
 
 ## What next
 
-- **[Endless DJs](docs/install/endless.md):** DJs that keep playing for as long as you listen, each on a preset of their own. About 30 to 45 minutes to set up, once the steps above work.
-- **[The home helper](docs/install/home-helper.md)** (optional): a small program on a computer at home, so your house can see and press the WiiM's presets.
+- **[DJ presets](docs/install/dj-presets.md)** (Level 2): a DJ on a preset button of their own, with an hour of their songs on it from the start. A few minutes per added preset, and nothing more to set up.
+- **[Endless DJs](docs/install/endless.md)** (Level 3): your DJ presets add songs by themselves for as long as you listen, and a guest DJ preset for any DJ. About 30 to 45 minutes to set up; it needs a paid Claude or ChatGPT plan.
+- **[The home helper](docs/install/home-helper.md)** (an extra, at any level): a small program on a computer at home, so your house can see and press the WiiM's presets.
+- **[Talk](docs/install/talk.md)** (an extra, at any level): ask by voice in your house's app. It needs your own OpenAI API key, paid by the minute.
 - **[Updates](docs/install/updates.md):** how to get a newer version, and which version you have.
+- **[Remove your house](docs/install/remove.md):** how to take it all away again, step by step.
 - **[If something goes wrong](docs/install/troubleshooting.md).**
 
 Stuck, or a step looks different on your screen? Please say so, with [the Install problem form](https://github.com/renedebos/fmwax/issues/new/choose) on GitHub.

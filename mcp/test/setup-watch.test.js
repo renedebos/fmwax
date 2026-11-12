@@ -67,6 +67,26 @@ test("the checklist watches a row waiting on Claude or ChatGPT, and stops once i
   } finally { f.restore(); }
 });
 
+// The test house run (2026-11-10): the owner asked in the chat and waited on
+// the step's own page, which never moved; only the checklist watched.
+test("the chat step's own page watches for the first call too, and goes back to the checklist", async () => {
+  const f = installFetch();
+  try {
+    const e = await house();
+    const me = await claim(e);
+    let page = await text(e, "/setup/app", me);
+    assert.deepEqual(watched(page), { watch: { app: false }, go: "/setup" });
+    assert.match(page, /this page goes back to the checklist by itself/);
+    const waits = [];
+    await worker.fetch(new Request(`${ORIGIN}/mcp/owner-mcp-0123456789`, { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }) }), e, { waitUntil: (p) => waits.push(p) });
+    await Promise.all(waits);
+    page = await text(e, "/setup/app", me);
+    assert.equal(watched(page), null, "heard from: nothing to wait on");
+    assert.match(page, /The house has heard from it: this step is done/);
+  } finally { f.restore(); }
+});
+
 test("a rung Claude task: a clock, its help only once the wait is long, and Next once it checks in after the ring", async () => {
   const e = await house();
   const me = await claim(e);
@@ -94,7 +114,7 @@ test("ChatGPT chosen: the page watches for its Work chat to subscribe and check 
   const me = await claim(e);
   await go(e, "/setup/curator/use", { method: "POST", form: { who: "chatgpt" }, cookie: me });
   const page = await text(e, "/setup/curator?with=chatgpt", me);
-  assert.deepEqual(watched(page), { watch: { curator: 0, listening: 0 }, go: "/setup/curator?with=chatgpt#done" });
+  assert.deepEqual(watched(page), { watch: { curator: 0, listening: 0, hourly: 0 }, go: "/setup/curator?with=chatgpt#done" });
   assert.deepEqual(watched(await text(e, "/setup", me))?.watch, { app: false, curator: 0, listening: 0 });
 });
 
@@ -154,7 +174,7 @@ test("the home helper on the setup page: offered, then what it reads, ticking li
   assert.match(page, new RegExp(`<code class="setval">node install/helper\\.js --house ${ORIGIN.replace(/\./g, "\\.")} --pair [0-9a-z]+-[A-Za-z0-9_-]{22}</code>`));
   assert.match(page, new RegExp(`<summary>If it asks for a key</summary>[\\s\\S]*<code class="setval">${e.HELPER_SECRET}</code>`));
   assert.doesNotMatch(page, /--key/, "never the key on the command line (Codex)");
-  assert.match(page, /starts when you sign\s+in to that computer and works while it is awake/);
+  assert.match(page, /starts when you sign in to that computer\s+and helps while it is awake\. It need not stay on/);
   assert.doesNotMatch(page, /Remove the home helper/, "nothing to remove before a helper ever ran");
   assert.deepEqual(watched(page), { watch: { helper: false, helperRead: 0 }, go: "/setup/helper" });
   // Connected, one WiiM answering and one not: said apart.

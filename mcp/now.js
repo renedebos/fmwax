@@ -372,8 +372,9 @@ export async function playingWho(env, p, preset, band = null, holders = null) {
       return rec?.title ? { slug, title: String(rec.title).slice(0, 120) } : null;
     } catch { return null; }
   };
-  if (preset?.endless && preset.dj && named(preset.dj)) {
-    return { dj: preset.dj, name: named(preset.dj), kind: preset.lane ? "guest" : "house", btn: preset.btn, endless: true,
+  if ((preset?.endless || preset?.waits) && preset.dj && named(preset.dj)) {
+    return { dj: preset.dj, name: named(preset.dj), kind: preset.lane ? "guest" : "house", btn: preset.btn,
+      ...(preset.endless ? { endless: true } : {}),
       ...(preset.lane && preset.nearby ? { nearby: preset.nearby } : {}) };
   }
   if (band?.guest) {

@@ -94,7 +94,11 @@ test("voiceFunctions is the voice's list in the Responses function shape", () =>
     assert.ok(p.required.includes("device"), `${start} requires a speaker`);
     assert.match(p.properties.device.description, /Required to start/);
   }
-  // A write's schema is the connector's, untouched.
+  // A write's schema is the connector's, less the start that rides on it
+  // (`play` and its `device`, 2026-11-11): the voice starts music through its
+  // own speaker rule, never as part of a write.
   const rp = fns.find((f) => f.name === "replace_playlist").parameters;
-  assert.deepEqual(rp.properties, __test.toolsWithMeta(e).find((t) => t.name === "replace_playlist").inputSchema.properties);
+  const { play: _p, device: _d, ...connectors } = __test.toolsWithMeta(e).find((t) => t.name === "replace_playlist").inputSchema.properties;
+  assert.equal(_p.type, "boolean", "the connector has it");
+  assert.deepEqual(rp.properties, connectors);
 });

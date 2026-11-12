@@ -9,6 +9,7 @@ import { tidalCatalog, playlistIdFrom as tidalPlaylistIdFrom } from "./tidal.js"
 import { station, stationStub } from "./station.js";
 import { timed } from "./timing.js";
 import { destinationFor, guestAlias, guestPhrase, house } from "./house.js";
+import { endWaiting, pageWaits } from "./settings.js";
 
 export const SPOTIFY_API = "https://api.spotify.com/v1";
 export const SPOTIFY_TOKEN = "https://accounts.spotify.com/api/token";
@@ -1345,6 +1346,11 @@ export async function spotifyLogin(env, now = Date.now()) {
 export const CURATOR_SEEN_KEY = "curator:seen";
 export const CURATOR_QUIET_MS = 75 * 60 * 1000;
 export async function stampCurator(env) {
+  // THE HANDOVER (MC-40): a house whose DJ presets wait for a curator stops
+  // waiting the first time one really checks in, never because a setting
+  // was typed. The word first, then the stamp; a store that does not answer
+  // leaves the house waiting, and the next check-in tries again.
+  if (pageWaits(env)) { try { await endWaiting(env); } catch { /* still waiting */ } }
   try { await programsKV(env).put(CURATOR_SEEN_KEY, JSON.stringify({ at: Date.now() })); } catch { /* the next run stamps it */ }
 }
 // When the curator last checked in, whenever that was; null if never.

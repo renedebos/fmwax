@@ -165,8 +165,12 @@ test("choosing ChatGPT: requests switch on, the page says whether a Work chat li
   const live = await withSettings(e, null);
   assert.deepEqual([live.CURATOR, live.REQUESTS_ENABLED, live.AUTOFULFILL_ENABLED], ["chatgpt", "true", "true"]);
   const page = await (await go(e, "/setup/curator?saved=1", { cookie: me })).text();
-  assert.match(page, /Saved: ChatGPT is this house(&#39;|')s curator/);
-  assert.match(page, /No Work chat is listening/);
+  // Three steps that tick themselves, nothing said twice (the owner, the
+  // test house run, 2026-11-10: "too busy").
+  assert.doesNotMatch(page, /Saved: ChatGPT|>Look again<\/a>/);
+  assert.match(page, /<li class="todo">[\s\S]*?<b>No Work chat is listening[\s\S]*?Paste its first note into the Work chat/);
+  assert.match(page, /<b>Send it a test/);
+  assert.doesNotMatch(page, />Send a test</, "no test to send before a Work chat listens");
   assert.match(page, /<details class="setkey" open><summary>The steps at chatgpt\.com<\/summary>/, "the steps stay open until it listens");
   // Nobody listening: the test says so.
   assert.equal((await go(e, "/setup/curator/wake", { method: "POST", cookie: me })).headers.get("location"), "/setup/curator?with=chatgpt&woke=0#done");
@@ -190,7 +194,11 @@ test("choosing ChatGPT: requests switch on, the page says whether a Work chat li
     assert.deepEqual(got.filter((b) => !b.type).map((b) => b.data), [{ work_id: "setup-check", kind: "request", again: false }]);
   } finally { globalThis.fetch = inner; }
   const listening = await (await go(e, "/setup/curator", { cookie: me })).text();
-  assert.match(listening, /A Work chat is listening/);
+  assert.match(listening, /<li class="done">[\s\S]*?<b>A Work chat is listening/);
+  assert.match(listening, />Send a test<\/button>/);
+  const sent = await (await go(e, `/setup/curator?with=chatgpt&woke=1&at=${Date.now()}`, { cookie: me })).text();
+  assert.match(sent, /Sent\. Waiting for its answer: <b class="setclock"/);
+  assert.doesNotMatch(sent, /<p class="setsaid"/, "the step says it, not a flash");
   assert.match(await (await go(e, "/setup", { cookie: me })).text(), /ChatGPT, woken by event/);
 });
 
@@ -208,4 +216,56 @@ test("back to Claude: only with a task kept; then the house rings the task again
   assert.match(page, /Make the Claude task the curator again/);
   await go(e, "/setup/curator/use", { method: "POST", form: { who: "claude" }, cookie: me });
   assert.equal((await withSettings(e, null)).CURATOR, "claude");
+});
+
+// THE HOURLY CHECK, TICKED BY THE HOUSE (the test house run, finding 17,
+// 2026-11-11: the owner missed the Work chat's hourly note and every row was
+// ticked all the same). A check-in the house rang for (an event, a chat just
+// subscribing) is not it; one that comes by the clock is.
+test("the hourly check: not seen after a check-in the house rang for, ticked by one it did not, and said when it stops", async () => {
+  const e = await blank();
+  const me = await claim(e);
+  await go(e, "/setup/curator/use", { method: "POST", form: { who: "chatgpt" }, cookie: me });
+  const { withSettings } = await import("../settings.js");
+  const { programsKV } = await import("../services.js");
+  const page = await (await go(e, "/setup/curator", { cookie: me })).text();
+  const agent = page.match(/https:\/\/fmwax\.test\/mcp\/([A-Za-z0-9_-]{20,})/)[1];
+  const mcp = async (method, params) => worker.fetch(new Request(`${ORIGIN}/mcp/${agent}`, { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) }), await withSettings(e, null));
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => {
+    if (!String(u).startsWith("https://connectors.example.test/")) return inner(u, init);
+    const body = JSON.parse(init.body);
+    return body.type === "verification" ? Response.json({ challenge: body.challenge }) : new Response(null, { status: 200 });
+  };
+  try {
+    await mcp("events/subscribe", { name: "house.work", arguments: {},
+      delivery: { mode: "webhook", url: "https://connectors.example.test/cb", secret: `whsec_${Buffer.alloc(32, 9).toString("base64")}` },
+      _meta: { "io.modelcontextprotocol/protocolVersion": "2026-07-28" } });
+    // The chat looks at once, then answers the test: both rung for.
+    await mcp("tools/call", { name: "list_requests", arguments: {} });
+    await go(e, "/setup/curator/wake", { method: "POST", cookie: me });
+    await mcp("tools/call", { name: "list_requests", arguments: {} });
+    let cur = await (await go(e, "/setup/curator", { cookie: me })).text();
+    assert.match(cur, /<b>It answered at /);
+    assert.match(cur, /<li class="todo">[^]*?<b>Its hourly check: not seen yet[^]*?within the hour, once the hourly note is pasted/);
+    assert.match(cur, /data-watch="[^"]*hourly&quot;:0/, "the page watches for it");
+    let list = await (await go(e, "/setup", { cookie: me })).text();
+    assert.match(list, /<li class="todo">[^]*?<b>Curator(&#39;|')s hourly check[^]*?Not seen yet: it shows within the hour/);
+    // An hour on, a check-in nobody rang for: the hourly task's.
+    const kv = programsKV(await withSettings(e, null));
+    await kv.put("events:rung", JSON.stringify({ at: Date.now() - 20 * 60e3 }));
+    await mcp("tools/call", { name: "list_requests", arguments: {} });
+    cur = await (await go(e, "/setup/curator", { cookie: me })).text();
+    assert.match(cur, /<li class="done">[^]*?<b>Its hourly check ran at \d/);
+    list = await (await go(e, "/setup", { cookie: me })).text();
+    assert.match(list, /<li class="done">[^]*?<b>Curator(&#39;|')s hourly check[^]*?Ran at \d/);
+    // Gone quiet for over two hours: to do again, and where to look.
+    await kv.put("curator:hourly", JSON.stringify({ at: Date.now() - 3 * 3600e3 }));
+    cur = await (await go(e, "/setup/curator", { cookie: me })).text();
+    assert.match(cur, /<li class="todo">[^]*?<b>Its hourly check last ran [^]*?Over two hours ago[^]*?look under Scheduled/);
+  } finally { globalThis.fetch = inner; }
+  // The steps say the two things the run found: a name for the chat, and the five tasks.
+  assert.match(page, /rename the chat <b>fmwax curator<\/b>/);
+  assert.match(page, /ChatGPT Plus keeps five\s+scheduled tasks/);
 });

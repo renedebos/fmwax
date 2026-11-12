@@ -7,12 +7,12 @@
 // seconds and reloads once one has moved, with a clock counting meanwhile.
 import { readSeen } from "./settings.js";
 import { CURATOR_SEEN_KEY, programsKV } from "./services.js";
-import { workSubscriptions } from "./curator-events.js";
-import { endlessLoad, parseEndless } from "./endless.js";
+import { HOURLY_KEY, workSubscriptions } from "./curator-events.js";
+import { endlessLoad, parseEndless, waiting } from "./endless.js";
 import { station } from "./station.js";
 import { HELPER_FRESH_MS } from "./now.js";
 
-export const WATCH_FACTS = ["app", "curator", "listening", "first", "helper", "helperRead"];
+export const WATCH_FACTS = ["app", "curator", "listening", "hourly", "first", "helper", "helperRead"];
 
 // THE HOME HELPER, AS THE SETUP PAGE SAYS IT (MC-31 stage 5; Codex,
 // 2026-10-19: a line open is not a WiiM read): from its last reading, if
@@ -28,6 +28,9 @@ export function helperSaw(doc, now = Date.now()) {
 // (its fresh job open, since when), or how it ended (landed, and on which
 // speaker it started; failed; expired), or "none" when nothing says.
 export async function firstSet(env) {
+  // A preset that waits for its curator came with its starter set (MC-40):
+  // there is no first set to wait for, and nobody to write one.
+  if (waiting(env)) return null;
   const own = parseEndless(env)?.presets?.find((p) => !p.lane && !p.program);
   if (!own) return null;
   let job = null;
@@ -52,6 +55,9 @@ export async function setupFacts(env, want = WATCH_FACTS) {
     want.includes("curator") && programsKV(env).get(CURATOR_SEEN_KEY, { type: "json" })
       .then((r) => { out.curator = Number(r?.at) || 0; }).catch(() => {}),
     want.includes("listening") && workSubscriptions(env).then((s) => { out.listening = s.count; }).catch(() => {}),
+    // The Work chat's hourly check (finding 17): when it was last seen.
+    want.includes("hourly") && programsKV(env).get(HOURLY_KEY, { type: "json" })
+      .then((r) => { out.hourly = Number(r?.at) || 0; }).catch(() => {}),
     want.includes("first") && firstSet(env).then((f) => { out.first = f?.state ?? ""; }).catch(() => {}),
     (want.includes("helper") || want.includes("helperRead")) && station(env, "helper-get", {}).then((h) => {
       if (want.includes("helper")) out.helper = !!h?.hands;

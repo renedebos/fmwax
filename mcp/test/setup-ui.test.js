@@ -136,7 +136,7 @@ test("Claude or ChatGPT: its own page with the steps for both, the owner's only,
   assert.match(page, /<h2 id="scard">Claude or ChatGPT/);
   assert.ok(page.includes(`<code class="setval">${ORIGIN}/mcp/owner-mcp-secret-0123456789</code>`), "one address for both");
   assert.match(page, /<h3>Claude<\/h3>[\s\S]*Add custom connector[\s\S]*Tool permissions/);
-  assert.match(page, /<h3>ChatGPT \(Plus or higher\)<\/h3>[\s\S]*Add custom MCP server[\s\S]*<b>Authentication<\/b> to\s+<b>None<\/b>/);
+  assert.match(page, /<h3>ChatGPT \(free or paid\)<\/h3>[\s\S]*Add custom MCP server[\s\S]*<b>Authentication<\/b> to\s+<b>None<\/b>[\s\S]*click <b>Connect<\/b>/);
   const list = await setupChecklist(e, { claimed_at: new Date().toISOString() }, { origin: ORIGIN });
   const r = list.sections[0].rows.find((x) => x.title === "Claude or ChatGPT");
   assert.deepEqual([r.state, r.href], ["todo", "/setup/app"]);
@@ -156,7 +156,10 @@ test("a row the house cannot see neither counts for nor against: a Core-only hou
   // Claude or ChatGPT is the one row left: once it has called, Core is done.
   await go(e, "/mcp/x", { method: "POST" }); // a wrong key: no call noted
   const list = await setupChecklist(e, { claimed_at: new Date().toISOString() });
-  assert.equal(list.total, list.sections.flatMap((s) => s.rows).filter((r) => r.state !== "unknown").length);
+  // An offer (a DJ preset to add, since MC-40) is not a step: it counts neither way, like the unseen row.
+  assert.equal(list.total, list.sections.flatMap((s) => s.rows).filter((r) => r.state !== "unknown" && r.state !== "offer").length);
+  assert.ok(list.sections.find((s) => s.key === "djpresets").rows.some((r) => r.state === "offer" && r.href === "/setup/dj-preset"),
+    "a Core-only house is offered its first DJ preset");
   assert.ok(cookie);
 });
 

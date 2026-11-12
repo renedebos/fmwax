@@ -66,9 +66,11 @@ body:
     attributes:
       label: Your Claude or ChatGPT plan
       options:
+        - Claude, free plan
         - Claude Pro
         - Claude Max
         - Claude Team or Enterprise
+        - ChatGPT, free plan
         - ChatGPT Plus
         - ChatGPT Pro
         - ChatGPT Business or Enterprise

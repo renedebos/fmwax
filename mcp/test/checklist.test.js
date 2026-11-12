@@ -95,7 +95,9 @@ test("the home helper is missed only once it has ever reported: every claimed ho
   assert.doesNotMatch(offered[0].detail, /asleep/);
   await station(e, "helper-put", { doc: { boxes: {} } });
   const away = await setupChecklist(e, { claimed_at: new Date().toISOString() });
-  assert.match(row(away, "Connected").detail, /may be asleep/);
+  // Its computer off is no fault (the owner, 2026-11-10: it need not stay on).
+  assert.match(row(away, "Connected").detail, /its computer is off or asleep\. It helps again once that computer is on/);
+  assert.equal(row(away, "Connected").state, "done");
 });
 
 test("a done step keeps a way back to its page (the owner's second run, 2026-10-17)", async () => {

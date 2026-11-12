@@ -41,8 +41,10 @@ this page to every house, so a few marks make it fit the one reading it:
 
 - **Why did it play on that speaker?** It plays where you last chose, for half an hour. After that it follows the music, and with nothing playing it uses the last speaker you chose, or else the {default speaker}.
 - {if requests} **Where does a set I ask for go?** On {requests presets}, in place of the set that was there. Tick **Keep** and it's also kept on the Shelf for good.
-- {if endless} **When does a DJ add songs?** When 30 minutes or 4 songs are left, they add 45 minutes more, for up to 4 hours a start. The house has 12 endless runs a day. A set you ask for doesn't count.
-- {if endless} **Why did the music stop?** An endless set plays out after 4 hours of top-ups, or once the day's 12 endless runs are used up. Spotify can also refuse for a while; the pages say how long.
+- {if waits} **And a set I ask a DJ who has a preset of their own?** It goes on that DJ's own preset ({house presets}), in place of the songs there. Requests stays as it was.
+- {if waits} **Why did a DJ's preset stop?** It plays the songs on it, about an hour, and stops. Nothing adds songs by itself until a curator is set up. Ask that DJ for a set and the preset has new ones.
+- {if endless} **When does a DJ add songs?** When 30 minutes or 4 songs are left, they add 45 minutes more, for up to 4 hours a start. The house has {daily runs} endless runs a day. A set you ask for doesn't count.
+- {if endless} **Why did the music stop?** An endless set plays out after 4 hours of top-ups, or once the day's {daily runs} endless runs are used up. Spotify can also refuse for a while; the pages say how long.
 - {if endless} **Why did I hear that song again?** An endless DJ skips the last 150 songs they played, and anything the house played in the last 3 hours. A set you ask for doesn't look back. And another recording of a song (a live take, a remaster) counts as a new song.
 - **Why does the WiiM app show an old name?** A preset keeps the name it had when it was saved. Renaming it over the network would unhook it. To update the name, save the preset again: play it, then hold the preset.
 - **Can I undo a set?** Yes, for 90 days: every playlist is copied before it's rewritten. Ask Claude or ChatGPT to put the old one back.
@@ -81,6 +83,7 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 
 - **Where it goes:** a set you ask for (a length, a mood, a subject) goes on **{requests presets}**, in place of the set that was there.
 - {if tidal} **Which service:** the **On: Spotify | Tidal** switch on the DJ's Ask form. It starts on Spotify, and each phone remembers its last choice. Typing "on Tidal" in the box doesn't switch it: words there are taste. (By voice or in the Claude app, just say "on Tidal".)
+- {if waits} **A DJ with a preset of their own:** their set lands on their own preset ({house presets}) instead, and Requests stays as it was. That holds until a curator is set up.
 - If there's nowhere to put it (no Requests preset for that service), the ask is refused before anything is written.
 - **Keep** puts the set on the Shelf for good. By voice or in Claude or ChatGPT, say **"keep it"** about the set on Requests (since 2026-09-28). Only a set with a DJ can be kept, because the Shelf is sorted by DJ.
 - **Short notes or the long read** (since 2026-10-18): on the Librarian's and Gatefold's pages, ticking Keep offers a choice. **Short** is a line or two about each song. **Long read** is the stories behind the records, about 1,500 to 3,000 words. The music doesn't wait for either: the page follows. Each phone remembers its last choice; until it has chosen, the form starts on {notes default}. [house.json `requests.notes`]
@@ -105,9 +108,19 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 - {if history} **Six DJs became three** (since 2026-10-13): **Vibe** is Sunny, Morning and Nightside; **Soul** is Stax and Soul Factory; **Hip Hop** took in KRS-One (both cut since, below). The old names still work: "play Stax" is Soul with "the South (Stax)", "play Motown" Soul with "the North (Motown)", "play Sunny" Vibe with "the room", "play Nightside" Vibe with "the small hours", "play Morning" Vibe with "the morning". Sets on the Shelf under the old names are on the new DJ's page.
 - {if history} **Ten DJs**, for this house and the forum version (since 2026-10-15): Camille, Monk, the Professor, the Selector and Hip Hop are cut. Prince's own records are Deep Dive's; jazz, reggae and hip-hop are Genre's. Two DJs write a page with their set now, the Librarian and Gatefold. Their sets on the Shelf and asks already made still show, under the old name. **Eleven since 2026-10-26**, with Sessions.
 
+## DJ presets {if waits}
+
+> A DJ's own preset plays about an hour · new songs when you ask that DJ · endless once a curator is set up.
+
+- **A DJ preset** ({house presets}) holds one DJ's songs: about an hour to start with, chosen for that DJ (since 2026-11-10). A press plays them, and they stop at the end.
+- **New songs:** ask that DJ for a set in Claude or ChatGPT (a length, a mood, a subject). It lands on **their own preset**, in place of the songs there, and Requests stays as it was. A set asked of a DJ with no preset goes on Requests.
+- **Nothing adds songs by itself yet.** Start fresh, More like this and Change it up are the curator's work, so the pages don't offer them. Play does, and spends nothing.
+- **Adding and removing:** on the setup page, under DJ presets. Each takes a few minutes to save on every WiiM, and three is a good number to stop at. Remove frees the number; the playlist stays in your Spotify.
+- **Once a curator is set up** (Endless, on the setup page), the same presets add songs by themselves while they play, with nothing to save again. From then on, a set you ask a DJ for goes on Requests.
+
 ## Endless DJs {if endless}
 
-> 45 more minutes when 30 are left · 12 endless runs a day · no repeats in 150 songs.
+> 45 more minutes when 30 are left · {daily runs} endless runs a day · no repeats in 150 songs.
 
 **What they are**
 
@@ -123,7 +136,7 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 - **Top-up:** when **30 minutes or 4 songs** are left, the DJ adds **45 minutes** more. [house.json `endless`: `topupMinutes`, `batchMinutes`] A skip on the app's bar that leaves the set that short asks at once (since 2026-11-02). Skips in the Spotify app or on a remote wait for the next look.
 - {if helper} **A set started in the Spotify app on an Echo or a phone** can go up to **3 hours** before the DJ notices it and tops it up. Opening the app brings that down to about 10 minutes. A press on a WiiM, or a Play from the app, is noticed within about 10 minutes.
 - **At most 4 hours of top-ups a start**, then the set plays out.
-- **12 endless runs a day** across all endless presets: top-ups, fresh sets and steers. A set you ask for doesn't count. After that, no new songs until tomorrow. [`dailyRuns`]
+- **{daily runs} endless runs a day** across all endless presets: top-ups, fresh sets and steers. A set you ask for doesn't count. After that, no new songs until tomorrow. [`dailyRuns`]
 - **No repeats** of the last **150 songs** the DJ played, or of anything the house played in the last three hours. *Repeats* says how.
 - **A session ends** when two looks in a row find it not playing (about 20 minutes).
 - **After a session:** if at least **4 songs and 15 minutes** are unplayed, they're kept, and the next press carries on from there, whether tonight or next week. If not, the DJ makes a **fresh one-hour opening** for the next press.

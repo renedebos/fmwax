@@ -14,6 +14,7 @@ import {
   catalogFor, lastfmOn, playerState, programsKV, spotify, throttledUntil,
 } from "./services.js";
 import { emitRequestEvent } from "./writes.js";
+import { pageWaits } from "./settings.js";
 import { rollCallSlice } from "./rollcall.js";
 import { tunedSpacing, tuningWords } from "./tuning.js";
 import { logHeard } from "./week.js";
@@ -323,7 +324,7 @@ function askTopup(cfg, state, p, s, { now, leftMin, bells, say, why = "" }) {
 // Skips in the Spotify app or on a remote still wait for the look.
 export async function endlessAfterSkip(env, { pid, uri, now = Date.now() }) {
   const cfg = parseEndless(env);
-  if (cfg?.mode !== "live" || !pid || !uri || !env?.STATION) return null;
+  if (cfg?.mode !== "live" || !pid || !uri || !env?.STATION || waiting(env)) return null;
   const bells = [], events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
   const out = await endlessUpdate(env, (state) => {
@@ -700,7 +701,30 @@ export function parseEndless(env) {
       noRepeatSongs: Number(p.noRepeatSongs) > 0 ? Number(p.noRepeatSongs) : 150 }));
   if (!presets.length) return null;
   return { mode: raw.mode === "live" ? "live" : "watch",
-    dailyRuns: Number(raw.dailyRuns) > 0 ? Number(raw.dailyRuns) : 12, presets };
+    dailyRuns: Number(raw.dailyRuns) > 0 ? Number(raw.dailyRuns) : 12,
+    // THE WORD (MC-40): these presets wait for a curator. Kept only when it
+    // is exactly true, so a config without it parses as it always has.
+    ...(raw.waits === true ? { waits: true } : {}), presets };
+}
+// A HOUSE WHOSE DJ PRESETS WAIT FOR A CURATOR (MC-40,
+// tasks/mc40-dj-presets.md). Made on the setup page before any curator
+// exists: each preset holds an hour of its DJ's songs and nothing refills
+// it. While it waits the watch does not look, nothing files work, and a set
+// asked of a DJ lands on their own preset. The curator's first check-in
+// takes the word away (services.js stampCurator), and from then on the
+// same presets are endless as in any house. Only a page-made setting can
+// wait (settings.js pageWaits): a file's house is never this.
+export const waiting = (env) => pageWaits(env) && parseEndless(env)?.waits === true;
+// What every refusal says while it waits: the pages, the tools and the
+// voices all use this one sentence.
+export const NO_CURATOR = "This house has no curator yet";
+export const noCuratorWords = (dj = null) =>
+  `${NO_CURATOR}, so nothing adds songs by itself. New songs: ask ${dj ?? "the DJ"} for a set in Claude or ChatGPT.`;
+// The watch looks on its next run (a press, a Play). Not while the house
+// waits: there is no watch to nudge, and nothing is written.
+export async function nudgeWatch(env) {
+  if (waiting(env)) return;
+  try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the idle look finds it */ }
 }
 // The playlist's tracks, lengths and labels, [uri, ms, "Artist — Title"] in
 // order — read once a session, and again after each write.
@@ -937,10 +961,14 @@ export function forgetPreset(state, button) {
   for (const [id, j] of Object.entries(state.jobs ?? {})) if (j?.btn === button) delete state.jobs[id];
 }
 // The endless config as the setup page keeps it, with its presets as given.
-export const endlessJson = (cfg, presets) => JSON.stringify({ mode: cfg.mode, dailyRuns: cfg.dailyRuns, presets });
+// The word is carried (MC-40): a waiting house giving up a preset, or the
+// setup page adding one, must not stop waiting by the rewrite.
+export const endlessJson = (cfg, presets) => JSON.stringify({ mode: cfg.mode, dailyRuns: cfg.dailyRuns,
+  ...(cfg.waits ? { waits: true } : {}), presets });
 export async function endlessAssign(env, { dj, button }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
+  if (waiting(env)) return { status: "no-curator" };
   const who = findDj(env, dj);
   if (!who || who.archiveOnly) return { status: "no-dj" };
   // ASKED SETS ONLY (Comedy, 2026-09-30): a persona with `endless: false`
@@ -1035,6 +1063,11 @@ export async function endlessTrim(env, cfg, trims, say) {
 export async function endlessWatch(env, now = Date.now(), retry = true) {
   const cfg = parseEndless(env);
   if (!cfg) return { outcome: "off" };
+  // WAITING FOR A CURATOR (MC-40): not one look. No session, no history, no
+  // cut of the heard songs, no rename, no pause, no job, no run, and no
+  // Spotify call: on a list nobody refills, the cut alone would shrink the
+  // starter hour to nothing in a few evenings (Codex, 2026-11-09).
+  if (waiting(env)) return { outcome: "waiting" };
   const events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
   const bells = [], pauses = [];
@@ -1370,7 +1403,7 @@ export async function endlessBar(env, btn, pid = null, state = null) {
 export async function playEndless(env, { dj: djRef, device, budget, when = null, words = null }) {
   const cfg = parseEndless(env);
   const lane = cfg?.presets.find((p) => p.lane) ?? null;
-  if (!cfg || cfg.mode !== "live" || !lane || !env?.STATION) return { status: "off" };
+  if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
   const who = findDj(env, djRef);
   if (!who || who.archiveOnly) return { status: "no-dj" };
   if (who.endless === false) return { status: "no-endless" };
@@ -1381,9 +1414,8 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   const now = Date.now();
   const events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
-  const key = String(lane.button);
   // A start that took makes the watch look on its next run (Codex's review 6).
-  const looked = async () => { try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the idle look */ } };
+  const looked = () => nudgeWatch(env);
   const start = async (pl, label) => {
     try {
       const r = await startPlaylistOnDevice(env, { id: pl, name: label, catalog: "spotify" }, device, budget);
@@ -1399,6 +1431,12 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   // 1. Their own preset.
   const own = endlessSlots(env, cfg, state).find((p) => p.dj === who.key);
   if (own) return { status: "own-preset", button: own.button, start: await start(own.playlist, who.name) };
+  // NO GUEST DJ PRESET (MC-40): a house may have DJ presets and no lane, so
+  // the DJ's own preset is looked for first, above. Past it everything is
+  // the lane's: a house that waits for its curator says so, and any other
+  // house with no lane has no guest DJ slot, as before.
+  if (!lane) return { status: waiting(env) ? "no-curator" : "off" };
+  const key = String(lane.button);
   // WHAT IS PLAYING, FROM THE PLAYER (Codex's review 6): the watch's session
   // lags a press by up to ten minutes and outlives a stop by twenty, so it
   // cannot say whether the lane is playing now. One read; the session
@@ -1571,6 +1609,7 @@ export async function laneUndo(env, tenancy) {
 export async function endlessStartFresh(env, { button, device }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
+  if (waiting(env)) return { status: "no-curator" };
   const now = Date.now();
   const events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
@@ -1605,6 +1644,7 @@ export async function endlessStartFresh(env, { button, device }) {
 export async function endlessPageSteer(env, { button, words, leaveWords = false, by = "from the DJ page" }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
+  if (waiting(env)) return { status: "no-curator" };
   if (await throttledUntil(env)) return { status: "throttled" };
   const slot = cfg.presets.find((x) => x.button === button);
   if (!slot) return { status: "off" };

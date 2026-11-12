@@ -289,6 +289,12 @@ function check(house) {
 // so it is refused here, in words, while somebody is at the installer.
 function checkEndless(house) {
   const presets = house.endless?.presets ?? [];
+  // THE WORD IS THE SETUP PAGE'S (MC-40): DJ presets that wait for a curator
+  // are made on a house's setup page, which also takes the word away when
+  // the curator first checks in. A file's house has no page to do that.
+  if (house.endless && "waits" in house.endless) {
+    throw new Error('"waits" in "endless" is not for house.json: only DJ presets made on the setup page wait for a curator. Remove it.');
+  }
   const seen = new Set();
   const taken = new Set((house.buttons ?? []).map((b) => b.button));
   const djs = new Set([...(house.buttons ?? []).map((b) => b.dj).filter(Boolean), ...(house.djs ?? [])]);

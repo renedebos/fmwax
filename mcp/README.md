@@ -1,7 +1,6 @@
 # music-control MCP server
 
-Curate from a phone, play on the WiiM. See [../docs/remote-control.md](../docs/remote-control.md)
-for why this exists and what it replaces.
+Curate from a phone, play on the WiiM.
 
 A Cloudflare Worker, no dependencies, speaking MCP Streamable HTTP.
 `worker.js` is the entry (the fetch and cron handlers, and `__test` for the

@@ -7,14 +7,15 @@ import {
   renderReadings, renderDeck, renderTalk, plural, waitWords, serviceLink, sameName, renderWhichDj, renderSetup,
 } from "./programs.js";
 import { DJ_ASKS, GLANCE, GLANCE_NOW, WHICH, WHICH_NEEDS, WHICH_SCRIPTS } from "./djs.js";
+import { STARTER_DJS, starterUris } from "./starters.js";
 import {
-  CAP_MINUTES, BEAT_MS, IDLE_CLOSE_MS, VOICE_CENTS_PER_MINUTE, VOICE_MODEL, backendModel,
+  talkMinutes, TALK_MINUTES_CHOICES, TALK_MINUTES_NEW, BEAT_MS, IDLE_CLOSE_MS, VOICE_CENTS_PER_MINUTE, VOICE_MODEL, backendModel,
   houseDay, originCheck, contentTypeCheck, capFrom, CAP_RE, mintCap, parseToolCall,
   speakerRule, canonicalDevice, voicePrompt, backendPrompt,
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
 import { githubRepo, updateFacts, versionWords } from "./updates.js";
-import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, renewHouseKey } from "./settings.js";
+import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, readSeen, renewHouseKey } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
@@ -33,6 +34,7 @@ import {
   endlessOwed, endlessPageSteer, endlessPresets, endlessSlots, endlessStartFresh,
   endlessUpdate, forgetPreset, houseDjRoom, MAX_HOUSE_DJS, parseEndless, playEndless, readNoStart, retiredKey,
   nextPressWords, sleptThrough, startsOn, tabOwed, tabState, talkEndless, talkOn, toSaveKey, vibeHourWords,
+  waiting, NO_CURATOR, noCuratorWords, nudgeWatch,
 } from "./endless.js";
 import {
   askDay, askedTag, atWords, djPlaces, djSlotsExist, findDj, guestAlias,
@@ -42,7 +44,7 @@ import {
 } from "./house.js";
 import { SERVER_INFO, handleRpc, requestVersion, rpcError } from "./mcp.js";
 import { workWaiting } from "./waiting.js";
-import { curatorKind, sendWorkEvent, workSubscriptions } from "./curator-events.js";
+import { curatorKind, hourlySeen, noteCheckIn, sendWorkEvent, workSubscriptions } from "./curator-events.js";
 import { WATCH_FACTS, firstSet, helperSaw, setupFacts } from "./setup-watch.js";
 import {
   PAUSE_NOTE_KEY, PAUSE_NOTE_MS, configuredPlaylistId,
@@ -564,7 +566,7 @@ export async function handleRequest(request, env, ctx) {
       url.pathname === "/setup/restore" || url.pathname === "/setup/check" || url.pathname === "/setup/name" || url.pathname === "/setup/identify" ||
       url.pathname === "/setup/requests" || url.pathname === "/setup/curator" || url.pathname === "/setup/curator/wake" ||
       url.pathname === "/setup/curator/use" || url.pathname === "/setup/status" || url.pathname === "/setup/keys" || url.pathname === "/setup/updates" ||
-      url.pathname === "/setup/updates/on" || url.pathname === "/setup/endless" || url.pathname === "/setup/saved") {
+      url.pathname === "/setup/updates/on" || url.pathname === "/setup/endless" || url.pathname === "/setup/dj-preset" || url.pathname === "/setup/talk" || url.pathname === "/setup/saved") {
       // A SETUP KEY TOO SHORT (MC-34): the Deploy button's form takes any
       // password, and one under 24 characters keeps the door shut. Said
       // here, with the way out, rather than a bare 404 on a new house.
@@ -658,7 +660,10 @@ export async function handleRequest(request, env, ctx) {
       const curatorInfo = async (said = null, open = false) => {
         const token = String(env.REQUEST_ROUTINE_TOKEN ?? "");
         const at = await programsKV(env).get(CURATOR_SEEN_KEY, { type: "json" }).then((r) => Number(r?.at) || null).catch(() => null);
+        // The Work chat's hourly check, seen or not (finding 17, 2026-11-11).
+        const hourly = curatorKind(env) === "chatgpt" ? await hourlySeen(env) : null;
         return { connector: env.AGENT_SECRET ? `${url.origin}/mcp/${env.AGENT_SECRET}` : null,
+          hourly: hourly ? { at: hourly.at, fresh: hourly.fresh, words: atWords(houseClockWords(env, new Date(hourly.at).toISOString())) } : null,
           // The one curator the house rings (MC-31 6b): Claude's task or a
           // ChatGPT Work chat subscribed to its events.
           kind: curatorKind(env), subs: await workSubscriptions(env),
@@ -668,7 +673,18 @@ export async function handleRequest(request, env, ctx) {
           tokenHint: token.length > 32 ? `${token.slice(0, 21)}…${token.slice(-4)}` : null,
           tokenFromSecret: !!token && !(env.__keys ?? []).includes("REQUEST_ROUTINE_TOKEN"),
           seen: at ? atWords(houseClockWords(env, new Date(at).toISOString())) : null, seenAt: at || 0,
-          next: parseEndless(env)?.presets?.length ? null : "/setup/endless", said, open };
+          // DJ presets made before the curator (MC-40) are endless once it
+          // has checked in, and the guest DJ preset is the step left: said
+          // here, once, with the rule that flips (an asked set goes on Requests).
+          ...(() => {
+            const c = parseEndless(env), mine = (c?.presets ?? []).some((p) => !p.lane), lane = (c?.presets ?? []).some((p) => p.lane);
+            const handed = !!at && mine && !lane && endlessOnPage(env) && !waiting(env);
+            return { next: !c?.presets?.length || handed ? "/setup/endless" : null,
+              endlessNow: handed ? { requests: guestFor(env, "spotify")?.btn ?? null } : null,
+              // The ChatGPT page's third step (the test house run, 2026-11-10).
+              djPresets: (c?.presets ?? []).filter((p) => !p.lane && p.dj).map((p) => ({ btn: p.button, name: findDj(env, p.dj)?.name ?? p.dj })),
+              presetsWait: waiting(env) };
+          })(), said, open };
       };
       if (url.pathname === "/setup/curator" && request.method === "GET") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
@@ -683,9 +699,9 @@ export async function handleRequest(request, env, ctx) {
         const rungAt = Number(url.searchParams.get("at")) || 0;
         const since = url.searchParams.get("woke") === "1" && rungAt > Date.now() - 3600e3 && rungAt <= Date.now() + 60e3 ? rungAt : null;
         const said = view === "chatgpt"
-          ? (url.searchParams.get("saved") ? "Saved: ChatGPT is this house's curator. Now send it a test, to check it answers."
-            : url.searchParams.get("woke") === "1" ? "Sent. The Work chat runs its round within a minute, and this page shows it when it checks in. No need to stay: the checklist's Curator row ticks too."
-            : url.searchParams.get("woke") === "0" ? "Nothing answered: no Work chat is listening. Open it and paste its instructions again (step 2), so it subscribes." : null)
+          // The three steps say what was saved and sent (the owner, the test
+          // house run, 2026-11-10: "too busy"); only a test nobody heard is said.
+          ? (url.searchParams.get("woke") === "0" ? "Nothing answered: no Work chat is listening. Open it and paste its first note again (in the steps below), so it subscribes." : null)
           : url.searchParams.get("saved") ? "Saved. Now wake it once, to check it answers."
           : url.searchParams.get("woke") === "1" ? "Rung. It wakes and checks in within a minute or two, and this page shows it when it does. No need to stay: the checklist's Curator row ticks too."
           : url.searchParams.get("woke") === "0" ? "The task did not answer the ring. Check its id; or make a new token (Edit the task, API, Regenerate) and paste it under Change the task or its token." : null;
@@ -709,17 +725,69 @@ export async function handleRequest(request, env, ctx) {
         const own = cfg?.presets?.find((p) => !p.lane) ?? null;
         // Either curator (the practice install, 2026-10-19: a ChatGPT house
         // was told to set up the curator it had).
+        // THE LANE'S STEP (MC-40): a house that made its DJ presets on their
+        // own page has no guest DJ preset yet; this page adds it, once a
+        // curator has really checked in (the presets no longer wait).
+        const h = house(env);
         return { djs: endlessDjs(), made: !!cfg?.presets?.length, curator: !!curatorKind(env),
+          needsLane: !!cfg?.presets?.length && !lane, waits: waiting(env), fromFile: !!cfg && !endlessOnPage(env),
+          houseDjs: (cfg?.presets ?? []).filter((p) => !p.lane && p.dj).sort((a, b) => a.button - b.button)
+            .map((p) => ({ btn: p.button, name: findDj(env, p.dj)?.name ?? p.dj })),
+          taken: [...new Set([...(h.fixed ?? []), ...h.buttons].map((b) => b.btn).concat((cfg?.presets ?? []).map((p) => p.button)))],
           own: own ? { btn: own.button, name: findDj(env, own.dj)?.name ?? own.dj,
             href: env.PROGRAM_LIBRARY_KEY ? `/buttons/${env.PROGRAM_LIBRARY_KEY}/${own.dj}` : null } : null, lane: lane ? { btn: lane.button } : null,
           speaker: fallbackDevice(env) || null, requests: requestsButtons() };
       };
+      // ADD A DJ PRESET (MC-40): the numbers the house has spoken for, each
+      // with whose it is; the DJs who have a starter set and no preset yet;
+      // and whether the house still waits for a curator.
+      const djPresetInfo = async (justBtn = null, empty = false) => {
+        const cfg = parseEndless(env);
+        const fromFile = !!cfg && !endlessOnPage(env);
+        const h = house(env);
+        const taken = new Map();
+        for (const b of [...(h.fixed ?? []), ...h.buttons]) taken.set(b.btn, b.guest ? "Requests" : (b.name ?? "in use"));
+        for (const p of cfg?.presets ?? []) taken.set(p.button, p.lane ? "the guest DJ" : (findDj(env, p.dj)?.name ?? p.dj));
+        const made = (cfg?.presets ?? []).filter((p) => !p.lane && p.dj).sort((a, b) => a.button - b.button)
+          .map((p) => ({ btn: p.button, key: p.dj, name: findDj(env, p.dj)?.name ?? p.dj,
+            href: env.PROGRAM_LIBRARY_KEY ? `/buttons/${env.PROGRAM_LIBRARY_KEY}/${p.dj}` : null }));
+        const have = new Set(made.map((m) => m.key));
+        const numbers = Array.from({ length: 12 }, (_, i) => ({ n: i + 1, taken: taken.get(i + 1) ?? null }));
+        const just = justBtn != null ? made.find((m) => m.btn === justBtn) ?? null : null;
+        return { fromFile, ready: !!env.SPOTIFY_CLIENT_ID, made, numbers,
+          pick: numbers.find((x) => !x.taken && x.n >= 2)?.n ?? numbers.find((x) => !x.taken)?.n ?? null,
+          djs: STARTER_DJS.map((k) => findDj(env, k)).filter((d) => d && !have.has(d.key)).map((d) => ({ key: d.key, name: d.name, summary: d.summary })),
+          // No ENDLESS yet: it will wait unless a curator has checked in.
+          waits: cfg ? waiting(env) : !(await curatorSeenAt(env)), just, empty };
+      };
+      // TALK, AN EXTRA (MC-40): the owner's own OpenAI key and the minutes
+      // a day, on the setup page. A Worker secret of that name wins and is
+      // shown as it is.
+      const talkInfo = () => {
+        const key = String(env.OPENAI_API_KEY ?? "");
+        const given = (env.__keys ?? []).includes("OPENAI_API_KEY");
+        return { on: !!key, fromSecret: !!key && !given, hint: key && given ? `…${key.slice(-4)}` : null, minutes: talkMinutes(env),
+          choices: TALK_MINUTES_CHOICES, cents: VOICE_CENTS_PER_MINUTE, startAt: TALK_MINUTES_NEW };
+      };
+      if (url.pathname === "/setup/talk" && request.method === "GET") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const said = { on: "Talk is on: the Talk tab is in your house's app now.", minutes: "Saved.", off: "The key is out of your house, and the Talk tab is gone." }[url.searchParams.get("talk")] ?? null;
+        return setupPage({ state: "talk", talk: talkInfo(), flash: said });
+      }
+      if (url.pathname === "/setup/dj-preset" && request.method === "GET") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const madeN = Number(url.searchParams.get("made")) || null, gone = Number(url.searchParams.get("removed")) || null;
+        return setupPage({ state: "djpreset", djpreset: await djPresetInfo(madeN, url.searchParams.get("empty") === "1"),
+          flash: gone ? `Preset ${gone} is free again. Its playlist is still in your Spotify.` : null });
+      }
       if (url.pathname === "/setup/endless" && request.method === "GET") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
         const asked = url.searchParams.get("fresh");
         const info = endlessInfo();
-        return setupPage({ state: "endless", endless: { ...info, failed: !!asked && asked !== "asked", first: info.made ? await firstSet(env) : null },
-          flash: asked === "asked" ? "Made. The house DJ's first set is being written." :
+        const laneJust = url.searchParams.get("lane") === "made";
+        return setupPage({ state: "endless", endless: { ...info, laneJust, failed: !!asked && asked !== "asked", first: info.made && !laneJust ? await firstSet(env) : null },
+          flash: laneJust ? "Made: a playlist called Guest DJ is in your Spotify account now." :
+            asked === "asked" ? "Made. The house DJ's first set is being written." :
             asked ? "Made. The first set could not be asked for just now: open the DJ's page, below, and tap Start fresh." : null });
       }
       // THE HOUSE'S KEYS AND ITS SIGNED-IN BROWSERS (the locks review,
@@ -844,7 +912,11 @@ export async function handleRequest(request, env, ctx) {
       // CLAUDE OR CHATGPT: the house's address and the steps for both.
       if (url.pathname === "/setup/app" && request.method === "GET") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
-        return setupPage({ state: "assistant", assistant: { address: env.MCP_SECRET ? `${url.origin}/mcp/${env.MCP_SECRET}` : null } });
+        // Heard from yet (the test house run, 2026-11-10: the owner waited on
+        // this page for the tick, which only the checklist showed): until the
+        // first call, the page watches for it and goes back to the checklist.
+        const heard = await readSeen(env).then((s) => !!s?.connector).catch(() => false);
+        return setupPage({ state: "assistant", assistant: { heard, address: env.MCP_SECRET ? `${url.origin}/mcp/${env.MCP_SECRET}` : null } });
       }
       const zoneChoice = () => ({ current: zoneValid(env.HOUSE_TZ) ? env.HOUSE_TZ : null, fileSays: (env.__vars ?? {}).HOUSE_TZ ?? null });
       if (url.pathname === "/setup/timezone" && request.method === "GET") {
@@ -899,11 +971,125 @@ export async function handleRequest(request, env, ctx) {
         if (changed) { try { await programsKV(env).delete(CURATOR_SEEN_KEY); } catch { /* the checklist shows the old one */ } }
         return new Response(null, { status: 303, headers: { location: "/setup/curator?saved=1#done", "cache-control": "no-store" } });
       }
+      // TALK'S KEY AND MINUTES (MC-40). The key is TESTED before it is kept:
+      // the house asks OpenAI for the voice model with it, since a new
+      // account may not be let near that model, and a key that cannot use
+      // it would only fail later, on the Talk tab, with no reason given.
+      if (url.pathname === "/setup/talk") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const again = (why, status) => setupPage({ state: "talk", talk: talkInfo(), flash: why }, status);
+        const what = String(form?.get("do") ?? "");
+        const done = (code) => new Response(null, { status: 303, headers: { location: `/setup/talk?talk=${code}#done`, "cache-control": "no-store" } });
+        const mins = Number(form?.get("minutes"));
+        if (what === "minutes") {
+          if (!TALK_MINUTES_CHOICES.includes(mins)) return again("Choose the minutes from the list.", 400);
+          await choosePageSetting(env, "TALK_MINUTES", String(mins));
+          return done("minutes");
+        }
+        if (talkInfo().fromSecret) return again("This house's key is set as a Worker secret, so it is not changed here.", 409);
+        if (what === "remove") {
+          try { await giveHouseKey(env, "OPENAI_API_KEY", null); } catch { return again("That could not be done just now. Nothing was changed; try again in a moment.", 503); }
+          return done("off");
+        }
+        if (what !== "key") return again("Nothing was changed.", 400);
+        const key = String(form?.get("key") ?? "").trim();
+        if (!/^sk-[A-Za-z0-9_-]{20,290}$/.test(key)) return again("That does not look like an OpenAI key: it starts with sk- and is one long word. Copy it again from OpenAI's API keys page.", 400);
+        let ask = null;
+        try { ask = await fetch(`https://api.openai.com/v1/models/${VOICE_MODEL}`, { headers: { authorization: `Bearer ${key}` } }); } catch { ask = null; }
+        if (!ask || ask.status >= 500) return again("OpenAI could not be reached to test the key. Nothing was kept; try again in a minute.", 503);
+        if (ask.status === 401) return again("OpenAI did not accept that key. Nothing was kept: create a new key there and paste it again.", 400);
+        if (!ask.ok) {
+          return again(`OpenAI accepted the key, but it cannot use the voice model (${VOICE_MODEL}) yet. Nothing was kept. A new account ` +
+            "usually needs credit added first, and sometimes its organisation verified, on platform.openai.com.", 400);
+        }
+        try {
+          await giveHouseKey(env, "OPENAI_API_KEY", key);
+          // A house turning Talk on here starts at 30 minutes a day, unless it chose otherwise.
+          await choosePageSetting(env, "TALK_MINUTES", String(TALK_MINUTES_CHOICES.includes(mins) ? mins : TALK_MINUTES_NEW));
+        } catch { return again("The key could not be kept just now. Try again in a moment.", 503); }
+        return done("on");
+      }
+      // A DJ PRESET MADE, OR REMOVED (MC-40, tasks/mc40-dj-presets.md). Made:
+      // a private playlist named for the DJ, their starter set in it, and
+      // the preset added to the page's ENDLESS. In a house no curator has
+      // checked in with, the setting carries the word `waits`: the preset
+      // plays its songs and nothing tries to refill it. Where a curator
+      // works it is endless from its first press, the starter hour standing
+      // in for a first fresh set, so no run is spent.
+      if (url.pathname === "/setup/dj-preset") {
+        if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
+        const info = await djPresetInfo();
+        const again = (why, status) => setupPage({ state: "djpreset", djpreset: info, flash: why }, status);
+        if (info.fromFile) return again("This house's DJ presets are set in its own file.", 409);
+        const cfg = parseEndless(env);
+        const n = Number(form?.get("button"));
+        if (String(form?.get("do") ?? "") === "remove") {
+          const pre = (cfg?.presets ?? []).find((x) => !x.lane && x.button === n) ?? null;
+          if (!pre) return again("That preset is not a DJ's.", 400);
+          try {
+            await endlessUpdate(env, (st) => { forgetPreset(st, pre.button); return {}; });
+            await choosePageSetting(env, "ENDLESS", endlessJson(cfg, cfg.presets.filter((x) => x !== pre)));
+            await programsKV(env).put(retiredKey(pre.dj), JSON.stringify({ playlist: pre.playlist, button: pre.button, at: new Date().toISOString() }));
+            await programsKV(env).delete(toSaveKey(pre.button)).catch(() => {});
+          } catch { return again("That could not be done just now. Nothing was changed; try again in a moment.", 503); }
+          return new Response(null, { status: 303, headers: { location: `/setup/dj-preset?removed=${pre.button}`, "cache-control": "no-store" } });
+        }
+        const dj = info.djs.find((d) => d.key === String(form?.get("dj") ?? "")) ?? null;
+        if (!dj) {
+          const has = info.made.find((m) => m.key === String(form?.get("dj") ?? ""));
+          return has ? again(`${has.name} has preset ${has.btn} already.`, 409) : again("Choose a DJ.", 400);
+        }
+        if (!Number.isInteger(n) || n < 1 || n > 12) return again("Choose a preset number from 1 to 12.", 400);
+        const holds = info.numbers.find((x) => x.n === n)?.taken ?? null;
+        if (holds) return again(`Preset ${n} is taken (${holds}): choose another.`, 400);
+        if (!info.ready) return again("Set up the Spotify app and sign in to Spotify first: the house makes the playlist there.", 409);
+        // The playlist this DJ gave up, where there is one, so there is never
+        // a second list of the same name; else a new one, with the starter set.
+        let playlist = null, empty = false;
+        try {
+          const cat = catalogFor(withBudget(env, { remaining: 8 }), "spotify");
+          const kept = await programsKV(env).get(retiredKey(dj.key), { type: "json" }).catch(() => null);
+          if (kept?.playlist) { try { await cat.items(kept.playlist, null); playlist = kept.playlist; } catch { playlist = null; } }
+          if (!playlist) {
+            playlist = (await cat.createPlaylist({ name: dj.name, public: false, description: `${dj.name}, on preset ${n}.` }))?.id ?? null;
+            // Left out without a word if Spotify refuses: the page then says to ask the DJ for a set first.
+            if (playlist) { try { await cat.appendItems(playlist, starterUris(dj.key)); } catch { empty = true; } }
+          }
+        } catch { playlist = null; }
+        if (!playlist) return again("Spotify would not make the playlist just now. Is the house signed in to Spotify? Try again in a minute.", 503);
+        const base = cfg ?? { mode: "live", dailyRuns: 12, presets: [], ...(info.waits ? { waits: true } : {}) };
+        try {
+          await endlessUpdate(env, (st) => { forgetPreset(st, n); return {}; });
+          await choosePageSetting(env, "ENDLESS", endlessJson(base, [...base.presets, { button: n, dj: dj.key, playlist, hours: 4 }]));
+          await programsKV(env).put(toSaveKey(n), JSON.stringify({ dj: dj.key, playlist, at: new Date().toISOString() }));
+          await programsKV(env).delete(retiredKey(dj.key)).catch(() => {});
+        } catch { return again("The preset could not be kept just now. Nothing was changed; try again in a moment.", 503); }
+        return new Response(null, { status: 303, headers: { location: `/setup/dj-preset?made=${n}${empty ? "&empty=1" : ""}`, "cache-control": "no-store" } });
+      }
       if (url.pathname === "/setup/endless") {
         if (!(await isOwner(env, request))) return Response.redirect(new URL("/setup", url).toString(), 303);
         const again = (why, status) => setupPage({ state: "endless", endless: endlessInfo(), flash: why }, status);
-        if (parseEndless(env)?.presets?.length) return again("This house already has its DJ presets.", 409);
+        const has = parseEndless(env);
+        if (has?.presets?.some((p) => p.lane)) return again("This house already has its DJ presets.", 409);
         if (!curatorKind(env)) return again("Set up the curator first: it writes the endless DJs' sets.", 409);
+        // THE LANE'S STEP (MC-40): DJ presets are there already, made on
+        // their own page. The guest DJ preset is ADDED to the ENDLESS that
+        // is there, every preset and number kept.
+        if (has?.presets?.length) {
+          if (!endlessOnPage(env)) return again("This house's DJ presets are set in its own file.", 409);
+          if (waiting(env)) return again("Your curator has not checked in yet. Send it a test from its page first: your DJ presets become endless then, and the guest DJ preset can be made.", 409);
+          const laneN = Number(form?.get("lane"));
+          if (!Number.isInteger(laneN) || laneN < 1 || laneN > 12) return again("Choose a preset number from 1 to 12.", 400);
+          if (endlessInfo().taken.includes(laneN)) return again(`Preset ${laneN} already plays something of the house's: choose another.`, 400);
+          let guestPl;
+          try {
+            guestPl = await catalogFor(withBudget(env, { remaining: 4 }), "spotify").createPlaylist({ name: "Guest DJ", public: false, description: `Any DJ played endless, on preset ${laneN}.` });
+          } catch {
+            return again("Spotify would not make the playlist just now. Is the house signed in to Spotify? Try again in a minute.", 503);
+          }
+          await choosePageSetting(env, "ENDLESS", endlessJson(has, [...has.presets, { button: laneN, lane: true, playlist: guestPl.id, hours: 4 }]));
+          return new Response(null, { status: 303, headers: { location: "/setup/endless?lane=made", "cache-control": "no-store" } });
+        }
         const dj = endlessDjs().find((d) => d.key === String(form?.get("dj") ?? ""));
         const own = Number(form?.get("own")), lane = Number(form?.get("lane"));
         const taken = requestsButtons();
@@ -1525,7 +1711,7 @@ export async function handleRequest(request, env, ctx) {
       const lanBand = await lanBandP;
       watch?.lap("lan-band");
       return roomPage(renderRoom({
-        base, notesHref: `/notes/${key}`, now: barNow, lane, house: houseRows, quiet,
+        base, notesHref: `/notes/${key}`, now: barNow, lane, house: houseRows, quiet, waits: waiting(env),
         hkey, hflash: helperKeyFlash(env, url),
         defaultDevice: fallbackDevice(env), devices: parseRoomDevices(env), pick: pickNow?.name ?? null,
         playing, tiles: tileRows, owed, talk: talkOn(env), loaded: boxes.length > 0, played, guestsAt, paused: url.searchParams.get("paused"),
@@ -1840,7 +2026,9 @@ export async function handleRequest(request, env, ctx) {
             hflash: helperKeyFlash(env, url),
             base, speakers: shownSpeakers,
             ownKeys: houseKeys ? await ownPresetRows(env, endlessKeys) : null,
-            setupHref: houseKeys && env.SETUP_KEY && !parseEndless(env)?.presets?.length ? "/setup" : null,
+            // The invite is to a first DJ preset (MC-40): no number is named,
+            // since the owner picks any free one on that page.
+            setupHref: houseKeys && env.SETUP_KEY && !parseEndless(env)?.presets?.length ? "/setup/dj-preset" : null,
             playing: p ? { ...p, from: onPreset ? `${onPreset.autoplay ? "Spotify's pick, after " : ""}${np?.lane ? np.name : `preset ${onPreset.btn} (${onPreset.name})`}` : await playingFromFor(env, p),
               onPreset: !!onPreset, ...(np?.endless && !onPreset.autoplay ? { endless: true } : {}) } : null,
             playable: playableKeys(env, boxes, recs), endlessKeys,
@@ -2064,11 +2252,11 @@ export async function handleRequest(request, env, ctx) {
         if (request.method !== "GET") return roomRefuse(405, "The Talk page only answers GET.");
         let used = 0, usedSec = 0;
         try {
-          const d = await station(envB, "voice-day", { day: houseDay(env), cap_minutes: CAP_MINUTES });
+          const d = await station(envB, "voice-day", { day: houseDay(env), cap_minutes: talkMinutes(env) });
           used = d.used ?? 0; usedSec = d.used_sec ?? 0;
         } catch { used = 0; usedSec = 0; }
         return roomPage(renderTalk({
-          base, devices, defaultDevice, used, usedSec, cap: CAP_MINUTES, idleMs: IDLE_CLOSE_MS, beatMs: BEAT_MS,
+          base, devices, defaultDevice, used, usedSec, cap: talkMinutes(env), idleMs: IDLE_CLOSE_MS, beatMs: BEAT_MS,
           rateCents: VOICE_CENTS_PER_MINUTE, ...(await tabState(env)), hmark: await helperView(env),
           // Where a DJ's set asked by voice lands, when Talk files it (MC-36).
           asks: askDjOn(env) ? liveGuests(env) : null,
@@ -2097,7 +2285,13 @@ export async function handleRequest(request, env, ctx) {
         const cap = mintCap();
         let reserved;
         try {
-          reserved = await station(envB, "voice-reserve", { cap, day, cap_minutes: CAP_MINUTES });
+          // A KEY THE SETUP PAGE GAVE lives in the settings store and is laid
+          // on a request only: the Station's own env never has it, and its
+          // alarm is what hangs a call up at the day's cap. So it rides with
+          // the reserve, for the Station to keep (Codex, 2026-11-10). A
+          // Worker secret is in the Station's env already and is not sent.
+          reserved = await station(envB, "voice-reserve", { cap, day, cap_minutes: talkMinutes(env),
+            ...((env.__keys ?? []).includes("OPENAI_API_KEY") ? { close_key: env.OPENAI_API_KEY } : {}) });
         } catch { return say(503, { error: "The ledger did not answer. Try again in a moment." }); }
         if (!reserved.ok) {
           if (reserved.code === "cap") {
@@ -2202,7 +2396,7 @@ export async function handleRequest(request, env, ctx) {
       if (door === "beat") {
         // "Still here": the charge runs on, and the page learns the day's count.
         let beat;
-        try { beat = await station(envB, "voice-beat", { cap, cap_minutes: CAP_MINUTES }); }
+        try { beat = await station(envB, "voice-beat", { cap, cap_minutes: talkMinutes(env) }); }
         catch { return say(503, { error: "The ledger did not answer." }); }
         if (!beat.ok) {
           const over = beat.code === "over" || beat.code === "cap";
@@ -2219,10 +2413,10 @@ export async function handleRequest(request, env, ctx) {
         catch { return say(503, { error: "The ledger did not answer." }); }
         if (!settled.ok) return say(404, { error: "No such session." });
         let day = null;
-        try { day = await station(envB, "voice-day", { day: houseDay(env), cap_minutes: CAP_MINUTES }); } catch { day = null; }
+        try { day = await station(envB, "voice-day", { day: houseDay(env), cap_minutes: talkMinutes(env) }); } catch { day = null; }
         console.log(`talk:closed cap=${cap.slice(0, 8)} seconds=${settled.seconds ?? "?"} by=${settled.closed_by}${settled.note ? ` (${settled.note})` : ""}`);
         return say(200, { ok: true, minutes: settled.minutes, seconds: settled.seconds, closed_by: settled.closed_by,
-          used: day?.used ?? null, used_sec: day?.used_sec ?? null, cap_minutes: CAP_MINUTES, remaining: day?.remaining ?? null });
+          used: day?.used ?? null, used_sec: day?.used_sec ?? null, cap_minutes: talkMinutes(env), remaining: day?.remaining ?? null });
       }
 
       // door === "tool"
@@ -3337,7 +3531,11 @@ export async function handleRequest(request, env, ctx) {
       const slotsNow = doc ? endlessSlots(env, endlessCfg, doc) : [];
       const endlessP = slotsNow.find((x) => x.dj === slugKey) ?? null;
       const waitsFor = slotsNow.find((x) => x.queued === slugKey) ?? null;
-      if (doc) {
+      // WAITING FOR A CURATOR (MC-40): nothing here can make a set, so the
+      // page offers no swap, no new house DJ and no endless turn; a DJ
+      // preset is made on the setup page, with its starter hour.
+      const houseWaits = waiting(env);
+      if (doc && !houseWaits) {
         presetsOffer = { action: `${base}/${slugKey}/endless`, mine: endlessP?.button ?? null,
           waits: waitsFor ? waitsFor.button : null,
           slots: slotsNow.map((x) => ({ btn: x.button, name: x.name, dj: x.dj, queued: x.queued ? (findDj(env, x.queued)?.name ?? x.queued) : null })) };
@@ -3394,6 +3592,7 @@ export async function handleRequest(request, env, ctx) {
         // has happened since: the page says so and offers Play it now.
         const ns = !fresh && !onEndless ? await readNoStart(env, endlessP.button) : null;
         endless = { btn: endlessP.button, hours: endlessP.hours, action: `${base}/${slugKey}/endless`,
+          ...(houseWaits ? { waits: true } : {}),
           ...(ns?.device ? { nostart: { device: ns.device, asleep: !!ns.asleep, kind: speakerKind(env, ns.device) } } : {}),
           playing: onEndless && !fresh, until: bar?.until ?? null, last: !!bar?.last,
           now: onEndless && heard && playing ? { track: playing.track ?? null, artists: playing.artists || null, device: playing.device ?? null } : null,
@@ -3450,6 +3649,8 @@ export async function handleRequest(request, env, ctx) {
           "more-not-playing": `${dj.name} isn't playing right now. Press ${btnNow} on the remote first.`,
           "change-not-playing": `${dj.name} isn't playing right now. Press ${btnNow} on the remote first.`,
           "fresh-day-cap": cap, "more-day-cap": cap, "change-day-cap": cap,
+          // A house whose DJ presets wait for a curator (MC-40).
+          ...Object.fromEntries(["fresh", "more", "change", "put", "new", "lane"].map((w) => [`${w}-no-curator`, noCuratorWords(dj.name)])),
           "put-done": `${dj.name} is on preset ${n} now${other ? `, instead of ${other}` : ""}.${sw && other ? ` ${other} moved to preset ${sw}.` : ""} ` +
             `A fresh set is being made: press ${n} in a few minutes. Then save preset ${n} again on each speaker so the remote says ${dj.name} — the Speakers tab shows how.`,
           "put-done-nofresh": `${dj.name} is on preset ${n} now, but today's ${endlessCfg.dailyRuns} DJ runs are used up: ` +
@@ -3658,6 +3859,7 @@ export async function handleRequest(request, env, ctx) {
           } catch (e) {
             const m = String(e?.message ?? e);
             r = { status: /runs are used up/.test(m) ? "day-cap" : /limiting this account/.test(m) ? "throttled"
+              : m.includes(NO_CURATOR) ? "no-curator"
               : /steering works while|is not the one playing|names no DJ|took over/.test(m) ? "not-playing" : "failed" };
           }
         }
@@ -3780,6 +3982,7 @@ export async function handleRequest(request, env, ctx) {
         } catch (e) {
           const m = String(e?.message ?? e);
           return { status: /runs are used up/.test(m) ? "day-cap" : /limiting this account/.test(m) ? "throttled"
+            : m.includes(NO_CURATOR) ? "no-curator"
             : /steering works while|is not the one playing|names no DJ|took over/.test(m) ? "not-playing" : "failed" };
         }
       };
@@ -3811,7 +4014,10 @@ export async function handleRequest(request, env, ctx) {
         if (Number.isInteger(n)) q.set("n", String(n));
         const room = houseDjRoom(env, cfg);
         const queuedHere = state ? endlessSlots(env, cfg, state).some((x) => x.queued === slugKey) : false;
-        if (!room || who.needsWords || who.endless === false) out = { status: "not-here" };
+        // Not while the house waits for its curator (MC-40): a DJ preset is
+        // made on the setup page then, with its starter set.
+        if (waiting(env)) out = { status: "no-curator" };
+        else if (!room || who.needsWords || who.endless === false) out = { status: "not-here" };
         else if (p || queuedHere) out = { status: "mine" };
         else if (room.full) out = { status: "full" };
         else if (!room.free.includes(n)) out = { status: "taken" };
@@ -3880,7 +4086,7 @@ export async function handleRequest(request, env, ctx) {
               await endlessNoStart(env, p.button, null);
               // The next run of the watch looks, rather than the next idle
               // look up to half an hour on: a session is counted from then.
-              try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the idle look finds it */ }
+              await nudgeWatch(env);
             }
           } catch (e) {
             out.status = sleptThrough(e) ? "asleep" : "failed";
@@ -4257,7 +4463,7 @@ export async function handleRequest(request, env, ctx) {
       // leftover list (The Selector's six songs) ran out before it was seen.
       if (played !== "failed" && played !== "asleep" &&
           parseEndless(env)?.presets.some((p) => p.playlist === target.pl.id)) {
-        try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the idle look finds it */ }
+        await nudgeWatch(env);
       }
       // Redirect rather than render: a refresh must not start the room twice.
       // A guest's comes back to the presets page, which says what went wrong.
@@ -4848,6 +5054,7 @@ export async function handleRequest(request, env, ctx) {
     // The curator checking in (stampCurator): every run starts here.
     if (role === "agent" && batch.some((m) => m?.method === "tools/call" && m?.params?.name === "list_requests")) {
       await stampCurator(env);
+      await noteCheckIn(env);
     }
     // Subrequests are budgeted per Worker invocation, not per tool call, and a
     // batch runs many calls inside one. 40 of the free plan's 50 leaves room

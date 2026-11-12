@@ -981,48 +981,36 @@ export const TOOLS = [
   {
     name: "play_uris",
     description:
-      "Play an explicit, ordered list of track URIs on a device. This is the " +
-      "main tool: it plays exactly the tracks you chose, in the order you chose, " +
-      "so the sequencing decisions (era, pathway, where it builds) survive " +
-      "intact.\n\n" +
-      "THIS IS HOW YOU FULFIL PLAYLIST REQUESTS THE USER WANTS TO HEAR NOW. " +
-      "'Make a playlist', 'build a set', 'put together an introduction to X' — " +
-      "decide the tracklist yourself from your own knowledge, resolve each title " +
-      "with search_tracks, then call this. It plays immediately rather than being " +
-      "saved, which is the intended behaviour — use it when the user wants to " +
-      "HEAR something now, not to keep it. create_playlist exists for the other " +
-      "case: somewhere to keep a set, usually so a button can point at it. " +
-      "Never hand the job to Spotify's own generator — " +
-      "that engine is popularity-weighted and cannot express 'deep cuts', 'the " +
-      "1971-73 material', or 'start gentle and build'. Resolve the tracklist with " +
-      "search_tracks in one call, not search_track twelve times.\n\n" +
-      // TALK'S RULES IN THE CONNECTOR (MC-31 stage 1, 2026-10-16): the Claude
-      // app reads only the tools' descriptions, so the house rules Talk has in
-      // its prompt (voice.js backendPrompt) are said here too.
-      "A SET ASKED OF A DJ BY NAME IS NOT THIS TOOL in this house. It goes on the Requests preset with " +
-      "replace_playlist (`dj` and `ask`) and is started with play_playlist, so the preset holds it, More like " +
-      "this follows the DJ and \"keep it\" (keep_set) can keep it. This tool is for a set with NO DJ named — " +
-      "and never for anything asked ENDLESS, which is play_endless.\n\n" +
-      "ROUTING, when a request could be either: does the user want it playing " +
-      "NOW, or waiting for LATER? Later — a named button or preset, 'for " +
-      "tomorrow morning', 'have it ready', 'change what button 1 plays' — is " +
-      "replace_playlist, and you should not start playback. Now is this tool. " +
-      "Both ('put it on button 1 and play it') means replace_playlist first and " +
-      "then play_playlist — NOT this tool, because a button that was just " +
-      "written should be started as the playlist it now is.\n\n" +
-      "NOT THIS TOOL when the user names a playlist that already exists ('put " +
-      "Vibe on', 'play button 2 again') — that is play_playlist. And NEVER this " +
-      "tool when they are about to save a WiiM preset: this leaves `context` " +
-      "null, so the slot would pin one track and then hand over to Spotify's " +
-      "autoplay. Use play_playlist for anything preset-related.\n\n" +
-      "For a target length ('make it 90 minutes'), use the duration returned by " +
-      "search_tracks and add them up as you go. Aim within about five minutes of " +
-      "the target and say what the total came to.\n\n" +
-      "DO NOT call list_devices first. The house speaker is already configured as " +
-      "the default and this tool resolves partial names itself, so 'the kitchen' " +
-      "or 'master bedroom' can be passed straight through. Every extra call costs " +
-      "the user an approval tap on their phone. Reach for list_devices only when " +
-      "this tool has already come back saying the name did not match.",
+      "Play a list of tracks you chose on a speaker, now, in the order you chose. Use it when the user " +
+      "wants to hear something now and names no DJ: 'play me some…', 'make a playlist of…', 'put together " +
+      "an introduction to X'. Decide the tracklist yourself from your own knowledge, resolve the titles " +
+      "with search_tracks in one call, then call this. The order survives, so the sequencing decisions " +
+      "(era, pathway, where it builds) do too. The tracks play as a loose queue: nothing is saved.\n\n" +
+      // THE HOUSE'S RULES IN THE CONNECTOR (MC-31 stage 1, 2026-10-16): the Claude
+      // app reads only the tools' descriptions, so the rules Talk has in its
+      // prompt (voice.js backendPrompt) are said here too. Said calmly, the rule
+      // first (the test house run, findings 5, 6 and 12, 2026-11-11: ChatGPT
+      // flagged the capitals as orders, and played a DJ's set as a loose queue).
+      "A set asked of a DJ by name is not this tool. 'Vibe, play me 20 minutes' or 'Pub Rock, something for " +
+      "a Friday night' is get_dj, then replace_playlist onto the Requests preset with `dj`, `ask` and " +
+      "`play: true`: the house writes the set there and starts it, so the preset holds it, More like this " +
+      "follows the DJ and \"keep it\" (keep_set) can keep it. A loose queue can do none of that. This tool is " +
+      "for a set with no DJ named; anything asked endless is play_endless.\n\n" +
+      "Which tool, when it could be several. A new set to hear now, no DJ named: this tool. A new set for a " +
+      "named button or preset, or for later ('for tomorrow morning', 'have it ready', 'change what button 1 " +
+      "plays'): replace_playlist, with `play: true` there if they also want to hear it now. A playlist or a " +
+      "button that already exists ('put Vibe on', 'play button 2 again'): play_playlist.\n\n" +
+      "A loose queue is not for saving a WiiM preset: this leaves `context` null, so a preset saved while " +
+      "it plays would pin one track and then hand over to Spotify's autoplay. Use play_playlist for " +
+      "anything preset-related.\n\n" +
+      "Choose the songs yourself rather than handing the job to Spotify's own generator: that engine is " +
+      "popularity-weighted and cannot express 'deep cuts', 'the 1971-73 material', or 'start gentle and " +
+      "build'.\n\n" +
+      "For a target length ('make it 90 minutes'), use the duration returned by search_tracks and add them " +
+      "up as you go. Aim within about five minutes of the target and say what the total came to.\n\n" +
+      "`device` takes a partial name, so 'the kitchen' or 'master bedroom' can be passed straight through; " +
+      "left out, the house's usual speaker is used. list_devices is only needed when this tool has come " +
+      "back saying the name did not match.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1036,6 +1024,13 @@ export const TOOLS = [
           description:
             "Device name, partial and case-insensitive. Defaults to the WiiM.",
         },
+        dj: {
+          type: "string",
+          description:
+            "The DJ the set was asked of, if one was named. The house does not play a DJ's set as a " +
+            "loose queue: with a DJ here nothing plays, and the answer says how to send the set " +
+            "(replace_playlist with dj, ask and play: true).",
+        },
       },
       required: ["uris"],
     },
@@ -1043,26 +1038,22 @@ export const TOOLS = [
   {
     name: "play_playlist",
     description:
-      "Play a SAVED playlist as a playlist. Use it when the user names one that " +
-      "already exists or a button — 'put Vibe on', 'play button 2 again', " +
-      "'play The Librarian on the Pro Plus', 'start Hank's playlist'.\n\n" +
-      "THE DIFFERENCE FROM play_uris IS INAUDIBLE AND MATTERS. play_uris hands " +
-      "the speaker a bare list of tracks; this hands over the playlist itself. " +
-      "Same songs, same order, no way to hear the difference. But a WiiM preset " +
-      "snapshots whatever is being handed over: saved during play_uris it pins " +
-      "ONE TRACK and then falls through to Spotify's autoplay, and saved during " +
-      "this one it stores a pointer, so the button keeps playing whatever is " +
-      "written into that playlist later. That pointer is the whole mechanism " +
-      "behind the physical buttons.\n\n" +
-      "SO: whenever the user is about to save or re-save a preset, or says " +
-      "anything about setting a button up, USE THIS AND NOT play_uris.\n\n" +
-      "IT DOES NOT CURATE. It plays what is already saved, unchanged. To build " +
-      "something new, choose the tracks yourself and use play_uris to hear it now " +
-      "or replace_playlist to load a button for later. 'Play Vibe' means this " +
-      "tool; 'Vibe, give me an hour' means get_dj and a set of your own.\n\n" +
-      "Shuffle is switched off first. Every playlist here is sequenced — a " +
-      "writer's notes follow the set in order — so shuffle is not a user " +
-      "preference worth preserving.",
+      "Play a saved playlist as a playlist. Use it when the user names one that already exists, or a " +
+      "button: 'put Vibe on', 'play button 2 again', 'play The Librarian on the Pro Plus', 'start Hank's " +
+      "playlist'.\n\n" +
+      "How it differs from play_uris cannot be heard, and it matters. play_uris hands the speaker a loose " +
+      "list of tracks; this hands over the playlist itself. Same songs, same order. But a WiiM preset " +
+      "snapshots whatever is being handed over: saved during play_uris it pins one track and then falls " +
+      "through to Spotify's autoplay, and saved during this one it stores a pointer, so the button keeps " +
+      "playing whatever is written into that playlist later. That pointer is the whole mechanism behind the " +
+      "physical buttons. So whenever the user is about to save or re-save a preset, or says anything about " +
+      "setting a button up, use this and not play_uris.\n\n" +
+      "It does not curate: it plays what is already saved, unchanged. To build something new, choose the " +
+      "tracks yourself: play_uris to hear a set with no DJ named, replace_playlist to put a set on a button " +
+      "or to write a DJ's set (with `play: true` to hear it at once). 'Play Vibe' means this tool; 'Vibe, " +
+      "give me an hour' means get_dj and a set of your own.\n\n" +
+      "Shuffle is switched off first. Every playlist here is sequenced (a writer's notes follow the set in " +
+      "order), so shuffle is not a user preference worth preserving.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1120,90 +1111,76 @@ export const TOOLS = [
   {
     name: "replace_playlist",
     description:
-      "Replace the entire contents of a saved playlist with tracks you chose. " +
-      "It loads music for later and starts nothing.\n\n" +
-      "NOT THIS TOOL if the user wants anything WRITTEN DOWN as well as records " +
-      "— a program, a survey, notes, an essay, sources, a permanent link. TWO " +
-      "DJs publish: make_librarian_program for a SURVEY of a " +
-      "subject with a boundary (an introduction to a label, an artist in one " +
-      "period, a scene, a year), make_gatefold_program for SLEEVE " +
-      "NOTES (runs of consecutive tracks off albums made as albums, one " +
-      "record per section). Each writes its own DJ's button " +
-      "AND publishes a page. This tool is for music with nothing written " +
-      "down.\n\n" +
-      "IF THE USER ASKS AFTERWARDS WHERE THE NOTES ARE, the answer is never " +
-      "'that DJ does not publish' — both of those DJs do. It means this tool was " +
-      "the wrong one for the request. Read the set back with read_playlist and " +
-      "publish it as a program from those exact tracks; nothing is lost.\n\n" +
-      "A request naming a button, a preset, or a later time belongs here whenever " +
-      "the user wants something NEW there — 'generate a new playlist for preset " +
-      "1', 'make me a playlist for tomorrow on button one', 'change what the " +
-      "preset plays'. The words 'make', 'generate' and 'playlist' do NOT mean " +
-      "play now when a button or preset is named.\n\n" +
-      "If they want to ADD to what is already on that button — 'another hour', " +
-      "'keep it going', 'add some X' — use append_to_playlist instead. New set " +
-      "here; more of the same set there.\n\n" +
-      "AFTERWARDS, STOP. Do not call play_uris, and do not start playback in any " +
-      "other way. The user will press the button when they want it. Play only if " +
-      "they separately and explicitly asked to hear it now ('put it on button 1 " +
-      "AND play it') — wanting a playlist made is not asking to hear it. When in " +
-      "doubt, load it and say it is ready.\n\n" +
-      "Why this reaches physical buttons: a WiiM preset stores a pointer to a " +
-      "playlist, not a copy of it, and reads it fresh on every press (confirmed " +
-      "on the device). So rewriting the playlist changes what the button plays " +
-      "without anyone touching the hardware.\n\n" +
-      "DESTRUCTIVE, but reversible: the previous contents are saved first and " +
-      "restore_playlist can put them back for 90 days. Still say which playlist " +
-      "you are about to overwrite before doing it, unless the user already named " +
-      "it. To ADD without losing anything, use append_to_playlist instead — and " +
-      "if you did not write the current contents yourself, read_playlist first " +
-      "so you can say what is about to be lost.\n\n" +
-      "If the speaker is ALREADY playing the playlist you are about to rewrite, " +
-      "the running session follows the new contents instead of waiting for the " +
-      "button — the music will change on its own. That is Spotify following the " +
-      "playlist, not this tool starting playback. The result says so when it " +
-      "happens; pass it on, because it looks like the tool played something.\n\n" +
-      "IF THE USER NAMES A DJ, call get_dj first and curate as them. Their brief decides what goes in, how long it runs and how it is sequenced.\n\n" +
-      "A SET NAMING A DJ (`dj`) IS COUNTED by the house against that DJ's rules, as the curator's are: the same " +
-      "recording twice, the same song back to back, one act's song twice, and the DJ's own spacing. A set that breaks one " +
-      "is sent back once, with the songs named and nothing written: reorder or swap them and call again, without asking " +
-      "the listener. The next call is written as sent, and `written_as_sent` names what still breaks.\n\n" +
-      "CURATION — the whole reason this server exists. Decide the tracklist " +
-      "yourself from your own knowledge. Never fall back on an artist's " +
-      "best-known songs to fill a slot, and never hand the selection to " +
-      "Spotify's own engine, which is popularity-weighted and cannot express " +
-      "what these requests actually ask for.\n\n" +
-      "When the user says rare, obscure, deep cuts, b-sides, or unknown, the " +
-      "famous songs are WRONG ANSWERS, not safe ones. Rare Prince is not 'Purple " +
-      "Rain'; obscure Dutch 60s-80s is not 'Radar Love', 'Venus' or 'Hocus " +
-      "Pocus'. If a track is the first thing anyone would name for that artist, " +
-      "it disqualifies itself. Reach for album tracks, singles that did not " +
-      "chart, and the records only someone who knows the catalogue would pick — " +
-      "and if you cannot name enough, say so rather than padding with hits.\n\n" +
-      "AN INTRODUCTION IS THE OPPOSITE, and the distinction matters more than it " +
-      "looks. 'An introduction to X', 'get me into X', 'where do I start with X' " +
-      "asks for a MAP, and a map needs its landmarks. Play the records that " +
-      "explain why the artist mattered, even — especially — the famous ones. " +
-      "Leaving them out to seem knowledgeable produces a set that is useless for " +
-      "its actual purpose. Sequence it so it teaches: roughly chronological, or " +
-      "grouped so each track earns the next.\n\n" +
-      "'EARLY' IS AMBIGUOUS, so read which one is meant. 'Early Doe Maar' meant " +
-      "before they were famous — a rarity request. 'Early Prince' means the " +
-      "period, and an introduction to it that omits 'I Wanna Be Your Lover' or " +
-      "'Dirty Mind' is not an introduction. When a period word sits next to " +
-      "'introduction', the introduction wins. If it is genuinely unclear, say " +
-      "which reading you took.\n\n" +
-      "Honour the counts and the shape asked for: six of one and six of another " +
-      "means exactly that, and a named decade means tracks from it. Resolve the " +
-      "list with search_tracks in one call, check each result is the recording " +
-      "you meant, and say what you chose and why. Order survives.\n\n" +
+      "Replace the entire contents of a saved playlist with tracks you chose. This is how a set gets onto a " +
+      "button: a WiiM preset stores a pointer to a playlist, not a copy of it, and reads it fresh on every " +
+      "press (confirmed on the device), so rewriting the playlist changes what the button plays without " +
+      "anyone touching the hardware.\n\n" +
+      // NOW OR LATER, IN THE ONE CALL (the test house run, finding 6, 2026-11-11:
+      // "play me" was written and not played, the old words being "AFTERWARDS,
+      // STOP"). The house starts it when asked to; the words say which is which.
+      "Now or later? When the user asked to hear the set ('play me…', 'put on…', 'I want to hear…'), pass " +
+      "`play: true`: the house starts the playlist on the speaker as soon as it is written, in this one " +
+      "call. When they asked for it to be ready for later (a named button or preset, 'for tomorrow " +
+      "morning', 'have it ready', 'change what button 1 plays'), leave `play` out: nothing starts, and you " +
+      "say it is ready. The words 'make', 'generate' and 'playlist' beside a named button or preset mean " +
+      "later. A playlist that was just written is started as the playlist it now is (`play` here, or " +
+      "play_playlist), not with play_uris.\n\n" +
       // Talk's "Where a set goes" (voice.js), for the Claude app (MC-31 stage 1).
-      "IN THIS HOUSE A SET ASKED OF A DJ BY NAME goes on the Requests preset for its service — " +
-      "\"guest on spotify\" or \"guest on tidal\" (the requests presets; get_dj names their numbers) — replacing whoever's set is there " +
-      "(read_playlist names them: say whose set it replaces), with `dj` and `ask`. Then play_playlist it " +
-      "if they want it now. A DJ's own endless preset is never written with a set. While an endless DJ or the " +
-      "program on the requests preset plays, a direction (\"more upbeat\", \"no ballads\") is steer_endless, never this; " +
-      "a DJ or an artist asked ENDLESS is play_endless.",
+      "A set asked of a DJ by name ('Vibe, play me 20 minutes', 'Hank, an hour for Friday') goes on the " +
+      "Requests preset for its service — \"guest on spotify\" or \"guest on tidal\" (the requests presets; " +
+      "get_dj names their numbers) — with `dj` and `ask`, replacing whoever's set is there (read_playlist " +
+      "names them: say whose set it replaces). Call get_dj first and curate as them: their brief decides " +
+      "what goes in, how long it runs and how it is sequenced. 'Play me' asked of a DJ is this tool with " +
+      "`play: true`, so the preset holds the set, More like this follows the DJ and \"keep it\" (keep_set) " +
+      "can keep it.\n\n" +
+      "A set naming a DJ (`dj`) is counted by the house against that DJ's rules, as the curator's are: the " +
+      "same recording twice, the same song back to back, one act's song twice, and the DJ's own spacing. A " +
+      "set that breaks one is sent back once, with the songs named and nothing written. That is a note for " +
+      "you, not a question for the listener: reorder or swap the songs and call again. The next call is " +
+      "written as sent, and `written_as_sent` names what still breaks.\n\n" +
+      "A DJ's own endless preset is never written with a set: the house keeps it going itself. While an " +
+      "endless DJ or the program on the requests preset plays, a direction (\"more upbeat\", \"no ballads\") is " +
+      "steer_endless, never this; a DJ or an artist asked endless is play_endless.\n\n" +
+      "New, or more of the same? To add to what is already on a button ('another hour', 'keep it going', " +
+      "'add some X'), use append_to_playlist: a new set here, more of the same set there.\n\n" +
+      "This tool is for music with nothing written down. When the user wants anything written as well as " +
+      "records (a program, a survey, notes, an essay, sources, a permanent link), two DJs publish: " +
+      "make_librarian_program for a survey of a subject with a boundary (an introduction to a label, an " +
+      "artist in one period, a scene, a year), make_gatefold_program for sleeve notes (runs of consecutive " +
+      "tracks off albums made as albums, one record per section). Each writes its own DJ's button and " +
+      "publishes a page. If the user asks afterwards where the notes are, the answer is never 'that DJ does " +
+      "not publish' (both of those DJs do): it means this tool was the wrong one for the request. Read the " +
+      "set back with read_playlist and publish it as a program from those exact tracks; nothing is lost.\n\n" +
+      "It overwrites, and it can be undone: the previous contents are saved first and restore_playlist can " +
+      "put them back for 90 days. Still say which playlist you are about to overwrite before doing it, " +
+      "unless the user already named it, and if you did not write the current contents yourself, " +
+      "read_playlist first so you can say what is about to be replaced.\n\n" +
+      "If the speaker is already playing the playlist you are about to rewrite, the running session follows " +
+      "the new contents instead of waiting for the button: the music changes on its own. That is Spotify " +
+      "following the playlist, not this tool starting playback. The result says so when it happens; pass it " +
+      "on, because it looks like the tool played something.\n\n" +
+      "Curation is the whole reason this server exists. Decide the tracklist yourself from your own " +
+      "knowledge. Never fall back on an artist's best-known songs to fill a slot, and never hand the " +
+      "selection to Spotify's own engine, which is popularity-weighted and cannot express what these " +
+      "requests actually ask for.\n\n" +
+      "When the user says rare, obscure, deep cuts, b-sides, or unknown, the famous songs are wrong " +
+      "answers, not safe ones. Rare Prince is not 'Purple Rain'; obscure Dutch 60s-80s is not 'Radar Love', " +
+      "'Venus' or 'Hocus Pocus'. If a track is the first thing anyone would name for that artist, it " +
+      "disqualifies itself. Reach for album tracks, singles that did not chart, and the records only " +
+      "someone who knows the catalogue would pick, and if you cannot name enough, say so rather than " +
+      "padding with hits.\n\n" +
+      "An introduction is the opposite, and the distinction matters more than it looks. 'An introduction to " +
+      "X', 'get me into X', 'where do I start with X' asks for a map, and a map needs its landmarks. Play " +
+      "the records that explain why the artist mattered, even (especially) the famous ones. Leaving them " +
+      "out to seem knowledgeable produces a set that is useless for its actual purpose. Sequence it so it " +
+      "teaches: roughly chronological, or grouped so each track earns the next.\n\n" +
+      "'Early' is ambiguous, so read which one is meant. 'Early Doe Maar' meant before they were famous, a " +
+      "rarity request. 'Early Prince' means the period, and an introduction to it that omits 'I Wanna Be " +
+      "Your Lover' or 'Dirty Mind' is not an introduction. When a period word sits next to 'introduction', " +
+      "the introduction wins. If it is genuinely unclear, say which reading you took.\n\n" +
+      "Honour the counts and the shape asked for: six of one and six of another means exactly that, and a " +
+      "named decade means tracks from it. Resolve the list with search_tracks in one call, check each " +
+      "result is the recording you meant, and say what you chose and why. Order survives.",
     inputSchema: {
       type: "object",
       properties: {
@@ -1238,6 +1215,17 @@ export const TOOLS = [
             "The DJ the set was asked OF, when the user named one ('Vibe, an easy hour') and you " +
             "curated as them (get_dj first). The requests preset then names them as whose set it is, " +
             "and More like this follows their brief. Omit when no DJ was named — never pick one.",
+        },
+        play: {
+          type: "boolean",
+          description:
+            "true when the user asked to hear the set now ('play me…', 'put on…'): the house starts " +
+            "the playlist on the speaker once it is written. Leave out when the set is for later.",
+        },
+        device: {
+          type: "string",
+          description:
+            "With `play`: the speaker, by name (partial is fine). Left out, the house's usual speaker.",
         },
       },
       required: ["playlist", "uris"],
@@ -2395,6 +2383,12 @@ export function voiceFunctions(env) {
       // voice settles no listener request, as it has no fulfill_request.
       if (t.name === "play_archive" && parameters?.properties?.request_id) {
         const { request_id: _r, ...rest } = parameters.properties;
+        parameters = { ...parameters, properties: rest };
+      }
+      // replace_playlist's `play` and its `device` are the connector's alone
+      // (2026-11-11): the voice starts music through its own speaker rule.
+      if (t.name === "replace_playlist" && parameters?.properties?.play) {
+        const { play: _p, device: _d, ...rest } = parameters.properties;
         parameters = { ...parameters, properties: rest };
       }
       const brief = ask.length && t.name === "replace_playlist" ? VOICE_BRIEFS.replace_playlist_asks : VOICE_BRIEFS[t.name];

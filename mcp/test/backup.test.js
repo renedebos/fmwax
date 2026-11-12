@@ -92,7 +92,7 @@ test("the check asks each part now and says what to do", async () => {
     for (const part of ["The house(&#39;|')s storage", "The request ledger", "The key-value stores", "Spotify", "Claude or ChatGPT"]) {
       assert.match(html, new RegExp(part));
     }
-    assert.match(html, /It has never called: add the house to Claude or ChatGPT/);
+    assert.match(html, /It has never called: connect Claude or ChatGPT/);
     assert.doesNotMatch(html, /The home helper/, "a helper that never ran is not missed");
   } finally { f.restore(); }
 });

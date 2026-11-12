@@ -154,6 +154,8 @@ export async function subscribeWork(env, params) {
   // one posted to on every ring. The Work chat refreshes its own, so it is
   // never the oldest for long.
   await writeSubs(env, subs.slice(-SUBS_MAX));
+  // A chat that just subscribed may look at once: not the hourly check.
+  await noteRung(env);
   return { body: { id, refreshBefore, cursor: null, truncated: false } };
 }
 
@@ -190,7 +192,41 @@ export async function sendWorkEvent(env, workId, again = "") {
   if (gone.length) {
     try { await writeSubs(env, (await readSubs(env)).filter((s) => !gone.includes(s.id))); } catch { /* sent to again, refused again */ }
   }
+  if (heard) await noteRung(env);
   return heard;
+}
+
+// THE HOURLY CHECK, SEEN (the test house run, finding 17, 2026-11-11: the
+// owner missed the Work chat's hourly note, and every row was ticked all the
+// same). The house cannot see ChatGPT's scheduled tasks, but it can tell
+// their calls apart: an event, or a chat just subscribing, is a reason to
+// call that the house gave; a check-in with neither in the minutes before it
+// came by the clock. That one is stamped, and the setup pages tick from it.
+export const RUNG_KEY = "events:rung";
+export const HOURLY_KEY = "curator:hourly";
+// How long after a reason to call a check-in is still its answer (measured
+// 2026-10-19: 17 to 40 seconds; a long job may look again when it ends).
+export const RUNG_WINDOW_MS = 15 * 60 * 1000;
+// Two missed hours: the task is gone, paused, or the plan at its limit.
+export const HOURLY_QUIET_MS = 150 * 60 * 1000;
+async function noteRung(env, now = Date.now()) {
+  try { await programsKV(env).put(RUNG_KEY, JSON.stringify({ at: now })); } catch { /* the next check-in may read as hourly: harmless once */ }
+}
+// Called at each of the ChatGPT curator's check-ins (routes.js, beside stampCurator).
+export async function noteCheckIn(env, now = Date.now()) {
+  if (curatorKind(env) !== "chatgpt") return false;
+  let rung = 0;
+  try { rung = Number((await programsKV(env).get(RUNG_KEY, { type: "json" }))?.at) || 0; } catch { return false; }
+  if (now - rung < RUNG_WINDOW_MS) return false;
+  try { await programsKV(env).put(HOURLY_KEY, JSON.stringify({ at: now })); } catch { return false; }
+  return true;
+}
+// When the hourly check was last seen, or null; `fresh` while it keeps coming.
+export async function hourlySeen(env, now = Date.now()) {
+  try {
+    const at = Number((await programsKV(env).get(HOURLY_KEY, { type: "json" }))?.at) || 0;
+    return at ? { at, fresh: now - at < HOURLY_QUIET_MS } : null;
+  } catch { return null; }
 }
 
 // For the pages and list_requests: how many subscriptions are live, and when

@@ -7,7 +7,7 @@
 // Keys set as Worker secrets (a terminal install, the owner's) are not in
 // the file: they live in Cloudflare and are never read back. Neither is who
 // owns the house: a restore is done by a signed-in owner and keeps them.
-import { GIVEN_KEYS, MADE_KEYS, PAGE_SETTINGS, SETTINGS_READ_MS, forgetLastKnown, houseFetch, readSeen } from "./settings.js";
+import { BACKUP_KEYS, PAGE_SETTINGS, SETTINGS_READ_MS, forgetLastKnown, houseFetch, readSeen } from "./settings.js";
 import { CURATOR_QUIET_MS, CURATOR_SEEN_KEY, nameDevice, programsKV, spotify, spotifyLogin, tokensKV, withBudget } from "./services.js";
 import { station } from "./station.js";
 import { parseButtons } from "./house.js";
@@ -41,7 +41,8 @@ async function speakerNames(env) {
 export async function makeBackup(env, host) {
   const doc = await (await houseFetch(env, "/settings")).json();
   return { kind: BACKUP_KIND, version: 1, made_at: new Date().toISOString(), host,
-    page: pick(doc?.page, PAGE_SETTINGS), keys: pick(doc?.keys, [...MADE_KEYS, ...GIVEN_KEYS]),
+    // The OpenAI key stays out of the file (settings.js BACKUP_KEYS).
+    page: pick(doc?.page, PAGE_SETTINGS), keys: pick(doc?.keys, BACKUP_KEYS),
     speakers: await speakerNames(env).catch(() => ({})) };
 }
 
@@ -70,7 +71,7 @@ export function readBackup(text) {
   const page = b.page && typeof b.page === "object" ? b.page : {};
   const keys = b.keys && typeof b.keys === "object" ? b.keys : {};
   const badName = [...Object.keys(page).filter((n) => !PAGE_SETTINGS.includes(n)),
-    ...Object.keys(keys).filter((n) => ![...MADE_KEYS, ...GIVEN_KEYS].includes(n))];
+    ...Object.keys(keys).filter((n) => !BACKUP_KEYS.includes(n))];
   if (badName.length) return { why: `The backup names settings this house does not have (${badName.slice(0, 3).join(", ")}). Nothing changed.` };
   const shape = (n, v) => typeof v === "string" && (n === "SPOTIFY_CLIENT_ID" ? /^[0-9a-f]{32}$/i.test(v)
     : n === "REQUEST_ROUTINE_TOKEN" ? /^[A-Za-z0-9_-]{20,300}$/.test(v) : /^[A-Za-z0-9_-]{16,128}$/.test(v));
@@ -141,7 +142,7 @@ export async function checkHouse(env, now = Date.now()) {
   const seen = await readSeen(env);
   const age = (iso) => (iso ? now - Date.parse(iso) : Infinity);
   rows.push(!seen.connector ? { title: "Claude or ChatGPT", state: "todo",
-    detail: "It has never called: add the house to Claude or ChatGPT, as the checklist's step says." }
+    detail: "It has never called: connect Claude or ChatGPT, as the checklist's step says." }
     : { title: "Claude or ChatGPT", state: age(seen.connector) > 7 * 86400000 ? "due" : "done",
       detail: age(seen.connector) > 7 * 86400000 ? "No call for over a week. If it says it cannot reach the house, remove the house from it and add it again with the address on the checklist."
         : "It has called this week" });

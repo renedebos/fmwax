@@ -13,9 +13,9 @@ Without it, your house can't see what a WiiM has saved, so the setup page's pres
 
 ## What you need
 
-A computer at home, on the same Wi-Fi as your WiiMs, that is often switched on: a Mac, a Windows PC, a Linux computer or Raspberry Pi, or a Chromebook with Linux turned on. It needs **Node.js**, installed as in [Install from a terminal](terminal.md#what-you-need).
+A computer at home, on the same Wi-Fi as your WiiMs: a Mac, a Windows PC, a Linux computer or Raspberry Pi, or a Chromebook with Linux turned on. It needs **Node.js**, installed as in [Install from a terminal](terminal.md#what-you-need).
 
-The helper starts when you sign in to that computer, and works while the computer is awake. A Raspberry Pi or other Linux computer can run it from the moment it starts.
+The helper starts when you sign in to that computer, and works while the computer is awake. It doesn't need to stay on: while it is off, your house simply does without it. A Raspberry Pi or other Linux computer can run it from the moment it starts.
 
 ## Set it up
 

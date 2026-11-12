@@ -43,7 +43,9 @@ test("the real object makes the house's keys once, keeps a given one, and refuse
   expect(doc2.keys.MCP_SECRET).toBe(doc1.keys.MCP_SECRET);
   expect(doc1.keys.MCP_SECRET).toMatch(/^[A-Za-z0-9_-]{32}$/);
   expect((await keys({ set: { SPOTIFY_CLIENT_ID: "0123456789abcdef0123456789abcdef" } })).status).toBe(200);
-  expect((await keys({ set: { OPENAI_API_KEY: "x" } })).status).toBe(400);
+  // Talk's key is one the owner may give since MC-40 (the setup page's Talk step); a name the house has no use for is still refused.
+  expect((await keys({ set: { OPENAI_API_KEY: "sk-test-0123456789abcdef0123" } })).status).toBe(200);
+  expect((await keys({ set: { SOMEONE_ELSES_SECRET: "x" } })).status).toBe(400);
 });
 });
 

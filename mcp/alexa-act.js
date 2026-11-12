@@ -19,7 +19,7 @@ import { endlessWords } from "./alexa-read.js";
 import { ALEXA_INVOCATION } from "./alexa-model.js";
 import { askByVoice, LENGTH_WORDS, onWords } from "./asks.js";
 import { endlessLoad, endlessNoStart, endlessPageSteer, endlessPresets, endlessStartFresh, endlessUpdate, parseEndless, playEndless,
-  sameWords, sleptThrough } from "./endless.js";
+  sameWords, sleptThrough, nudgeWatch, NO_CURATOR } from "./endless.js";
 import { findDj, house, presetOnFile } from "./house.js";
 import { helperCommand, helperGot, helperViewOf, onStream, readPauseNote } from "./now.js";
 import { startPlaylistOnDevice } from "./playback.js";
@@ -117,7 +117,7 @@ async function pressSaid(env, n, device, label = null) {
   // An endless preset pressed: the watch looks on its next run, as after the
   // Speakers page's Play, so its session and top-ups begin at once.
   if ((parseEndless(env)?.presets ?? []).some((x) => x.button === n)) {
-    try { await endlessNoStart(env, n, null); await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the watch finds it */ }
+    try { await endlessNoStart(env, n, null); await nudgeWatch(env); } catch { /* the watch finds it */ }
   }
   // Read back about four seconds after the press: the radio and Pandora are
   // often still starting then (preset 11, 2026-11-08: playing within the
@@ -253,6 +253,7 @@ async function putOn(env, key, device, { words = null, when = null, limited = fa
     case "day-cap": return { say: "The guest preset has made all its sets for today. Try a house DJ, or tomorrow.", did };
     case "moved": return { say: "Something changed on the guest preset while I asked. Ask again.", did };
     case "off": return { say: `Endless DJs are off in this house, so I couldn't put ${who} on.`, did };
+    case "no-curator": return { say: `${NO_CURATOR}, so ${who} has no preset to play on. Ask ${who} for a set instead.`, did };
     case "no-endless": return { say: `${who} doesn't play endless, so I couldn't put them on.`, did };
     default: return { say: `I couldn't start ${who} ${onWords(device)}.`, did };
   }
@@ -523,6 +524,7 @@ async function fresh(env, key, device) {
   const did = { fresh: r.status, button: p.button };
   if (r.status === "asked") return { say: `${who} is making a fresh set for preset ${p.button}. It starts ${onWords(device)} in about four minutes.`, did };
   if (r.status === "day-cap") return { say: "No more DJ runs today; new sets again after midnight.", did };
+  if (r.status === "no-curator") return { say: `${NO_CURATOR}. Ask ${who} for a set instead.`, did };
   return { say: `I couldn't start ${who} fresh.`, did };
 }
 
@@ -539,6 +541,7 @@ const STEERED = {
   "not-playing": "No DJ is playing to steer. Put one on first.",
   "day-cap": "No more DJ runs today; steering works again after midnight.",
   throttled: SPOTIFY_LIMITED,
+  "no-curator": `${NO_CURATOR}, so a DJ can't be steered. Ask for a new set instead.`,
   failed: "That didn't reach the DJ. Try again.",
 };
 async function steer(env, s) {
@@ -550,7 +553,7 @@ async function steer(env, s) {
     const preset = pl?.is_playing === true && pid ? (parseEndless(env)?.presets ?? []).find((x) => x.playlist === pid) ?? null : null;
     if (preset) {
       const r = await endlessPageSteer(env, { button: preset.button, words: s.kind === "more" ? MORE_WORDS : CHANGE_WORDS, leaveWords: s.kind === "change" });
-      code = r.status === "asked" ? "asked" : ["not-playing", "day-cap", "throttled"].includes(r.status) ? r.status : "failed";
+      code = r.status === "asked" ? "asked" : ["not-playing", "day-cap", "throttled", "no-curator"].includes(r.status) ? r.status : "failed";
       return { say: STEERED[code], did: { steer: code, on: preset.button } };
     }
     return steerWords(env, s.kind === "more" ? MORE_WORDS(pl) : CHANGE_WORDS, true);
@@ -571,6 +574,7 @@ async function steerWords(env, words, replaceRest) {
   } catch (e) {
     const m = String(e?.message ?? e);
     code = /runs are used up/.test(m) ? "day-cap" : /limiting this account/.test(m) ? "throttled"
+      : m.includes(NO_CURATOR) ? "no-curator"
       : /steering works while|is not the one playing|names no DJ|took over|not playing|nothing .*plays/i.test(m) ? "not-playing" : "failed";
   }
   return { say: STEERED[code], did: { steer: code } };

@@ -3115,7 +3115,10 @@ export function renderRoom({ base, notesHref, defaultDevice, devices = null, pla
   quiet = null,
   // THE HOUSE DJs (2026-10-24, the owner's A): [{ btn, djKey, djName, here,
   // does, more }], one slim row each under a "House DJs" label.
-  house = null }) {
+  house = null,
+  // The house DJs' presets wait for a curator (MC-40): they play their
+  // songs and stop, so the page never calls them endless.
+  waits = false }) {
   const rooms = devices && devices.length ? devices : [defaultDevice];
   // The speaker select is THE ONE SPEAKER (MC-28, the server's pickFor):
   // chosen in the last half hour, else where the music is, else the last
@@ -3511,7 +3514,8 @@ export function renderRoom({ base, notesHref, defaultDevice, devices = null, pla
     ? `${loadGuests.map((g) => g.btn).join(" and ")} hold${loadGuests.length === 1 ? "s" : ""} the last set you asked for, on ${
       loadGuests.map((g) => SRC_WORDS[g.catalog] ?? g.catalog).join(" and ")}.` +
       (lane ? ` ${lane.btn} is the guest DJ: whoever you last played endless.` : "") +
-      (house?.length ? ` ${houseRange(house)} the house DJs, each endless on their own preset.` : "")
+      (house?.length ? (waits ? ` ${houseRange(house)} the house DJs, each with about an hour of their songs: ask one for a set and it lands there.`
+        : ` ${houseRange(house)} the house DJs, each endless on their own preset.`) : "")
     : "";
   return `${head("Loaded",
     "The programs on the presets: whose set is on each, and since when.",
@@ -3527,9 +3531,12 @@ export function renderRoom({ base, notesHref, defaultDevice, devices = null, pla
         `<b>${t.btn}</b> holds your last request on ${esc(SRC_WORDS[t.catalog] ?? t.catalog)}`).join(", ")}${lane ? `, and
         <b>${esc(String(lane.btn))}</b> is the guest DJ, playing endless` : ""}. Each row says whose set it is and since when;
         tap it for that DJ's page.</p>${house?.length ? `
-      <p><b>The house DJs</b> (${esc(houseRange(house).replace(/ (is|are)$/, ""))}) each play one DJ, endless, on their own
+      <p><b>The house DJs</b> (${esc(houseRange(house).replace(/ (is|are)$/, ""))}) ${waits
+        ? `each hold one DJ's songs on their own preset, about an hour. Ask that DJ for a set in Claude or ChatGPT and it
+        takes their place. Once a curator is set up, they add songs by themselves while they play.`
+        : `each play one DJ, endless, on their own
         preset. Their rows say what a press would play: the songs kept from last time, a fresh set, or, while one plays,
-        how long it goes on. A tuned DJ says so.</p>` : ""}
+        how long it goes on. A tuned DJ says so.`}</p>` : ""}
       <p><b>The round button</b> plays it on the speaker picked on the bar. A Tidal row plays through the home helper
         on the Chromebook; with the helper off, press its number on the remote.</p>
       <p><b>Playing from the Shelf</b>: a program played from the Shelf goes on no preset. While it plays, a row
@@ -4436,6 +4443,7 @@ ${SHEET_JS}(function () {
     "not-playing": "The set is not playing, so there is nothing to turn",
     "day-cap": "No more DJ runs today — new songs again after midnight",
     throttled: "Spotify's quota — nothing was asked", off: "This DJ is not on an endless preset now",
+    "no-curator": "This house has no curator yet — ask the DJ for a new set in Claude or ChatGPT",
     failed: "That did not reach the DJ — try again" };
   var SAY_TOWARD = { making: "A new set is on its way — a few minutes", busy: "Another guest DJ is playing — ask on the DJ's page",
     "day-cap": SAY_STEER["day-cap"], throttled: SAY_STEER.throttled, failed: SAY_STEER.failed };
@@ -5015,7 +5023,7 @@ export function renderDeck({ base, tiles, show = null, loaded = true, owed = 0, 
       // owner, 2026-10-09: "why is there no play disc on preset 1?"); every
       // other square's plays the DJ endless.
       role === "req" ? reqPlay(t, on) :
-      lane && !isArchive(t) && t.key && !t.noEndless && !t.needsWords ? `<form class="dplay" method="post" action="${esc(base)}/${esc(t.key)}/endless"><input type="hidden" name="do" value="lane">${
+      (lane || (role === "house" && endless != null)) && !isArchive(t) && t.key && !t.noEndless && !t.needsWords ? `<form class="dplay" method="post" action="${esc(base)}/${esc(t.key)}/endless"><input type="hidden" name="do" value="lane">${
         device ? `<input type="hidden" name="device" value="${esc(device)}" data-pickfollow>` : ""}<button type="submit" data-busy="…" data-who="${esc(t.name)}" aria-label="Play ${esc(t.name)} endless${device ? ` on the ${esc(device)}` : ""}"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z" fill="currentColor"></path></svg></button></form>` : ""}</li>`;
   };
   // THE ▶ ON AN ASKED SET: Spotify's started on the picked speaker, as the
@@ -5771,6 +5779,10 @@ const SETUP_CSS = `
 /* THE REQUESTS PRESET'S THREE STEPS (2026-11-09): numbered blocks, each
    named for the app it happens in, one short line a tap. */
 .use .reqlede{font-size:var(--fs-16);color:var(--ink)}
+.use .djprow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.use .djpwho{margin:.4rem 0 0;display:grid;gap:.15rem}
+.use .djpwho dt{font-weight:700;margin-top:.5rem}
+.use .djpwho dd{margin:0;font-size:var(--fs-14);color:var(--ink-2)}
 .use .reqsteps{list-style:none;margin:1rem 0 0;padding:0;display:grid;gap:.75rem}
 .use .reqsteps>li{background:var(--ground);border:1px solid var(--rule-soft);border-radius:12px;padding:.9rem 1rem 1rem}
 .use .ucard .reqsteps h3{display:grid;grid-template-columns:auto 1fr;column-gap:.7rem;align-items:center;margin:0 0 .5rem;
@@ -5803,6 +5815,19 @@ const SETUP_CSS = `
   color:var(--ink);font:600 var(--fs-16) "Archivo","Helvetica Neue",Arial,sans-serif;padding:0 .8rem}
 .use .setform .sgo{margin:.4rem 0 0;cursor:pointer;justify-self:start}
 .use .setsum{display:flex;align-items:center;gap:12px;border-radius:16px;padding:14px 16px;background:var(--q-deep);color:var(--q-on-deep)}
+.use .setlevel{border-radius:16px;padding:16px;background:var(--q-deep);color:var(--q-on-deep);display:grid;gap:10px}
+.use .setlevel h2{margin:0;font-size:var(--fs-20,1.25rem);line-height:1.2;font-weight:800;color:inherit}
+.use .setlevel p{margin:0}
+.use .setlevel .setlvk{font-size:var(--fs-12);font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.85}
+.use .setlevel .setlvn{font-size:var(--fs-14);line-height:1.4}
+.use .setlvp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.use .setlvp i{height:8px;border-radius:4px;background:currentColor;opacity:.28}
+.use .setlvp i.on{opacity:1}
+.use .setlegend{display:flex;gap:10px;align-items:flex-start;margin:0}
+.use .setlegend svg{flex:0 0 auto;width:20px;height:20px;margin-top:1px}
+.use .curstep{margin:.5rem 0 1rem}
+.use .curstep .setclock{display:inline}
+.use .curstep .setform{margin-top:.6rem}
 .use .setsum b{display:block;font-size:var(--fs-16);font-weight:700}
 .use .setsum span{display:block;font-size:var(--fs-14);opacity:.85}
 .use .setsum.part{display:grid;gap:8px;background:var(--q-tint);color:var(--ink)}
@@ -5874,10 +5899,12 @@ const setupLate = (since, secs, html) => since ? `<div hidden data-since="${Numb
 function setupChecklistHtml(list) {
   // THE NEXT STEP, first (the trial, 2026-10-17: "I keep losing the
   // checklist"): the first row still to do, with its button, before anything.
-  const next = list.allDone ? null : list.sections.flatMap((s) => s.rows).find((r) => r.state === "todo" && r.href);
+  // On the ladder it follows the strip (levels.js nextStep, put on the list
+  // by checklist.js).
+  const step = list.next ?? null, next = step?.row;
   const nextHtml = next ? `
   <section class="ucard setnextstep" aria-labelledby="snext">
-    <h2 id="snext">Next: ${esc(next.title)}</h2>
+    <h2 id="snext">${step.optional ? "Next, if you like" : "Next"}: ${esc(next.title)}</h2>
     <p class="sgntext">${esc(next.detail)}</p>
     <a class="sgo" href="${esc(next.href)}">${esc(next.label ?? "Go")}</a>
   </section>` : "";
@@ -5888,10 +5915,20 @@ function setupChecklistHtml(list) {
       list.unseen ? ` · still yours to do by hand, as each says: ${(list.unseenTitles ?? []).join(", ") || `${list.unseen} marked ?`}` : ""}</span></div>
   </div>` : `
   <div class="setsum part">
-    <div><b>${list.coreDone < list.coreTotal ? `Core: ${list.coreDone} of ${list.coreTotal}` : `${list.done} of ${list.total} steps`}</b>
-      <span>${list.coreDone < list.coreTotal ? "Core first: music from your phone" : "The rest below"}</span></div>
+    <div><b>${list.coreDone < list.coreTotal ? `${list.level ? "Level 1" : "Core"}: ${list.coreDone} of ${list.coreTotal}` : `${list.done} of ${list.total} steps`}</b>
+      <span>${list.coreDone < list.coreTotal ? `${list.level ? "Level 1" : "Core"} first: music from your phone` : "The rest below"}</span></div>
     <div class="sgnbar" role="img" aria-label="${list.done} of ${list.total} steps done"><i style="width:${list.total ? ((list.done / list.total) * 100).toFixed(1) : 0}%"></i></div>
   </div>`;
+  // WHERE YOUR HOUSE IS (MC-40, the canvas "The Install Ladder"): the level
+  // reached, three pips, and a sentence on the next one. From Level 1 on;
+  // before it, the progress line above already says what to do.
+  const lv = list.level && list.level.n ? `
+  <section class="setlevel" aria-labelledby="slevel">
+    <p class="setlvk">Where your house is</p>
+    <h2 id="slevel">${esc(list.level.title)}</h2>
+    <div class="setlvp" role="img" aria-label="Level ${list.level.n} of 3">${[1, 2, 3].map((n) => `<i${n <= list.level.n ? ' class="on"' : ""}></i>`).join("")}</div>
+    <p class="setlvn">${esc(list.level.next)}</p>
+  </section>` : "";
   const sec = (s) => `<section class="ucard setsec" aria-labelledby="set-${esc(s.key)}">
     <div class="sethead"><h2 id="set-${esc(s.key)}">${esc(s.title)}</h2><span${s.rows.length ? "" : ' class="off"'}>${esc(s.count)}</span></div>
     <p class="setsub">${esc(s.sub)}</p>${s.rows.length ? `
@@ -5903,8 +5940,15 @@ function setupChecklistHtml(list) {
           <code>${esc(r.copy.value)}</code><button class="setcopy" type="button" data-copy="${esc(r.copy.value)}" hidden>Copy</button></details>` : ""}</div></li>`).join("")}
     </ul>` : ""}
   </section>`;
+  // WHAT THE ? MEANS (the owner, the test house run, 2026-11-10: "explain
+  // the ? in the dotted circle… are those checked off?"), said once, above
+  // the sections, wherever one shows.
+  const legend = list.unseen ? `
+  <p class="unote setlegend">${setupMark("unknown")}<span>A dotted <b>?</b> is a step the house cannot see from here, such as a
+    preset saved on your WiiM: only the home helper can look. Check it yourself, as the step says. It counts neither as
+    done nor as owed.</span></p>` : "";
   const waits = Object.assign({}, ...list.sections.flatMap((s) => s.rows).filter((r) => r.wait && r.state !== "done").map((r) => r.wait));
-  return `${nextHtml}${doneWord}
+  return `${nextHtml}${lv}${doneWord}${legend}
   ${list.sections.map(sec).join("\n  ")}${setupWatchTag(waits, "/setup")}
   ${list.home ? `<p class="setnext"><a href="${esc(list.home)}" target="_blank" rel="noopener">Open the house (a new tab)</a></p>` : ""}
   <p class="setfoot">Signed in as the owner on this browser. On a new phone, sign in here with the recovery code.</p>
@@ -6023,10 +6067,10 @@ function setupSpotifyAppHtml({ redirect, held, fromSecret }) {
 // CLAUDE OR CHATGPT (the practice install, 2026-10-19): where the household
 // asks the DJs, typed or by voice. One address for both; each one's steps,
 // as START-HERE.md has them.
-function setupAppHtml({ address }) {
+function setupAppHtml({ address, heard = false }) {
   return `<section class="ucard" aria-labelledby="scard">
     <h2 id="scard">Claude or ChatGPT<span class="usub">Where you ask the DJs, typed or by voice</span></h2>
-    <p class="sgntext">Add the house to the one you use, in a browser (a phone's is fine). Both take this address:</p>
+    <p class="sgntext">Connect the one you use, in a browser (a phone's is fine). Both take this address:</p>
     ${address ? `<code class="setval">${esc(address)}</code><button class="setcopy" type="button" data-copy="${esc(address)}" hidden>Copy</button>` : ""}
     <h3>Claude</h3>
     <ol class="sgntext setsteps">
@@ -6038,20 +6082,22 @@ function setupAppHtml({ address }) {
         Needs approval for now: Claude asks before it plays or changes anything, and you can set the ones you use
         every day (play, pause, steer) to Always allow later.</li>
     </ol>
-    <h3>ChatGPT (Plus or higher)</h3>
+    <h3>ChatGPT (free or paid)</h3>
     <ol class="sgntext setsteps">
       <li>At <b>chatgpt.com</b>: Plugins, Add, <b>Add custom MCP server</b>.</li>
       <li>Name: <b>fmwax</b> (any name works). In its URL box, paste the address. Set <b>Authentication</b> to
         <b>None</b> (it starts on OAuth, which fails: the key is already in the address), tick <b>I understand</b>,
         then <b>Create</b>.</li>
+      <li>In the box that opens, click <b>Connect</b> (it reads Connect fmwax, or the name you gave it).</li>
       <li>Nothing more: the plugin is in ChatGPT's phone app too.</li>
     </ol>
-    <p class="sgntext">Then, in a <b>new chat</b> on your phone, ask it what is playing. This step ticks itself once the
-      house hears from it.</p>
+    <p class="sgntext">Then, in a <b>new chat</b> on your phone, ask it what is playing. ${heard
+      ? "The house has heard from it: this step is done."
+      : "Once the house hears from it, this page goes back to the checklist by itself, with the step ticked."}</p>
     <p class="unote">One music connector at a time: if Claude's own Spotify connector, or ChatGPT's Spotify app, is on,
       turn it off in chats with the house, or a set may go into the wrong playlist.</p>
   </section>
-  <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+  <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>${heard ? "" : setupWatchTag({ app: false }, "/setup")}`;
 }
 // THE HOME HELPER, FOR A HOUSE SET UP HERE (MC-31 stage 5, 2026-10-19; Codex
 // reviewed the plan): what it adds, the computer it needs and when it runs
@@ -6078,9 +6124,9 @@ function setupHelperHtml({ house, key, pair = null, hands = false, known = false
     <p class="sgntext"><b>What it does.</b> It lets the house reach your WiiMs over your home Wi-Fi. You then see the
       names on each WiiM's preset buttons, what the radio is playing, and you can press any preset and pause anything
       from the app. Without it, everything else still works.</p>
-    <p class="sgntext"><b>What it needs.</b> A computer at home on the same Wi-Fi as your WiiMs, and often on: a Mac,
-      a Windows PC, or a Linux computer (a Raspberry Pi, or a Chromebook with Linux turned on). It starts when you sign
-      in to that computer and works while it is awake.</p>
+    <p class="sgntext"><b>What it needs.</b> A computer at home on the same Wi-Fi as your WiiMs: a Mac, a Windows PC, or
+      a Linux computer (a Raspberry Pi, or a Chromebook with Linux turned on). It starts when you sign in to that computer
+      and helps while it is awake. It need not stay on: while it is off, the house does without it.</p>
     <h3>Set it up</h3>
     <ol class="sgntext setsteps">
       <li>On that computer, install <b>Node.js</b> from nodejs.org (the LTS version), and get the house's code: on
@@ -6160,7 +6206,7 @@ function setupRequestsHtml({ now, ready, speaker = null }) {
           <li>Start a <b>new chat</b>, on your phone or in a browser.</li>
           <li>Say or type: <q>Vibe, play me 20 minutes for a quiet morning</q></li>
           <li>The set takes the place of the songs in the playlist, and starts${speaker ? ` on the <b>${esc(speaker)}</b>, your
-            default speaker` : ""}.</li>
+            default speaker` : ""}. If it only says the set is ready, say <q>play it</q>.</li>
         </ul>
         <p class="reqmore">Something to read with it? <q>Librarian, an introduction to Stax Records, and put it on my
           Requests preset</q>. This takes a few minutes, so keep the chat open. The notes are a page on your Shelf.</p>
@@ -6171,7 +6217,10 @@ function setupRequestsHtml({ now, ready, speaker = null }) {
     <details class="reqhelp"><summary>Claude or ChatGPT asks for permission</summary>
       <p>The first times, it may ask before it uses the house. Allowing it always (Claude's <b>Always allow</b>) is
         fine for writing the set and for playing it; otherwise it asks every time. If it asks whether to play the set
-        now, say yes.</p></details>
+        now, say yes.</p>
+      <p>ChatGPT may add a red <b>Suspicious Instruction</b> warning to that box. It is about your house's own notes to the
+        assistant, which say how to pick the songs and when to play them: they come from your house, not from anyone
+        else. <b>Allow</b> is fine.</p></details>
     <details class="reqhelp"><summary>It started on the wrong speaker</summary>
       <p>Say where: <q>…on the Kitchen</q>. An older chat may not have the house's tools: start a new one.</p></details>
   </section>
@@ -6221,7 +6270,7 @@ export const CHATGPT_HOURLY_NOTE = "Also check every hour, as a scheduled task i
 function setupCuratorHtml(info) {
   if (info.view === "chatgpt") return setupChatgptCuratorHtml(info);
   const { connector, routine, token, tokenHint = null, tokenFromSecret, seen = null, next = null, said = null, open = false,
-    kind = null, subs = null, seenAt = 0, since = null } = info;
+    kind = null, subs = null, seenAt = 0, since = null, endlessNow = null } = info;
   // Rung and not yet answered: a clock, and the page reloads when it checks in.
   const waiting = since && !(seenAt > since);
   const copyBox = (v) => `<code class="setval">${esc(v)}</code><button class="setcopy" type="button" data-copy="${esc(v)}" hidden>Copy</button>`;
@@ -6287,7 +6336,8 @@ function setupCuratorHtml(info) {
     <form class="setform" method="post" action="/setup/curator/wake">
       <button class="setcopy" type="submit" data-busy="Ringing…">Wake it now, to check it answers</button>
     </form>
-    ${seen && next && !waiting ? `<a class="sgo" href="${esc(next)}">Next: the DJ presets</a>` : seen && !waiting ? "" : `${setupLate(waiting ? since : null, 180,
+    ${seen && endlessNow ? `<p class="sgntext" role="status"><b>Your DJ presets are endless now:</b> they add songs by themselves while they play.${endlessNow.requests ? ` A set you ask a DJ for goes on Requests (preset ${esc(String(endlessNow.requests))}) from now on.` : ""}</p>` : ""}
+    ${seen && next && !waiting ? `<a class="sgo" href="${esc(next)}">${endlessNow ? "Next: the guest DJ preset" : "Next: the DJ presets"}</a>` : seen && !waiting ? "" : `${setupLate(waiting ? since : null, 180,
       `<p class="unote">Still not checked in after a few minutes? At claude.ai/code, open Scheduled, then this task, and read
       its last run. It needs the API trigger and the curator's connector, and no other connector. Fix it there, then wake it again.</p>`)}
     <p class="setnext"><a href="/setup/curator#done">Look again</a></p>`}
@@ -6305,26 +6355,33 @@ function setupCuratorHtml(info) {
 // then the choice made here. Once chosen, the page leads with whether a Work
 // chat is listening and when the curator last checked in, and a test event.
 function setupChatgptCuratorHtml({ connector, routine, token, kind = null, subs = null, seen = null, next = null, said = null, open = false,
-  seenAt = 0, since = null }) {
+  seenAt = 0, since = null, endlessNow = null, djPresets = [], presetsWait = false, hourly = null }) {
   const waiting = since && !(seenAt > since);
   const copyBox = (v) => `<code class="setval">${esc(v)}</code><button class="setcopy" type="button" data-copy="${esc(v)}" hidden>Copy</button>`;
   const saidHtml = said ? `<p class="setsaid" role="status">${esc(said)}</p>` : "";
   const chosen = kind === "chatgpt";
   const head = `<h2 id="scard">The curator<span class="usub">A ChatGPT Work chat: it writes the sets asked for on the DJ pages, and keeps endless DJs going</span></h2>`;
   const steps = `<p class="sgntext">It runs in your ChatGPT account, so it needs ChatGPT Plus or higher. Three steps at chatgpt.com,
-      in a browser (a computer is easiest), then one here.</p>
+      in a browser (a computer is easiest)${chosen ? "" : ", then one here"}. Signed in to a free account there (it has no Work chat)? Sign in
+      to the Plus one first.</p>
     <ol class="sgntext setsteps">
       <li><b>Its plugin.</b> At chatgpt.com: <b>Plugins</b>, <b>Add</b>, <b>Add custom MCP server</b>. Name: <b>fmwax curator</b>
         (any name works). In its <b>URL</b> box, paste this address:
         ${connector ? copyBox(connector) : "<i>not made yet: reload the checklist</i>"}
         Set <b>Authentication</b> to <b>None</b> (the key is in the address), tick <b>I understand</b>, then <b>Create</b>.
-        Its page lists the event <b>house.work</b> beside its tools.</li>
+        In the box that opens, click <b>Connect</b>.</li>
       <li><b>Its Work chat.</b> Start a new chat (its box says "Work with ChatGPT") with only this plugin on, and paste:
         ${copyBox(CHATGPT_CURATOR_NOTE)}
-        It answers that it is subscribed. Keep your other fmwax plugin out of this chat: with it there, a set asked in the chat
-        skips the DJ pages' requests.</li>
+        It answers that it is subscribed. If it says it cannot subscribe, the plugin has the wrong address: edit it and
+        paste the address above again.${chosen ? "" : ` (Once you make ChatGPT the curator, below, this page shows <b>A Work chat is
+        listening</b> too.)`}
+        Keep your other fmwax plugin out of this chat: with it there, a set asked in the chat skips the DJ pages'
+        requests. Then rename the chat <b>fmwax curator</b> (the ⋯ beside it in the list of chats), so you find it
+        again: step 3 goes in this same chat.</li>
       <li><b>Its hourly check.</b> In the same chat, paste: ${copyBox(CHATGPT_HOURLY_NOTE)}
-        Hourly is the shortest ChatGPT allows: it catches anything the event missed.</li>
+        Hourly is the shortest ChatGPT allows: it catches anything the event missed. ChatGPT Plus keeps five
+        scheduled tasks: if it answers that it is at its limit, delete one under <b>Scheduled</b> and paste this again.
+        This page shows the check once it has run, within the hour.</li>
     </ol>`;
   const choose = `<form class="setform" method="post" action="/setup/curator/use"><input type="hidden" name="who" value="chatgpt">
       ${routine && token ? `<p class="sgntext">This house's Claude task stops being rung. Pause it at claude.ai/code (Scheduled), or its
@@ -6341,27 +6398,49 @@ function setupChatgptCuratorHtml({ connector, routine, token, kind = null, subs 
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
   }
-  const until = subs?.until ? new Date(subs.until).toISOString().slice(0, 10) : null;
+  // THREE STEPS THAT TICK THEMSELVES (the owner, the test house run,
+  // 2026-11-10: the page was "too busy", a test asked for three times): the
+  // Work chat listening, its answer to a test, and the DJ presets going
+  // endless with it. The page watches, so no "Look again".
+  const until = subs?.until ? new Date(subs.until).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : null;
+  const row = (state, title, detail, extra = "") => `
+      <li class="${state}">${setupMark(state)}<div><b>${title}<span class="vh"> (${esc(SETUP_STATE_WORDS[state] ?? state)})</span></b>
+        <span>${detail}</span>${extra}</div></li>`;
+  const test = `<form class="setform" method="post" action="/setup/curator/wake">
+          <button class="${seen && !waiting ? "setcopy" : "sgo"}" type="submit" data-busy="Sending…">${seen && !waiting ? "Send another test" : "Send a test"}</button></form>`;
+  const list = djPresets.map((p) => `${esc(p.name)} on ${esc(String(p.btn))}`).join(", ").replace(/, ([^,]*)$/, " and $1");
+  const steps3 = `
+    <ul class="setrows curstep" id="done">${row(subs?.count ? "done" : "todo",
+      subs?.count ? "A Work chat is listening" : "No Work chat is listening",
+      subs?.count ? `Subscribed${until ? ` until ${esc(until)}` : ""}; ChatGPT renews it.` : "Paste its first note into the Work chat (the steps below), so it subscribes.")}${
+      row(seen && !waiting ? "done" : "todo",
+        seen && !waiting ? `It answered ${esc(seen)}` : "Send it a test",
+        seen && !waiting ? "It asked this house for its work." : waiting
+          ? `Sent. Waiting for its answer: ${setupClock(since)}. No need to stay: the checklist ticks too.`
+          : "It answers within a minute.",
+        subs?.count && !waiting ? test : "")}${
+      // ITS HOURLY CHECK, SEEN BY THE HOUSE (finding 17, 2026-11-11: the note
+      // was missed and every row ticked all the same). A check-in the house
+      // did not ring for is the hourly task's (curator-events.js noteCheckIn).
+      row(hourly?.fresh ? "done" : "todo",
+        hourly?.fresh ? `Its hourly check ran ${esc(hourly.words ?? "")}` : hourly ? `Its hourly check last ran ${esc(hourly.words ?? "")}` : "Its hourly check: not seen yet",
+        hourly?.fresh ? "It catches anything the signal missed."
+          : hourly ? "Over two hours ago. At chatgpt.com, look under Scheduled: if the task is gone, paste the hourly note again (step 3 below)."
+          : "It shows here within the hour, once the hourly note is pasted in the Work chat (step 3 below). Pasted already? Nothing to do but wait.")}${
+      djPresets.length && (presetsWait || endlessNow) ? row(endlessNow ? "done" : "todo",
+        endlessNow ? "Your DJ presets are endless now" : "Your DJ presets go endless",
+        endlessNow ? `They add songs by themselves while they play.${endlessNow.requests ? ` A set you ask a DJ for goes on Requests (preset ${esc(String(endlessNow.requests))}) from now on.` : ""}`
+          : `Once it answers a test, ${list} add songs by themselves.`) : ""}
+    </ul>`;
   return `<section class="ucard" aria-labelledby="scard">
     ${head}
-    <div class="setsum part" id="done">
-      <div><b>${subs?.count ? "A Work chat is listening" : "No Work chat is listening"}</b><span>${subs?.count
-        ? `Subscribed to house.work${until ? ` until ${esc(until)}; ChatGPT renews it` : ""}.`
-        : "Paste its instructions into the Work chat (step 2), so it subscribes."}</span></div>
-      <div><b>${seen ? `Checked in ${esc(seen)}` : "Not checked in yet"}</b><span>${seen
-        ? "It answers: it has asked this house for its work."
-        : "Send it a test: it answers within a minute."}</span></div>
-    </div>
-    ${saidHtml}
-    ${waiting ? `<p class="sgntext" role="status">Waiting for it to check in: ${setupClock(since)}</p>` : ""}
-    <form class="setform" method="post" action="/setup/curator/wake">
-      <button class="setcopy" type="submit" data-busy="Sending…">Send it a test, to check it answers</button>
-    </form>
-    ${seen && next && !waiting ? `<a class="sgo" href="${esc(next)}">Next: the DJ presets</a>` : seen && !waiting ? "" : `${waiting ? setupLate(since, 180,
-      `<p class="unote">Still not checked in after a few minutes? Open the Work chat at chatgpt.com and read its last answer.
-      If it never said it is subscribed, paste its first note again (step 2), then send another test.</p>`) : ""}
-    <p class="setnext"><a href="/setup/curator?with=chatgpt#done">Look again</a></p>`}
-    ${setupWatchTag(waiting || !seen || !subs?.count ? { curator: seenAt, listening: subs?.count ?? 0 } : null, "/setup/curator?with=chatgpt#done")}
+    ${saidHtml}${steps3}
+    ${seen && next && !waiting ? `<a class="sgo" href="${esc(next)}">${endlessNow ? "Next: the guest DJ preset" : "Next: the DJ presets"}</a>` : ""}${
+      waiting ? setupLate(since, 180, `<p class="unote">Still no answer after a few minutes? Open the Work chat at chatgpt.com and read
+      its last answer. If it never said it is subscribed, paste its first note again, then send another test.</p>
+      <form class="setform" method="post" action="/setup/curator/wake">
+        <button class="setcopy" type="submit" data-busy="Sending…">Send another test</button></form>`) : ""}
+    ${setupWatchTag(waiting || !seen || !subs?.count || !hourly?.fresh ? { curator: seenAt, listening: subs?.count ?? 0, hourly: hourly?.at ?? 0 } : null, "/setup/curator?with=chatgpt#done")}
     <details class="setkey"${open || !subs?.count ? " open" : ""}><summary>The steps at chatgpt.com</summary>
     ${steps}
     </details>
@@ -6371,7 +6450,32 @@ function setupChatgptCuratorHtml({ connector, routine, token, kind = null, subs 
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
 // THE DJ PRESETS (the Endless step, part 2).
-function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [], failed = false, first = null }) {
+function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [], failed = false, first = null,
+  needsLane = false, waits = false, fromFile = false, houseDjs = [], taken = [], laneJust = false }) {
+  // THE LANE'S STEP (MC-40): the DJ presets were made on their own page;
+  // this page adds the guest DJ preset, once a curator has checked in.
+  if (needsLane) {
+    const freeL = Array.from({ length: 12 }, (_, i) => i + 1).filter((n) => !taken.includes(n));
+    const pickL = freeL.includes(3) ? 3 : freeL[0];
+    const mine = houseDjs.map((d) => `${d.btn} ${d.name}`).join(" · ");
+    return `<section class="ucard" aria-labelledby="scard">
+    <h2 id="scard">The guest DJ preset<span class="usub">One more preset, for any DJ you play endless</span></h2>
+    <p class="sgntext">Your DJ presets (${esc(mine)}) each belong to one DJ. The <b>guest DJ</b> preset is for everyone else:
+      press ▶ on any DJ on the DJs tab and they play there for as long as you listen. Deep Dive and Genre play there
+      too, once you name an artist or a genre.</p>
+    ${fromFile ? `<p class="unote">This house's DJ presets are set in its own file, so the guest DJ preset is not made here.</p>`
+    : !curator ? `<p class="unote">Set up the curator first: it writes the endless DJs' sets.</p>`
+    : waits ? `<p class="unote">Your curator has not checked in yet. Send it a test from <a href="/setup/curator">its page</a> first:
+      your DJ presets become endless then, and the guest DJ preset can be made.</p>`
+    : freeL.length ? `<form class="setform" method="post" action="/setup/endless">
+      <label for="slane">The guest DJ's preset</label>
+      <select id="slane" name="lane">${freeL.map((n) => `<option value="${n}"${n === pickL ? " selected" : ""}>${n}</option>`).join("")}</select>
+      <p class="unote">${esc(String(pickL))} is suggested. Pick another if it holds something you keep on your WiiM.</p>
+      <button class="sgo" type="submit" data-busy="Making…">Make the guest DJ preset</button>
+    </form>` : `<p class="unote">All twelve presets are in use.</p>`}
+  </section>
+  <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+  }
   const free = Array.from({ length: 12 }, (_, i) => i + 1).filter((n) => !requests.includes(n));
   const ownPick = free.includes(2) ? 2 : free[0];
   const lanePick = ownPick === 2 && free.includes(3) ? 3 : free.find((n) => n > ownPick) ?? free.find((n) => n !== ownPick);
@@ -6379,9 +6483,9 @@ function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [
     : requests.length ? `Presets ${requests.slice(0, -1).join(", ")} and ${requests[requests.length - 1]} are your Requests presets` : "";
   if (made) {
     return `<section class="ucard" aria-labelledby="scard">
-    <h2 id="scard">The DJ presets<span class="usub">${own ? `${esc(String(own.btn))}: ${esc(own.name)}` : ""}${lane ? ` · ${esc(String(lane.btn))}: the guest DJ` : ""}</span></h2>
+    <h2 id="scard">The DJ presets<span class="usub">${(houseDjs.length ? houseDjs : own ? [own] : []).map((d) => `${esc(String(d.btn))}: ${esc(d.name)}`).join(" · ")}${lane ? ` · ${esc(String(lane.btn))}: any other DJ` : ""}</span></h2>
     <ol class="sgntext setsteps">
-      ${own ? `<li><b>${esc(own.name)}, preset ${esc(String(own.btn))}.</b> ${failed || first?.state === "failed" || first?.state === "expired"
+      ${own && !laneJust ? `<li><b>${esc(own.name)}, preset ${esc(String(own.btn))}.</b> ${failed || first?.state === "failed" || first?.state === "expired"
         // A first set that could not be asked for, or never came, leads to
         // where it can be (Codex, 2026-10-17).
         ? `Their first set ${failed ? "could not be asked for just now" : "did not arrive"}: ${own.href ? `open <a href="${esc(own.href)}">${esc(own.name)}'s page</a>`
@@ -6396,9 +6500,21 @@ function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [
         : first?.state === "landed" ? `Their first set is ready${first.started ? `, and playing on the ${esc(first.started)}` : " on the preset"}. Now`
         : `Their first set is being written and starts${speaker ? ` on the ${esc(speaker)}` : ""}
         when it is ready, in a few minutes. Then`} save it on each WiiM device: ${saveSteps(own.name, own.btn)}</li>` : ""}
-      ${lane ? `<li><b>The guest DJ, preset ${esc(String(lane.btn))}.</b> On the DJs tab, press ▶ on any DJ: they become the guest
-        DJ and play endless. Then save it on each WiiM device the same way: the playlist <b>Guest DJ</b>, preset
-        <b>${esc(String(lane.btn))}</b>. Whoever you play next takes it over; the preset never needs saving again.</li>` : ""}
+      ${lane ? (() => {
+        // FOR ALL THE OTHER DJS (the owner, the test house run, 2026-11-10:
+        // "so a user can better understand the guest slot is for the other
+        // DJs"): who has a number, who plays here, and saving it once.
+        const n = esc(String(lane.btn));
+        const and = (a) => a.length > 1 ? `${a.slice(0, -1).join(", ")} and ${a[a.length - 1]}` : a[0] ?? "";
+        const mine = (houseDjs.length ? houseDjs : own ? [own] : []).map((d) => esc(d.name));
+        const others = djs.filter((d) => !mine.includes(esc(d.name))).map((d) => esc(d.name));
+        return `<li><b>Preset ${n} is for all the other DJs.</b> ${mine.length ? `${and(mine)} ${mine.length > 1 ? "each have" : "has"} a
+        number of their own. ` : ""}Every other DJ plays on ${n}${others.length ? `: ${others.join(", ")}, plus Deep Dive and
+        Genre once you name an artist or a genre` : ""}. Press ▶ on one on the DJs tab, and they play there for as long as you
+        listen, until you put on another.</li>
+      <li><b>Save preset ${n} once.</b> While a guest DJ plays, save it on each WiiM device the usual way: the playlist
+        <b>Guest DJ</b>, preset <b>${n}</b>. You never save it again: it plays whichever guest you put on last.</li>`;
+      })() : ""}
       <li><b>Then just press the numbers.</b> Each plays for as long as you listen; the curator tops it up. A DJ
         doesn't play a song again until 150 of their others have played: House rules, under Speakers, says how.</li>
     </ol>
@@ -6423,6 +6539,161 @@ function setupEndlessHtml({ djs, made, curator, own, lane, speaker, requests = [
     </form>` : `<p class="unote">Set up the curator first: it writes the endless DJs' sets.</p>`}
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+}
+// ADD A DJ PRESET (MC-40, tasks/mc40-dj-presets.md; the canvas's B2): a DJ
+// on a number of their own, made by the house with about an hour of that
+// DJ's songs (starters.js), so it is saved on the WiiM at once. Before the
+// house has a curator it plays its songs and stops, and a set asked of that
+// DJ lands on it; once a curator checks in, the same preset is endless.
+// One DJ at a time, as many as wanted: three is advice, never a limit (the
+// owner, 2026-11-09).
+function setupDjPresetHtml({ fromFile = false, ready = true, made = [], djs = [], numbers = [], pick = null, waits = true, just = null, empty = false }) {
+  const head = `<h2 id="scard">DJ presets<span class="usub">A DJ on a button of their own, with an hour of their songs</span></h2>`;
+  const back = `<a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+  if (fromFile) {
+    return `<section class="ucard" aria-labelledby="scard">
+    ${head}
+    <p class="sgntext">This house's DJ presets are set in its own file, so they are not made here. Change who is on each from
+      a DJ's page, on the DJs tab.</p>
+  </section>
+  ${back}`;
+  }
+  const how = waits
+    ? `It plays its songs, about an hour, and stops. For new songs, ask that DJ for a set in Claude or ChatGPT: it lands on
+      their preset, in place of the songs there. Later, under <b>Endless</b>, a curator can make these presets add songs by
+      themselves.`
+    : `It plays for as long as you listen: your curator adds songs as it runs low.`;
+  const justHtml = just ? `
+    <p class="sgntext reqlede"><b>The playlist "${esc(just.name)}" is in your Spotify account now${empty ? "" : `, with about an hour of ${esc(just.name)}'s songs`}.</b>
+      Save it once on preset ${esc(String(just.btn))} of your WiiM.</p>
+    <ol class="reqsteps">
+      <li>
+        <h3><span class="reqn">1</span>Play the playlist on your WiiM<small>In the Spotify app</small></h3>
+        <ul>
+          <li>Open the <b>Spotify app</b> on your phone.</li>
+          <li>Open the playlist <b>${esc(just.name)}</b>.</li>
+          <li>Play it, and choose <b>your WiiM</b> as the speaker (the device picker shows its name, not your phone).</li>
+        </ul>
+      </li>
+      <li>
+        <h3><span class="reqn">2</span>Save it on preset ${esc(String(just.btn))}<small>In the WiiM Home app</small></h3>
+        <ul>
+          <li>Open <b>WiiM Home</b> and choose that WiiM.</li>
+          <li>Tap the <b>song bar</b> at the bottom.</li>
+          <li>Tap <b>…</b>, then <b>Preset</b>, then <b>${esc(String(just.btn))}</b>.</li>
+        </ul>
+        <p class="reqmore">More than one WiiM? Do steps 1 and 2 on each. You never save it again: the house only changes
+          what is in the playlist.</p>
+      </li>
+      <li>
+        <h3><span class="reqn">3</span>${waits ? "New songs, when you want them" : "Then just press the number"}<small>${waits ? "In Claude or ChatGPT" : "On the remote"}</small></h3>
+        <ul>${waits ? `
+          <li>Press <b>${esc(String(just.btn))}</b> any time: ${esc(just.name)} plays the songs on it.</li>
+          <li>For new ones, say or type: <q>${esc(just.name)}, an hour for tonight</q></li>
+          <li>The set lands on preset ${esc(String(just.btn))}, in place of the songs there.</li>` : `
+          <li>Press <b>${esc(String(just.btn))}</b>: ${esc(just.name)} plays for as long as you listen.</li>
+          <li>New songs are added as the set runs low.</li>`}
+        </ul>
+      </li>
+    </ol>${empty ? `
+    <details class="reqhelp" open><summary>The playlist is empty, or won't play</summary>
+      <p>Spotify would not take the songs just now. Ask ${esc(just.name)} for a set in Claude or ChatGPT first: it fills
+        the playlist. Then do steps 1 and 2.</p></details>` : ""}` : "";
+  const madeHtml = made.length ? `
+    <h3>Made so far</h3>
+    <ul class="setrows">${made.map((m) => `
+      <li class="plain"><form class="djprow" method="post" action="/setup/dj-preset"><input type="hidden" name="do" value="remove"><input type="hidden" name="button" value="${esc(String(m.btn))}">
+        <span><b>${esc(String(m.btn))} · ${m.href ? `<a href="${esc(m.href)}">${esc(m.name)}</a>` : esc(m.name)}</b></span>
+        <button class="setcopy" type="submit" data-busy="Removing…" aria-label="Remove ${esc(m.name)}'s preset ${esc(String(m.btn))}">Remove</button></form></li>`).join("")}
+    </ul>
+    <p class="unote">Remove frees the number here. The playlist stays in your Spotify, and your WiiM keeps playing it on
+      that preset until you save something else there.</p>` : "";
+  const free = numbers.filter((x) => !x.taken);
+  const form = !ready ? `<p class="unote">Set up the Spotify app and sign in to Spotify first: the house makes the playlist there.</p>`
+    : !djs.length ? `<p class="unote">Every DJ who can have a preset of their own has one.</p>`
+    : !free.length ? `<p class="unote">All twelve presets are in use. Remove one to add another DJ.</p>`
+    : `<form class="setform" method="post" action="/setup/dj-preset">
+      <label for="sdjp">The DJ</label>
+      <select id="sdjp" name="dj" class="setwide">${djs.map((d) => `<option value="${esc(d.key)}">${esc(d.name)}</option>`).join("")}</select>
+      <label for="sdjn">Their preset</label>
+      <select id="sdjn" name="button">${numbers.map((x) => `<option value="${x.n}"${x.taken ? " disabled" : x.n === pick ? " selected" : ""}>${x.n}${x.taken ? ` · ${esc(x.taken)}` : ""}</option>`).join("")}</select>
+      <p class="unote">Pick a number that holds nothing you keep on your WiiM, such as a radio station.</p>
+      <button class="sgo" type="submit" data-busy="Making…">${made.length ? "Add this DJ preset" : "Make this DJ preset"}</button>
+    </form>
+    <h3>Who plays what</h3>
+    <dl class="djpwho">${djs.map((d) => `<dt>${esc(d.name)}</dt><dd>${esc(d.summary ?? "")}</dd>`).join("")}</dl>`;
+  return `<section class="ucard" aria-labelledby="scard">
+    ${head}${justHtml}${just ? "" : `
+    <p class="sgntext">Pick a DJ and a free preset number. The house makes a playlist in your Spotify with about an hour
+      of that DJ's songs, so you can save it on your WiiM right away. ${how}</p>`}
+    ${madeHtml}${made.length && djs.length ? `
+    <h3>Add another DJ preset</h3>
+    <p class="sgntext">These DJs can have a preset of their own too, each with an hour of their songs:
+      <b>${djs.map((d) => esc(d.name)).join(", ").replace(/, ([^,]*)$/, " and $1")}</b>.</p>` : ""}
+    <p class="unote"><b>Each DJ preset takes a few minutes to save on every WiiM. ${
+      !made.length ? "Start with one. Three is a good number to stop at."
+      : made.length < 3 ? `You have ${made.length === 1 ? "one" : "two"}. Three is a good number to stop at.`
+      : `You have ${made.length === 3 ? "three" : made.length}: three is a good number to stop at.`}</b></p>
+    ${form}
+  </section>
+  ${back}`;
+}
+// TALK, AN EXTRA (MC-40; the owner, 2026-11-10: "I like the Talk page and I
+// think we should offer it as an extra"): the owner's own OpenAI key, pasted
+// here and tested before it is kept, and the minutes a day the house may
+// talk. Paid by the minute on the owner's OpenAI account; not part of
+// ChatGPT Plus. A house whose key is a Worker secret is shown as it is.
+function setupTalkHtml({ on = false, fromSecret = false, hint = null, minutes = 60, choices = [], cents = 5, startAt = 30 }) {
+  const dollars = (m) => `$${((m * cents) / 100).toFixed(2).replace(/\.00$/, "")}`;
+  const pick = (cur) => `<select id="stmin" name="minutes">${choices.map((m) =>
+    `<option value="${m}"${m === cur ? " selected" : ""}>${m} minutes a day (at most about ${dollars(m)} a day)</option>`).join("")}</select>`;
+  const head = `<h2 id="scard">Talk<span class="usub">Voice in your house's app, with your own OpenAI key</span></h2>`;
+  const what = `<p class="sgntext">Talk is a tab in your house's app where you ask by voice: a DJ, a preset, "more like this". It runs
+      on OpenAI's voice model, paid by the minute on <b>your own OpenAI account</b>: about ${esc(String(cents))} cents a minute of
+      talking. It is separate from ChatGPT Plus, which does not include it.</p>`;
+  const back = `<a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
+  if (on) {
+    return `<section class="ucard" aria-labelledby="scard">
+    ${head}
+    <div class="setsum part" id="done">
+      <div><b>Talk is on</b><span>${fromSecret ? "Its key is set as a Worker secret on this house." : `Your OpenAI key${hint ? `, ending ${esc(hint)},` : ""} is kept by this house.`}</span></div>
+      <div><b>${esc(String(minutes))} minutes a day</b><span>At most about ${esc(dollars(minutes))} a day. The day's minutes are counted by the house, and a call is ended when they run out.</span></div>
+    </div>
+    <form class="setform" method="post" action="/setup/talk"><input type="hidden" name="do" value="minutes">
+      <label for="stmin">Minutes a day</label>
+      ${pick(minutes)}
+      <button class="sgo" type="submit" data-busy="Saving…">Save the minutes</button>
+    </form>
+    <p class="unote">Set a monthly spending limit on your OpenAI account too: it holds whatever this house is set to.</p>
+    ${fromSecret ? "" : `<h3>Turn Talk off</h3>
+    <form class="setform" method="post" action="/setup/talk"><input type="hidden" name="do" value="remove">
+      <p class="sgntext">This takes the key out of your house and the Talk tab away. The key itself stays valid at OpenAI until you delete it there.</p>
+      <button class="setcopy" type="submit" data-busy="Removing…">Remove the key</button>
+    </form>`}
+  </section>
+  ${back}`;
+  }
+  return `<section class="ucard" aria-labelledby="scard">
+    ${head}
+    ${what}
+    <ol class="sgntext setsteps">
+      <li><b>An OpenAI account for the API.</b> At <b>platform.openai.com</b>, sign in (your ChatGPT sign-in works) and add
+        a payment method and some credit, on its Billing page.</li>
+      <li><b>A spending limit.</b> On the same site, set a monthly limit you are comfortable with. It caps the bill
+        whatever happens here.</li>
+      <li><b>A key.</b> On its API keys page, create a new secret key and copy it. It starts with <b>sk-</b> and is shown once.</li>
+    </ol>
+    <form class="setform" method="post" action="/setup/talk"><input type="hidden" name="do" value="key">
+      <label for="stkey">Your OpenAI key</label>
+      <input type="password" id="stkey" name="key" required autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="sk-…">
+      <label for="stmin">Minutes a day</label>
+      ${pick(startAt)}
+      <p class="unote">Your house asks OpenAI whether the key can use the voice model before it keeps it, and says so if it cannot.
+        The key is kept by your house only, and is not part of a backup file.</p>
+      <button class="sgo" type="submit" data-busy="Testing the key…">Save and test</button>
+    </form>
+  </section>
+  ${back}`;
 }
 // Restoring a backup, and the house's check (backup.js).
 function setupRestoreHtml() {
@@ -6593,7 +6864,7 @@ function setupTimezoneHtml({ current, fileSays }) {
   </section>
   <a class="setback" href="/setup">${icon("back", 16)} Back to the checklist</a>`;
 }
-export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null, keys = null, updates = null }) {
+export function renderSetup({ state, recovery = null, flash = null, checklist = null, speaker = null, timezone = null, app = null, assistant = null, helper = null, rows = [], requests = null, curator = null, endless = null, djpreset = null, talk = null, keys = null, updates = null }) {
   const flashHtml = flash ? `<div class="flash" role="status"><p>${esc(flash)}</p></div>` : "";
   const card = (title, sub, body) => `<section class="ucard" aria-labelledby="scard">
     <h2 id="scard">${esc(title)}<span class="usub">${esc(sub)}</span></h2>
@@ -6637,6 +6908,8 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
     : state === "requests" ? setupRequestsHtml(requests)
     : state === "curator" ? setupCuratorHtml(curator)
     : state === "endless" ? setupEndlessHtml(endless)
+    : state === "djpreset" ? setupDjPresetHtml(djpreset)
+    : state === "talk" ? setupTalkHtml(talk)
     : state === "check" ? setupCheckHtml(rows)
     : state === "keys" ? setupKeysHtml(keys)
     : state === "updates" ? setupUpdatesHtml(updates)
@@ -6777,8 +7050,13 @@ export function renderSetup({ state, recovery = null, flash = null, checklist = 
   document.querySelectorAll("button[data-copy]").forEach(function (b) {
     b.hidden = false;
     b.addEventListener("click", function () {
-      navigator.clipboard.writeText(b.getAttribute("data-copy")).then(function () { b.textContent = "Copied"; },
-        function () { b.textContent = "Select it and copy"; });
+      // One button says Copied at a time (the test house run, finding 18,
+      // 2026-11-10: an earlier one still said it, so which note was on the
+      // clipboard could not be told).
+      navigator.clipboard.writeText(b.getAttribute("data-copy")).then(function () {
+        document.querySelectorAll("button[data-copy]").forEach(function (o) { if (o !== b && o.textContent === "Copied") o.textContent = "Copy"; });
+        b.textContent = "Copied";
+      }, function () { b.textContent = "Select it and copy"; });
     });
   });
 })();
@@ -7818,7 +8096,7 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
   <section class="holds own" data-slug="${esc(sp.slug)}" aria-label="The house's presets, on the ${esc(sp.name)}"${sp === picked ? "" : " hidden"}>
     <h2 class="khead">The house's presets</h2>${ownKeys.length ? `
     <ul class="prows">${rows}${setupHref ? `
-      <li class="prow invite"><a href="${esc(setupHref)}"><span class="pnum">2·3</span><span class="pbody">Endless DJs: a house DJ and the guest DJ. <b>Set them up</b></span></a></li>` : ""}
+      <li class="prow invite"><a href="${esc(setupHref)}"><span class="pnum">+</span><span class="pbody">A DJ on a button of their own, with an hour of their songs. <b>Add a DJ preset</b></span></a></li>` : ""}
     </ul>
     <p class="unread">Tap a preset to play it on the ${esc(sp.name)}. To put one on the remote: play its playlist from the Spotify
       app on the ${esc(sp.name)}, then in the WiiM Home app the song bar, <b>…</b>, <b>Preset</b> and its number.</p>` : `
@@ -9031,7 +9309,10 @@ function endlessWait(action) {
 // true when the music moves.
 function endlessStatus(e, dj) {
   const where = e.now?.device ? djDevice(dj, e.now.device) : "";
-  const what = e.making ? "a fresh set is being made" : e.steering ? "turning" : e.playing
+  // A preset that waits for its curator plays its list and stops: "playing",
+  // never "endless" (MC-40).
+  const what = e.waits ? (e.playing ? `playing${where}` : "not playing")
+    : e.making ? "a fresh set is being made" : e.steering ? "turning" : e.playing
     ? `${esc(e.last ? "the last songs" : e.until ? `endless until ${e.until}` : "playing endless")}${where}` : "not playing";
   return `${e.lane ? "Guest DJ" : "House DJ"} · preset ${esc(String(e.btn))}${e.lane && e.words ? ` · ${esc(e.words)}` : ""} · ${what}`;
 }
@@ -9049,7 +9330,10 @@ function endlessHead(e, moreBtn, { actions = true, dj = null } = {}) {
   const form = `<form method="post" action="${esc(e.action)}" id="endfresh"></form>`;
   if (!actions) return form;
   const pickOn = e.nostart && !e.playing && (e.devices ?? []).includes(e.nostart.device) ? e.nostart.device : e.device;
-  const main = e.making || e.steering ? ""
+  // WAITING FOR A CURATOR (MC-40): Play, and nothing that asks for songs.
+  const main = e.waits ? (e.playing || e.empty ? ""
+      : `<button class="lanebtn" type="submit" form="endfresh" name="do" value="start"><span class="laneic" aria-hidden="true">${icon("play", 18)}</span>Play</button>`)
+    : e.making || e.steering ? ""
     : e.playing ? `${endlessTap(e, "more", "More like this", "lanebtn")}${endlessTap(e, "change", "Change it up", "calmout")}`
     // A preset with nothing on it yet (2026-11-05): its first set, not Play.
     : e.empty ? `<button class="lanebtn" type="submit" form="endfresh" name="do" value="fresh"><span class="laneic" aria-hidden="true">${icon("fresh", 18)}</span>Start fresh</button>`
@@ -9063,6 +9347,15 @@ function endlessHead(e, moreBtn, { actions = true, dj = null } = {}) {
 function endlessNow(dj, e, { steer = false } = {}) {
   if (!e) return "";
   const name = dj.name;
+  // WAITING FOR A CURATOR (MC-40): one line in place of the endless buttons,
+  // saying how new songs come and what would add them by itself.
+  if (e.waits) {
+    return `
+  <section class="block endless endnowb" aria-label="${esc(name)} now">${e.blocked ? `
+    <p class="endspent">Spotify is limiting this account's requests for about ${esc(e.blocked)} more (quota exceeded), so Play here is refused until then. The preset on the speaker still works.</p>` : ""}
+    <p class="endnow">New songs: ask ${esc(name)} in Claude or ChatGPT for a set. It lands on preset ${esc(String(e.btn))}, in place of the songs there. To have songs added by themselves while it plays, <a href="/setup">set up the curator</a>.</p>${e.toSave ? saveCard(e) : ""}
+  </section>`;
+  }
   const forDev = e.making === true || e.making === "new" ? "" : ` for the ${e.making}`;
   // Not "a few minutes" while the curator is quiet (`e.quiet`, 2026-10-02):
   // nothing is coming until it checks in again.
@@ -9219,14 +9512,17 @@ function speakerSheet(devices) {
 function moreSheet(dj, e, offer) {
   const name = dj.name;
   const rows = [
-    e ? `
+    e && !e.waits ? `
       <button class="mrow" type="submit" form="endfresh" name="do" value="fresh"><span class="putic" aria-hidden="true">${icon("fresh", 20)}</span><span class="puttx">Start fresh<small>A new one-hour opening · uses one of today's DJ runs</small></span><span class="putchev" aria-hidden="true">${icon("chevron", 16)}</span></button>` : "",
     e?.list ? `
       <a class="mrow" href="${esc(e.list)}" rel="noopener noreferrer"><span class="putic" aria-hidden="true">${icon("out", 20)}</span><span class="puttx">Playlist in Spotify<small>${esc(name)}'s endless list</small></span><span class="putchev" aria-hidden="true">${icon("chevron", 16)}</span></a>` : "",
     e ? moveRow(dj, offer) : "", e ? giveUpRow(dj, e) : "", putBlock(dj, offer, { bare: true }),
     e ? `
       <details class="putfold mhelp"><summary><span class="putic" aria-hidden="true">${icon("help", 20)}</span><span class="puttx">How this works</span><span class="putchev" aria-hidden="true">${icon("chevron", 16)}</span></summary>
-          <p class="endnote">${e.lane ? `Play and ${esc(name)} keeps going` : `Press ${esc(String(e.btn))} on the remote and ${esc(name)} keeps going`}: new songs are added as the set runs low, for up to ${esc(String(e.hours ?? 4))} hours a start. Stop, and the songs you did not hear wait for the next press, whenever it is; <b>Start fresh</b> gives a new opening instead. <b>More like this</b> and <b>Change it up</b> take over after the song that is playing. On Talk you can say it in your own words: “${esc(name)}, more upbeat” — add “now” to cut the song.</p>
+          <p class="endnote">${e.waits
+            // A preset that waits for its curator (MC-40): what a press does, and how new songs come.
+            ? `Press ${esc(String(e.btn))} on the remote and ${esc(name)} plays the songs on this preset, about an hour. Nothing adds songs by itself yet: ask ${esc(name)} for a set in Claude or ChatGPT, and it takes their place. Once a curator is set up, the preset adds songs while it plays.`
+            : `${e.lane ? `Play and ${esc(name)} keeps going` : `Press ${esc(String(e.btn))} on the remote and ${esc(name)} keeps going`}: new songs are added as the set runs low, for up to ${esc(String(e.hours ?? 4))} hours a start. Stop, and the songs you did not hear wait for the next press, whenever it is; <b>Start fresh</b> gives a new opening instead. <b>More like this</b> and <b>Change it up</b> take over after the song that is playing. On Talk you can say it in your own words: “${esc(name)}, more upbeat” — add “now” to cut the song.`}</p>
     </details>` : ""].join("");
   if (!rows.trim()) return "";
   return `

@@ -94,3 +94,78 @@ test("a house without endless DJs, or without a requests preset, is told only th
   assert.doesNotMatch(b.how_to_play, /replace_playlist|play_endless/);
 });
 
+
+// A DJ'S SET, HEARD NOW (the test house run, findings 6 and 12, 2026-11-11).
+// ChatGPT wrote "Vibe, play me 20 minutes" and did not play it, then played
+// "Pub Rock, play me 20 minutes" as a loose queue that landed on no preset.
+// The house does both halves itself: `play: true` on the write starts the
+// playlist, and a DJ named on a loose queue stops it before anything plays.
+// A speaker that plays what it is handed: the playlist's context once started.
+function playing(f) {
+  const inner = globalThis.fetch;
+  let context = null;
+  globalThis.fetch = async (url, init = {}) => {
+    const u = new URL(String(url));
+    const path = u.pathname.replace(/^\/v1/, "");
+    if ((init.method || "GET") === "PUT" && path === "/me/player/play") {
+      try { context = JSON.parse(init.body).context_uri ?? null; } catch { context = null; }
+    }
+    if ((init.method || "GET") === "GET" && path === "/me/player" && context) {
+      f.calls.push("GET /me/player");
+      return Response.json({ is_playing: true, device: { id: "device-1", name: "Pro Plus" }, context: { uri: context },
+        shuffle_state: false, repeat_state: "off", item: { uri: "spotify:track:aaa", name: "A", artists: [{ name: "X" }], duration_ms: 1000 } });
+    }
+    return inner(url, init);
+  };
+  return () => { globalThis.fetch = inner; };
+}
+
+test("a DJ named on a loose queue: nothing plays, and the answer says where the set goes", async () => {
+  const f = installFetch();
+  try {
+    await assert.rejects(callTool(house(), "play_uris", { uris: ["spotify:track:aaa"], dj: "vibe" }, { remaining: 40 }),
+      /never played as a loose queue[\s\S]*replace_playlist: playlist "guest on spotify" \(the requests preset, 1\), dj "vibe"[\s\S]*play: true[\s\S]*Nothing was played/);
+    assert.ok(!f.calls.some((c) => c === "PUT /me/player/play"), "nothing was started");
+    // A house with no requests preset has nowhere to keep it: it plays.
+    const plain = await callTool(makeEnv(), "play_uris", { uris: ["spotify:track:aaa"], dj: "vibe" }, { remaining: 40 });
+    assert.ok(f.calls.includes("PUT /me/player/play"));
+    assert.equal(plain.house_rule, undefined);
+    // Blank is not given (a backend that fills every field).
+    f.calls.length = 0;
+    await callTool(house(), "play_uris", { uris: ["spotify:track:aaa"], dj: "" }, { remaining: 40 });
+    assert.ok(f.calls.includes("PUT /me/player/play"));
+  } finally { f.restore(); }
+});
+
+test("play: true on a write starts the playlist once it is written; without it nothing starts, and the answer says how", async () => {
+  const f = installFetch();
+  const undo = playing(f);
+  try {
+    const e = house();
+    const quiet = await callTool(e, "replace_playlist", { playlist: "guest on spotify", uris: ["spotify:track:aaa"], dj: "vibe", ask: "Vibe, twenty minutes for later" }, { remaining: 40 });
+    assert.ok(!f.calls.includes("PUT /me/player/play"), "for later: nothing started");
+    assert.equal(quiet.playback, undefined);
+    assert.match(quiet.note, /Nothing was started[\s\S]*If the user asked to hear this set now \("play me…"\), start it: play_playlist/);
+    const out = await callTool(e, "replace_playlist", { playlist: "guest on spotify", uris: ["spotify:track:bbb"], dj: "vibe", ask: "Vibe, play me 20 minutes", play: true }, { remaining: 40 });
+    assert.deepEqual(f.state.contents.map((t) => t.uri), ["spotify:track:bbb"], "written");
+    assert.ok(f.calls.includes("PUT /me/player/play"), "and started");
+    assert.equal(out.playback.started, true);
+    assert.equal(out.playback.preset_safe, true, "as the playlist, not a loose queue");
+    assert.match(out.note, /Contents replaced, and the playlist started, as asked/);
+    // Talk starts music through its own speaker rule, never with a write.
+    f.calls.length = 0;
+    const talk = await callTool({ ...e, __via: "talk" }, "replace_playlist", { playlist: "guest on spotify", uris: ["spotify:track:ccc"], dj: "vibe", play: true }, { remaining: 40 });
+    assert.ok(!f.calls.includes("PUT /me/player/play"));
+    assert.equal(talk.playback, undefined);
+  } finally { undo(); f.restore(); }
+});
+
+test("a start that fails after the write is said as that: the set is on the preset", async () => {
+  const f = installFetch({ fail: { "PUT /me/player/play": "asleep" } });
+  try {
+    const out = await callTool(house(), "replace_playlist", { playlist: "guest on spotify", uris: ["spotify:track:aaa"], dj: "vibe", play: true }, { remaining: 40 });
+    assert.deepEqual(f.state.contents.map((t) => t.uri), ["spotify:track:aaa"], "the write stands");
+    assert.equal(out.playback.started, false);
+    assert.match(out.note, /not known to have started[\s\S]*The set is on the preset/);
+  } finally { f.restore(); }
+});

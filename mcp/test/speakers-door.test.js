@@ -145,6 +145,7 @@ test("version A: the row playing here pauses, says whose set and how long; Core 
     const html = await (await worker.fetch(get(`/buttons/${KEY}/wiim`), e)).text();
     assert.match(html, /<li class="prow on"><span class="pnum">1<\/span><span class="pbody"><span class="peye">Requests<\/span><span class="pname">Vibe<\/span><span class="pmeta">3 tracks · [^<]*loaded [^<]* · playing<\/span>/);
     assert.match(html, /action="\/buttons\/[^"]+\/wiim\/transport" class="pact"><input type="hidden" name="do" value="pause"><input type="hidden" name="device" value="Ultra">/);
-    assert.match(html, /<li class="prow invite"><a href="\/setup">[\s\S]*Endless DJs: a house DJ and the guest DJ\. <b>Set them up<\/b>/);
+    // The invite is to a DJ preset since MC-40 (it read "2·3 Endless DJs" and led to the checklist).
+    assert.match(html, /<li class="prow invite"><a href="\/setup\/dj-preset"><span class="pnum">\+<\/span>[\s\S]*A DJ on a button of their own, with an hour of their songs\. <b>Add a DJ preset<\/b>/);
   } finally { globalThis.fetch = inner; f.restore(); }
 });

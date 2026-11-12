@@ -36,6 +36,18 @@ import { ARCHIVE } from "./archive-identity.js";
 // minutes run out. So the cap is a real bound on the wallet, not a request
 // to the page. Before MC-16 a conversation cost ten minutes flat (six a day).
 export const CAP_MINUTES = 60;
+// THE MINUTES ARE THE HOUSE'S OWN (MC-40, Talk as an extra; the owner,
+// 2026-11-10): a setting its owner chooses on the setup page's Talk step,
+// one of these and never more, so a slip cannot open the bill. A house that
+// has chosen nothing keeps 60, as every house had; one that turns Talk on
+// from the page starts at 30. Every reader goes through talkMinutes: the
+// Talk page, the ledger's calls, the house rules and the checklist.
+export const TALK_MINUTES_CHOICES = [10, 20, 30, 60];
+export const TALK_MINUTES_NEW = 30;
+export function talkMinutes(env) {
+  const n = Number(env?.TALK_MINUTES);
+  return TALK_MINUTES_CHOICES.includes(n) ? n : CAP_MINUTES;
+}
 export const BEAT_MS = 30_000;
 // THE QUIET CLOSE (MC-17, the owner: "hang up sooner after the desk has
 // finished"). Thirty seconds, counted from the END of the desk's answer and

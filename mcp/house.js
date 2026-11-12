@@ -4,11 +4,11 @@
 import { safeUrl, plural, imageUrl } from "./programs.js";
 import { PERSONAS } from "./djs.js";
 import { ARCHIVE } from "./archive-identity.js";
-import { CAP_MINUTES, houseDay, houseTz } from "./voice.js";
+import { talkMinutes, houseDay, houseTz } from "./voice.js";
 import { CATALOGS } from "./catalog.js";
 import { playlistIdFrom } from "./spotify.js";
 import { station } from "./station.js";
-import { endlessLoad, endlessSlots, houseDjRoom, parseEndless, talkOn } from "./endless.js";
+import { endlessLoad, endlessSlots, houseDjRoom, parseEndless, talkOn, waiting } from "./endless.js";
 import { configuredPlaylistId } from "./now.js";
 import { ROOM_ARCHIVE_TILE, fallbackDevice, parseRoomDevices, parseSpeakers, readTiles, speakerSlug, tileFor, writeTiles } from "./room.js";
 import { PLAYLIST_PARSERS, SNAP_TTL_S, catalogFor, fold, lastfmOn, parseAliases, programsKV, withBudget } from "./services.js";
@@ -367,6 +367,8 @@ export async function ownPresetRows(env, endlessKeys = {}) {
         meta: t?.count === 0 ? "Ask a DJ for a set in the Claude app"
           : [t?.count != null ? `${t.count} ${t.count === 1 ? "track" : "tracks"}` : null, t?.runtime ?? null, on?.at ? when(on.at) : null].filter(Boolean).join(" · ") };
     }
+    // A preset that waits for its curator (MC-40) plays its songs and stops.
+    if (kind === "house" && waiting(env)) return { btn: k.btn, kind, pid: f.id, eyebrow: "House DJ", name: k.name, meta: `About an hour of songs · ask ${k.name} for new ones` };
     if (kind === "house") return { btn: k.btn, kind, pid: f.id, eyebrow: "House DJ · endless", name: k.name, meta: "Plays for as long as you listen" };
     const ldj = lane?.dj && lane.ready !== false ? findDj(env, lane.dj) : null;
     return { btn: k.btn, kind, pid: f.id, eyebrow: "Guest DJ · endless", name: ldj?.name ?? "Nobody yet",
@@ -407,6 +409,9 @@ export async function rulesFacts(env) {
   const topup = first?.topupMinutes ?? 30;
   const talk = talkOn(env);
   const archiveSays = "The house's own live recordings, on no music service.";
+  // DJ presets that wait for a curator (MC-40): the page says what they are,
+  // and none of what an endless DJ does.
+  const waits = waiting(env);
   const keys = [];
   for (let n = 1; n <= 12; n++) {
     const g = requests.find((x) => x.btn === n);
@@ -423,7 +428,9 @@ export async function rulesFacts(env) {
     } else if (p) {
       const name = slots.find((x) => x.button === n)?.name ?? findDj(env, p.dj)?.name ?? p.dj;
       keys.push({ n, role: "house", name, title: name,
-        text: `Always ${name}, endless, until you put another DJ on ${n} from their page. Adds ${p.batchMinutes} minutes when ${p.topupMinutes} are left.` });
+        // A preset that waits for its curator (MC-40): its songs, and how new ones come.
+        text: waits ? `${name}'s own preset: about an hour of their songs. Ask ${name} for a set in Claude or ChatGPT and it lands here. Once a curator is set up, it adds songs by itself.`
+          : `Always ${name}, endless, until you put another DJ on ${n} from their page. Adds ${p.batchMinutes} minutes when ${p.topupMinutes} are left.` });
     } else if (h.archive?.btn === n) {
       keys.push({ n, role: "archive", name: ROOM_ARCHIVE_TILE.name, title: ROOM_ARCHIVE_TILE.name,
         text: `${archiveSays}${talk ? " Ask Talk for a show, a song or a venue and it loads here." : ""}` });
@@ -443,19 +450,21 @@ export async function rulesFacts(env) {
       ? `The newest set you asked any DJ for: ${requests.map((g) => `${g.btn} on ${RULE_SERVICE[g.catalog] ?? g.catalog}`).join(", ")}.`
       : "The newest set you asked any DJ for." },
     { role: "guest", title: "Guest DJ", text: "Whoever you last played endless who has no preset of their own." },
-    { role: "house", title: house_.length > 1 ? "House DJs" : "House DJ", text: house_.length > 1
+    { role: "house", title: house_.length > 1 ? "House DJs" : "House DJ", text: waits
+      ? `${house_.length > 1 ? "One DJ each" : "One DJ"}, with about an hour of their songs. Ask that DJ for a set and it lands on their preset.`
+      : house_.length > 1
       ? "One DJ each, endless. The same DJ every press, until you swap them from a DJ’s page."
       : "One DJ, endless. The same DJ every press, until you swap them from a DJ’s page." },
     { role: "archive", title: "Archive", text: archiveSays },
     { role: "yours", title: "Yours", text: `Saved in the WiiM app. The house never changes ${yours.length > 1 ? "them" : "it"}.` },
   ].filter((k) => of(k.role).length).map((k) => ({ ...k, nums: presetRun(of(k.role)) }));
   const numbers = [];
-  if (first) {
+  if (first && !waits) {
     numbers.push({ big: String(cfg.dailyRuns), say: "endless runs a day: top-ups, fresh starts, steers" },
       { big: String(batch), say: `minutes added when ${topup} are left` },
       { big: String(first.noRepeatSongs), say: "songs before a repeat" });
   }
-  if (talk) numbers.push({ big: String(CAP_MINUTES), say: "minutes of Talk a day" });
+  if (talk) numbers.push({ big: String(talkMinutes(env)), say: "minutes of Talk a day" });
   numbers.push({ big: String(Math.round(SNAP_TTL_S / 86400)), say: "days to undo a rewrite" },
     { big: "6", say: "months, then sign in to Spotify again" });
   // A helper counts once it has ever reported: every claimed house holds the
@@ -473,8 +482,11 @@ export async function rulesFacts(env) {
     keys, kinds, numbers,
     tags: {
       requests: requests.length > 0, tidal: requests.some((g) => g.catalog === "tidal"),
-      endless: presets.length > 0, housedj: presets.some((p) => !p.lane), guest: !!lane,
-      archive: !!h.archive, talk, helper, history: env.RULES_HISTORY === "on", newdj: !!houseDjRoom(env, cfg),
+      // While the presets wait, nothing is endless: the Endless DJs section
+      // and its questions go, and the DJ presets section says what there is.
+      endless: presets.length > 0 && !waits, housedj: presets.some((p) => !p.lane) && !waits, guest: !!lane && !waits,
+      waits,
+      archive: !!h.archive, talk, helper, history: env.RULES_HISTORY === "on", newdj: !!houseDjRoom(env, cfg) && !waits,
       lastfm: lastfmOn(env),
       // ChatGPT is the house's curator (MC-31 6b): its rules page says so.
       chatgpt: curatorKind(env) === "chatgpt",
@@ -491,10 +503,12 @@ export async function rulesFacts(env) {
       "guest preset": String(lane?.button ?? ""),
       "house presets": presetRun(presets.filter((p) => !p.lane).map((p) => p.button)),
       "endless presets": presetRun(presets.map((p) => p.button)),
+      // The day's endless runs (`dailyRuns`; this house 20 since 2026-11-10, 12 unset).
+      "daily runs": String(cfg?.dailyRuns ?? 12),
       "archive preset": String(h.archive?.btn ?? ""),
       // What to ask the archive for, in this house's words (archive-identity.js).
       "archive asks": ARCHIVE.rulesAsks,
-      "talk minutes": String(CAP_MINUTES),
+      "talk minutes": String(talkMinutes(env)),
       "time zone": zone,
       "notes default": env.REQUEST_NOTES === "long" ? "the long read" : "short notes",
     },
@@ -565,8 +579,10 @@ export async function endlessNamed(env, p, preset) {
     const slot = endlessSlots(env, cfg, state).find((x) => x.button === e.button);
     if (slot) { out.name = slot.name; out.dj = slot.dj; }
     // An endless set, a house DJ's or the guest DJ's: the now panel offers
-    // its steering by this.
-    out.endless = true;
+    // its steering by this. Not while the house waits for its curator
+    // (MC-40): the preset is the DJ's and is named for them, but it plays
+    // its list and stops, and nothing can steer it.
+    if (waiting(env)) out.waits = true; else out.endless = true;
     // THE LANE (MC-27) is named for itself and whoever is in it, never as a
     // preset number the remote may not hold yet: "Guest DJ · Dutch".
     if (e.lane) {
@@ -700,18 +716,27 @@ export function howToPlay(env, dj, endlessBtn = null) {
   const t = guestFor(env, "tidal");
   const cfg = parseEndless(env);
   const endless = cfg?.mode === "live" && (cfg.presets ?? []).some((p) => p.lane) && dj.endless !== false && !dj.archiveOnly;
+  // A house with DJ presets and no guest DJ preset (MC-40): a DJ who has a
+  // preset plays it, and nobody else plays endless.
+  const ownOnly = !endless && cfg?.mode === "live" && endlessBtn != null;
+  // While the presets wait for a curator, an asked set lands on the DJ's
+  // own preset (tools.js replace_playlist), and nothing can be steered.
+  const waits = waiting(env);
   const kept = !!(g?.live || t?.live);
   const where = (g?.live ? `the requests preset ("${guestAlias("spotify")}", preset ${g.btn})` : "the requests preset") +
     (t?.live ? ` (or "${guestAlias("tidal")}", preset ${t.btn}, when it is asked on Tidal)` : "");
   const told = dj.needsWords ? ` ${dj.name} must be told what to play: ${dj.needsWords}, in words.` : "";
-  const play = endless
+  const play = endless || ownOnly
     ? `"Play ${dj.name}" or "${dj.name}, endless" is play_endless${endlessBtn ? ` (their own preset, ${endlessBtn})` : ""}: no new set.`
     : `This house plays no DJ endless, so "Play ${dj.name}" is a set, as below.`;
+  const lands = waits && endlessBtn != null && kept
+    ? ` In this house their set lands on their own preset, ${endlessBtn}, whatever it is aimed at: the answer says so, and gives the playlist to play.` : "";
   const set = kept
     ? `A SET asked of them (a length, a mood, a subject) is replace_playlist onto ${where} ` +
-      "with dj and ask, then play_playlist if they want it now: never play_uris, so the set can be kept and steered."
+      "with dj and ask, and play: true when they asked to hear it now (\"play me…\"): never play_uris, so the set can be kept and steered."
     : "A SET asked of them (a length, a mood, a subject) is play_uris: this house has no requests preset to keep it on.";
-  return `${play}${told} ${set}` + (endless ? " A direction while they play endless (\"more upbeat\") is steer_endless, never a rewrite." : "");
+  return `${play}${told} ${set}${lands}` +
+    ((endless || ownOnly) && !waits ? " A direction while they play endless (\"more upbeat\") is steer_endless, never a rewrite." : "");
 }
 // The door's refusal while a request writes a guest, and the page's flash
 // for it: one sentence, so the two cannot drift.

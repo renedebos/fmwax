@@ -907,6 +907,14 @@ export function voiceDecide(op, args = {}, dayRows = [], row = null, now = Date.
 // `retry` says whether the sweep should try again later: yes for anything
 // that looks like transport (the attach threw, a 5xx, no answer on the
 // socket), no for a refusal that says the session is not there to close.
+// THE KEY A CLOSE IS MADE WITH. A Worker secret is in this object's own env.
+// A key the house's owner gave on the setup page is not: it lives in the
+// settings store and reaches only a request. The Worker sends it with each
+// reserve (`close_key`) and it is kept here, so the alarm that hangs a call
+// up at the day's cap, long after the request is gone, still can. Without
+// it a house on a given key could open calls its cap could not close.
+export const VOICE_KEY_AT = "voice:close-key";
+export const voiceCloseKey = (env, kept) => env?.OPENAI_API_KEY || (typeof kept === "string" && kept ? kept : null);
 export async function closeLiveSession(env, sessionId, { fetcher = fetch, timeoutMs = 8000 } = {}) {
   const key = env?.OPENAI_API_KEY;
   if (!key || !sessionId) return { closed: false, seconds: null, reason: key ? "no-session" : "no-key", retry: false };
@@ -1136,7 +1144,7 @@ export class StationLedger {
   // object makes its own.
   async #voiceOutcome(row) {
     if (!row.session_id) return { closed: false, seconds: null, reason: "unbound", retry: false };
-    return closeLiveSession(this.env, row.session_id);
+    return closeLiveSession({ OPENAI_API_KEY: voiceCloseKey(this.env, await this.state.storage.get(VOICE_KEY_AT)) }, row.session_id);
   }
   // THE SWEEP: for each day, every line past its grace, every line once the
   // day's cap is spent, every failed close whose retry is due — the charge's
@@ -1596,6 +1604,10 @@ export class StationLedger {
         op === "voice-settle" || op === "voice-void" || op === "voice-day" ||
         op === "voice-list" || op === "voice-relabel") {
       this.sql.exec("DELETE FROM voice_sessions WHERE created_at < ?", now - CALLS_KEEP_MS);
+      // Kept for the close (voiceCloseKey), and never part of any answer.
+      if (op === "voice-reserve" && typeof args.close_key === "string" && args.close_key && args.close_key.length <= 300) {
+        await this.state.storage.put(VOICE_KEY_AT, args.close_key);
+      }
       const cap = String(args.cap ?? "");
       const row = cap
         ? (this.sql.exec("SELECT * FROM voice_sessions WHERE cap = ?", cap).toArray()[0] ?? null)

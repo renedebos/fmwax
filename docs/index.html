@@ -46,16 +46,46 @@ code{font:600 .9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;backgrou
 .said{min-height:1.4em;font-size:.875rem;color:var(--warm);margin:.4rem 0 0}
 a{color:var(--deep)}
 noscript p{color:var(--warm);font-weight:600}
+.lv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6rem;margin:.8rem 0 .6rem}
+.lv div{border-radius:12px;padding:.8rem;background:var(--tint);display:flex;flex-direction:column;gap:.3rem}
+.lv .now{background:var(--deep);color:var(--on)}
+.lv b{font-size:1.05rem;line-height:1.2}
+.lv .k{font-size:.75rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--deep)}
+.lv .now .k{color:inherit}
+.lv span{font-size:.875rem;line-height:1.4}
+.lv .n{font-size:.8125rem;color:var(--deep);margin-top:.1rem}
+.lv .now .n{color:inherit}
+@media (max-width:34rem){.lv{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
   <h1>Start your fmwax house</h1>
-  <p class="lede">Three steps, about ten minutes. Keep this page open until the last one. First time here? Read
-    <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md">Start here</a> for what you need: a free
-    Cloudflare account and a free GitHub account.</p>
+  <p class="lede">Three steps on this page, about ten minutes; your house's setup page takes it from there. Keep
+    this page open until the last one. First time here? Read
+    <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md">Start here</a> for what you need: a WiiM,
+    Spotify Premium, Claude or ChatGPT, a free Cloudflare account and a free GitHub account.</p>
   <noscript><p>This page needs JavaScript to make your key. Without it, make up a password of 24 characters or more,
     write it in a note, and follow Start here.</p></noscript>
+
+  <section aria-labelledby="hl">
+    <h2 id="hl">What you are starting</h2>
+    <p>Today you install Level 1. The rest you add later, from your house's setup page, when you want it.
+      You can stop at any level and it works.</p>
+    <div class="lv">
+      <div class="now"><span class="k">Level 1 · today</span><b>Ask a DJ</b>
+        <span>Ask for a set in Claude or ChatGPT. It plays on your WiiM and stays on one preset.</span>
+        <span class="n">About an hour</span></div>
+      <div><span class="k">Level 2 · later</span><b>DJ presets</b>
+        <span>A DJ on a button of their own, with an hour of their songs from the start.</span>
+        <span class="n">Needs nothing more</span></div>
+      <div><span class="k">Level 3 · later</span><b>Endless</b>
+        <span>Your DJ presets add songs by themselves for as long as you listen.</span>
+        <span class="n">Needs Claude Pro or ChatGPT Plus</span></div>
+    </div>
+    <p class="note"><b>Extras, at any level:</b> the home helper, on a computer at home, and Talk, voice with your own OpenAI key.
+      <a href="https://github.com/renedebos/fmwax#what-you-get-level-by-level">What each level needs</a></p>
+  </section>
 
   <section aria-labelledby="h1">
     <h2 id="h1"><span class="n">1</span>Your setup key</h2>
@@ -72,7 +102,7 @@ noscript p{color:var(--warm);font-weight:600}
 
   <section aria-labelledby="h2">
     <h2 id="h2"><span class="n">2</span>Deploy to Cloudflare</h2>
-    <p>The button in step 1 opens Cloudflare in a new tab. <b>Keep this tab open beside it</b>: you come back here for
+    <p>The button below opens Cloudflare in a new tab. <b>Keep this tab open beside it</b>: you come back here for
       each step, and once to press the button a second time.</p>
     <p class="note">Signed in to other Cloudflare or GitHub accounts in this browser? Then open this page in a private
       window first, so your house can't land on the wrong account. (The key is made again there: use that one.)</p>
@@ -82,11 +112,11 @@ noscript p{color:var(--warm);font-weight:600}
           href="https://deploy.workers.cloudflare.com/?url=https://github.com/renedebos/fmwax">Deploy to Cloudflare</a></div></li>
       <li><b>Connect GitHub.</b> On the form, click the <b>Git account</b> box to open its list.
         <ul>
-          <li><b>Your GitHub name is in the list:</b> choose it, and skip to step 4.</li>
+          <li><b>Your GitHub name is in the list:</b> choose it, and skip to <b>Change four things on the form</b>, below.</li>
           <li><b>It is not:</b> choose <b>New GitHub connection</b>, sign in to GitHub, choose <b>All repositories</b>,
             then click <b>Install &amp; Authorize</b>.</li>
           <li><b>GitHub shows a settings page with a greyed-out Save button,</b> and no Install: Cloudflare is already
-            connected to your GitHub. Change nothing there, and go on to step 3.</li>
+            connected to your GitHub. Change nothing there, and go on to the next step.</li>
         </ul></li>
       <li><b>Cloudflare may now show "Select a repository". Don't pick anything there.</b> Press the button again, here.
         The form opens once more: click the <b>Git account</b> box and choose your GitHub name from the list. The rest
@@ -103,7 +133,7 @@ noscript p{color:var(--warm);font-weight:600}
         </table>
       </li>
       <li>Click <b>Deploy</b> and wait about a minute, until the log ends with <b>Success! Build completed</b>. Then
-        click <b>Copy build log</b>, at the top right of the log, and go on to step 3 here.</li>
+        click <b>Copy build log</b>, at the top right of the log, and go on to <b>3, Open your setup page</b>, below on this page.</li>
     </ol>
     <p class="note">Pictures of the form, and what to do if the build fails:
       <a href="https://github.com/renedebos/fmwax/blob/main/START-HERE.md#step-2-press-the-deploy-button">Start here, step 2</a>.</p>

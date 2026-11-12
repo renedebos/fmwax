@@ -29,7 +29,15 @@ export const SETTING_NAMES = [
 // `keys` and laid onto the same env names, a Worker secret of the same name
 // always winning, so a house that has its secrets (the owner's) is as it was.
 export const MADE_KEYS = ["MCP_SECRET", "AGENT_SECRET", "PROGRAM_LIBRARY_KEY", "HELPER_SECRET"];
-export const GIVEN_KEYS = ["SPOTIFY_CLIENT_ID", "REQUEST_ROUTINE_TOKEN"];
+// OPENAI_API_KEY (MC-40, Talk as an extra, 2026-11-10): the owner's own key
+// for the Talk tab, pasted on the setup page's Talk step. A Worker secret of
+// the same name wins over it (keysOf), so a house on a secret is untouched.
+export const GIVEN_KEYS = ["SPOTIFY_CLIENT_ID", "REQUEST_ROUTINE_TOKEN", "OPENAI_API_KEY"];
+// What a backup file carries. NOT the OpenAI key: it spends money, where the
+// routine's token only rings a bell, and a backup is a file on somebody's
+// computer. After a restore on a new house it is pasted again; on the same
+// house a restore leaves the key the house holds.
+export const BACKUP_KEYS = [...MADE_KEYS, "SPOTIFY_CLIENT_ID", "REQUEST_ROUTINE_TOKEN"];
 function newKey() {
   // 24 random bytes, base64url: the shape the pages' and connectors' paths take.
   const b = crypto.getRandomValues(new Uint8Array(24));
@@ -48,10 +56,12 @@ function newKey() {
 // PROGRAM_BASE_URL: the house's own address, learned from its owner's setup
 // page where no file sets it (MC-34 1a, the Deploy button's house has no
 // address until it is visited).
+// TALK_MINUTES: Talk's minutes a day, chosen on the setup page's Talk step
+// (voice.js talkMinutes); unset is 60, as every house had.
 // UPDATE_REPO: the owner's own GitHub copy of a house made by the Deploy
 // button, for its Updates step (MC-34 stage 2, updates.js); UPDATES_ON, the
 // copy whose workflow its owner went to commit (the step then folds away).
-export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL", "UPDATE_REPO", "UPDATES_ON"];
+export const PAGE_SETTINGS = ["DEFAULT_DEVICE", "HOUSE_TZ", "ROOM_DEVICES", "BUTTONS", "REQUEST_ROUTINE_ID", "REQUESTS_ENABLED", "AUTOFULFILL_ENABLED", "ENDLESS", "WIIM_NAMES", "CURATOR", "WIIM_SPEAKERS", "DJ_TUNING", "PROGRAM_BASE_URL", "UPDATE_REPO", "UPDATES_ON", "TALK_MINUTES"];
 
 // The settings as this deploy's vars have them: the names present, values as
 // Wrangler hands them over (a string, or BUTTONS' array of tables).
@@ -131,6 +141,26 @@ export class HouseSettings {
       doc.saved_at = new Date().toISOString();
       this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "settings", JSON.stringify(doc));
       return Response.json({ ok: true, page: doc.page });
+    }
+    // THE WORD GOES (MC-40, tasks/mc40-dj-presets.md): the DJ presets of a
+    // house with no curator carry `"waits": true` in the page's ENDLESS, and
+    // the curator's first check-in takes it away. Done HERE, on what the
+    // store holds at this moment, and never by the Worker sending a whole
+    // ENDLESS back: a copy it read a moment earlier would write away a
+    // preset the owner added meanwhile (Codex, 2026-11-10). Changes nothing
+    // and writes nothing where there is no word.
+    if (new URL(request.url).pathname === "/unwait") {
+      if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
+      const row = this.sql.exec("SELECT v FROM doc WHERE k = ?", "settings").toArray()[0];
+      const doc = row ? JSON.parse(row.v) : null;
+      let cfg = null;
+      try { cfg = typeof doc?.page?.ENDLESS === "string" ? JSON.parse(doc.page.ENDLESS) : null; } catch { cfg = null; }
+      if (!cfg || typeof cfg !== "object" || cfg.waits !== true) return Response.json({ ok: true, changed: false });
+      delete cfg.waits;
+      doc.page = { ...doc.page, ENDLESS: JSON.stringify(cfg) };
+      doc.saved_at = new Date().toISOString();
+      this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "settings", JSON.stringify(doc));
+      return Response.json({ ok: true, changed: true });
     }
     // SEVERAL SETTINGS AND KEYS AT ONCE (Codex, 2026-10-17: the curator's
     // task id, its token and the two switches were four writes, and a failure
@@ -437,7 +467,7 @@ export const SETTINGS_READ_MS = 1500;
 export const SETTINGS_KEEP_MS = 10_000;
 const KEPT_DOC = new WeakMap(); // HOUSE binding -> { doc, at }
 const KEPT_GEN = new WeakMap(); // HOUSE binding -> writes seen here
-const SETTINGS_WRITES = new Set(["/settings", "/keys", "/page", "/page-many", "/restore"]);
+const SETTINGS_WRITES = new Set(["/settings", "/keys", "/page", "/page-many", "/restore", "/unwait"]);
 export function forgetKeptSettings(env) {
   if (typeof env?.HOUSE !== "object") return;
   KEPT_DOC.delete(env.HOUSE);
@@ -535,6 +565,23 @@ export async function choosePageSetting(env, name, value) {
   const said = await r.json().catch(() => null);
   if (!r.ok || !said?.ok) throw new Error(`the settings store refused ${name} (${r.status})`);
   return said.page;
+}
+// DO THIS HOUSE'S DJ PRESETS WAIT FOR A CURATOR (MC-40)? Only a setting the
+// page wrote can say so: a file's house has no page to take the word away
+// again, so there it is not the word and the house is as it always was.
+export function pageWaits(env) {
+  const raw = env?.__page?.ENDLESS;
+  if (typeof raw !== "string" || !raw.includes('"waits"')) return false;
+  try { return JSON.parse(raw)?.waits === true; } catch { return false; }
+}
+// The curator has checked in: the store takes the word away (its /unwait).
+// True when it did. A store that does not answer throws, and the house
+// goes on waiting until the curator's next check-in.
+export async function endWaiting(env) {
+  const r = await houseFetch(env, "/unwait", { method: "POST" });
+  const said = await r.json().catch(() => null);
+  if (!r.ok || !said?.ok) throw new Error(`the settings store did not take the word away (${r.status})`);
+  return said.changed === true;
 }
 // Several at once, and keys the owner gave with them, in one write.
 export async function choosePageSettings(env, page, keys = {}) {

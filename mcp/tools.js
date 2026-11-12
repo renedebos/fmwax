@@ -6,7 +6,7 @@ import { TEMPLATE_VERSION, makeSlug, clock, waitWords } from "./programs.js";
 import { DJ_ASKS, HOUSE_RULES } from "./djs.js";
 import { tunedSpacing, tuningWords } from "./tuning.js";
 import { rollCallSlice, rollCallsOf } from "./rollcall.js";
-import { CAP_MINUTES, houseDay, houseTz } from "./voice.js";
+import { talkMinutes, houseDay, houseTz } from "./voice.js";
 import { catalogOfUri } from "./catalog.js";
 import { playlistIdFrom } from "./spotify.js";
 import { station, fingerprintUris, getRequestRecord, SETTLED_TTL_MS, cutReason } from "./station.js";
@@ -20,6 +20,7 @@ import {
   endlessRing, endlessTracks, endlessUpdate, endlessWrote, batchSizes, lastBatchActs, laneLock, laneUndo, laneUnlock,
   endlessSlots, parseEndless, playEndless, programStill, sleptThrough, startsOn, steerWrite,
   RESEARCH_STEPS, cleanResearch, folderOut, heardLately, keepResearch, laneSubject, nearbyOf, researchFolders, researchIfArtist,
+  waiting, NO_CURATOR, noCuratorWords,
 } from "./endless.js";
 import {
   aliasForPlaylistId, anyLiveGuest, contextLabel, destinationFor, djForPlaylistId, findDj, findSpokenDj,
@@ -871,6 +872,9 @@ export async function callTool(env, name, args, budget) {
         making: `${who.name} is making ${words ? `a set of ${words}` : "an opening set"}; it starts on the ${device} in about four minutes.`,
         "needs-words": `${who.name} needs ${r.needs ?? "to be told what to play"}: ask which, then call again with words.`,
         "day-cap": "Today's DJ runs are used up, and this DJ has no program to start from. Try again tomorrow.",
+        // A house whose DJ presets wait for a curator (MC-40): a DJ plays
+        // their own preset, and nobody plays endless beyond it.
+        "no-curator": `${NO_CURATOR}, so nobody plays endless beyond a DJ's own preset. Ask ${who.name} for a set instead.`,
         moved: "Someone picked another guest DJ at the same moment. Nothing was changed.",
         off: "There is no guest DJ slot in this house.",
         "no-dj": `${who.name} cannot play endless.`,
@@ -891,6 +895,10 @@ export async function callTool(env, name, args, budget) {
 
     case "steer_endless": {
       if (!env.STATION) throw new Error("the ledger is not configured, so nothing can be steered here");
+      // WAITING FOR A CURATOR (MC-40): a steer is the curator's work, and a
+      // waiting preset keeps no session to turn. Refused before anything is
+      // read, songs sent with it included.
+      if (waiting(env)) throw new Error(`${noCuratorWords()} A new set asked of a DJ replaces what is there. Nothing was changed.`);
       const words = String(args.words ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
       if (!words) throw new Error("words is required: the direction, as the listener put it");
       const when = args.when === "now" ? "now" : "next";
@@ -1968,11 +1976,11 @@ export async function callTool(env, name, args, budget) {
         return { ok: true, moved: out.moved, from: day, to, tz };
       }
       if (action !== "day") throw new Error(`unknown action: ${action}`);
-      const sum = await station(env, "voice-day", { day, cap_minutes: CAP_MINUTES });
+      const sum = await station(env, "voice-day", { day, cap_minutes: talkMinutes(env) });
       const rows = (await station(env, "voice-list", { day })).sessions ?? [];
       const now = Date.now();
       return {
-        day, tz, used: sum.used ?? 0, used_sec: sum.used_sec ?? 0, cap_minutes: sum.cap_minutes ?? CAP_MINUTES,
+        day, tz, used: sum.used ?? 0, used_sec: sum.used_sec ?? 0, cap_minutes: sum.cap_minutes ?? talkMinutes(env),
         remaining: sum.remaining ?? 0,
         sessions: rows.map((r) => ({
           cap: String(r.cap).slice(0, 8),
@@ -2012,6 +2020,20 @@ export async function callTool(env, name, args, budget) {
             "a Tidal button with replace_playlist and press it on the remote. Nothing was sent."
           : `not track URIs: ${bad.join(", ")}`);
       }
+      // A DJ'S SET IS NOT A LOOSE QUEUE (the test house run, finding 12,
+      // 2026-11-11: ChatGPT played "Pub Rock, play me 20 minutes" with this
+      // tool, so nothing landed on a preset; the rule said afterwards, in the
+      // answer, was not followed, the music already playing). A DJ named
+      // here stops it before anything plays, and says where the set goes.
+      // Refused, not done for the caller: this tool's card says it plays and
+      // loses nothing, and a requests preset written from it would lose a set.
+      const askedOf = String(args.dj ?? "").trim();
+      const sgAsked = askedOf ? guestFor(env, "spotify") : null;
+      if (sgAsked?.live) {
+        throw new Error(`A set asked of a DJ is kept on a preset, never played as a loose queue. Send the same tracks ` +
+          `with replace_playlist: playlist "${guestAlias("spotify")}" (the requests preset, ${sgAsked.btn}), dj "${askedOf.slice(0, 60)}", ` +
+          "ask (the listener's words) and play: true. The house writes the set and starts it. Nothing was played.");
+      }
       // Another queue now: the Shelf's record of what it started no longer
       // names what plays (Codex, 2026-09-24).
       try { await programsKV(env).delete(SHELF_QUEUE_KEY); } catch { /* it expires in 12 h */ }
@@ -2021,8 +2043,8 @@ export async function callTool(env, name, args, budget) {
       // description says.
       const sg = guestFor(env, "spotify");
       return sg?.live ? { ...started, house_rule: "If this set was asked of a DJ by name, it belongs on " +
-        `the requests preset, not a bare queue: replace_playlist "${guestAlias("spotify")}" (preset ${sg.btn}) with ` +
-        "dj and ask, then play_playlist, so it can be kept and steered. Anything asked endless is play_endless." } : started;
+        `the requests preset, not a loose queue: replace_playlist "${guestAlias("spotify")}" (preset ${sg.btn}) with ` +
+        "dj, ask and play: true, so it can be kept and steered. Anything asked endless is play_endless." } : started;
     }
 
     case "play_playlist": {
@@ -2119,20 +2141,43 @@ export async function callTool(env, name, args, budget) {
       // playlist, and so its catalog's batch size, is known.
       const batches = Math.ceil(args.uris.length / 100);
       // + the description write, and the guest guard while a guest is live (MC-18)
-      const need = 3 + batches * 2 + 1 + (anyLiveGuest(env) ? 1 : 0);
+      // HEARD NOW, IN THE ONE CALL (the test house run, finding 6, 2026-11-11:
+      // ChatGPT wrote "Vibe, play me 20 minutes" and stopped, as the old words
+      // told it to). `play: true` starts the playlist once it is written. Not
+      // Talk's: its starts go through the speaker rule (voice.js STARTS), and
+      // its backend sends false for a field it leaves out anyway.
+      const playNow = args.play === true && env.__via !== "talk";
+      const need = 3 + batches * 2 + 1 + (anyLiveGuest(env) ? 1 : 0) + (playNow ? ASK_START_CALLS : 0);
       if (budget && need > budget.remaining) {
         throw new Error(
           `${args.uris.length} tracks needs ${need} lookups (including the backup and ` +
           `the ability to undo) but only ${budget.remaining} are left in this request — ` +
           "make this call on its own");
       }
-      const pl = await resolvePlaylist(env, args.playlist, budget);
+      let pl = await resolvePlaylist(env, args.playlist, budget);
       talkMayWrite(env, pl);
+      // WHERE AN ASKED SET LANDS WHILE THE HOUSE WAITS FOR ITS CURATOR
+      // (MC-40): a set asked of a DJ who has a preset of their own, aimed at
+      // the requests preset as every asked set is, is written to THAT DJ'S
+      // playlist. The house decides, not the chat: the caller needs no new
+      // habit, an old copy of the tool list still works, and Talk's writes
+      // go the same way. With a curator, and for a DJ with no preset, the
+      // set goes where it was aimed, as ever.
+      let ownPreset = null;
+      if (args.dj && waiting(env)) {
+        const who = findDj(env, String(args.dj));
+        const aimed = guestForPlaylistId(env, pl.id);
+        const own = who && aimed?.live && aimed.catalog === "spotify" ? (parseEndless(env)?.presets ?? []).find((x) => !x.lane && x.dj === who.key) ?? null : null;
+        if (own) {
+          ownPreset = { button: own.button, name: who.name, requests: aimed.btn };
+          pl = { id: own.playlist, name: who.name, via: `${who.name}'s own preset, ${own.button}`, catalog: "spotify" };
+        }
+      }
       // AN ENDLESS PRESET'S OWN LIST IS NOT FOR A SET (MC-31 stage 2b). The
       // house tops it up itself, keeps what is unplayed and counts what was
       // used; a set written over it is lost to all three. Refused, saying what
       // the ask probably was, before anything is read or written.
-      const ep = (parseEndless(env)?.presets ?? []).find((x) => x.playlist === pl.id);
+      const ep = ownPreset ? null : (parseEndless(env)?.presets ?? []).find((x) => x.playlist === pl.id);
       if (ep) {
         throw new Error(`That is the endless playlist on preset ${ep.button}: the house keeps it going itself, ` +
           "and a set is never written over it. A direction for the DJ playing (\"more upbeat\") is steer_endless; " +
@@ -2176,6 +2221,9 @@ export async function callTool(env, name, args, budget) {
           what_happened: out.what_happened,
         };
       }
+      // A waiting DJ preset's list was written (MC-40): the pages' mark and
+      // caches for it, as after every write the endless code makes.
+      if (ownPreset) await endlessWrote(env, pl.id, args.uris);
       // THE HOUSE'S WEEK (week.js): logged now it landed, and its songs the
       // week already held said in the answer. Flagged, never refused.
       const week = await logWeek(env, { uris: args.uris, items: out.items, dj: named?.key ?? null,
@@ -2200,7 +2248,22 @@ export async function callTool(env, name, args, budget) {
       // can never be the Connect context, so the lookup is not made.
       let live = null;
       const firstGuest = out.snapshot?.total === 0 ? (() => { const g = guestForPlaylistId(env, pl.id); return g?.live ? g : null; })() : null;
-      if (pl.catalog === "spotify") {
+      // The start that was asked with the write. The set is written either
+      // way: a start that fails is said as that, never as a failed write.
+      let begun = null;
+      if (playNow) {
+        if (pl.catalog !== "spotify") {
+          begun = { started: false, why: "A Tidal preset is started from the remote: press it." };
+        } else {
+          try {
+            const p = await startPlaylistOnDevice(env, pl, String(args.device ?? "").trim() || defaultDevice, budget);
+            begun = { started: p.preset_safe === true, ...p };
+          } catch (e) {
+            begun = { started: false, why: String(e?.message ?? e).slice(0, 300) };
+          }
+        }
+      }
+      if (pl.catalog === "spotify" && !begun?.started) {
         try {
           const st = await playerState(env);
           if (st?.context?.uri === `spotify:playlist:${pl.id}`) live = st;
@@ -2214,6 +2277,11 @@ export async function callTool(env, name, args, budget) {
         resolved_via: pl.via,
         tracks: args.uris.length,
         verified: out.verified,
+        // Said first, so the chat tells the listener where it went (MC-40).
+        ...(ownPreset ? { landed_on: `It is on ${ownPreset.name}'s own preset, ${ownPreset.button}, in place of the set there. ` +
+          `Requests is as it was. ${begun?.started ? "It is playing from there now."
+            : `To play it now: play_playlist with the id above, or press ${ownPreset.button}.`}` } : {}),
+        ...(begun ? { playback: begun } : {}),
         // The previous contents are recoverable for 90 days. Say so: the whole
         // reason this line exists is that a set was destroyed by a command that
         // looked like a read, and nothing here had kept a copy.
@@ -2221,21 +2289,28 @@ export async function callTool(env, name, args, budget) {
         ...(counted?.breaks.length ? { written_as_sent: counted.breaks } : {}),
         ...repeatsField(env, week),
         ...(out.warnings.length ? { warnings: out.warnings } : {}),
-        note: live
+        note: begun?.started
+          ? "Contents replaced, and the playlist started, as asked: `playback` says where. Nothing more to call."
+          : begun
+          ? "Contents replaced, but the playlist is not known to have started: `playback` says what stood in the " +
+            "way (its `why` or `warning`). The set is on the preset; say so, and offer to start it again " +
+            "(play_playlist) or to press the button."
+          : live
           ? "Contents replaced — and this playlist is what the speaker is " +
             "playing right now, so it will move into the new tracks rather than " +
             "wait for the button. Tell the user that; it is not what they " +
             "expect from loading a preset."
           : "Contents replaced. A preset pointing here plays the new tracks on " +
             "its next press. Nothing was started and nothing playing elsewhere " +
-            "was disturbed.",
+            "was disturbed. If the user asked to hear this set now (\"play me…\"), start it: play_playlist " +
+            "with the id above.",
         ...(live ? { now_playing_this_playlist: true } : {}),
         // A HOUSE'S FIRST SET (the trial, 2026-10-17: Claude said "press 1"
         // on a preset no speaker had saved yet). An empty requests preset is
         // one nobody has pressed: start the set, and say how to save it.
         ...(firstGuest ? { first_set: `This requests preset was empty: likely the house's first set, and preset ${firstGuest.btn} ` +
-          "may not be saved on any speaker yet, so pressing it would play whatever was there before. Start the set now " +
-          `with play_playlist rather than saying "press ${firstGuest.btn}", and tell the user how to keep it: while it plays, ` +
+          `may not be saved on any speaker yet, so pressing it would play whatever was there before. ${begun?.started ? "It is playing now: tell"
+            : `Start the set now with play_playlist rather than saying "press ${firstGuest.btn}", and tell`} the user how to keep it: while it plays, ` +
           `in the WiiM Home app, hold ${firstGuest.btn} on that speaker (the house's setup page shows the same).` } : {}),
       };
     }

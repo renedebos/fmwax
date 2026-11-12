@@ -28,7 +28,7 @@ function ownersHouse() {
     { button: 2, guest: true, live: true, name: "Requests · Tidal", playlist: "00000000-0000-4000-8000-000000000011", catalog: "tidal" },
     { button: 6, archive: true },
   ]);
-  e.ENDLESS = JSON.stringify({ mode: "live", dailyRuns: 12, presets: [
+  e.ENDLESS = JSON.stringify({ mode: "live", dailyRuns: 20, presets: [
     { button: 4, dj: "dr-funkenstein", playlist: PL("B") }, { button: 5, dj: "hank", playlist: PL("C") },
     { button: 7, dj: "americana", playlist: PL("D") }, { button: 8, dj: "soul", playlist: PL("E") },
     { button: 9, dj: "vibe", playlist: PL("F") }, { button: 3, lane: true, playlist: PL("G") }] });
@@ -92,10 +92,10 @@ test("the marks: a fold per section, its summary, {if} and {if no}, blanks, date
 
 test("docs/house-rules.md leaves no mark unread, in a house with everything and in one with nothing", () => {
   const blanks = { "default speaker": "Pro Plus", "requests presets": "1", "guest preset": "3", "house presets": "4, 5",
-    "endless presets": "3, 4, 5", "archive preset": "6", "archive asks": "a song or a show", "talk minutes": "60", "time zone": "Pacific Time",
+    "endless presets": "3, 4, 5", "daily runs": "12", "archive preset": "6", "archive asks": "a song or a show", "talk minutes": "60", "time zone": "Pacific Time",
     "notes default": "short notes" };
   const words = ["requests", "tidal", "endless", "housedj", "guest", "newdj", "archive", "talk", "helper", "history", "lastfm", "chatgpt",
-    "talkasks", "alexa"];
+    "talkasks", "alexa", "waits"];
   for (const on of [true, false]) {
     const doc = rulesDoc(RULES_MD, { tags: Object.fromEntries(words.map((w) => [w, on])), blanks });
     const out = doc.sections.map((s) => `${s.summary ?? ""} ${s.body.join(" ")}`).join(" ") + doc.questions.map((q) => q.q + q.a).join(" ");
@@ -125,7 +125,10 @@ test("the owner's house: every key wears its kind, Talk and Tidal are there, and
   assert.match(html, /<b>House DJs<\/b> <i>· 4, 5, 7, 8, 9<\/i>/);
   assert.match(html, /<b>Requests<\/b> <i>· 1, 2<\/i><\/span><span>The newest set you asked any DJ for: 1 on Spotify, 2 on Tidal\./);
   assert.match(html, /<b>Yours<\/b> <i>· 10–12<\/i>/);
-  assert.match(html, /<li><b>12<\/b><span>endless runs a day: top-ups, fresh starts, steers<\/span><\/li>/);
+  assert.match(html, /<li><b>20<\/b><span>endless runs a day: top-ups, fresh starts, steers<\/span><\/li>/);
+  // The words follow the setting (`dailyRuns`, 20 in this house since 2026-11-10), never a written 12.
+  assert.match(html, /20 endless runs a day/);
+  assert.ok(!/12 endless runs/.test(html));
   assert.match(html, /<li><b>60<\/b><span>minutes of Talk a day<\/span><\/li>/);
   assert.match(html, /<span class="rfh">Talk<\/span><span class="rfs">60 minutes a day\. The day starts at midnight, Pacific Time\.<\/span>/);
   assert.match(html, /<span class="rfs">It goes on 1 for Spotify or 2 for Tidal and replaces what was there\.<\/span>/);

@@ -66,7 +66,7 @@ test("the DJ presets wait for the curator, then are made on the numbers chosen, 
     assert.equal(s.made(), 2, "two playlists made");
     const after = await (await go(e, "/setup/endless?fresh=asked", { cookie: me })).text();
     assert.match(after, /Vibe, preset 2\./);
-    assert.match(after, /The guest DJ, preset 3\./);
+    assert.match(after, /Preset 3 is for all the other DJs\.<\/b> Vibe has a\s+number of their own\./);
     const list2 = await (await go(e, "/setup", { cookie: me })).text();
     assert.match(list2, /2 Vibe · 3 guest DJ/);
     assert.equal((await go(e, "/setup/endless", { method: "POST", form: { dj: "hank", own: "4", lane: "5" }, cookie: me })).status, 409, "once");
