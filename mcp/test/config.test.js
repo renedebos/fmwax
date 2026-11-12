@@ -431,3 +431,16 @@ test("the sample house a copy carries renders, and is none of this house", () =>
   }
 });
 
+
+// THE REQUEST LOG IS ASKED FOR (Codex's review, 2026-11-11): Cloudflare's
+// Workers Logs keep each request's address, and a house's addresses carry its
+// keys. So no house has them unless its file says so.
+test("Cloudflare's request log is only in a house that asks for it", () => {
+  assert.ok(!/\[observability\]/.test(render(plain(), TEMPLATE)), "a house that says nothing keeps no log");
+  assert.ok(!/\[observability\]/.test(renderButtonHouse({ name: "fmwax-house", compatibilityDate: "2025-06-01" })), "the Deploy button's house");
+  assert.ok(!/\[observability\]/.test(renderBlankHouse({ name: "x", baseUrl: "https://x.example.workers.dev",
+    tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" })), "the terminal installer's house");
+  const asks = plain();
+  asks.worker.logs = true;
+  assert.match(render(asks, TEMPLATE), /\[observability\]\nenabled = true/, "a house that asks has it");
+});

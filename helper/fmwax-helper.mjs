@@ -406,24 +406,28 @@ export function matchWiims(names, found) {
   return { speakers, unmatched: found.filter((f) => !used.has(f.ip)), missing: (names ?? []).filter((n) => !speakers[n]) };
 }
 
-const MISSES = {}, LAST_SEARCH = {}, SEARCHING = new Set();
-// After each read: learn a speaker's id the first time it answers, and look
-// for one that has stopped answering. `cfg.speakers` is changed in place, so
-// the reads, the preset tables and the commands all follow a move.
-async function keepTrack(cfg, name, answered) {
+const MISSES = {}, LAST_SEARCH = {}, SEARCHING = new Set(), CHECKED = {};
+// IS IT STILL THAT SPEAKER (Codex's review, 2026-11-11). A router may lend a
+// speaker's old address to another WiiM, and that one answers every read and
+// obeys every command as readily: a press meant for one room would play in
+// another. So the id learned for a name is checked against the WiiM at its
+// address before each command, and every ten minutes while it is read.
+// true: the same one, or nothing to go by yet (no id learned, or no answer:
+// the command's own reply then says unreachable). false: another WiiM.
+const CHECK_EVERY_MS = 10 * 60_000;
+export async function stillThatSpeaker(known, name, ip, probe = statusEx) {
+  const want = known?.[name]?.uuid;
+  if (!want || !ip) return true;
+  const st = await probe(ip);
+  if (!st?.uuid) return true;
+  return String(st.uuid) === String(want);
+}
+// Where the speaker of that name answers now, looked for by its id on the
+// old address's network; cfg.speakers and the helper's record follow it.
+async function relocate(cfg, name) {
   const known = cfg.known ?? (cfg.known = loadKnown());
   const ip = cfg.speakers[name];
-  if (answered) {
-    MISSES[name] = 0;
-    if (!known[name]?.uuid || known[name].ip !== ip) {
-      const st = await wiim(ip, "getStatusEx", true, 2000);
-      if (st?.uuid) { known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known); }
-    }
-    return;
-  }
-  MISSES[name] = (MISSES[name] ?? 0) + 1;
-  if (MISSES[name] < MISSES_BEFORE_SEARCH || SEARCHING.has(name)) return;
-  if (Date.now() - (LAST_SEARCH[name] ?? 0) < SEARCH_AT_MOST_MS) return;
+  if (SEARCHING.has(name)) return;
   LAST_SEARCH[name] = Date.now();
   SEARCHING.add(name);
   try {
@@ -433,6 +437,7 @@ async function keepTrack(cfg, name, answered) {
       known[name] = { ...(known[name] ?? {}), ip: now };
       saveKnown(known);
       MISSES[name] = 0;
+      CHECKED[name] = Date.now();
       console.log(new Date().toISOString(), "moved", name, ip, "->", now,
         cfg.learns ? "(the house is told)" : "(the helper follows it; mcp/house.json still says the old address)");
       // A house that learned its WiiMs from the helper learns the new address.
@@ -445,6 +450,66 @@ async function keepTrack(cfg, name, answered) {
       console.error(new Date().toISOString(), "looked for", name, "and it is not on", ip.replace(/\.\d+$/, ".*"), "- off, or asleep");
     }
   } finally { SEARCHING.delete(name); }
+}
+// What a WiiM at a name's address means for the helper's record. "learn": no
+// id kept yet, or the same id at a new address. "same": nothing to do.
+// "other": a different WiiM answers there, so the one remembered is looked
+// for, and this one is never taken in its place without that.
+export function whoAnswers(kept, ip, st) {
+  if (!st?.uuid) return "same";
+  if (!kept?.uuid) return "learn";
+  if (String(kept.uuid) !== String(st.uuid)) return "other";
+  return kept.ip === ip ? "same" : "learn";
+}
+// A different WiiM may take a name's place only when it calls itself by the
+// name the old one had (and the old one was looked for and not found).
+export function takesItsPlace(kept, name, st) {
+  const fold = (v) => String(v ?? "").trim().toLowerCase();
+  return !!st?.uuid && !!fold(st.DeviceName) && fold(st.DeviceName) === fold(kept?.deviceName ?? name);
+}
+// After each read: learn a speaker's id the first time it answers, look for
+// one that has stopped answering, and now and then make sure the one that
+// answers is still the one remembered. `cfg.speakers` is changed in place,
+// so the reads, the preset tables and the commands all follow a move.
+async function keepTrack(cfg, name, answered) {
+  const known = cfg.known ?? (cfg.known = loadKnown());
+  const ip = cfg.speakers[name];
+  if (answered) {
+    MISSES[name] = 0;
+    const due = !known[name]?.uuid || known[name].ip !== ip || Date.now() - (CHECKED[name] ?? 0) > CHECK_EVERY_MS;
+    if (!due) return;
+    const st = await statusEx(ip, 2000);
+    const who = whoAnswers(known[name], ip, st);
+    if (who === "learn") { known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known); }
+    if (who === "other") {
+      console.error(new Date().toISOString(), "another WiiM answers at", ip, "where", name, "was: looking for", name);
+      if (Date.now() - (LAST_SEARCH[name] ?? 0) < SEARCH_AT_MOST_MS) return;
+      await relocate(cfg, name);
+      // A WiiM that was replaced: the old one is nowhere, and the one at its
+      // address carries its name. Only then is the new id taken, and said.
+      if (cfg.speakers[name] === ip && takesItsPlace(known[name], name, st)) {
+        console.log(new Date().toISOString(), name, "has a new WiiM at", ip, "(the old one is not on this network, and this one has its name)");
+        known[name] = { uuid: st.uuid, deviceName: st.DeviceName ?? name, ip }; saveKnown(known);
+        CHECKED[name] = Date.now();
+      }
+      return;
+    }
+    if (st?.uuid) CHECKED[name] = Date.now();
+    return;
+  }
+  MISSES[name] = (MISSES[name] ?? 0) + 1;
+  if (MISSES[name] < MISSES_BEFORE_SEARCH || SEARCHING.has(name)) return;
+  if (Date.now() - (LAST_SEARCH[name] ?? 0) < SEARCH_AT_MOST_MS) return;
+  await relocate(cfg, name);
+}
+// Before a command from the house: the same check, and a search started at
+// once when it fails, so the next command finds the speaker.
+async function beforeCommand(cfg, name) {
+  const known = cfg.known ?? (cfg.known = loadKnown());
+  if (await stillThatSpeaker(known, name, cfg.speakers[name])) return true;
+  console.error(new Date().toISOString(), "not sent:", name, "is not the WiiM at", cfg.speakers[name], "any more. Looking for it.");
+  relocate(cfg, name).catch(() => { /* looked for again on a read */ });
+  return false;
 }
 
 async function readAll(speakers, cfg = null) {
@@ -483,10 +548,13 @@ async function post(cfg, readings) {
 
 // A command from the house: the allow-list, a speaker this house names,
 // then the speaker's own read-back for the answer.
-export async function obey(speakers, m, send = wiim, read = readSpeaker) {
+export async function obey(speakers, m, send = wiim, read = readSpeaker, same = null) {
   const ip = speakers[m?.speaker];
   const cmd = Object.hasOwn(COMMANDS, m?.cmd) ? COMMANDS[m.cmd](m) : null;
   if (!ip || !cmd) return { id: m?.id, ok: false, code: "refused" };
+  // Another WiiM at that address (2026-11-11): nothing is sent to it. To the
+  // house the speaker is out of reach, which it is, at that address.
+  if (same && !(await same(m.speaker))) return { id: m.id, ok: false, code: "unreachable" };
   const said = await send(ip, cmd, false);
   if (said !== "OK") return { id: m.id, ok: false, code: said == null ? "unreachable" : "failed" };
   await new Promise((r) => setTimeout(r, SETTLE_MS[m.cmd] ?? 600));
@@ -524,7 +592,7 @@ export function line(cfg, WS = WebSocket, get = fetch) {
         if (remover) setTimeout(() => leave(remover).catch((e) => console.error(new Date().toISOString(), "remove failed:", String(e?.message ?? e))), 500);
         return;
       }
-      const reply = await obey(cfg.speakers, m).catch(() => ({ id: m?.id, ok: false, code: "failed" }));
+      const reply = await obey(cfg.speakers, m, undefined, undefined, (name) => beforeCommand(cfg, name)).catch(() => ({ id: m?.id, ok: false, code: "failed" }));
       try { ws.send(JSON.stringify(reply)); } catch { /* the line went; the house times out */ }
       console.log(new Date().toISOString(), m?.cmd, m?.speaker, reply.ok ? "ok" : reply.code);
     };

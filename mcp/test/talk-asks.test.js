@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 
 import worker, { __test } from "../worker.js";
 import { VOICE_PROMPT, backendPrompt } from "../voice.js";
-import { askMinutes, playingMark, startAsked, startedSince } from "../asks.js";
+import { askMinutes, logArgs, playingMark, startAsked, startedSince } from "../asks.js";
 import { callTool } from "../tools.js";
 import { findSpokenDj } from "../house.js";
 import { makeEnv, installFetch } from "./harness.js";
@@ -387,4 +387,19 @@ test("a set that is no longer on its preset is not started", async () => {
   assert.deepEqual(out, { not_started: "Pro Plus", why: "another set has landed on the preset since" });
   assert.equal(await startAsked(e, { requestId: "mine", record: { at: new Date().toISOString() }, pid: GS }), null,
     "nothing asked to start");
+});
+
+// WHAT THE LOG SAYS OF A VOICE CALL (Codex's review, 2026-11-11): the tool's
+// choices, and of a listener's own words only their length.
+test("a Talk log line names the DJ and the speaker, never the listener's words", () => {
+  const line = logArgs({ dj: "vibe", words: "something for my mother's funeral", avoid: "", minutes: 20, keep: false,
+    device: "Pro Plus", uris: ["a", "b"], query: "Nick Drake Pink Moon" });
+  assert.ok(!/funeral|mother|Nick Drake/.test(line), line);
+  assert.match(line, /"dj":"vibe"/);
+  assert.match(line, /"device":"Pro Plus"/);
+  assert.match(line, /"words":"<33 chars>"/, "how long, which is how an empty field shows");
+  assert.match(line, /"avoid":"<0 chars>"/);
+  assert.match(line, /"minutes":20/);
+  assert.match(line, /"uris":"\[2\]"/);
+  assert.ok(logArgs(null) === "{}" && logArgs({ a: "x".repeat(5000) }).length <= 160);
 });

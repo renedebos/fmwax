@@ -21,8 +21,8 @@ All of it sits in your Cloudflare account:
 - **What is asked of the DJs** on the DJ pages or by voice, in the asker's own words, and the sets written for it. An ask is kept for up to 90 days.
 - **The pages on the Shelf** (the Librarian's and Gatefold's notes), until you take them off.
 - **What it looked up about an artist,** for 180 days, so the next ask about them is quicker.
-- **Talk:** how many minutes were used each day. Your house keeps no sound and no transcript of a conversation. But a set you ask a DJ for by voice is an ask like any other (above), and the log (below) has a line for each thing Talk did, with the words that went with it.
-- **A short log of what it did:** a line per search, set or Talk action, and the address of each request it got. Cloudflare keeps it in your account for three days. Those addresses carry your house's keys, so never pass that log on as it is.
+- **Talk:** how many minutes were used each day. Your house keeps no sound and no transcript of a conversation. But a set you ask a DJ for by voice is an ask like any other (above).
+- **No request log.** A new house keeps no log at Cloudflare. Cloudflare can keep one (Workers Logs, three days) if you turn it on for your house yourself. It would hold the address of every request, and those addresses carry your house's keys: never pass such a log on as it is.
 
 ## Who else sees something
 

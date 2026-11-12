@@ -8,7 +8,7 @@ import assert from "node:assert/strict";
 
 import worker from "../worker.js";
 import { barWords, spotifyRest, inlineFn, listOf, qualityWords, qualityFor } from "../programs.js";
-import { readingOf, obey, line, searchOrder, findSpeaker, homeNets, findWiims, matchWiims, houseSpeakers, searchPlan, HOME_NETS } from "../../helper/fmwax-helper.mjs";
+import { stillThatSpeaker, whoAnswers, takesItsPlace, readingOf, obey, line, searchOrder, findSpeaker, homeNets, findWiims, matchWiims, houseSpeakers, searchPlan, HOME_NETS } from "../../helper/fmwax-helper.mjs";
 import { makeEnv, makeHouseStore, installFetch, installTidalFetch, track } from "./harness.js";
 import { ARCHIVE } from "../archive-identity.js";
 
@@ -947,4 +947,44 @@ test("the house keeps a reading's EQ as the speaker names it, and nothing that i
   assert.ok(out.Ultra, "the reading is kept");
   assert.equal(out.Ultra.eq, undefined, "the EQ that isn't a name is dropped");
   assert.equal(parseHelperReading(env(), { speakers: [{ name: "Pro Plus", state: "play", eq: "R&B" }] })["Pro Plus"].eq, "R&B");
+});
+
+// IS IT STILL THAT SPEAKER (Codex's review, 2026-11-11): a router lends the
+// Pro Plus's old address to the Ultra, and the Ultra answers there as readily.
+test("a command is not sent to another WiiM that took a speaker's address", async () => {
+  const known = { "Pro Plus": { uuid: "AAA", deviceName: "Pro Plus", ip: "192.168.4.45" } };
+  const ultraThere = async () => ({ uuid: "BBB", DeviceName: "Ultra" });
+  assert.equal(await stillThatSpeaker(known, "Pro Plus", "192.168.4.45", async () => ({ uuid: "AAA" })), true);
+  assert.equal(await stillThatSpeaker(known, "Pro Plus", "192.168.4.45", ultraThere), false, "another WiiM");
+  assert.equal(await stillThatSpeaker({}, "Pro Plus", "192.168.4.45", ultraThere), true, "no id learned yet: as before");
+  assert.equal(await stillThatSpeaker(known, "Pro Plus", "192.168.4.45", async () => null), true, "no answer: the command itself says unreachable");
+
+  const sent = [];
+  const send = async (ip, cmd) => { sent.push([ip, cmd]); return "OK"; };
+  const read = async () => ({ mode: "10", vendor: "Tidal", status: "play" });
+  const speakers = { "Pro Plus": "192.168.4.45" };
+  const same = (name) => stillThatSpeaker(known, name, speakers[name], ultraThere);
+  const out = await obey(speakers, { id: "k", cmd: "key", n: 4, speaker: "Pro Plus" }, send, read, same);
+  assert.deepEqual(out, { id: "k", ok: false, code: "unreachable" });
+  assert.equal(sent.length, 0, "nothing reached the Ultra");
+  const ok = await obey(speakers, { id: "p", cmd: "pause", speaker: "Pro Plus" }, send, read, async () => true);
+  assert.equal(ok.ok, true);
+  assert.equal(sent.length, 1, "the same speaker is commanded as before");
+  // A refused command is refused before the speaker is asked who it is.
+  let asked = 0;
+  await obey(speakers, { id: "x", cmd: "toString", speaker: "Pro Plus" }, send, read, async () => { asked += 1; return true; });
+  assert.equal(asked, 0);
+});
+
+test("the helper's record of a speaker: learned once, followed to a new address, never swapped for another WiiM", () => {
+  const kept = { uuid: "AAA", deviceName: "Pro Plus", ip: "192.168.4.45" };
+  assert.equal(whoAnswers(undefined, "192.168.4.45", { uuid: "AAA" }), "learn", "the first answer");
+  assert.equal(whoAnswers(kept, "192.168.4.45", { uuid: "AAA" }), "same");
+  assert.equal(whoAnswers(kept, "192.168.4.71", { uuid: "AAA" }), "learn", "its own new address");
+  assert.equal(whoAnswers(kept, "192.168.4.45", { uuid: "BBB", DeviceName: "Ultra" }), "other", "the old code took this one's id here");
+  assert.equal(whoAnswers(kept, "192.168.4.45", null), "same", "no answer changes nothing");
+  // A replaced WiiM takes the room's place only under the room's own name.
+  assert.equal(takesItsPlace(kept, "Pro Plus", { uuid: "CCC", DeviceName: "pro plus " }), true);
+  assert.equal(takesItsPlace(kept, "Pro Plus", { uuid: "BBB", DeviceName: "Ultra" }), false);
+  assert.equal(takesItsPlace(kept, "Pro Plus", { uuid: "CCC" }), false, "a WiiM that gives no name");
 });

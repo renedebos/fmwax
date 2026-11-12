@@ -20,7 +20,7 @@ import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCh
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
 import { READ_ENVELOPE, READ_ACTION, CONTROL_PORT, CONTROL_PATH } from "./keymap.js";
-import { askByVoice, fileAsk } from "./asks.js";
+import { askByVoice, fileAsk, logArgs } from "./asks.js";
 import {
   station, stationStub, fingerprintUris, putRequestRecord,
   getRequestRecord,
@@ -2440,7 +2440,7 @@ export async function handleRequest(request, env, ctx) {
       if (parsed.name === "ask_dj") {
         try {
           const out = await askByVoice({ ...envB, __via: "talk" }, ctx, argsIn);
-          console.log(`talk:tool cap=${cap.slice(0, 8)} ask_dj ${out.status} (${JSON.stringify(argsIn).slice(0, 160)})`);
+          console.log(`talk:tool cap=${cap.slice(0, 8)} ask_dj ${out.status} (${logArgs(argsIn)})`);
           return say(200, { output: JSON.stringify(out) });
         } catch (err) {
           console.log(`talk:tool cap=${cap.slice(0, 8)} ask_dj error: ${String(err?.message ?? err).slice(0, 200)}`);
@@ -2475,7 +2475,7 @@ export async function handleRequest(request, env, ctx) {
         // Marked as Talk on its own copy of env (MC-18), as the voice role is
         // at /mcp: a guest's record says "talk" whatever the arguments claim.
         let out = await callTool({ ...env, __via: "talk" }, call.name, call.args, budget);
-        console.log(`talk:tool cap=${cap.slice(0, 8)} ${call.name} ok (${JSON.stringify(call.args).slice(0, 160)})`);
+        console.log(`talk:tool cap=${cap.slice(0, 8)} ${call.name} ok (${logArgs(call.args)})`);
         // What Spotify can't see (MC-39 deploy 2): each WiiM as the helper
         // hears it, its EQ and its Tidal or radio, beside Spotify's answer.
         if (call.name === "now_playing" && out && typeof out === "object" && !Array.isArray(out)) {

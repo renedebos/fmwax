@@ -64,14 +64,19 @@ preview_urls = false
 [dependencies_instrumentation]
 enabled = false
 
+#{{if logs}}
 # Workers Logs: what each request did, and anything the Worker says with
 # console, kept three days, free on this plan (Cloudflare's pricing page, read
 # 2026-09-23). Turned on the day a play Spotify refused left no trace of why:
 # the page's sentence drops Spotify's words, and there was nowhere else to look.
 # The logs stay in this Cloudflare account, and a request's URL carries its
-# path, so a keyed page's address is in them.
+# path, so a keyed page's address is in them: a copy of the log opens the
+# house. So only a house that asks has them (house.json `worker.logs`, since
+# 2026-11-11, after Codex's review): a new house keeps no log at Cloudflare,
+# and what its owner needs to see is on its own pages (Check the house).
 [observability]
 enabled = true
+#{{end}}
 
 # Durable store for the streaming services' refresh tokens. Spotify's PKCE
 # rotates its token on refresh, so it must survive restarts — a secret alone is

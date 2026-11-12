@@ -7,8 +7,10 @@ import { settingsOf, withSettings } from "../settings.js";
 // what the deploy handed over, BUTTONS' array of tables included.
 describe("the settings store against the real binding", () => {
 test("the real vars go into HOUSE and come back the same", async () => {
-  const n = Object.keys(settingsOf(env)).length;
-  expect(n).toBeGreaterThan(10);
+  // Not a count (Codex's review, 2026-11-11: a copy's sample house has ten
+  // settings, and "more than ten" was this house's own number): the ones no
+  // house is without.
+  for (const name of ["BUTTONS", "DEFAULT_DEVICE", "ROOM_DEVICES"]) expect(settingsOf(env), name).toHaveProperty(name);
   expect((await withSettings(env, null)).__settings).toBe("vars: nothing stored, copied in");
   const read = await withSettings(env, null);
   expect(read.__settings).toBe("store");

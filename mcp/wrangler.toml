@@ -39,14 +39,6 @@ preview_urls = false
 [dependencies_instrumentation]
 enabled = false
 
-# Workers Logs: what each request did, and anything the Worker says with
-# console, kept three days, free on this plan (Cloudflare's pricing page, read
-# 2026-09-23). Turned on the day a play Spotify refused left no trace of why:
-# the page's sentence drops Spotify's words, and there was nowhere else to look.
-# The logs stay in this Cloudflare account, and a request's URL carries its
-# path, so a keyed page's address is in them.
-[observability]
-enabled = true
 
 # Durable store for the streaming services' refresh tokens. Spotify's PKCE
 # rotates its token on refresh, so it must survive restarts — a secret alone is

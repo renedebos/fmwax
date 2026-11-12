@@ -172,6 +172,9 @@ export function viewOf(house, { at = "mcp" } = {}) {
       rulesHistory: house.rules?.history === true,
       // House radio acts (MC-38 stage 3); absent, its door is a dry run.
       alexaActs: house.alexa?.acts === true,
+      // Cloudflare's Workers Logs, only in a house that asks for them
+      // (2026-11-11): they hold each request's address, keys included.
+      logs: house.worker?.logs === true,
     },
     values: {
       "worker.name": house.worker.name,

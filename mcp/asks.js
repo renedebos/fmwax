@@ -220,6 +220,23 @@ export const onWords = (device) => (/^everywhere$/i.test(device) ? "everywhere" 
 // through here too (MC-38 stage 3): `via` "alexa" on its record, "talk" for
 // anything else, so the ledger says which voice asked.
 export const VOICE_VIA = ["talk", "alexa"];
+// WHAT A LOG LINE SAYS OF A VOICE CALL (Codex's review, 2026-11-11): a
+// listener's words are theirs, and a log is read by whoever holds the
+// Cloudflare account, or is passed on with a problem. So the line names the
+// tool's choices (a DJ, a speaker, a number, a switch) and, of anything said
+// in free words, only how long it was: "" still shows as 0, which is how
+// Talk's habit of filling every field was found.
+const LOG_PLAIN = new Set(["dj", "device", "speaker", "to", "from", "via", "service", "when", "action", "notes", "catalog", "preset", "button"]);
+export function logArgs(args) {
+  const out = {};
+  for (const [k, v] of Object.entries(args ?? {})) {
+    out[k] = typeof v === "number" || typeof v === "boolean" || v == null ? v
+      : Array.isArray(v) ? `[${v.length}]`
+      : typeof v === "string" ? (LOG_PLAIN.has(k) ? v.slice(0, 40) : `<${v.length} chars>`)
+      : "<object>";
+  }
+  return JSON.stringify(out).slice(0, 160);
+}
 export async function askByVoice(env, ctx, args = {}) {
   if (!askDjOn(env)) {
     throw new Error("This house has no curator taking asks, so a set is made on the call: get_dj, search_tracks, " +
