@@ -160,7 +160,7 @@ test("a chat write's send-back lapses after its window; a request's keeps the we
   assert.equal((await station(e, "seen-get", { key: "req:r1", uris: [] })).sent_back, true);
   await station(e, "sent-used", { key: "write:p:vibe" });
   assert.equal((await station(e, "seen-get", { key: "write:p:vibe", uris: [], sent_within_ms: 15 * 60000 })).sent_back, false);
-  assert.deepEqual(await station(e, "sent-back-day", {}), { ok: true, requests: 1, endless: 0, chat_and_talk: 1 },
+  assert.deepEqual(await station(e, "sent-back-day", {}), { ok: true, requests: 1, endless: 0, chat_and_talk: 1, long_reads: 0 },
     "a used send-back still counts for the day");
 });
 

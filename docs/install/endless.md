@@ -21,12 +21,14 @@ The curator runs in your Claude or ChatGPT account:
 
 You have **one curator at a time**: your house only wakes the one you chose.
 
+The curator also writes the long reads the Librarian and Gatefold can put on your Shelf. In the author's own house (November 2026) both assistants did the sets and the endless DJs well, and Claude wrote the better long reads: ChatGPT's were as well researched when asked step by step, but read more like notes than a story.
+
 ## Set it up
 
 On the setup page, under **Endless**:
 
 1. **Curator.** The curator page has the steps for both, with the text to paste.
-   - **With Claude:** you make a scheduled task at [claude.ai/code](https://claude.ai/code), with a connector of its own. Then you give your house the task's address and token.
+   - **With Claude:** you make a scheduled task at [claude.ai/code](https://claude.ai/code), with a connector of its own. Then you give your house the task's address and token. One step is easy to miss: set the task's cloud environment to **Network access: Full** (the curator page says where). As it comes, the task can search the web but not open most pages, and a long read then rests on search summaries.
    - **With ChatGPT:** click **Set up ChatGPT as the curator**. At chatgpt.com you add a second plugin, **fmwax curator**, with the curator address the page gives you (set **Authentication** to **None** again). Then start a new chat whose box says *Work with ChatGPT*, with only that plugin turned on. Paste the page's first note (it makes the chat listen for your house's work) and rename the chat **fmwax curator**, so you find it again. Then paste the second note in the same chat (its hourly check; ChatGPT Plus keeps five scheduled tasks, so delete one under **Scheduled** if it says it is at its limit). Back on the setup page, click **Make ChatGPT this house's curator**, then **Send it a test**. The page ticks each part itself: the chat listening, the test answered, and the hourly check, which shows within the hour.
 
      Keep your everyday **fmwax** plugin turned off in that chat. With it on, a set asked for in that chat skips the DJs' pages.

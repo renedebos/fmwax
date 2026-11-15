@@ -587,8 +587,8 @@ export function makeStation() {
       return { ok: true };
     }
     if (op === "sent-back-day") {
-      const out = { requests: 0, endless: 0, chat_and_talk: 0 };
-      const name = { req: "requests", job: "endless", write: "chat_and_talk" };
+      const out = { requests: 0, endless: 0, chat_and_talk: 0, long_reads: 0 };
+      const name = { req: "requests", job: "endless", write: "chat_and_talk", page: "long_reads" };
       for (const [k, at] of sentBack) if (at >= now - 24 * 60 * 60 * 1000 && name[k.split(":")[0]]) out[name[k.split(":")[0]]] += 1;
       return { ok: true, ...out };
     }

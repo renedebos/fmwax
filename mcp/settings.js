@@ -98,6 +98,56 @@ export class HouseSettings {
       this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "seen", JSON.stringify(seen));
       return Response.json({ ok: true });
     }
+    // Which wording of the tools each door's callers hold (noteToolList,
+    // 2026-11-12): per door, the last call in each state. The same shape of
+    // read and write as /seen, in a row of its own.
+    if (new URL(request.url).pathname === "/tool-list") {
+      let body = null;
+      if (request.method !== "GET") {
+        try { body = await request.json(); } catch { body = {}; }
+      }
+      const row = this.sql.exec("SELECT v FROM doc WHERE k = ?", "tool_list").toArray()[0];
+      const lists = row ? JSON.parse(row.v) : {};
+      if (request.method === "GET") return Response.json(lists);
+      if (!SEEN_WHAT.includes(body?.door) || !TOOL_LIST_STATES.includes(body?.state) || !/^[a-z0-9_]{1,64}$/.test(String(body?.tool ?? ""))) {
+        return Response.json({ ok: false, code: "bad-note" }, { status: 400 });
+      }
+      // The door's last call in this state, and the same per app (`apps`,
+      // 2026-11-13: one app's stampless call must not hide another's, the
+      // evening ChatGPT's quick chats sent none and its curator chat did).
+      const at = new Date().toISOString(), client = TOOL_CLIENTS.includes(body?.client) ? body.client : null;
+      const door = lists[body.door] ?? {};
+      lists[body.door] = { ...door, [body.state]: { at, tool: body.tool, ...(client ? { client } : {}) },
+        ...(client ? { apps: { ...(door.apps ?? {}), [client]: { ...(door.apps?.[client] ?? {}), [body.state]: { at, tool: body.tool } } } } : {}) };
+      this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "tool_list", JSON.stringify(lists));
+      return Response.json({ ok: true });
+    }
+    // WHO FETCHED THE TOOL LIST, AND WHICH ONE (2026-11-13). ChatGPT's first
+    // calls after the stamps came with none, and nothing told a plugin not
+    // refreshed from a client that drops the field. A fetch of the list is
+    // the client's own act (Refresh tools; a connector added), needs nothing
+    // of the model, and says which list that app now holds. Kept beside the
+    // call notes, per door and app: { at, stamp, ua }.
+    if (new URL(request.url).pathname === "/tool-fetch") {
+      if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
+      let body = null;
+      try { body = await request.json(); } catch { body = {}; }
+      if (!SEEN_WHAT.includes(body?.door) || !TOOL_CLIENTS.includes(body?.client) || !/^[0-9a-f]{6}$/.test(String(body?.stamp ?? ""))) {
+        return Response.json({ ok: false, code: "bad-note" }, { status: 400 });
+      }
+      const row = this.sql.exec("SELECT v FROM doc WHERE k = ?", "tool_list").toArray()[0];
+      const lists = row ? JSON.parse(row.v) : {};
+      const door = lists[body.door] ?? {};
+      // `first`: when this app first fetched THIS list. Claude fetches the
+      // list again with every chat (seen 2026-11-13: 22:30 at the connector's
+      // adding, 22:41 with a new chat's first call), so its last fetch can be
+      // later than the call it came with; calls are weighed from `first`.
+      const at = new Date().toISOString(), prev = door.fetched?.[body.client];
+      lists[body.door] = { ...door, fetched: { ...(door.fetched ?? {}),
+        [body.client]: { at, first: prev?.stamp === body.stamp ? (prev.first ?? prev.at) : at, stamp: body.stamp, ua: cleanAgent(body.ua) } } };
+      this.sql.exec("INSERT OR REPLACE INTO doc (k, v) VALUES (?, ?)", "tool_list", JSON.stringify(lists));
+      return Response.json({ ok: true });
+    }
     // A HELPER PAIRING CODE, USED ONCE (the locks review, 2026-10-25): it
     // was good for its whole hour, as often as it was sent. { hash, exp }:
     // first is true the first time a code's hash is seen; kept until its
@@ -382,6 +432,86 @@ export function noteSeen(env, ctx, what) {
 }
 export async function readSeen(env) {
   try { return await (await houseFetch(env, "/seen")).json(); } catch { return {}; }
+}
+
+// WHICH WORDING OF THE TOOLS A DOOR'S CALLERS HOLD (2026-11-12; the stamps,
+// toollist.js). Per door, the last call in each of the three states,
+// { at, tool }: "current", "old" and "none". The latest call is the newest of
+// the three, and an old or stampless one stays where it is when a fresh chat
+// calls a minute later, so one stale chat is not hidden by a fresh one; nor
+// an old one by a stampless one, which says less. Written as noteSeen writes:
+// after the answer, only on a claimed house, and at most once every ten
+// minutes per door and state in this isolate, whichever tool is called (the
+// free plan's writes: a curator's run is a dozen calls). Two calls alike in a
+// row write once; a door's first old or stampless call writes at once.
+export const TOOL_LIST_STATES = ["current", "old", "none"];
+const TOOL_LIST_CHANGE_MS = 60 * 1000;
+const TOOL_LIST_NOTED = new WeakMap(); // HOUSE binding -> { "door:state": ms }
+export function noteToolList(env, ctx, door, tool, state, client = null) {
+  try {
+    if (!env?.HOUSE || typeof env.HOUSE !== "object" || !SEEN_WHAT.includes(door) || !TOOL_LIST_STATES.includes(state)) return;
+    if (typeof tool !== "string" || !/^[a-z0-9_]{1,64}$/.test(tool)) return;
+    if (!claimedKnown(env)) return;
+    if (!TOOL_LIST_NOTED.has(env.HOUSE)) TOOL_LIST_NOTED.set(env.HOUSE, {});
+    const noted = TOOL_LIST_NOTED.get(env.HOUSE);
+    const key = `${door}:${state}:${client ?? ""}`, last = `${door}:last:${client ?? ""}`;
+    const now = Date.now();
+    // A call in another state than the door's last noted one is news (a
+    // refreshed chat after a stale one, 2026-11-13): it waits a minute, not
+    // ten, so the setup page can say the refresh worked.
+    const every = noted[last] && noted[last] !== state ? TOOL_LIST_CHANGE_MS : SEEN_EVERY_MS;
+    if (now - (noted[key] ?? 0) < every) return;
+    noted[key] = now;
+    noted[last] = state;
+    const write = houseFetch(env, "/tool-list", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ door, tool, state, ...(client ? { client } : {}) }),
+    }).then((r) => r.json()).catch(() => { noted[key] = 0; });
+    if (ctx?.waitUntil) ctx.waitUntil(write);
+    return write;
+  } catch { /* a lost note costs the setup page a line, never the call */ }
+}
+// WHICH APP IS AT THE DOOR, from its User-Agent (2026-11-13). Four families,
+// and nothing else is kept of who called: ChatGPT's plugins, Claude's
+// connector, Claude Code, and any other. A guess from a header the caller
+// writes: it sorts lines on the owner's own setup page and decides nothing.
+export const TOOL_CLIENTS = ["chatgpt", "claude", "code", "other"];
+export function toolClient(userAgent) {
+  const ua = String(userAgent ?? "");
+  if (/openai|chatgpt/i.test(ua)) return "chatgpt";
+  if (/claude[-_ ]?code/i.test(ua)) return "code";
+  if (/claude|anthropic/i.test(ua)) return "claude";
+  return "other";
+}
+// A User-Agent as it is kept and shown: its first 60 plain characters.
+export function cleanAgent(userAgent) {
+  return String(userAgent ?? "").replace(/[^A-Za-z0-9 ._\/()+:;,-]/g, "").trim().slice(0, 60);
+}
+// A FETCH OF THE TOOL LIST, noted as a call's stamp is: after the answer,
+// on a claimed house, at most once in ten minutes per door, app and stamp in
+// this isolate (an app that polls the list writes six times an hour, not
+// six hundred).
+const TOOL_FETCH_NOTED = new WeakMap();
+export function noteToolFetch(env, ctx, door, userAgent, stamp) {
+  try {
+    if (!env?.HOUSE || typeof env.HOUSE !== "object" || !SEEN_WHAT.includes(door) || !/^[0-9a-f]{6}$/.test(String(stamp ?? ""))) return;
+    if (!claimedKnown(env)) return;
+    const client = toolClient(userAgent);
+    if (!TOOL_FETCH_NOTED.has(env.HOUSE)) TOOL_FETCH_NOTED.set(env.HOUSE, {});
+    const noted = TOOL_FETCH_NOTED.get(env.HOUSE);
+    const key = `${door}:${client}:${stamp}`;
+    const now = Date.now();
+    if (now - (noted[key] ?? 0) < SEEN_EVERY_MS) return;
+    noted[key] = now;
+    const write = houseFetch(env, "/tool-fetch", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ door, client, stamp, ua: cleanAgent(userAgent) }),
+    }).then((r) => r.json()).catch(() => { noted[key] = 0; });
+    if (ctx?.waitUntil) ctx.waitUntil(write);
+    return write;
+  } catch { /* a lost note costs the setup page a line, never the fetch */ }
+}
+export async function readToolList(env) {
+  try { return await (await houseFetch(env, "/tool-list")).json(); } catch { return {}; }
 }
 
 export function houseStub(env) {

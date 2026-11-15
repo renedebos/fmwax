@@ -54,6 +54,8 @@ import { fromRecord, sendBackWords, setBreaks } from "./setcheck.js";
 import { logWeek, repeatsField, weekBreak, weekField } from "./week.js";
 import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
+import { findRecording } from "./recordings.js";
+import { longReadSentBack, weighLongRead } from "./longread.js";
 import { ARCHIVE } from "./archive-identity.js";
 
 // A DJ NAMED: by voice, the name was heard, so a near miss finds its DJ
@@ -446,6 +448,8 @@ export async function callTool(env, name, args, budget) {
         ...(day ? { curator_24h: day } : {}),
         ...(sentBack?.ok ? { rules_sent_back_24h: { requests: sentBack.requests, endless: sentBack.endless,
           chat_and_talk: sentBack.chat_and_talk } } : {}),
+        // Long reads sent back for more research in the past day (longread.js).
+        ...(sentBack?.ok && sentBack.long_reads ? { long_reads_sent_back_24h: sentBack.long_reads } : {}),
         // How much of Spotify's unpublished daily allowance this account has
         // used in the last day, as far as this server has counted.
         ...(calls ? { spotify_calls_24h: calls.last.total } : {}),
@@ -1529,6 +1533,7 @@ export async function callTool(env, name, args, budget) {
       // and the writer is dividing a list that already exists into movements.
       const kind = writerKindFor(env, dj);
       let written = null;
+      let weighed = null;
       if (kind) {
         const thesis = String(args.thesis ?? "").trim();
         if (!thesis) throw new Error(kind.thesisMissing);
@@ -1590,6 +1595,26 @@ export async function callTool(env, name, args, budget) {
             };
           }),
         };
+        // THE LONG READ, COUNTED (longread.js, 2026-11-13): its notes, the
+        // sites they were read on (by site since 2026-11-14) and its words,
+        // and a thin one sent back once, before anything is reserved or
+        // written. Not the short form; not a request already settled, whose
+        // answer below is its page or its removal. A ledger that cannot
+        // answer counts nothing: a page is never held up by the count. The
+        // record says whether this page had been sent back, also when it
+        // then passed (true or false; null when the ledger did not answer).
+        if (asked.notes !== "short" && !row.kept_at) {
+          weighed = weighLongRead({ ...written, research: args.research, sources: args.sources });
+          const key = `page:${requestId}`;
+          let before = null;
+          try { before = await station(env, "seen-get", { key, uris: [] }, { unbudgeted: true }); } catch { before = null; }
+          if (weighed.short.length && before?.ok && !before.sent_back) {
+            let marked = false;
+            try { marked = (await station(env, "sent-back", { key }, { unbudgeted: true })).ok === true; } catch { marked = false; }
+            if (marked) throw new Error(longReadSentBack(dj.name, weighed));
+          }
+          weighed.sent_back = before?.ok ? before.sent_back === true : null;
+        }
       } else {
         const intro = String(args.intro ?? "").trim();
         if (!intro) {
@@ -1681,6 +1706,10 @@ export async function callTool(env, name, args, budget) {
         // written, not pasted.
         requestId,
         ask: { text: askText, at: asked.at ?? null },
+        // What a long read weighed when it was published (longread.js): its
+        // notes, their sources, its words, what was short, and whether it had
+        // been sent back for it. Never rendered.
+        ...(weighed ? { weighed } : {}),
       };
       const cover = pickCover(tracks, await usedCovers(env));
       await programsKV(env).put(`program:${slug}`, JSON.stringify(page), {
@@ -1962,6 +1991,14 @@ export async function callTool(env, name, args, budget) {
           : {}),
       };
     }
+
+    // THE RECORDING FINDER (MC-41 stage 0, 2026-11-12): a named recording of
+    // a classical work, complete and in order, or a choice, or an honest
+    // "not on Spotify". The rules and the calls are in recordings.js; the
+    // quota lockout is kept there as search_tracks keeps it, after a kept
+    // answer, which costs Spotify nothing.
+    case "find_recording":
+      return findRecording(env, args ?? {});
 
     case "talk_ledger": {
       const action = String(args.action ?? "day");

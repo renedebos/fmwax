@@ -138,6 +138,23 @@ export function spotifyCatalog(call) {
       });
       return res.tracks?.items ?? [];
     },
+
+    // THE ALBUM'S OWN TRACK LIST (the recording finder, MC-41 stage 0,
+    // 2026-11-12; recordings.js). A classical work is complete and in order
+    // only as the album lists it: a search gives ten tracks at most, from any
+    // album, in any order (the trial returned four of Mahler's five
+    // movements). One call is the album as Spotify gives it — its type, its
+    // date, its ℗ line, its label where Spotify still sends one (the February
+    // 2026 Development Mode changes took `label` away) — with the first fifty
+    // tracks. Single albums only: the several-albums call was withdrawn then.
+    album(id) {
+      return call("GET", `/albums/${id}`);
+    },
+    // More of a long album's tracks, from `offset`: a box set of a hundred.
+    async albumTracks(id, offset, limit = 50) {
+      const page = await call("GET", `/albums/${id}/tracks`, { params: { limit, offset } });
+      return { tracks: page.items ?? [], total: page.total ?? null };
+    },
   };
 }
 

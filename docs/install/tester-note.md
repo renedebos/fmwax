@@ -24,7 +24,7 @@ Thanks for trying fmwax. It puts radio-style DJs on your WiiM's preset buttons, 
 - Everything runs on *your* accounts: your Cloudflare, your Spotify, your Claude or ChatGPT. I can't see your house or your music.
 - The home helper is optional, any time later: a small program on a computer at home, so your house can see and press every preset.
 - Not in this version: Tidal. The Talk tab is an extra: it needs your own OpenAI key, paid by the minute ([Talk](talk.md)). The Claude and ChatGPT apps' own voice modes work without it.
-- Updates: your setup page says when one is out. When an update's note says **re-add the connector**, do that too (in ChatGPT, rescan the plugin). The Updates page in the repository explains both.
+- Updates: your setup page says when one is out. When an update's note says **re-add the connector**, do that too (in ChatGPT, open the plugin and click **Refresh tools**). The Updates page in the repository explains both.
 
 **What to tell me**, in a direct message to **Rene** on the WiiM forum (forum.wiimhome.com):
 

@@ -36,20 +36,32 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // The tests pass their own (env.__mbSleep), so a second's spacing costs them nothing.
 const napOf = (env) => (typeof env?.__mbSleep === "function" ? env.__mbSleep : sleep);
 
+// MusicBrainz saying it has no such thing (a 404), told apart from not
+// answering (null): "no entry for this code" and "did not answer just now"
+// are different sentences to a listener (the recording finder, 2026-11-12).
+// A symbol, so the artist lookup's reads (`found?.artists`) see nothing in it,
+// as they saw nothing in a null before.
+export const MB_NONE = Symbol("musicbrainz has no entry");
+
 // One call, with a second's spacing before it and two tries more after a
 // "busy" (about one call in six, measured). Null when it will not answer.
-async function ask(env, path, wait, deadline) {
+// `cap`, when given, is shared by a caller that may send only so many
+// requests in all, the tries after a busy included ({ left: 3 }).
+async function ask(env, path, wait, deadline, cap = null) {
   const nap = napOf(env);
   for (let i = 0; i <= BUSY_WAITS_MS.length; i++) {
     const pause = i ? BUSY_WAITS_MS[i - 1] : wait;
     if (Date.now() + pause + 500 > deadline) return null;
+    if (cap && cap.left <= 0) return null;
     await nap(pause);
     let r = null;
+    if (cap) cap.left -= 1;
     try {
       r = await subrequest(env, `${MB}${path}`, { headers: { "user-agent": MB_UA, accept: "application/json" },
         signal: AbortSignal.timeout(Math.max(500, Math.min(TIMEOUT_MS, deadline - Date.now()))) });
     } catch (e) { if (e?.budgetExhausted) throw e; r = null; }
     if (r?.ok) return r.json().catch(() => null);
+    if (r?.status === 404) return MB_NONE;
     if (r && r.status !== 503) return null;
   }
   return null;
@@ -117,4 +129,100 @@ export async function lookUpAndKeep(env, name, opts = {}) {
   let key = null;
   try { key = await keepResearch(env, name, kept); } catch { key = null; }
   return key ? { ...kept, key } : null;
+}
+
+// THE RECORDING CHECK (MC-41 stage 0, 2026-11-12; recordings.js). The
+// recording finder asks MusicBrainz when and where a recording was made, and
+// which work it is, by its code (ISRC): the one number that is the same on
+// every service. Spotify's `released` is the album's date, and wrong for old
+// records (the trial: "1919" on a box that holds a 1929 recording).
+//
+// By the code, never by the composer's name: in MusicBrainz a recording's
+// artist credit is its PERFORMERS, and the composer is on the work it is a
+// performance of. A search for "Beethoven" as the artist of the Fifth finds
+// nothing, which reads like "not there" and is not.
+//
+// Two requests, three at most with a busy's tries counted: the code, then the
+// recording with its relationships (the work, and the work's own parts
+// relation, which names the whole symphony a movement belongs to; the place;
+// the dates on any of them). Best effort, and never in the way: anything that
+// goes wrong is `unanswered`, and the answer goes out without it.
+//
+// What comes back: { state, facts? }, where state is
+//   "checked"     MusicBrainz knows the recording: `facts` say what it says
+//   "none"        it has no entry for the code
+//   "unanswered"  slow, busy, down, or asked within the hour and was then
+//   "off"         this house does not ask it (ARTIST_LOOKUP="off")
+//   "no-code"     Spotify gave no code to ask with
+const ISRC_RE = /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/;
+const RECORDING_DEADLINE_MS = 8000;
+const RECORDING_REQUESTS = 3;
+const RECORDING_INC = "artist-rels+place-rels+area-rels+work-rels+work-level-rels";
+export async function checkRecording(env, isrc, durationMs, { deadlineMs = env?.__mbDeadlineMs ?? RECORDING_DEADLINE_MS } = {}) {
+  if (!artistLookupOn(env)) return { state: "off" };
+  const code = String(isrc ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (!ISRC_RE.test(code)) return { state: "no-code" };
+  const b = env?.__budget;
+  if (b && !b.critical && b.remaining < RECORDING_REQUESTS) return { state: "unanswered" };
+  // A MusicBrainz that did not answer is not asked again for an hour, as a
+  // name is not: a curator asking twice does not wait twice.
+  const miss = `mbmiss:isrc-${code.toLowerCase()}`;
+  const kv = programsKV(env);
+  try { if (await kv.get(miss)) return { state: "unanswered" }; } catch { /* asked, then */ }
+  const deadline = Date.now() + deadlineMs;
+  const cap = { left: RECORDING_REQUESTS };
+  let out = { state: "unanswered" };
+  try {
+    const got = await ask(env, `/isrc/${code}?fmt=json`, 0, deadline, cap);
+    const recs = got && got !== MB_NONE ? (Array.isArray(got.recordings) ? got.recordings : []).filter((r) => r?.id) : [];
+    if (got === MB_NONE || (got && !recs.length)) out = { state: "none" };
+    else if (recs.length) {
+      // One code can sit on more than one recording (an editor's duplicate,
+      // a remaster filed apart): the one nearest the track's own length.
+      const off = (r) => (Number.isFinite(r?.length) && durationMs ? Math.abs(r.length - durationMs) : Infinity);
+      const pick = recs.slice().sort((a, b2) => off(a) - off(b2))[0];
+      const at = `/recording/${encodeURIComponent(pick.id)}`;
+      let rec = await ask(env, `${at}?inc=${RECORDING_INC}&fmt=json`, SPACING_MS, deadline, cap);
+      // NOT MEASURED (2026-11-12): MusicBrainz documents `work-level-rels`
+      // for a release's lookup; if a recording's refuses it, the recording is
+      // asked once more without it (the third request), and the work is then
+      // the movement's own title rather than the whole symphony's.
+      if (rec === null && cap.left > 0) rec = await ask(env, `${at}?inc=${RECORDING_INC.replace("+work-level-rels", "")}&fmt=json`, SPACING_MS, deadline, cap);
+      if (rec && rec !== MB_NONE) out = { state: "checked", facts: recordingFacts(rec) };
+    }
+  } catch { out = { state: "unanswered" }; }
+  if (out.state === "unanswered") {
+    try { await kv.put(miss, "1", { expirationTtl: MISS_TTL_S }); } catch { /* asked again, then */ }
+  }
+  return out;
+}
+
+// What a MusicBrainz recording says of itself, read by rule. The date is on
+// whichever relationship an editor dated: the performance of the work first
+// (where "recorded on" usually lives), then the place, the city, the players.
+// A range ("1974-03 to 1974-04") stays a range. Everything in it is text from
+// an open database: reference, never instructions, and held to a length.
+const mbText = (v, n = 160) => String(v ?? "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, n) || null;
+const mbYear = (v) => (/^\d{4}/.test(String(v ?? "")) ? Number(String(v).slice(0, 4)) : null);
+export function recordingFacts(rec) {
+  const rels = Array.isArray(rec?.relations) ? rec.relations : [];
+  const of = (target, type) => rels.find((r) => r?.["target-type"] === target && r?.type === type) ?? null;
+  const perf = of("work", "performance");
+  const at = of("place", "recorded at");
+  const city = of("area", "recorded in");
+  const players = rels.filter((r) => r?.["target-type"] === "artist");
+  const dated = [perf, at, city, ...players].find((r) => mbYear(r?.begin)) ?? null;
+  const begin = mbText(dated?.begin, 10), end = mbText(dated?.end, 10);
+  const parent = (Array.isArray(perf?.work?.relations) ? perf.work.relations : [])
+    .find((r) => r?.type === "parts" && r?.direction === "backward" && r?.work?.title);
+  const place = at?.place?.name
+    ? [at.place.name, at.place.area?.name].map((p) => mbText(p, 80)).filter(Boolean).join(", ")
+    : mbText(city?.area?.name, 80);
+  return {
+    recorded: begin ? (end && end !== begin ? `${begin} to ${end}` : begin) : null,
+    years: begin ? [mbYear(begin), mbYear(end) ?? mbYear(begin)] : null,
+    place: place || null,
+    work: mbText(parent?.work?.title ?? perf?.work?.title),
+    live: Array.isArray(perf?.attributes) && perf.attributes.includes("live"),
+  };
 }

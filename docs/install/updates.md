@@ -42,6 +42,6 @@ The Claude app remembers the list of your house's tools from when you added it, 
 2. At claude.ai, in a browser: Settings, Connectors. Remove your house's connector. Then click **Add custom connector**, paste the address, click **Add**, then **Connect**.
 3. Re-adding resets the connector's tool permissions: set them again. Then start a new chat.
 
-**In ChatGPT:** open Plugins, then your house's plugin, and rescan it. Do the same for **fmwax curator** if ChatGPT is your curator.
+**In ChatGPT:** open Plugins, then your house's plugin, scroll to **Manage app** and click **Refresh tools**. Do the same for **fmwax curator** if ChatGPT is your curator. A chat that was already open picks the new tools up the next time it uses your house; until then it answers from the old ones.
 
 A Claude curator needs nothing: its scheduled task reads your house's tools afresh every time it runs.

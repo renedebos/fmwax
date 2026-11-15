@@ -48,7 +48,8 @@ test("the voice's list is exactly the allowlist; the owner's and the agent's are
   assert.deepEqual([...__test.VOICE_TOOLS].sort(), VOICE_LIST,
     "plays, reads and rewrites playlists — widening this is a decision, not a drift");
   const agent = await (await workerDefault.fetch(rpc(`/mcp/${AGENT}`, toolsList), e)).json();
-  assert.equal(agent.result.tools.length, 7, "the agent's world is as it was (and extend_endless since MC-22)");
+  assert.equal(agent.result.tools.length, 8,
+    "the agent's world is as it was (and extend_endless since MC-22, find_recording since MC-41 stage 0)");
   const owner = await (await workerDefault.fetch(rpc(`/mcp/${OWNER}`, toolsList), e)).json();
   assert.equal(owner.result.tools.length, __test.toolsWithMeta(e).length);
   // The stage-0 probe (probe_voice_door) was removed with stage D: nobody lists it.
@@ -65,7 +66,7 @@ test("/mcp has two doors, the owner's and the curator's: a voice key opens nothi
   const wrong = await workerDefault.fetch(rpc("/mcp/not-a-secret", toolsList), e);
   assert.equal(wrong.status, 404);
   const bearer = await (await workerDefault.fetch(rpc("/mcp", toolsList, { authorization: `Bearer ${AGENT}` }), e)).json();
-  assert.equal(bearer.result.tools.length, 7, "the curator's bearer form, as its routine sends it");
+  assert.equal(bearer.result.tools.length, 8, "the curator's bearer form, as its routine sends it");
 });
 
 test("voiceFunctions is the voice's list in the Responses function shape", () => {
@@ -96,9 +97,12 @@ test("voiceFunctions is the voice's list in the Responses function shape", () =>
   }
   // A write's schema is the connector's, less the start that rides on it
   // (`play` and its `device`, 2026-11-11): the voice starts music through its
-  // own speaker rule, never as part of a write.
+  // own speaker rule, never as part of a write. And less the connectors' stamp
+  // `v` (2026-11-12, toollist.js STAMPED_TOOLS): Talk's list is made fresh
+  // every session, so it has no old copy to tell apart.
   const rp = fns.find((f) => f.name === "replace_playlist").parameters;
-  const { play: _p, device: _d, ...connectors } = __test.toolsWithMeta(e).find((t) => t.name === "replace_playlist").inputSchema.properties;
+  const { play: _p, device: _d, v: _v, ...connectors } = __test.toolsWithMeta(e).find((t) => t.name === "replace_playlist").inputSchema.properties;
+  assert.equal(_v.enum.length, 1, "the connector's copy carries the stamp");
   assert.equal(_p.type, "boolean", "the connector has it");
   assert.deepEqual(rp.properties, connectors);
 });

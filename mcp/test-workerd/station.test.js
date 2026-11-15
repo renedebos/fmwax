@@ -637,8 +637,8 @@ describe("the rule check's tables against the real binding", () => {
     expect(await back("req:r1", T0 + 16 * min)).toBe(true);
     await call("sent-used", { key: "write:p:vibe", now: T0 + 2 * min });
     expect(await back("write:p:vibe", T0 + 3 * min, 15 * min)).toBe(false);
-    expect(await call("sent-back-day", { now: T0 + 5 * min })).toEqual({ ok: true, requests: 1, endless: 0, chat_and_talk: 1 });
-    expect(await call("sent-back-day", { now: T0 + 25 * 60 * min })).toEqual({ ok: true, requests: 0, endless: 0, chat_and_talk: 0 });
+    expect(await call("sent-back-day", { now: T0 + 5 * min })).toEqual({ ok: true, requests: 1, endless: 0, chat_and_talk: 1, long_reads: 0 });
+    expect(await call("sent-back-day", { now: T0 + 25 * 60 * min })).toEqual({ ok: true, requests: 0, endless: 0, chat_and_talk: 0, long_reads: 0 });
   });
 
   // THE HOUSE'S WEEK (week.js, 2026-11-07): the SQL behind the node suite's

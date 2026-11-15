@@ -1423,8 +1423,8 @@ export class StationLedger {
     // Sets sent back in the last day, by the path that wrote them: req (a DJ
     // page's ask), job (endless), write (the Claude app, ChatGPT or Talk).
     if (op === "sent-back-day") {
-      const out = { requests: 0, endless: 0, chat_and_talk: 0 };
-      const name = { req: "requests", job: "endless", write: "chat_and_talk" };
+      const out = { requests: 0, endless: 0, chat_and_talk: 0, long_reads: 0 };
+      const name = { req: "requests", job: "endless", write: "chat_and_talk", page: "long_reads" };
       for (const r of this.sql.exec("SELECT k FROM sent_back WHERE at >= ?", now - 24 * 60 * 60 * 1000).toArray()) {
         const n = name[String(r.k).split(":")[0]];
         if (n) out[n] += 1;

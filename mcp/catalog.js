@@ -104,6 +104,14 @@
 //   byIsrc(isrc)                  → Track[], the pressings the service returns
 //                                 for that number (Spotify: at most ten)
 //
+//   Spotify's alone, for the recording finder (recordings.js, MC-41 stage 0,
+//   2026-11-12); Tidal has no such verbs and the finder reads Spotify only:
+//   album(id)                     → the album as Spotify gives it: name,
+//                                 album_type, release_date, copyrights, label
+//                                 when sent, and `tracks`, a page of the first
+//                                 fifty with `total`
+//   albumTracks(id, offset, limit) → { tracks, total }: more of them
+//
 // Every verb is one or more subrequests through the transport the Worker
 // hands the implementation, so the per-invocation budget and the point-of-no-
 // return flag are counted there, not here. A verb throws an Error carrying

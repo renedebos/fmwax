@@ -4,7 +4,7 @@ This guide sets up **fmwax**: radio-style DJs for your WiiM speaker's preset but
 
 You ask a DJ for music on your phone, typed or spoken, in the Claude app or in ChatGPT. For example: *"Vibe, play me 20 minutes for a quiet morning."* A few minutes later the set is playing on your WiiM. It also stays on a preset button, so a press on the WiiM's remote plays your latest set again.
 
-Claude and ChatGPT work the same way here. Use the one you already have.
+Claude and ChatGPT work the same way here. Use the one you already have. One difference turned up in the author's own house (November 2026): the long articles two of the DJs can write for your Shelf. Both assistants research and write them, and Claude's read better. If those articles matter to you, choose Claude.
 
 ## What you get, level by level
 
@@ -179,13 +179,15 @@ Ask in the Claude app or ChatGPT, typed or spoken. Two good first asks:
 - **Quick:** *"Vibe, 20 minutes for a quiet morning, on my Requests preset."*
 - **With notes to read:** *"Librarian, an introduction to Stax Records, and put it on my Requests preset."* This takes a few minutes, because the Librarian looks things up and writes notes before the songs are ready. Keep the chat open. The notes appear on your house's **Shelf**.
 
+**In ChatGPT, start the chat from the plugin.** A plain new chat doesn't reach your house. Open **Plugins**, pick **fmwax** and click **Try in chat**: your message then starts with **@fmwax**. In Claude a new chat is enough.
+
 The first times, Claude or ChatGPT asks before it uses your house. ChatGPT may add a red **Suspicious Instruction** warning to that box. It is about your house's own notes to the assistant, which say how to pick the songs and when to play them: they come from your house, not from anyone else. **Allow** is fine.
 
 ## Using it
 
 - **Ask for anything.** Three DJs take any ask: **Genre** for a style (*"Genre, an hour of ska"*), **Deep Dive** for an artist (*"Deep Dive, forty minutes of early Prince"*) and **the Librarian** for a subject (*"Librarian, an introduction to Stax"*).
 - **Or name a DJ.** *"Hank, forty minutes of 45s."* Each DJ has their own taste, and their own page in your house's app (the **DJs** tab).
-- **Something seems off?** Start a new chat. An old chat may not have your house's tools.
+- **Something seems off?** Start a new chat (in ChatGPT, from the plugin's **Try in chat**). An old chat may not have your house's tools.
 - **Use one music connector at a time.** If Claude's own Spotify connector, or ChatGPT's Spotify app, is turned on, turn it off in chats with your house. Otherwise the assistant may make the playlist in the wrong place, and the set won't be on your preset.
 - **Spotify signs you out every six months.** Your house warns you three weeks before. Then, in your house's app, go to **Speakers**, then **Spotify**, and tap **Reconnect Spotify**.
 - **The house's rules,** like how long before a song can play again, are on the **House rules** page (the **Speakers** tab).

@@ -17,10 +17,11 @@ import { CURATOR_QUIET_MS, CURATOR_SEEN_KEY, programsKV, spotifyLogin } from "./
 import { station } from "./station.js";
 import { LIMIT_HINT, waitingWords, workWaiting } from "./waiting.js";
 import { curatorKind, hourlySeen, workSubscriptions } from "./curator-events.js";
-import { readSeen } from "./settings.js";
+import { readSeen, readToolList } from "./settings.js";
 import { sameName } from "./programs.js";
 import { helperSaw } from "./setup-watch.js";
 import { updateFacts } from "./updates.js";
+import { TOOL_META, listStamp } from "./toollist.js";
 
 const when = (env, iso) => atWords(houseClockWords(env, iso)) ?? "at a time not known";
 function dateWords(env, ms) {
@@ -57,10 +58,117 @@ function savedOn(boxes, recs, btn, service, name = null) {
 // 2026-10-17: one read and one not had read as done).
 const unreadWords = (names) => names.length ? ` · ${listWords(names)} not read yet` : "";
 
+// AN OLDER COPY OF THE HOUSE'S TOOLS (2026-11-12; the stamps, toollist.js):
+// a door's last call in the past day from a chat whose copy of the door's
+// tools is older than the house's, or that sent no stamp at all, said on that
+// door's row, with the call that showed it. An old copy outranks a stampless
+// one. Nothing is said while every call is current. A day on the owner's
+// door, because a note is not undone by a fresh chat's call there: several
+// chats share it, and the stale one may still be open. The curator's door
+// has one caller (`oneCaller`), so a current call newer than its last old or
+// stampless one says it has the new copy, and nothing is said.
+const TOOL_LIST_DAY_MS = 24 * 60 * 60 * 1000;
+function staleList(lists, now, { oneCaller = false, stamp = null } = {}) {
+  const ms = (x) => (x && typeof x.at === "string" ? Date.parse(x.at) : NaN);
+  const recent = (x) => now - ms(x) < TOOL_LIST_DAY_MS ? x : null;
+  // A stampless call from an app that fetched today's list before it is an
+  // app that does not send the stamp (dropsStamp, below), not a stale chat:
+  // the fetch line says so, and this one is not said.
+  const old = recent(lists?.old), none = dropsStamp(lists, stamp) ? null : recent(lists?.none);
+  if (!old && !none) return null;
+  if (oneCaller && ms(lists?.current) > Math.max(ms(old) || 0, ms(none) || 0)) return null;
+  // A current call newer than the one shown is said too (2026-11-13, the
+  // owner's first look at the row: a refreshed chat's good call showed
+  // nowhere for a day, so the row could not say the refresh had worked).
+  const shown = old ?? none;
+  const since = ms(lists?.current) > ms(shown) ? lists.current.at : null;
+  if (old) return { state: "old", at: old.at, title: TOOL_META[old.tool]?.[0] ?? old.tool, since };
+  return { state: "none", at: none.at, since };
+}
+// THE APP FETCHED TODAY'S LIST AND STILL CALLS WITH NO STAMP (2026-11-13:
+// ChatGPT's calls the evening the stamps went live came with none, and a
+// chat could not say whether its copy was old). The last stampless call is
+// from an app (`client`, from its User-Agent) whose own last fetch, earlier,
+// was of the list the house serves now: its calls carry no stamp at all.
+function dropsStamp(lists, stamp) {
+  const none = lists?.none, got = none?.client ? lists?.fetched?.[none.client] : null;
+  return !!stamp && got?.stamp === stamp && Date.parse(got.first ?? got.at) < Date.parse(none.at) ? none.client : null;
+}
+// WHAT AN APP'S CALLS HAVE SAID SINCE IT FETCHED TODAY'S LIST (per app,
+// settings.js `apps`): its newest call after that fetch, "current", "old" or
+// "none", with when and which tool; null with no call since, or when the
+// app's last fetch was of another list. "Since" is since it FIRST fetched
+// this list (`first`): an app that fetches with every chat has a last fetch
+// later than the call beside it.
+function appCalls(lists, client, stamp, detail = false) {
+  const got = lists?.fetched?.[client];
+  if (!stamp || got?.stamp !== stamp) return null;
+  const since = Object.entries(lists?.apps?.[client] ?? {})
+    .filter(([, n]) => typeof n?.at === "string" && Date.parse(n.at) > Date.parse(got.first ?? got.at))
+    .sort((a, b) => Date.parse(b[1].at) - Date.parse(a[1].at))[0];
+  return since ? (detail ? { state: since[0], ...since[1] } : since[0]) : null;
+}
+// WHICH LIST EACH APP LAST FETCHED (settings.js noteToolFetch): one sentence
+// an app, in a fixed order. Today's list: said, with when, and what its calls
+// since have said. An older one: said with what to do, for thirty days, after
+// which an app nobody uses any more is left alone.
+const TOOL_FETCH_OLD_MS = 30 * 24 * 60 * 60 * 1000;
+function fetchWords(env, lists, stamp, whose, now) {
+  const fetched = lists?.fetched;
+  if (!fetched || !stamp) return "";
+  const out = [];
+  for (const client of ["chatgpt", "claude", "code", "other"]) {
+    const got = fetched[client];
+    if (!got || typeof got.at !== "string") continue;
+    const name = client === "chatgpt" ? "ChatGPT" : client === "claude" ? "Claude" : client === "code" ? "Claude Code"
+      : `Another app${got.ua ? ` (${got.ua})` : ""}`;
+    if (got.stamp === stamp) {
+      const call = appCalls(lists, client, stamp, true);
+      out.push(`${name} holds today's tools (fetched ${when(env, got.at)})` +
+        (call?.state === "current" ? `, and its last call said so (${when(env, call.at)}).`
+          : call?.state === "none" ? "; its calls do not say which copy they use, so the house goes by the fetch."
+          : call?.state === "old" ? `, but a chat of its used an older copy since (${when(env, call.at)}): start a new chat there.` : "."));
+    } else if (now - Date.parse(got.at) < TOOL_FETCH_OLD_MS) {
+      const fix = client === "chatgpt" ? `In ChatGPT, open ${whose} plugin and click Refresh tools, under Manage app.`
+        : client === "claude" ? `In Claude, remove ${whose} connector and add it again.`
+        : client === "code" ? "A new Claude Code session reads them afresh." : "Connect it again.";
+      out.push(`${name} last fetched the tools ${when(env, got.at)}, before they changed. ${fix}`);
+    }
+  }
+  return out.length ? ` · ${out.join(" ")}` : "";
+}
+// Who called, and what to do where it runs, as the Updates guide says it
+// (docs/install/updates.md, the owner's measurements of 2026-11-12): in
+// ChatGPT, Refresh tools on the plugin, and an open chat takes the new ones
+// at its next use of the house; in Claude, the connector removed and added
+// again, then a new chat; a Claude curator's task reads the tools afresh at
+// every run. `who`: "owner" (the owner's chats, Claude or ChatGPT), or the
+// curator as curatorKind names it: "chatgpt", "claude", or null.
+function staleWords(env, stale, who) {
+  if (!stale) return "";
+  const at = when(env, stale.at);
+  const either = (whose) => `In ChatGPT, open ${whose} plugin and click Refresh tools, under Manage app. ` +
+    `In Claude, remove ${whose} connector and add it again, then start a new chat.`;
+  const task = "Its next run reads them afresh. If a later time shows here, remove and add its connector in Claude and attach it to the task again.";
+  const since = stale.since ? ` A chat with today's copy has called since (${when(env, stale.since)}).` : "";
+  const subject = who === "owner" ? "A chat" : who === "chatgpt" ? "The curator's chat" : who === "claude" ? "The curator's task" : "The curator";
+  if (stale.state === "old") {
+    const fix = who === "chatgpt" ? "In ChatGPT, open the curator's plugin and click Refresh tools, under Manage app: its Work chat takes them at its next use of the house."
+      : who === "claude" ? task : either(who === "owner" ? "the house's" : "the curator's");
+    return ` · ${subject} used an older copy of the house's tools ${at} (${stale.title}). ${fix}${since}`;
+  }
+  // No stamp: most often a chat whose copy is from before the stamps, but
+  // not said so (on a house set up since, that reason is wrong). A Claude
+  // task has no old copy to keep, so for it this is the same as an old one.
+  const fix = who === "claude" ? task : who === "chatgpt" ? "Refresh its plugin's tools in ChatGPT once."
+    : "Refresh its tools in ChatGPT, or add it again in Claude, once.";
+  return ` · ${subject} called without saying which copy of the tools it holds (${at}). ${fix}${since}`;
+}
+
 export async function setupChecklist(env, owner, { base = null, origin = null, now = Date.now() } = {}) {
   const boxes = parseSpeakers(env);
   const cfg = parseEndless(env);
-  const [login, seen, curatorAt, hands, recs, state, waiting, subs, hourly] = await Promise.all([
+  const [login, seen, curatorAt, hands, recs, state, waiting, subs, hourly, lists] = await Promise.all([
     spotifyLogin(env, now).catch(() => ({})),
     readSeen(env),
     programsKV(env).get(CURATOR_SEEN_KEY, { type: "json" }).then((r) => Number(r?.at) || null).catch(() => null),
@@ -70,7 +178,11 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
     workWaiting(env, now).catch(() => null),
     workSubscriptions(env).catch(() => null),
     curatorKind(env) === "chatgpt" ? hourlySeen(env, now) : null,
+    readToolList(env),
   ]);
+  const ownerStamp = listStamp(env, "owner"), agentStamp = listStamp(env, "agent");
+  const staleOwner = staleList(lists?.connector, now, { stamp: ownerStamp });
+  const staleCurator = staleList(lists?.curator, now, { oneCaller: true, stamp: agentStamp });
 
   // CORE
   const core = [];
@@ -126,9 +238,13 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
   // Claude's alone, so a ChatGPT household found no steps on the page).
   const address = env.MCP_SECRET && origin ? `${origin}/mcp/${env.MCP_SECRET}` : null;
   const copy = address ? { label: "The house's address", value: address } : null;
+  // An older copy of a tool's words in the past day (staleList) wants a
+  // look, as a sign-in near its end does: "due", which is done, and not the
+  // next step. A chat with no stamp is said, and leaves the row done.
   core.push(seen.connector
-    ? { title: "Claude or ChatGPT", state: "done", href: "/setup/app", label: "Open", always: true, copy,
-      detail: `Added · last call ${when(env, seen.connector)}` }
+    ? { title: "Claude or ChatGPT", state: staleOwner?.state === "old" ? "due" : "done", href: "/setup/app", label: "Open", always: true, copy,
+      detail: `Added · last call ${when(env, seen.connector)}${staleWords(env, staleOwner, "owner")}` +
+        fetchWords(env, lists?.connector, ownerStamp, "the house's", now) }
     : { title: "Claude or ChatGPT", state: "todo", href: "/setup/app", label: "Connect Claude or ChatGPT", copy,
       // The page ticks it by itself once the first call comes (setup-watch.js).
       wait: { app: false },
@@ -233,12 +349,15 @@ export async function setupChecklist(env, owner, { base = null, origin = null, n
         wait: { curator: 0, ...(kind === "chatgpt" ? { listening: subs?.count ?? 0 } : {}) },
         detail: kind === "chatgpt" ? `${who} · not checked in yet: send it a test from its page, or wait for its hourly check`
           : "Not checked in yet: wake it from its page, or wait for its hourly check" }
-      : { title: "Curator", state: now - curatorAt > CURATOR_QUIET_MS || waiting || (kind === "chatgpt" && !subs?.count) ? "due" : "done",
+      : { title: "Curator", state: now - curatorAt > CURATOR_QUIET_MS || waiting || (kind === "chatgpt" && !subs?.count) ||
+          staleCurator?.state === "old" ? "due" : "done",
         ...(env.SETUP_KEY ? { href: "/setup/curator", label: "Open", always: true } : {}),
         detail: `${who} · checked in ${when(env, new Date(curatorAt).toISOString())}` +
           (now - curatorAt > CURATOR_QUIET_MS ? `: over an hour ago, so look at ${lookAt}` : "") +
           // Work nobody answered (MC-31 6b): a plan's limit run out looks like this.
-          (waiting ? ` · ${waitingWords(waiting)} waiting over 20 minutes: ${LIMIT_HINT}` : "") });
+          (waiting ? ` · ${waitingWords(waiting)} waiting over 20 minutes: ${LIMIT_HINT}` : "") +
+          // Its copy of the tools (2026-11-12), as on the owner's row.
+          staleWords(env, staleCurator, kind) + fetchWords(env, lists?.curator, agentStamp, "the curator's", now) });
     // THE WORK CHAT'S HOURLY CHECK, ITS OWN ROW (the test house run, finding
     // 17, 2026-11-11: the hourly note was missed and nothing said so). Ticked
     // by the house from a check-in it did not ring for; to do until then, so

@@ -47,6 +47,8 @@ What is in this repository:
 - `art/covers/`: the DJs' faces.
 - `wrangler.jsonc`, `package.json`, `.dev.vars.example`: what the Deploy button reads.
 
+fmwax is a hobby project. It is not an official WiiM product, and it is not made, endorsed or supported by WiiM, Spotify, Anthropic or OpenAI.
+
 This repository is a copy, made by a script from the author's own repository. A change made here directly is not kept: please suggest it in an issue instead.
 
 MIT licence: [LICENSE](LICENSE).

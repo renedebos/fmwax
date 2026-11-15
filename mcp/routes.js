@@ -15,7 +15,7 @@ import {
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
 import { githubRepo, updateFacts, versionWords } from "./updates.js";
-import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, readSeen, renewHouseKey } from "./settings.js";
+import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, noteToolFetch, readSeen, renewHouseKey, toolClient } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
@@ -74,7 +74,7 @@ import {
   flashFor, listProgramSummaries, moveTo, pickImage, playedFlash, programBaseUrl,
   playShelfSet, programCatalog, programSpotifyUris, shelfElsewhere, shelfFilter, shelfFilterQs, shelfFind, shelfState,
 } from "./shelf.js";
-import { VOICE_TOOLS, VOICE_WRITERS, askDjOn, voiceFunctions, voiceWriterCall, writerKindFor } from "./toollist.js";
+import { VOICE_TOOLS, VOICE_WRITERS, askDjOn, listStamp, voiceFunctions, voiceWriterCall, writerKindFor } from "./toollist.js";
 import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
@@ -3648,9 +3648,12 @@ export async function handleRequest(request, env, ctx) {
           "change-asked": `${dj.name} is changing it up. It takes over after the song that is playing, in a few minutes.`,
           "more-not-playing": `${dj.name} isn't playing right now. Press ${btnNow} on the remote first.`,
           "change-not-playing": `${dj.name} isn't playing right now. Press ${btnNow} on the remote first.`,
-          "fresh-day-cap": cap, "more-day-cap": cap, "change-day-cap": cap,
+          "steer-asked": `${dj.name} is turning${askedW ? ` toward “${askedW}”` : ""}. It takes over after the song that is playing, in a few minutes.`,
+          "steer-not-playing": `${dj.name} isn't playing right now. Press ${btnNow} on the remote first.`,
+          "steer-needs-words": `Say which way first, in a few words: “more upbeat”, “no ballads”.`,
+          "fresh-day-cap": cap, "more-day-cap": cap, "change-day-cap": cap, "steer-day-cap": cap,
           // A house whose DJ presets wait for a curator (MC-40).
-          ...Object.fromEntries(["fresh", "more", "change", "put", "new", "lane"].map((w) => [`${w}-no-curator`, noCuratorWords(dj.name)])),
+          ...Object.fromEntries(["fresh", "more", "change", "steer", "put", "new", "lane"].map((w) => [`${w}-no-curator`, noCuratorWords(dj.name)])),
           "put-done": `${dj.name} is on preset ${n} now${other ? `, instead of ${other}` : ""}.${sw && other ? ` ${other} moved to preset ${sw}.` : ""} ` +
             `A fresh set is being made: press ${n} in a few minutes. Then save preset ${n} again on each speaker so the remote says ${dj.name} — the Speakers tab shows how.`,
           "put-done-nofresh": `${dj.name} is on preset ${n} now, but today's ${endlessCfg.dailyRuns} DJ runs are used up: ` +
@@ -3695,7 +3698,7 @@ export async function handleRequest(request, env, ctx) {
         // playing and the flash still said so). Once the job is done the
         // section below says what happened, so the line goes.
         const stale = (said === "fresh-asked" && !endless?.making)
-          || ((said === "more-asked" || said === "change-asked") && !endless?.steering);
+          || ((said === "more-asked" || said === "change-asked" || said === "steer-asked") && !endless?.steering);
         // THE LANE IS SOMEBODY ELSE'S (MC-27 stage 3): not a line but a choice.
         if (said === "lane-busy") {
           const cur = findDj(env, String(url.searchParams.get("cur") ?? ""));
@@ -4104,6 +4107,15 @@ export async function handleRequest(request, env, ctx) {
             }
           }
         }
+      } else if (what === "steer") {
+        // STEER IN YOUR OWN WORDS (2026-11-11), from More on the page of a DJ
+        // playing endless: the listener's words go to the curator as the
+        // steer the chat and Talk file, and nowhere else. Never a request
+        // set's: that page has no box for it.
+        const typed = String(form?.get("words") ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+        out = !typed ? { status: "needs-words" }
+          : await endlessPageSteer(env, { button: p.button, words: typed, by: "typed on the DJ page" });
+        if (out.status === "asked") q.set("w", typed);
       } else if (what === "more" || what === "change") {
         out = p ? await endlessPageSteer(env, { button: p.button, words: steerWords, leaveWords: what === "change" }) : { status: "off" };
         if (out.status === "off" || out.status === "not-playing") {
@@ -5051,6 +5063,13 @@ export async function handleRequest(request, env, ctx) {
     const batch = Array.isArray(msg) ? msg : [msg];
     // The setup checklist ticks "Claude app" and the curator from this.
     noteSeen(env, ctx, role === "owner" ? "connector" : "curator");
+    // Which app fetched the tool list, and which list it was handed
+    // (2026-11-13, settings.js noteToolFetch): what a refresh looks like
+    // from here, with nothing asked of the model.
+    const userAgent = request.headers.get("user-agent");
+    if (batch.some((m) => m?.method === "tools/list")) {
+      noteToolFetch(env, ctx, role === "owner" ? "connector" : "curator", userAgent, listStamp(env, role === "agent" ? "agent" : "owner"));
+    }
     // The curator checking in (stampCurator): every run starts here.
     if (role === "agent" && batch.some((m) => m?.method === "tools/call" && m?.params?.name === "list_requests")) {
       await stampCurator(env);
@@ -5065,7 +5084,7 @@ export async function handleRequest(request, env, ctx) {
     for (const m of batch) {
       // Notifications have no id and take no response.
       if (m.id === undefined || m.id === null) continue;
-      replies.push(await handleRpc(env, m, budget, role, requestVersion(m, headerVersion)));
+      replies.push(await handleRpc(env, m, budget, role, { ...requestVersion(m, headerVersion), ctx, client: toolClient(userAgent) }));
     }
     if (!replies.length) return new Response(null, { status: 202 });
     // A version this door does not speak is a 400 in the modern era, so a

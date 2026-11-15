@@ -1073,6 +1073,55 @@ test("the DJ page: an endless block with Start fresh, and More like this / Chang
   } finally { bell.restore(); sp.restore(); }
 });
 
+test("the DJ page: Steer in your own words, under More, while the DJ plays endless (2026-11-11)", async () => {
+  const { default: worker } = await import("../worker.js");
+  const KEY = "abcdefabcdefabcdefabcdef";
+  const player = { now: { pid: PL, at: 2 } };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    e.PROGRAM_LIBRARY_KEY = KEY;
+    e.ROOM_DEVICES = JSON.stringify(["Pro Plus", "Ultra"]);
+    e.REQUESTS_ENABLED = "true";
+    await endlessWatch(e, Date.now());
+    const get = async (path = "") => (await worker.fetch(new Request(`https://x.test/buttons/${KEY}/vibe${path}`), e)).text();
+    const post = (fields) => worker.fetch(new Request(`https://x.test/buttons/${KEY}/vibe/endless`, {
+      method: "POST", body: new URLSearchParams(fields) }), e);
+    const page = await get();
+    // The box is in the More sheet, first, and posts to the DJ's own taps.
+    assert.match(page, /<div class="mlist">\s*<details class="putfold steerown">[^]*?Steer in your own words[^]*?<input type="hidden" name="do" value="steer">\s*<input class="steerwords" type="text" name="words" required maxlength="120"/);
+    // And the Ask box says what it makes, and where the turn is.
+    assert.match(page, /An ask makes a one-off set on the requests preset\. To turn what Vibe is playing now, tap <a href="#more" data-more-open>More<\/a>, then <b>Steer in your own words<\/b>\./);
+    // Nothing typed: nothing asked.
+    const none = await post({ do: "steer", words: "   " });
+    assert.match(none.headers.get("location"), /endless=steer-needs-words/);
+    assert.equal((await endlessJobs(e)).length, 0);
+    // The listener's words, as typed, are the steer: one job, a top-up's worth.
+    const r = await post({ do: "steer", words: "  James Brown,   the seventies " });
+    assert.equal(r.status, 303);
+    assert.match(r.headers.get("location"), /\?w=James\+Brown%2C\+the\+seventies&endless=steer-asked$/);
+    const jobs = await endlessJobs(e);
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].kind, "steer");
+    assert.equal(jobs[0].steer, "James Brown, the seventies");
+    assert.equal(jobs[0].minutes, 45);
+    const back = await get(new URL(`https://x.test${r.headers.get("location")}`).search);
+    assert.match(back, /Vibe is turning toward “James Brown, the seventies”\. It takes over after the song that is playing, in a few minutes\./);
+    // While the turn is being made the box is away, as the two buttons are.
+    assert.doesNotMatch(back, /class="putfold steerown"/);
+    assert.doesNotMatch(back, /An ask makes a one-off set/, "nor the line that points to it");
+    // Not playing: no box, no hint, and a steer sent anyway is refused in words.
+    player.now = null;
+    const idle = await get();
+    assert.doesNotMatch(idle, /steerown/);
+    assert.doesNotMatch(idle, /An ask makes a one-off set/);
+    assert.match((await post({ do: "steer", words: "more upbeat" })).headers.get("location"), /endless=steer-not-playing/);
+    // A DJ on no endless preset has no steer here.
+    assert.equal((await worker.fetch(new Request(`https://x.test/buttons/${KEY}/hank/endless`, { method: "POST", body: "do=steer&words=more+upbeat" }), e)).status, 404);
+  } finally { bell.restore(); sp.restore(); }
+});
+
 test("the DJ page says when the day's runs are used up", async () => {
   const { default: worker } = await import("../worker.js");
   const KEY = "abcdefabcdefabcdefabcdef";

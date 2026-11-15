@@ -1,9 +1,10 @@
 // THE MCP PROTOCOL: JSON-RPC over POST, the versions this server speaks,
 // and the dispatch into callTool.
 // Split out of worker.js on 2026-09-26 (consolidation).
-import { AGENT_TOOLS, toolsWithMeta } from "./toollist.js";
+import { AGENT_TOOLS, stampFor, takeStamp, toolsWithMeta } from "./toollist.js";
 import { callTool } from "./tools.js";
 import { EVENTS, subscribeWork, unsubscribeWork } from "./curator-events.js";
+import { noteToolList } from "./settings.js";
 export const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 export const SERVER_INFO = { name: "music-control", version: "0.1.0" };
 // THE MODERN ERA (MCP 2026-07-28; MC-31 stage 6b, 2026-10-19). Stateless:
@@ -38,7 +39,9 @@ export function requestVersion(msg, headerVersion = null) {
   return { version: headerVersion || null, fromMeta: false };
 }
 
-export async function handleRpc(env, msg, budget, role = "owner", { version = null, fromMeta = false } = {}) {
+// `ctx`, the request's, so a note of which tool list a call came from
+// (2026-11-12, noteToolList) is written after the answer, as noteSeen's is.
+export async function handleRpc(env, msg, budget, role = "owner", { version = null, fromMeta = false, ctx = null, client = null } = {}) {
   const { id, method } = msg;
   const supported = [MODERN_VERSION, ...PROTOCOL_VERSIONS];
   // server/discover is answered in the modern way whoever asks: it is how a
@@ -66,14 +69,29 @@ export async function handleRpc(env, msg, budget, role = "owner", { version = nu
     if (out.error) return rpcError(id, ...out.error);
     return rpcResult(id, { resultType: "complete", ...out.body, _meta: { [SERVER_META]: SERVER_INFO } });
   }
-  const reply = await legacyRpc(env, msg, budget, role);
+  const reply = await legacyRpc(env, msg, budget, role, ctx, client);
   if (version !== MODERN_VERSION || !reply.result) return reply;
   const listed = method === "tools/list" ? { ttlMs: LIST_TTL_MS, cacheScope: "private" } : {};
   return rpcResult(id, { resultType: "complete", ...reply.result, ...listed,
     _meta: { ...(reply.result._meta ?? {}), [SERVER_META]: SERVER_INFO } });
 }
 
-async function legacyRpc(env, msg, budget, role) {
+// AN OLDER COPY OF THE HOUSE'S TOOLS, said to the model in the answer
+// (2026-11-12), one field beside what the tool returned. Only for "old": a
+// current call needs nothing, and a call with no stamp is most often a chat
+// from before the stamps, which the setup page tells the owner about. What
+// to do is as the Updates guide says it (docs/install/updates.md, measured
+// 2026-11-12): ChatGPT's button is Refresh tools, and an open ChatGPT chat
+// takes the new tools at its next use; Claude needs the connector added
+// again and a new chat.
+export const TOOL_LIST_OLD = "Your copy of the house's tools is older than the house's own. Tell the person to " +
+  "click Refresh tools on the fmwax plugin in ChatGPT (under Manage app), or to re-add the house in Claude and start a new chat.";
+function toldOld(out, state) {
+  if (state !== "old" || !out || typeof out !== "object" || Array.isArray(out)) return out;
+  return { ...out, tool_list: TOOL_LIST_OLD };
+}
+
+async function legacyRpc(env, msg, budget, role, ctx = null, client = null) {
   const { id, method, params } = msg;
 
   switch (method) {
@@ -89,11 +107,10 @@ async function legacyRpc(env, msg, budget, role) {
       return rpcResult(id, {});
     case "tools/list":
       // The agent's list IS its world: tools outside the allowlist are not
-      // shown smaller, they are not shown at all.
+      // shown smaller, they are not shown at all. Each list with its own
+      // stamp (2026-11-12, toollist.js), so toolsWithMeta does the filtering.
       return rpcResult(id, {
-        tools: role === "agent"
-          ? toolsWithMeta(env).filter((t) => AGENT_TOOLS.has(t.name))
-          : toolsWithMeta(env),
+        tools: toolsWithMeta(env, role === "agent" ? "agent" : "owner"),
       });
     case "tools/call": {
       const toolName = params?.name;
@@ -109,10 +126,19 @@ async function legacyRpc(env, msg, budget, role) {
           isError: true,
         });
       }
+      // WHICH COPY OF THIS DOOR'S TOOLS THE CALLER HOLDS (2026-11-12,
+      // toollist.js takeStamp): `v` comes out before the tool runs, so no
+      // tool sees it; a call to a stamped tool is judged against this door's
+      // list, and what it said is noted for that door's row on the setup
+      // page; an old copy is told so in the answer. Nothing else about the
+      // call changes, whatever `v` holds.
+      const { args, state } = takeStamp(params?.arguments ?? {}, stampFor(env, role === "agent" ? "agent" : "owner", toolName));
+      const door = role === "owner" ? "connector" : role === "agent" ? "curator" : null;
+      if (state && door) noteToolList(env, ctx, door, toolName, state, client);
       try {
-        const out = await callTool(env, toolName, params?.arguments ?? {}, budget);
+        const out = await callTool(env, toolName, args, budget);
         return rpcResult(id, {
-          content: [{ type: "text", text: JSON.stringify(out, null, 2) }],
+          content: [{ type: "text", text: JSON.stringify(toldOld(out, state), null, 2) }],
         });
       } catch (err) {
         // Tool failures are results, not protocol errors — the model should see

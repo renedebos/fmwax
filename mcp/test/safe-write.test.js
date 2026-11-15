@@ -775,10 +775,12 @@ test("the agent's list is exactly the allowlist, and the owner's is everything",
   const agent = await (await workerDefault.fetch(rpc(`/mcp/${AGENT}`, toolsList), e)).json();
   const names = agent.result.tools.map((t) => t.name).sort();
   assert.deepEqual(names,
-    ["decline_request", "extend_endless", "fulfill_request", "get_dj", "keep_request_set",
+    ["decline_request", "extend_endless", "find_recording", "fulfill_request", "get_dj", "keep_request_set",
       "list_requests", "search_tracks"],
     // extend_endless joined with MC-22 stage 2 (the owner's go, 2026-09-23):
     // appends only, to a configured endless preset, for the Worker's own job.
+    // find_recording joined with MC-41 stage 0 (2026-11-12): a read, as
+    // search_tracks is, for the curator who makes the asked sets.
     "exactly the curating verbs — widening this is a decision, not a drift");
 
   const owner = await (await workerDefault.fetch(rpc(`/mcp/${OWNER}`, toolsList), e)).json();
@@ -798,7 +800,7 @@ test("the agent's bearer form works, wrong keys 404, unset means no agent path",
   const e = mcpEnv();
   const bearer = await (await workerDefault.fetch(
     rpc("/mcp", toolsList, { authorization: `Bearer ${AGENT}` }), e)).json();
-  assert.equal(bearer.result.tools.length, 7);
+  assert.equal(bearer.result.tools.length, 8);
 
   const wrong = await workerDefault.fetch(rpc("/mcp/not-a-secret", toolsList), e);
   assert.equal(wrong.status, 404);
@@ -1789,7 +1791,10 @@ function profEnv() {
   return e;
 }
 
-function profRequest(e, id = "r-p1") {
+// `notes`: what the listener chose on the form. "short" here, so the tests
+// of a program's shape below are not also tests of the long read's count
+// (longread.js, 2026-11-13), which has its own further down.
+function profRequest(e, id = "r-p1", notes = "short") {
   const now = Date.now();
   e.STATION.rows.set(id, {
     id, dj: "the-librarian", normalized: "disco into house", state: "pending",
@@ -1800,7 +1805,7 @@ function profRequest(e, id = "r-p1") {
   });
   e.PROGRAMS.put(`request:${id}`, JSON.stringify({
     id, dj: "the-librarian", mood: "disco into house", length: 90,
-    avoid: null, keep: true, at: "2026-09-01T00:00:00Z",
+    avoid: null, keep: true, at: "2026-09-01T00:00:00Z", ...(notes ? { notes } : {}),
   }));
   return id;
 }
@@ -1840,6 +1845,138 @@ test("a writer's kept set is a program, cut from the tracklist that exists", asy
     assert.deepEqual(page.sections[0].tracks.map((t) => t.uri), uris("n1"));
     assert.deepEqual(page.sections[1].tracks.map((t) => t.uri), uris("n2", "n3", "n4"));
     assert.equal(page.tracks, 4);
+  } finally { f.restore(); }
+});
+
+// ---------------------------------------------- the long read, counted
+// (longread.js, 2026-11-13: the house's ChatGPT curator wrote 730 and 1,010
+// words from five and six sources where the method asks for twenty notes.)
+
+// A long read's worth: `n` notes over `sources` sources, and prose of `words` words.
+const researched = (n, sources) => Array.from({ length: n }, (_, i) =>
+  ({ note: `Note ${i}: on the night of the session the band cut take ${i} live to tape.`, source: `source-${i % sources}` }));
+const longEssay = (counts, words) => ({
+  ...essay(counts),
+  sections: counts.map((k, i) => ({ heading: `Movement ${i + 1}`, tracks: k,
+    // In paragraphs of a hundred words: one of 4,000 characters is refused.
+    prose: Array.from({ length: Math.ceil(words / counts.length / 100) }, () =>
+      ({ text: Array.from({ length: 100 }, (_, w) => `word${w}`).join(" ") })) })),
+});
+
+test("a thin long read is sent back once with what it weighed, and nothing is written or reserved", async () => {
+  const e = profEnv();
+  const f = installFetch({ contents: [track("old1")] });
+  try {
+    const id = profRequest(e, "r-p1", "long");
+    await callTool(e, "fulfill_request", { request_id: id, uris: uris("n1", "n2", "n3", "n4") }, { remaining: 40 });
+    const thin = { request_id: id, title: "Love Is the Message", ...essay([1, 3]), research: researched(6, 3) };
+    await assert.rejects(callTool(e, "keep_request_set", thin, { remaining: 40 }), (err) => {
+      assert.match(err.message, /^The Librarian's long read is thin, so it is sent back once\. Nothing was written\./);
+      assert.match(err.message, /6 notes in `research` from 3 different sites, and runs to \d+ words/);
+      assert.match(err.message, /at least 20 notes from at least 6 different sites and runs to at least 1500 words/);
+      assert.match(err.message, /The second call is published as it comes\.$/);
+      return true;
+    });
+    assert.equal(e.STATION.rows.get(id).kept_slug, null, "no page reserved");
+    assert.equal([...e.PROGRAMS.store.keys()].filter((k) => k.startsWith("program:")).length, 0, "and none written");
+    assert.equal((await callTool(e, "list_requests", {}, { remaining: 40 })).long_reads_sent_back_24h, 1);
+
+    // The second call is published as it comes, and the page remembers what it weighed.
+    const out = await callTool(e, "keep_request_set", thin, { remaining: 40 });
+    assert.equal(out.status, "kept");
+    const page = await e.PROGRAMS.get(`program:${out.url.split("/").pop()}`, { type: "json" });
+    assert.equal(page.weighed.notes, 6);
+    assert.equal(page.weighed.sources, 3);
+    assert.deepEqual(page.weighed.short, ["notes", "sources", "words"]);
+    assert.equal(page.weighed.sent_back, true);
+    // A third call answers with the page, never with a send-back.
+    assert.equal((await callTool(e, "keep_request_set", thin, { remaining: 40 })).status, "already-kept");
+  } finally { f.restore(); }
+});
+
+test("a long read with its notes, sources and words is published at the first call; each shortfall alone sends it back", async () => {
+  const f = installFetch({ contents: [track("old1")] });
+  try {
+    const keep = async (args) => {
+      const e = profEnv();
+      const id = profRequest(e, "r-p1", "long");
+      await callTool(e, "fulfill_request", { request_id: id, uris: uris("n1", "n2", "n3", "n4") }, { remaining: 40 });
+      return { e, run: () => callTool(e, "keep_request_set", { request_id: id, title: "T", ...args }, { remaining: 40 }) };
+    };
+    const full = await keep({ ...longEssay([1, 3], 1600), research: researched(24, 8) });
+    const out = await full.run();
+    assert.equal(out.status, "kept");
+    const page = await full.e.PROGRAMS.get(`program:${out.url.split("/").pop()}`, { type: "json" });
+    assert.deepEqual(page.weighed.short, []);
+    assert.equal(page.weighed.sent_back, false, "the record says it was never sent back");
+    assert.ok(page.weighed.words >= 1500);
+    assert.equal(page.research, undefined, "the notes themselves are not kept on the page");
+
+    await assert.rejects((await keep({ ...longEssay([1, 3], 1600), research: researched(19, 8) })).run(), /19 notes/);
+    await assert.rejects((await keep({ ...longEssay([1, 3], 1600), research: researched(24, 5) })).run(), /from 5 different sites/);
+    await assert.rejects((await keep({ ...longEssay([1, 3], 800), research: researched(24, 8) })).run(), /runs to 8\d\d words/);
+    // Notes sent twice, or too short to say anything, are not counted.
+    const padded = [...researched(10, 8), ...researched(10, 8), ...Array.from({ length: 10 }, (_, i) => ({ note: `fact ${i}`, source: `s${i}` }))];
+    await assert.rejects((await keep({ ...longEssay([1, 3], 1600), research: padded })).run(), /10 notes/);
+  } finally { f.restore(); }
+});
+
+// SOURCES BY SITE (2026-11-14): the Claude routine's first page passed with
+// 23 sources of which 21 were pages of Wikipedia. A source is the site it
+// was read on: the host of its address, or of the address the page's own
+// `sources` gives for its id; every Wikipedia one site.
+test("a long read's sources are counted by site: many pages of Wikipedia are one, and the page records a send-back it then passed", async () => {
+  const e = profEnv();
+  const f = installFetch({ contents: [track("old1")] });
+  try {
+    const id = profRequest(e, "r-p1", "long");
+    await callTool(e, "fulfill_request", { request_id: id, uris: uris("n1", "n2", "n3", "n4") }, { remaining: 40 });
+    const note = (i, source) => ({ note: `Note ${i}: on the night of the session the band cut take ${i} live to tape.`, source });
+    // 24 notes: 8 Wikipedia pages by id, 8 by title, 8 by address on two hosts of one paper.
+    const sources = Array.from({ length: 8 }, (_, i) => ({ id: `wp-${i}`, title: `Song ${i}`, url: `https://en.wikipedia.org/wiki/Song_${i}` }));
+    const wiki = [
+      ...Array.from({ length: 8 }, (_, i) => note(i, `wp-${i}`)),
+      ...Array.from({ length: 8 }, (_, i) => note(8 + i, `Album ${i} (album) — Wikipedia`)),
+      ...Array.from({ length: 8 }, (_, i) => note(16 + i, i % 2 ? "https://www.theguardian.co.uk/music/a" : "theguardian.co.uk/books/b")),
+    ];
+    const page1 = { request_id: id, title: "T", ...longEssay([1, 3], 1600), sources, research: wiki };
+    await assert.rejects(callTool(e, "keep_request_set", page1, { remaining: 40 }), (err) => {
+      assert.match(err.message, /24 notes in `research` from 2 different sites/);
+      assert.match(err.message, /every page of Wikipedia together is one site/);
+      return true;
+    });
+    // Read more widely, it passes, and its record still says it was sent back once.
+    const wide = [...wiki.slice(0, 18), note(30, "https://www.soundonsound.com/x"), note(31, "juicemagazine.com/y"),
+      note(32, "Sleeve notes, One Step Beyond... (Stiff, 1979)"), note(33, "https://www.villagevoice.com/z"),
+      note(34, "MusicBrainz: release group"), note(35, "npr.org/obituary")];
+    const out = await callTool(e, "keep_request_set", { ...page1, research: wide }, { remaining: 40 });
+    assert.equal(out.status, "kept");
+    const page = await e.PROGRAMS.get(`program:${out.url.split("/").pop()}`, { type: "json" });
+    assert.deepEqual(page.weighed.short, []);
+    assert.equal(page.weighed.sources, 8, "Wikipedia, the paper and six more");
+    assert.equal(page.weighed.sent_back, true);
+  } finally { f.restore(); }
+});
+
+test("the short form is not counted, and a ledger that cannot answer holds no page up", async () => {
+  const f = installFetch({ contents: [track("old1")] });
+  try {
+    const e = profEnv();
+    const id = profRequest(e, "r-p1", "short");
+    await callTool(e, "fulfill_request", { request_id: id, uris: uris("n1", "n2", "n3", "n4") }, { remaining: 40 });
+    const out = await callTool(e, "keep_request_set", { request_id: id, title: "T", ...essay([1, 3]) }, { remaining: 40 });
+    assert.equal(out.status, "kept");
+    assert.equal((await e.PROGRAMS.get(`program:${out.url.split("/").pop()}`, { type: "json" })).weighed, undefined);
+
+    // The ledger cannot say whether it was sent back: the thin long read is published, and that is kept as not known.
+    const e2 = profEnv();
+    const id2 = profRequest(e2, "r-p1", "long");
+    await callTool(e2, "fulfill_request", { request_id: id2, uris: uris("n1", "n2", "n3", "n4") }, { remaining: 40 });
+    const real = e2.STATION.get.bind(e2.STATION);
+    e2.STATION.get = () => ({ fetch: (u, init) => (JSON.parse(init.body).op === "seen-get" ? Promise.reject(new Error("down")) : real().fetch(u, init)) });
+    const out2 = await callTool(e2, "keep_request_set", { request_id: id2, title: "T", ...essay([1, 3]) }, { remaining: 40 });
+    assert.equal(out2.status, "kept");
+    assert.equal((await e2.PROGRAMS.get(`program:${out2.url.split("/").pop()}`, { type: "json" })).weighed.sent_back, null);
   } finally { f.restore(); }
 });
 

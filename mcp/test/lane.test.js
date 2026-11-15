@@ -1042,6 +1042,22 @@ test("the optional words box: beside Play endless for a DJ with a wordsHint, nev
   } finally { sp.restore(); }
 });
 
+test("Steer in your own words on a guest DJ's page: for a DJ told what to play, the box says where another artist goes (2026-11-11)", async () => {
+  const sp = spotifyAt({ now: { pid: LANE, at: 2 } });
+  try {
+    const e = env();
+    e.PROGRAM_LIBRARY_KEY = KEY;
+    await endlessUpdate(e, (s) => { s.lane = { ...s.lane, dj: "deep-dive", words: "Nirvana", ready: true, program: null, since: Date.now() }; return {}; });
+    const dd = await page(e, `/buttons/${KEY}/deep-dive`);
+    assert.match(dd, /class="putfold steerown"[^]*?name="do" value="steer"[^]*?For another artist, use the box by Play endless: that makes a new set\./);
+    // A guest DJ who needs no words has the box, and not that line.
+    await endlessUpdate(e, (s) => { s.lane = { ...s.lane, dj: "americana", words: null }; return {}; });
+    const am = await page(e, `/buttons/${KEY}/americana`);
+    assert.match(am, /class="putfold steerown"/);
+    assert.doesNotMatch(am, /For another /);
+  } finally { sp.restore(); }
+});
+
 // THE HOUSE LOOKS DEEP DIVE'S ARTIST UP ITSELF (2026-10-24; musicbrainz.js):
 // a ChatGPT curator cannot reach MusicBrainz, so list_requests does it for a
 // job whose artist has no folder, once a listing, and the job carries it.

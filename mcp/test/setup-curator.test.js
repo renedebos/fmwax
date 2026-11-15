@@ -38,6 +38,10 @@ test("the checklist offers the curator; its page gives the connector's address a
   const list = await (await go(e, "/setup", { cookie: me })).text();
   assert.match(list, /href="\/setup\/curator">Set up the curator</);
   const page = await (await go(e, "/setup/curator", { cookie: me })).text();
+  // Its internet access (2026-11-14): a new cloud environment cannot open
+  // most pages, and this house's first long read by the task was all Wikipedia.
+  assert.match(page, /<b>Its internet access\.<\/b>[\s\S]*<b>Network access<\/b>: choose <b>Full<\/b> and <b>Save changes<\/b>/);
+  assert.match(page, /long read, read widely: interviews with the people who were there/, "the note asks for more than Wikipedia");
   assert.match(page, /<code class="setval">https:\/\/fmwax\.test\/mcp\/[A-Za-z0-9_-]{20,}<\/code>/);
   assert.match(page, /You are this house(&#39;|')s request curator/);
   assert.match(page, /Scheduled, New task, Set up manually/, "claude.ai's words, 2026-10-17");
