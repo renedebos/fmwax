@@ -79,6 +79,7 @@ import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
 import { aboutStop, aboutView, askLink, assistantOf } from "./about.js";
+import { LISTEN_CALLS, dropListen, listenId, listenable, makeListen, removeListen } from "./listen.js";
 import { ARCHIVE } from "./archive-identity.js";
 import { ALEXA_BODY_MAX, alexaBox, alexaDoor } from "./alexa.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
@@ -464,7 +465,10 @@ export async function handleRequest(request, env, ctx) {
       // the count of them is part of the tag too — or a browser holding the
       // tag would 304 its way back to the pre-revision page forever.
       const revs = Array.isArray(rec.revisions) ? rec.revisions.length : 0;
-      const etag = `W/"${prog[1]}-${TEMPLATE_VERSION}${revs ? `-r${revs}` : ""}${onAir ? "-live" : ""}"`;
+      // And the page's own playlist (listen.js, 2026-11-14): made after the
+      // page was, so a browser holding the earlier tag must get the page
+      // again, with its link.
+      const etag = `W/"${prog[1]}-${TEMPLATE_VERSION}${revs ? `-r${revs}` : ""}${onAir ? "-live" : ""}${listenId(rec) ? "-own" : ""}"`;
       if (request.headers.get("if-none-match") === etag) {
         return new Response(null, { status: 304, headers: { etag } });
       }
@@ -2677,6 +2681,16 @@ export async function handleRequest(request, env, ctx) {
               device: (await pickCheap(env, request))?.name ?? speakerFor(request, env),
               ...(await shelfTidalKey(env, request)) } : null,
           };
+          // ITS OWN PLAYLIST (listen.js): the fold while it has none and can
+          // have one, and what the last press said (?listen=, one of ours).
+          const said = String(url.searchParams.get("listen") ?? "");
+          const state = /^(ok|had|busy|quota|no|failed|removed|stays|none)$/.test(said) ? said : null;
+          const make = catalogAvailable(env, "spotify") && !listenId(rec) && listenable(rec);
+          const has = !!listenId(rec);
+          if (state || make || has) {
+            actions.listen = { state, from: fromDj?.key ?? null, action: make ? `/notes/${key}/listen` : null,
+              remove: has ? `/notes/${key}/unlisten` : null };
+          }
         }
       } catch { /* the page reads without its controls */ }
       return roomPage(renderProgram(rec, { onAir, actions, shell: {
@@ -4874,6 +4888,62 @@ export async function handleRequest(request, env, ctx) {
       });
     }
 
+    // A PLAYLIST OF ITS OWN FOR A SHELF PAGE (listen.js, 2026-11-14). The
+    // program page's fold in the app posts here. Same key, origin and POST
+    // discipline as the chooser: a GET that made a public playlist would be
+    // fired by a link preview. It lands back on the page it came from, which
+    // then carries the link, or says in a line why it does not.
+    // `/unlisten` is its undo (the fold at the page's foot): the playlist
+    // leaves the library and the record forgets it; the page stays.
+    const listenMake = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})\/(listen|unlisten)$/);
+    if (listenMake) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      if (!key || !sameSecret(listenMake[2], key)) return notFound();
+      const refuse = (status, why) => new Response(`${why}\n`, {
+        status,
+        headers: { "content-type": "text/plain; charset=utf-8", "cache-control": "no-store" },
+      });
+      if (request.method !== "POST") {
+        return refuse(405,
+          "This is the form target, not a page. It only accepts POST — a link " +
+          "or a refresh lands here as a GET.");
+      }
+      const origin = request.headers.get("origin");
+      if (origin && origin !== "null" && origin !== url.origin) {
+        return refuse(403,
+          `This form was submitted from ${origin}, not from ${url.origin}.`);
+      }
+      let slug = "", from = "", keepQ = "";
+      try {
+        const form = await request.formData();
+        slug = String(form.get("slug") ?? "").trim();
+        keepQ = shelfFilterQs(shelfFilter(form.get("dj"), form.get("svc"), form.get("q")));
+        // A DJ, never a path — the rule every form here follows.
+        const r = String(form.get("from") ?? "").trim();
+        if (house(env).djs[r] || (r === "archive" && house(env).archive)) from = r;
+      } catch { /* not a form body */ }
+      if (!slug || !/^[a-z0-9-]{1,64}$/.test(slug)) {
+        return refuse(400, "No program was named, or the name was not one of ours.");
+      }
+      const undoing = listenMake[3] === "unlisten";
+      if (!undoing && !catalogAvailable(env, "spotify")) {
+        return refuse(400, "This house is not signed in to Spotify, so no playlist can be made. Nothing was changed.");
+      }
+      const out = undoing ? await removeListen(env, slug, { remaining: 4 })
+        : await makeListen(env, slug, { remaining: LISTEN_CALLS });
+      if (out.code === "gone") {
+        return refuse(404, `That program is not on the shelf any more. Nothing was ${undoing ? "changed" : "made"}.`);
+      }
+      // Redirect rather than render: a refresh must not make a second one.
+      return new Response(null, {
+        status: 303,
+        headers: {
+          location: `/buttons/${key}/programs/${slug}?listen=${out.code}${from ? `&from=${encodeURIComponent(from)}` : ""}${keepQ}`,
+          "cache-control": "no-store",
+        },
+      });
+    }
+
     // Take a kept setlist off the shelf. Same key, origin and POST discipline
     // as the chooser, and ONE extra gate that is the whole reason a slug may
     // ride in a form here at all: this deletes a setlist and nothing else. The
@@ -4961,6 +5031,13 @@ export async function handleRequest(request, env, ctx) {
             // 90-day request row — permanently undeletable.
             if (!cleared?.ok && cleared?.code !== "unknown-request") cleaned = false;
           } catch { cleaned = false; }
+        }
+        // ITS OWN SPOTIFY PLAYLIST (listen.js) leaves the library before the
+        // page goes: once the record is gone nothing knows its id, and it
+        // would sit on the account's profile for good. Spotify not answering
+        // keeps the page, and the press can be made again.
+        if (cleaned && listenId(rec)) {
+          cleaned = await dropListen(env, rec, { remaining: 4 });
         }
         if (!cleaned) {
           outcome = "removefail";

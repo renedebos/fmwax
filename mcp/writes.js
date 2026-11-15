@@ -16,6 +16,7 @@ import {
   withBudget,
 } from "./services.js";
 import { programBaseUrl, programCatalog, putProgramMoved, resolveProgramTracks } from "./shelf.js";
+import { listenId, syncListen } from "./listen.js";
 import { PROGRAM_MAX_TRACKS_HELD, PROGRAM_TITLE_MAX } from "./toollist.js";
 import { ARCHIVE } from "./archive-identity.js";
 
@@ -463,6 +464,13 @@ export async function reviseProgram(env, args, budget) {
   // Through putProgramMoved and never a bare put: the listing row is
   // metadata, and a put without it drops the page off every shelf.
   await putProgramMoved(kv, slug, next);
+  // ITS OWN SPOTIFY PLAYLIST (listen.js) follows the page: the link on the
+  // page must play the set as the page lists it. Said as a warning when
+  // Spotify would not take it; the page's revision stands either way.
+  if (listenId(next) && (!sameOrder || title !== rec.title)) {
+    const behind = await syncListen(env, next, { title: title !== rec.title ? title : null }, budget);
+    if (behind) warnings.push(behind);
+  }
 
   return {
     program: title, ...(url ? { url } : {}),

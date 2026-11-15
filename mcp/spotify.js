@@ -117,6 +117,15 @@ export function spotifyCatalog(call) {
       };
     },
 
+    // TAKE A PLAYLIST OUT OF THE ACCOUNT'S LIBRARY (2026-11-14, listen.js: a
+    // Shelf page's own playlist goes when its page does). Spotify has no
+    // delete: the owner "unfollows" it, which removes it from the library and
+    // the profile. Measured that day under Development Mode: 200, and gone
+    // from /me/playlists; a link somebody already holds still opens it.
+    async unfollow(id) {
+      await call("DELETE", `/playlists/${id}/followers`);
+    },
+
     // One request per track, never `GET /tracks?ids=`: that answers a bare 403
     // under February 2026 Development Mode — the same featureless Forbidden
     // the renamed playlist endpoints give, and just as easy to misread as a

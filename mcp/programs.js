@@ -46,7 +46,9 @@
 //     inlined into every page.
 // 19 (2026-11-14, MC-43): each stop carries id="stop-N", where the bar's
 // About view links.
-export const TEMPLATE_VERSION = 19;
+// 20 (2026-11-14, listen.js): a page with a playlist of its own offers its
+// link whether or not a preset holds the set (the route's tag says "-own").
+export const TEMPLATE_VERSION = 20;
 
 // Nothing in this repo had ever produced HTML before this file, so there was no
 // escaping helper to reuse and no habit of reaching for one. Every string below
@@ -1341,7 +1343,13 @@ export function renderProgram(p, { onAir = false, shell = null, actions = null }
   // no link.
   const listen = onAir ? serviceLink("playlist", p.playlistId) : null;
   const listenHref = listen?.href ?? null;
-  const service = listen?.service ?? "";
+  // A PLAYLIST OF THE PAGE'S OWN (listen.js, 2026-11-14): made once from the
+  // page's button in the app and never rewritten by a preset, so its link is
+  // true whether or not a preset holds the set. Where there is one, it is the
+  // link the page offers; the preset's own is the fallback it always was.
+  const own = p.listen?.catalog === "spotify" ? serviceLink("playlist", `spotify:playlist:${p.listen.id}`) : null;
+  const openHref = own?.href ?? listenHref;
+  const service = (own ?? listen)?.service ?? "";
   // AN ARCHIVE SET (2026-09-07). Its takes are on no service, so there is no
   // "open in" — but the family's own site plays them, anywhere, from a link
   // that names the whole set. Shown whether or not the set is on the preset:
@@ -1467,17 +1475,50 @@ ${[...cited, ...uncited].map((s, i) => {
   const ctl = shell && actions?.row ? shelfControls(actions.row, { live: !!actions.live, play: actions.play,
     open: actions.open, archiveBtn: actions.archiveBtn, action: actions.action, remove: actions.remove,
     active: f.dj ? { slug: f.dj } : null, activeSvc: f.svc ?? null, activeFind: f.q ?? null }) : null;
-  const pacts = ctl && (ctl.playBtn || ctl.put) ? `
+  // ITS OWN PLAYLIST, MADE WHEN ASKED (listen.js). A fold, as Delete is: the
+  // playlist is public and shows on the account's Spotify profile, and the
+  // words that say so sit where the person about to make it is reading. With
+  // no script on this page a fold is the only second step there is.
+  const lst = shell ? actions?.listen ?? null : null;
+  const LISTEN_SAID = {
+    ok: "A playlist of this set is on Spotify now. Its link is at the top of this page, and on the page you send to someone.",
+    had: "This set already has its playlist. Its link is at the top of this page.",
+    busy: "The playlist is being made. Look again in a minute.",
+    quota: "Spotify is limiting this account’s requests just now, so the playlist was not made. Try again later.",
+    no: "Only a Spotify set can get a playlist of its own. Nothing was made.",
+    failed: "Spotify would not make the playlist just now. Nothing was kept. Try again in a little while.",
+    removed: "The playlist is out of your Spotify library and off your profile. This page no longer links to it.",
+    stays: "Spotify would not remove the playlist just now. Nothing was changed. Try again in a little while.",
+    none: "This set has no playlist of its own. Nothing was changed.",
+  };
+  // What both folds carry: the page, and the way back to it as it was opened.
+  const lkeep = lst ? `<input type="hidden" name="slug" value="${
+      esc(p.slug ?? "")}">${lst.from ? `<input type="hidden" name="from" value="${esc(lst.from)}">` : ""}${
+      f.dj ? `<input type="hidden" name="dj" value="${esc(f.dj)}">` : ""}${
+      f.svc ? `<input type="hidden" name="svc" value="${esc(f.svc)}">` : ""}${
+      f.q ? `<input type="hidden" name="q" value="${esc(f.q)}">` : ""}` : "";
+  const plisten = lst ? `${LISTEN_SAID[lst.state] ? `
+    <p class="plsaid" role="status">${LISTEN_SAID[lst.state]}</p>` : ""}${lst.action ? `
+    <details class="plisten"><summary>Make a Spotify playlist of this set…</summary><form method="post" action="${esc(lst.action)}">${lkeep}<span class="plwarn">For hearing the whole set away from the house, or for sending to someone: this page then links to it for good. The playlist is public. Anyone with the link can open it, and it shows on your Spotify profile. You can remove it again at the foot of this page, and deleting this program removes it too.</span><button type="submit">Make the playlist</button></form></details>` : ""}` : "";
+  // AND ITS UNDO (the owner, 2026-11-14: "is there a use/need to have a
+  // delete spotify playlist button on the page as well?" … "build it"). At the
+  // page's foot beside Delete, never beside Play: a fold, the words, one
+  // button. The page stays; only its playlist leaves the library, and the
+  // page can have a new one made later.
+  const punl = lst?.remove ? `
+  <div class="pdel punl"><details><summary>Remove its Spotify playlist…</summary><form method="post" action="${esc(lst.remove)}">${lkeep}<span class="delwarn">Takes this set’s playlist out of your Spotify library and off your profile. The page stays, without its Open in Spotify link, and you can make a new playlist later. Someone who already has the link can still open it: Spotify itself deletes nothing.</span><button type="submit">Remove the playlist</button></form></details></div>` : "";
+  const pacts = ctl && (ctl.playBtn || ctl.put || plisten) ? `
   <section class="pacts" aria-label="Play or load this program">${actions.play && ctl.playBtn ? `
     <form method="post" action="${esc(actions.play.action)}" id="play">${f.dj ? `<input type="hidden" name="dj" value="${esc(f.dj)}">` : ""}${
       f.svc ? `<input type="hidden" name="svc" value="${esc(f.svc)}">` : ""}${
       f.q ? `<input type="hidden" name="q" value="${esc(f.q)}">` : ""}</form>` : ""}
     <div class="act">${ctl.playBtn}${ctl.put}</div>${actions.play && ctl.playBtn ? `
     <p class="pspk"><label for="pdev">Plays on the</label><select class="devsel" id="pdev" name="device" form="play" data-pick aria-label="Speaker to play on">${
-      (actions.play.devices ?? []).map((d) => `<option${d === actions.play.device ? " selected" : ""}>${esc(d)}</option>`).join("")}</select></p>` : ""}
+      (actions.play.devices ?? []).map((d) => `<option${d === actions.play.device ? " selected" : ""}>${esc(d)}</option>`).join("")}</select></p>` : ""}${plisten}
   </section>` : "";
   const pdel = ctl?.removeForm ? `
-  <div class="pdel">${ctl.removeForm.replace(/<summary aria-label="[^"]*">[\s\S]*?<\/summary>/, "<summary>Delete this program…</summary>")}</div>` : "";
+  <div class="pdel">${ctl.removeForm.replace(/<summary aria-label="[^"]*">[\s\S]*?<\/summary>/, "<summary>Delete this program…</summary>")
+    .replace("There is no undo.</span>", `${own ? "Its own Spotify playlist leaves your library and profile too. " : ""}There is no undo.</span>`)}</div>` : "";
   return `${head(p.title, p.thesis, shell ? TAB_CSS + (ctl ? PACT_CSS : "") : "", shell ? WALL_FONTS + appMeta(shell.base) : "")}
 <article class="page${shell ? " tabbed" : ""}">
 ${shell ? `
@@ -1510,8 +1551,8 @@ ${shell ? `
       // rather than the one that means play. Why this set is on that button,
       // and what that does not promise, is the endmatter's job below.
       listenHref ? `
-      <span>on ${esc(p.playlistName)}</span>
-      <span class="listen"><a href="${esc(listenHref)}" rel="noopener noreferrer">Open in ${esc(service)} ↗</a></span>` : ""}${
+      <span>on ${esc(p.playlistName)}</span>` : ""}${openHref ? `
+      <span class="listen"><a href="${esc(openHref)}" rel="noopener noreferrer">Open in ${esc(service)} ↗</a></span>` : ""}${
       arch ? `
       <span>${arch.btn != null ? `preset ${esc(String(arch.btn))}` : "the archive preset"}</span>${siteHref ? `
       <span class="listen"><a href="${esc(siteHref)}" rel="noopener noreferrer">Play on ${esc(siteHost)} ↗</a></span>` : ""}` : ""}
@@ -1551,8 +1592,8 @@ ${revisions}
           : p.loaded === false
             ? `it was published without being put on one`
             : `whether it was ever on one is not recorded here`
-      }. Every track above links to the record itself.</p>`}
-${pdel}
+      }. ${own ? `The link at the top opens the whole set in ${esc(service)}, as a playlist of its own. ` : ""}Every track above links to the record itself.</p>`}
+${punl}${pdel}
   </footer>
 
   ${shell ? tabBar({ base: shell.base, active: shell.active, owed: shell.owed, talk: !!shell.talk, loaded: shell.loaded !== false }) : ""}
@@ -1595,6 +1636,13 @@ const PACT_CSS = `
 .pacts .onair{font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);font-weight:600;color:var(--q-deep,#2C3E5C)}
 .pacts .open{font-size:var(--fs-14)}
 .pacts .elsewhere{font-size:var(--fs-14);color:var(--ink-2)}
+/* Its own playlist (listen.js): a fold under the controls, in Delete's words-then-button shape. */
+.pacts .plisten{margin:.9rem 0 0;font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.pacts .plisten>summary{list-style:none;cursor:pointer;font-size:var(--fs-14);color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;
+  min-height:44px;display:inline-flex;align-items:center}
+.pacts .plisten>summary::-webkit-details-marker{display:none}
+.pacts .plwarn{display:block;margin:.2rem 0 .7rem;font-size:var(--fs-14);line-height:1.5;color:var(--ink-2)}
+.pacts .plsaid{margin:.9rem 0 0;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);line-height:1.5;color:var(--ink,#17181C)}
 .pdel details>summary{list-style:none;cursor:pointer;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);
   color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;margin-top:1rem}
 .pdel details>summary::-webkit-details-marker{display:none}

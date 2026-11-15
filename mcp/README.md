@@ -461,6 +461,18 @@ Other decisions worth knowing:
   absent. The route reads one KV key to decide and **never calls Spotify**: it
   is public and unauthenticated, so a page view must not spend the account's
   subrequest budget or reach for its token.
+- **A page can have a playlist of its own** (`listen.js`, 2026-11-14), made
+  from the page's fold in the app (`POST /notes/<key>/listen`) and never by
+  itself: Spotify has no unlisted, so it is public and on the account's
+  profile. The record carries `listen: { catalog, id, at }`; the page then
+  offers that link on or off a preset, and the route's ETag gains `-own`. The
+  public page still never calls Spotify. Deleting the page (the Shelf's Delete,
+  `unpublish_program`) unfollows it FIRST and keeps the page when Spotify will
+  not answer; `revise_program` rewrites it with the page. Its undo is the
+  fold at the page's foot (`POST /notes/<key>/unlisten`, `removeListen`): the
+  unfollow, then the record without `listen`, and the page can have one again. Measured that day in
+  Development Mode: `public: true` opens for a stranger; `DELETE
+  /playlists/<id>/followers` answers 200 and a link already held still opens.
 - **`play_program` writes nothing.** Since 2026-10-12 it is the Shelf's Play
   (`playShelfSet`, shelf.js): the preset that holds the set if one does,
   otherwise the set's own tracks, with the Shelf's record of whose they are.

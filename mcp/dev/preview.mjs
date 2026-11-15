@@ -85,7 +85,9 @@ export const PROGRAMS = [
     thesis: "One riddim, three decades.", tracks: [t("f1", "Ring the Alarm", "Tenor Saw", "Ring the Alarm", "1985", 186)] },
   { slug: "sleeve-notes-blue-a5b6", dj: "Gatefold", shape: "essay", title: "Kind of Blue, Side Two",
     thesis: "Two tracks and a sleeve note that got the modes wrong.", tracks: [t("g1", "All Blues", "Miles Davis", "Kind of Blue", "1959", 693)] },
-  { slug: "librarian-fence-c7d8", dj: "The Librarian", shape: "essay", title: "Stax Singles, 1967: A Survey with a Fence",
+  // With a Spotify playlist of its own (listen.js, 2026-11-14), so a page
+  // that carries the link is one of the pages seen and checked here.
+  { slug: "librarian-fence-c7d8", dj: "The Librarian", shape: "essay", title: "Stax Singles, 1967: A Survey with a Fence", listen: "PreviewOwnPlaylist0001",
     thesis: "Every A-side Stax released in one year, minus what you know.", tracks: [t("h1", "Tramp", "Otis Redding & Carla Thomas", "King & Queen", "1967", 180)] },
 ];
 
@@ -99,7 +101,8 @@ export async function seed(env, mod = null) {
     const rec = { slug: p.slug, dj: p.dj, shape: p.shape, title: p.title, thesis: p.thesis,
       sections: [{ label: null, years: null, heading: null, prose: [p.thesis], tracks: p.tracks }],
       complications: [], coda: [], sources: [], notes: [], playlistId: REQUESTS_PL, playlistName: "Requests - Spotify",
-      created, loaded: false, templateVersion: TEMPLATE_VERSION, tracks: p.tracks.length, runtime, catalog: p.catalog ?? "spotify" };
+      created, loaded: false, templateVersion: TEMPLATE_VERSION, tracks: p.tracks.length, runtime, catalog: p.catalog ?? "spotify",
+      ...(p.listen ? { listen: { catalog: "spotify", id: p.listen, at: created } } : {}) };
     await env.PROGRAMS.put(`program:${p.slug}`, JSON.stringify(rec), { metadata: { title: p.title, dj: p.dj, shape: p.shape,
       created, tracks: p.tracks.length, runtime, catalog: p.catalog ?? "spotify" } });
   }

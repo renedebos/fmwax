@@ -9,6 +9,7 @@ import { rollCallSlice, rollCallsOf } from "./rollcall.js";
 import { talkMinutes, houseDay, houseTz } from "./voice.js";
 import { catalogOfUri } from "./catalog.js";
 import { playlistIdFrom } from "./spotify.js";
+import { dropListen, listenId } from "./listen.js";
 import { station, fingerprintUris, getRequestRecord, SETTLED_TTL_MS, cutReason } from "./station.js";
 import {
   ARCHIVE_WINDOW, STATION_KEY, STATION_MAX, archiveClock, archiveProgramRecord,
@@ -2955,6 +2956,15 @@ export async function callTool(env, name, args, budget) {
                 "alone. Call again with confirm: true if that is what they want.",
         };
       }
+      // ITS OWN SPOTIFY PLAYLIST (listen.js) leaves the library first: once
+      // the record is gone nothing knows its id. Spotify not answering keeps
+      // the page, so the call can be made again.
+      const hadListen = !!listenId(rec);
+      if (hadListen && !(await dropListen(env, rec, budget))) {
+        throw new Error(
+          `"${rec.title}" has a Spotify playlist of its own, and Spotify would not take it out ` +
+          "of the library just now. NOTHING WAS CHANGED: the page is still up. Try again in a little while.");
+      }
       await kv.delete(`program:${args.id}`);
       // A pointer to a program that no longer exists would make read_playlist
       // offer a dead link.
@@ -2966,7 +2976,9 @@ export async function callTool(env, name, args, budget) {
       return {
         deleted: rec.title, id: rec.slug,
         note: "Gone. The URL now 404s. The playlist was not changed — its tracks " +
-              "are still whatever they were.",
+              "are still whatever they were." + (hadListen
+                ? " The page's own Spotify playlist was taken out of the account's library; a link somebody already holds still opens it."
+                : ""),
       };
     }
 

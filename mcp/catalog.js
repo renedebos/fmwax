@@ -99,6 +99,10 @@
 //                                 Tidal's artwork is read-only and the verb
 //                                 throws with .status 501 before any call
 //   createPlaylist({ name, description, public }) → Playlist
+//   unfollow(id)                  Spotify's alone (listen.js): the playlist
+//                                 leaves the account's library and profile.
+//                                 Spotify deletes nothing, so a link already
+//                                 held still opens it
 //   track(id)                     → Track. Throws with .status.
 //   search(query, limit)          → Track[]
 //   byIsrc(isrc)                  → Track[], the pressings the service returns
