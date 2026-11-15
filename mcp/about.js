@@ -50,8 +50,25 @@ export function aboutStop(rec, uri, title) {
   };
 }
 
-// The house's one assistant (one engine per house, 2026-11-14): ChatGPT for a
-// house whose curator is ChatGPT, else Claude.
+// WHICH ASSISTANT A HOUSE USES, when it has no curator to say (2026-11-14,
+// the owner: "will this work for the forum user when they only run
+// chatgpt?"). A house at the first two levels has no curator, but it keeps
+// which app fetched its tools at the owner's door (settings.js, the setup
+// page's "ChatGPT holds today's tools" line): the newer of Claude's and
+// ChatGPT's fetches names it. Null when neither has fetched them.
+export function assistantOf(lists) {
+  const f = lists?.connector?.fetched ?? {};
+  const at = (c) => Date.parse(f?.[c]?.at ?? "") || 0;
+  const claude = at("claude"), chatgpt = at("chatgpt");
+  if (!claude && !chatgpt) return null;
+  return chatgpt > claude ? "chatgpt" : "claude";
+}
+
+// The house's one assistant (one engine per house, 2026-11-14): its curator's,
+// else the app that talks to it (assistantOf), else Claude. Measured: both
+// links open the app with the question typed and wait to be sent (Claude's
+// 2026-11-14 on the owner's iPhone, from the house's app; ChatGPT's the same
+// night), and only Claude's shows a caution note first.
 export function askLink(kind, title, artist) {
   const t = cleanSongTitle(title);
   const a = String(artist ?? "").replace(/\s+/g, " ").trim().slice(0, 200);

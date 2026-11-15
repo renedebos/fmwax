@@ -5,7 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import worker from "../worker.js";
-import { aboutStop, aboutView, askLink, cleanSongTitle } from "../about.js";
+import { aboutStop, aboutView, askLink, assistantOf, cleanSongTitle } from "../about.js";
 import { renderProgram } from "../programs.js";
 import { makeEnv, makeHouseStore } from "./harness.js";
 
@@ -143,4 +143,22 @@ test("a request set kept as a page is found through the preset's pointer", async
   // A holder that names its page keeps it; one that names neither reads no pointer.
   assert.equal((await playingWho(e, null, null, band, holders("cramps-1q5j4r"))).program.slug, "cramps-1q5j4r");
   assert.equal((await playingWho(e, null, null, band, holders("talk"))).program, undefined);
+});
+
+// A house with no curator (the first two levels, a forum user on ChatGPT):
+// the link follows the app that fetched the house's tools at its door.
+test("with no curator, the link asks the app that talks to the house", async () => {
+  assert.equal(assistantOf({}), null);
+  assert.equal(assistantOf({ connector: { fetched: { chatgpt: { at: "2026-11-14T20:00:00Z" } } } }), "chatgpt");
+  assert.equal(assistantOf({ connector: { fetched: { chatgpt: { at: "2026-11-14T20:00:00Z" }, claude: { at: "2026-11-14T21:00:00Z" } } } }), "claude");
+  assert.equal(assistantOf({ curator: { fetched: { chatgpt: { at: "2026-11-14T20:00:00Z" } } } }), null, "the curator's door is not the owner's app");
+  const e = await claimedHouse();
+  e.CURATOR = undefined; e.REQUEST_ROUTINE_ID = undefined;
+  // ChatGPT fetched the tools at the owner's door, as a plugin's Refresh tools does.
+  const { houseFetch } = await import("../settings.js");
+  await houseFetch(e, "/tool-fetch", { method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ door: "connector", client: "chatgpt", stamp: "abc123", ua: "openai-mcp/1.0" }) });
+  const html = await (await get(e, `${KEY}/about?t=Human%20Fly&a=The%20Cramps`)).text();
+  assert.match(html, /Ask ChatGPT about this song/);
+  assert.ok(!/caution note/.test(html), "ChatGPT shows none");
 });

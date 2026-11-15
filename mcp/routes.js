@@ -15,7 +15,7 @@ import {
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
 import { githubRepo, updateFacts, versionWords } from "./updates.js";
-import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, noteToolFetch, readSeen, renewHouseKey, toolClient } from "./settings.js";
+import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, noteToolFetch, readSeen, readToolList, renewHouseKey, toolClient } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
@@ -78,7 +78,7 @@ import { VOICE_TOOLS, VOICE_WRITERS, askDjOn, listStamp, voiceFunctions, voiceWr
 import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
-import { aboutStop, aboutView, askLink } from "./about.js";
+import { aboutStop, aboutView, askLink, assistantOf } from "./about.js";
 import { ARCHIVE } from "./archive-identity.js";
 import { ALEXA_BODY_MAX, alexaBox, alexaDoor } from "./alexa.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
@@ -2710,7 +2710,9 @@ export async function handleRequest(request, env, ctx) {
           page = `/buttons/${key}/programs/${encodeURIComponent(slug)}${who?.key ? `?from=${encodeURIComponent(who.key)}` : ""}#stop-${stop.index + 1}`;
         }
       }
-      return new Response(aboutView({ title, artist, stop, page, dj, ask: askLink(curatorKind(env), title, artist) }),
+      let kind = curatorKind(env);
+      if (!kind) { try { kind = assistantOf(await readToolList(env)); } catch { kind = null; } }
+      return new Response(aboutView({ title, artist, stop, page, dj, ask: askLink(kind, title, artist) }),
         { headers: roomHeaders });
     }
     const roomDj = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})$/);
