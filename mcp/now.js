@@ -379,8 +379,21 @@ export async function playingWho(env, p, preset, band = null, holders = null) {
   }
   if (band?.guest) {
     let on = null;
-    try { on = (holders ?? await guestHolders(env))[band.catalog]?.on ?? null; } catch { on = null; }
-    const program = await prog(on?.ref);
+    let pl = null;
+    try {
+      const h = (holders ?? await guestHolders(env))[band.catalog];
+      on = h?.on ?? null; pl = h?.guest?.playlist ?? null;
+    } catch { on = null; }
+    // A request set's holder names the request ("request <id>"), and the
+    // page kept from it afterwards is the preset's `current:` pointer
+    // (keep_request_set). Read only then (MC-43: the About view and the DJ
+    // row found no page for tonight's Cramps set).
+    let program = await prog(on?.ref);
+    if (!program && pl && /^request /.test(String(on?.ref ?? ""))) {
+      let cur = null;
+      try { cur = await programsKV(env).get(`current:${pl}`); } catch { cur = null; }
+      program = await prog(cur);
+    }
     return on?.dj || program ? { dj: named(on?.dj) ? on.dj : null, name: named(on?.dj), kind: "request", btn: band.btn,
       ...(program ? { program } : {}) } : null;
   }
@@ -474,6 +487,8 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
     // Music on none of the bands says where it is from (2026-09-13).
     ...(band || guestBand ? {} : { from: await playingFromFor(env, p) }),
     track: p.track ?? null, artists: p.artists || null, device: p.device ?? null,
+    // The track's own id (MC-43): the About view finds the song on its Shelf page by it.
+    ...(/^spotify:track:[A-Za-z0-9]{22}$/.test(String(p.uri ?? "")) ? { uri: p.uri } : {}),
     ...(p.art ? { art: p.art } : {}), ...(p.sleeve ? { sleeve: p.sleeve } : {}), ...(p.album ? { album: p.album } : {}),
     // As read, not moved on: two polls on one kept read give one answer
     // (MC-29). The page counts on from `at`.

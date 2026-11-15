@@ -78,6 +78,7 @@ import { VOICE_TOOLS, VOICE_WRITERS, askDjOn, listStamp, voiceFunctions, voiceWr
 import { callTool } from "./tools.js";
 import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSummary, tuningWith } from "./tuning.js";
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
+import { aboutStop, aboutView, askLink } from "./about.js";
 import { ARCHIVE } from "./archive-identity.js";
 import { ALEXA_BODY_MAX, alexaBox, alexaDoor } from "./alexa.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
@@ -2683,6 +2684,34 @@ export async function handleRequest(request, env, ctx) {
         back: fromDj ? { href: `${base}/${fromDj.key}`, label: fromDj.name }
           : { href: `/notes/${key}${shelfFilterQs(filter, "?")}`, label: "Shelf" },
       } }));
+    }
+    // ABOUT THIS SONG (MC-43): the view the bar's panel shows when its chip is
+    // tapped, as HTML for the panel's script (as Tune's form is). One read of
+    // the program record when the song comes from a Shelf page; no Spotify
+    // call. The title and artist come from the bar, which read them from
+    // Spotify; they are escaped into the view and encoded into the link.
+    const roomAbout = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/about$/);
+    if (roomAbout) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      if (!key || !sameSecret(roomAbout[1], key)) return notFound();
+      if (request.method !== "GET") return roomRefuse(405, "This is read with a GET, from the bar's panel.");
+      const q = url.searchParams;
+      const title = String(q.get("t") ?? "").slice(0, 300);
+      const artist = String(q.get("a") ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
+      const slug = String(q.get("slug") ?? "");
+      let stop = null, page = null, dj = null;
+      if (/^[a-z0-9-]{1,64}$/.test(slug)) {
+        let rec = null;
+        try { rec = await programsKV(env).get(`program:${slug}`, { type: "json" }); } catch { rec = null; }
+        stop = rec ? aboutStop(rec, q.get("uri"), title) : null;
+        if (stop) {
+          const who = programDj(env, rec.dj);
+          dj = who?.name ?? null;
+          page = `/buttons/${key}/programs/${encodeURIComponent(slug)}${who?.key ? `?from=${encodeURIComponent(who.key)}` : ""}#stop-${stop.index + 1}`;
+        }
+      }
+      return new Response(aboutView({ title, artist, stop, page, dj, ask: askLink(curatorKind(env), title, artist) }),
+        { headers: roomHeaders });
     }
     const roomDj = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})$/);
     if (roomDj) {

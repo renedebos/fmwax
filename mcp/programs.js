@@ -44,7 +44,9 @@
 // 18: the shared stylesheet lets a guest's put button wrap between the preset
 //     and its name (2026-09-13). Again nothing a programme page draws, again
 //     inlined into every page.
-export const TEMPLATE_VERSION = 18;
+// 19 (2026-11-14, MC-43): each stop carries id="stop-N", where the bar's
+// About view links.
+export const TEMPLATE_VERSION = 19;
 
 // Nothing in this repo had ever produced HTML before this file, so there was no
 // escaping helper to reuse and no habit of reaching for one. Every string below
@@ -1383,12 +1385,12 @@ export function renderProgram(p, { onAir = false, shell = null, actions = null }
     // complete. A section with nothing to say renders as its tracks.
     if (!sec?.heading && !(sec?.prose?.length)) {
       return `
-      <section class="mvt mvt-${hue} bare">
+      <section class="mvt mvt-${hue} bare" id="stop-${i + 1}">
 ${renderTracks(sec?.tracks, hue, start, showReleased)}
       </section>`;
     }
     return `
-      <section class="mvt mvt-${hue}">
+      <section class="mvt mvt-${hue}" id="stop-${i + 1}">
         <div class="mvt-head">
           <p class="mvt-label"><span>${esc(sec?.label ?? `Part ${i + 1}`)}</span>${
             sec?.years ? `<span class="years">${esc(sec.years)}</span>` : ""}</p>
@@ -1851,6 +1853,30 @@ body:has(textarea:focus, input[type="text"]:focus, input[type="search"]:focus, i
 .tv .tvapply:disabled{opacity:.5;cursor:default}
 .tv .tvfine{margin:8px 0 0;text-align:center;font-size:var(--fs-12);line-height:1.4;color:var(--ink-3)}
 .nbpanel.tuning>:not(.nbgrip):not(.nbtv){display:none!important}
+/* ABOUT THIS SONG (MC-43): the chip and its view, which takes the panel as Tune's does. */
+.nbpanel .nbouts{align-items:center;gap:6px}
+.nbpanel .nbabout{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;
+  border:1.5px solid var(--q-ink);border-radius:999px;background:transparent;font:inherit;font-size:var(--fs-14);font-weight:600;
+  color:var(--q-ink);white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.nbpanel .nbabout[hidden]{display:none}
+.nbpanel.abouting>:not(.nbgrip):not(.nbab){display:none!important}
+.nbab .nbabhead{display:flex;align-items:center;gap:2px;padding:0 10px 0 6px}
+.nbab .nbabback{appearance:none;-webkit-appearance:none;width:44px;height:44px;border:0;background:transparent;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--ink-2);cursor:pointer}
+.nbab .nbabt{flex:1;margin:0;font-weight:700;font-size:var(--fs-20);line-height:1.2;color:var(--ink)}
+.nbab .nbabsong{padding:4px 18px 14px;border-bottom:1px solid var(--rule-soft)}
+.nbab .nbabs1{margin:0;font-weight:700;font-size:var(--fs-16);color:var(--ink)}
+.nbab .nbabs2{margin:2px 0 0;font-size:var(--fs-14);color:var(--ink-3)}
+.nbab .nbabw{padding:16px 18px 6px;display:flex;flex-direction:column;gap:10px}
+.nbab .nbablbl{margin:0;font-size:var(--fs-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.nbab .nbabh{margin:0;font-weight:700;font-size:var(--fs-20);line-height:1.25;color:var(--ink)}
+.nbab .nbabp{margin:0;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
+.nbab .nbabpage{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;min-height:40px;font-size:var(--fs-14);
+  font-weight:600;color:var(--q-ink);text-decoration:none}
+.nbab .nbabask{padding:10px 18px 22px;display:flex;flex-direction:column;gap:8px}
+.nbab .nbabgo{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:999px;
+  background:var(--q-deep);color:var(--q-on-deep);font-size:.9375rem;font-weight:600;text-decoration:none}
+.nbab .nbabnote{margin:0;font-size:var(--fs-12);line-height:1.4;color:var(--ink-3)}
 .nbpanel .nbsteer .nbtune{display:inline-flex;align-items:center;justify-content:center;gap:6px}
 `;
 
@@ -3705,7 +3731,9 @@ const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="
   `<button type="button" class="nbtb nbmain" aria-label="Pause" disabled>${NB_PAUSE}${NB_PLAY}</button>` +
   `<button type="button" class="nbtb nbnext" data-skip="next" aria-label="Next song" disabled>${NB_NEXT}</button></div>` +
   `<div class="nbrow" hidden><button type="button" class="nbspk" aria-expanded="false" aria-controls="nbpick">${icon("speaker", 18)}<span class="nbspkn"></span><span class="nbspkc">${icon("chevronDown", 16)}</span></button>` +
-  `<span class="nbouts"><a class="nbout nblist" href="#" rel="noopener noreferrer" aria-label="Open the playlist in Spotify" hidden>${NB_SPOTIFY}</a>` +
+  // ABOUT THIS SONG (MC-43, design C): one chip; its view opens in the panel.
+  `<span class="nbouts"><button type="button" class="nbabout" data-about hidden>${NB_ABOUT}About this song</button>` +
+  `<a class="nbout nblist" href="#" rel="noopener noreferrer" aria-label="Open the playlist in Spotify" hidden>${NB_SPOTIFY}</a>` +
   `<a class="nbout nbtidal" href="#" rel="noopener noreferrer" aria-label="Open the playlist in Tidal" hidden>${NB_TIDAL}</a></span></div>` +
   `<div class="nbpick" id="nbpick" hidden><p class="nblbl">Play on</p><div class="nbchips" role="group" aria-label="Speaker"></div></div>` +
   `<a class="nbdj" href="#" hidden><span class="nbwho"></span><span class="nbfrom"></span><span class="nbgo" aria-hidden="true">${icon("chevron", 18)}</span></a>` +
@@ -3848,6 +3876,7 @@ export function shelfPlayOf(o, base) {
     label: "Open " + title + (w.name ? ", " + w.name + "\u2019s set" : "") + " \u2014 playing from the Shelf" + (o.device ? " on the " + o.device : ""),
   };
 }
+const NB_ABOUT = `<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path><circle cx="12" cy="7.6" r="1.2" fill="currentColor"></circle></svg>`;
 const NB_NOTE = `<svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V6l10-2v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="6.5" cy="18" r="2.6" fill="none" stroke="currentColor" stroke-width="2"></circle><circle cx="16.5" cy="16" r="2.6" fill="none" stroke="currentColor" stroke-width="2"></circle></svg>`;
 
 // WHAT THE BAR SAYS, from one answer of /buttons/<key>/playing (MC-21). The
@@ -4332,6 +4361,14 @@ ${SHEET_JS}(function () {
         : who.dj ? base + "/" + encodeURIComponent(who.dj) : base);
       if (!who.dj && !who.program) dj.hidden = true;
     }
+    /* ABOUT THIS SONG (MC-43): while Spotify plays here and the song is
+       known; its Shelf page, when the bar knows one, for the DJ's words. */
+    var ab = sheet.querySelector("[data-about]"), abOn = w.tone === "live" && o.state === "playing" && !!o.track;
+    ab.hidden = !abOn;
+    if (abOn) {
+      ab.setAttribute("data-t", o.track); ab.setAttribute("data-a", o.artists || ""); ab.setAttribute("data-uri", o.uri || "");
+      ab.setAttribute("data-slug", o.who && o.who.program ? o.who.program.slug : "");
+    }
     /* STEER: an endless set (house DJs and the guest DJ), and since
        2026-09-27 a DJ's request set on the Spotify requests preset (the
        owner: a song in the Professor's Talk Talk set, "I like to hear more
@@ -4538,6 +4575,27 @@ ${SHEET_JS}(function () {
     "saved-failed": "Tuned and kept, but the turn did not reach the DJ",
     store: "The house could not keep it \u2014 try again",
     failed: "That did not reach the house \u2014 try again" };
+  /* ABOUT THIS SONG (MC-43): the chip fetches its view and puts it in the
+     panel, as Tune does; back, or the panel opening again, takes it out. */
+  var aboutShut = null;
+  function aboutOpen(e) {
+    var c = e.currentTarget, panel = sheet && sheet.querySelector(".nbpanel"); if (!panel) return;
+    var q = "?t=" + encodeURIComponent(c.getAttribute("data-t") || "") + "&a=" + encodeURIComponent(c.getAttribute("data-a") || "") +
+      "&uri=" + encodeURIComponent(c.getAttribute("data-uri") || "") + "&slug=" + encodeURIComponent(c.getAttribute("data-slug") || "");
+    note("");
+    fetch(bar.getAttribute("data-base") + "/about" + q, { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("no view"); return r.text(); })
+      .then(function (html) {
+        if (aboutShut) aboutShut();
+        var box = document.createElement("div"); box.className = "nbab"; box.innerHTML = html;
+        panel.appendChild(box); panel.classList.add("abouting"); panel.scrollTop = 0;
+        aboutShut = function () { aboutShut = null; box.parentNode && box.parentNode.removeChild(box); panel.classList.remove("abouting"); };
+        var back = box.querySelector("[data-ab-back]");
+        back.addEventListener("click", function () { if (aboutShut) aboutShut(); c.focus({ preventScroll: true }); });
+        back.focus({ preventScroll: true });
+      })
+      .catch(function () { note("That did not load \u2014 try again"); });
+  }
   var tuneShut = null;
   function tuneOpen(e) {
     var who = e.currentTarget.parentNode.getAttribute("data-dj"); if (!who || !sheet) return;
@@ -4586,6 +4644,7 @@ ${SHEET_JS}(function () {
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-skip]"), function (b) { b.addEventListener("click", skip); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-steer]"), function (b) { b.addEventListener("click", steer); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-tune]"), function (b) { b.addEventListener("click", tuneOpen); });
+    sheet.querySelector("[data-about]").addEventListener("click", aboutOpen);
     sheet.querySelector(".nbmain").addEventListener("click", function () { if (disc && !disc.disabled) disc.click(); });
     sheet.querySelector(".nbspk").addEventListener("click", function () { pickOpen = !pickOpen; fill(); });
   }
@@ -4658,7 +4717,7 @@ ${SHEET_JS}(function () {
   };
   function openSheet(e) {
     sheet = sheet || document.getElementById("nbsheet"); if (!sheet) return;
-    opener = e && e.currentTarget; wirePanel(); if (tuneShut) tuneShut(""); pickOpen = false; fill();
+    opener = e && e.currentTarget; wirePanel(); if (tuneShut) tuneShut(""); if (aboutShut) aboutShut(); pickOpen = false; fill();
     sheetCtl = sheetCtl || window.houseSheet(sheet, backToOpener); sheetCtl.open(); progress();
     /* A tap focuses the panel itself, so no row wears a ring (the owner,
        2026-09-24: two blue lines round the first row); Enter or Space on
