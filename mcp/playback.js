@@ -5,6 +5,7 @@ import { djForPlaylistId, guestForPlaylistId } from "./house.js";
 import {
   catalogFor, playerState, programsKV, resolveDevice, spotify, withBudget,
 } from "./services.js";
+import { STALE_WAITS_MS, liftToLossless, playingOneOf } from "./lossless.js";
 
 // THE EXPLICIT FIELD, and why it is shaped the way it is.
 //
@@ -356,7 +357,13 @@ export async function startUrisOnDevice(env, uris, deviceName, budget, { positio
 // cannot drift into a less careful version of the same action. Returns the
 // tool-shaped result (verification, warnings, player summary); the callers add
 // their own naming on top.
-export async function startPlaylistOnDevice(env, pl, deviceName, budget, from = null) {
+// `opts.expect` (2026-11-15): the songs of a set the caller has JUST written.
+// Spotify's player can start a playlist as it was before the write; when
+// the song playing is none of these, the start is asked again (lossless.js).
+// And a WiiM that reads as cold is lifted to lossless by a press of the key
+// that holds the playlist, through the home helper (MC-44, lossless.js).
+// Neither for a start that names where to begin (`from`).
+export async function startPlaylistOnDevice(env, pl, deviceName, budget, from = null, opts = {}) {
   env = withBudget(env, budget);
   refuseToStart(env, pl);
   const contextUri = `spotify:playlist:${pl.id}`;
@@ -421,7 +428,27 @@ export async function startPlaylistOnDevice(env, pl, deviceName, budget, from = 
       // Keep the pre-retry reading rather than losing the diagnosis.
     }
   }
+  let stale = null, lift = null;
+  if (!from && startedContext(st, deviceId, contextUri)) {
+    if (!playingOneOf(st, opts?.expect)) {
+      stale = "still-old";
+      const waits = env.__staleWaitsMs ?? STALE_WAITS_MS;
+      for (const ms of waits) {
+        try {
+          await new Promise((r) => setTimeout(r, ms));
+          await playOnDevice(env, deviceId, deviceName, body);
+          await new Promise((r) => setTimeout(r, env.__staleWaitsMs ? 0 : 1200));
+          const again = await playerState(env);
+          if (again) st = again;
+        } catch { break; }
+        if (startedContext(st, deviceId, contextUri) && playingOneOf(st, opts?.expect)) { stale = "restarted"; break; }
+      }
+    }
+    if (startedContext(st, deviceId, contextUri)) lift = await liftToLossless(env, pl, deviceName, st, deviceId);
+  }
   const result = { ...nowPlayingSummary(st) };
+  if (stale) result.stale_start = stale;
+  if (lift) result.lossless = lift;
   if (startedContext(st, deviceId, contextUri)) {
     result.preset_safe = true;
     if (st?.repeat_state === "track") {

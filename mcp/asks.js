@@ -201,6 +201,14 @@ async function markNow(env, device, { fresh = false } = {}) {
   try { st = fresh ? await playerState(env) : await housePlayer(env, { got }); } catch (e) { if (e?.budgetExhausted) throw e; return { got, mark: null }; }
   return { got, mark: playingMark(st, helperViewOf(env, got).lan?.speakers?.[device] ?? null) };
 }
+// THE ASK FORM'S "PLAY WHEN READY" (the owner, 2026-11-14: "do A after the
+// lossless test"): what a ticked form adds to the ask's record, so its set
+// starts on the speaker named when it lands, exactly as an ask by voice
+// does (startAsked, below): the speaker, and what was playing at the ask.
+export async function startExtra(env, device) {
+  const { mark } = await markNow(env, device);
+  return { via: "form", device, ...(mark ? { playing: mark } : {}) };
+}
 // A Tidal set starts only through the home helper, on a WiiM (the owner's
 // change to default 6, 2026-10-31): the WiiM it would start on, or why not.
 function tidalStart(env, got, device) {
@@ -219,7 +227,7 @@ export const onWords = (device) => (/^everywhere$/i.test(device) ? "everywhere" 
 // set starts there when it lands (startAsked, deploy 2). House radio files
 // through here too (MC-38 stage 3): `via` "alexa" on its record, "talk" for
 // anything else, so the ledger says which voice asked.
-export const VOICE_VIA = ["talk", "alexa"];
+export const VOICE_VIA = ["talk", "alexa", "tv"];
 // WHAT A LOG LINE SAYS OF A VOICE CALL (Codex's review, 2026-11-11): a
 // listener's words are theirs, and a log is read by whoever holds the
 // Cloudflare account, or is passed on with a problem. So the line names the
@@ -303,7 +311,7 @@ export const ASK_START_CALLS = 13;
 export function asksToStart(record, now = Date.now()) {
   return !!record?.device && now - (Date.parse(record.at) || 0) <= START_FRESH_MS;
 }
-export async function startAsked(env, { requestId, record, pid, catalog, btn, name, budget, now = Date.now() }) {
+export async function startAsked(env, { requestId, record, pid, catalog, btn, name, budget, uris = null, now = Date.now() }) {
   const device = record?.device ? String(record.device) : null;
   if (!device) return null;
   const no = (why) => ({ not_started: device, why });
@@ -324,7 +332,9 @@ export async function startAsked(env, { requestId, record, pid, catalog, btn, na
     return code === "ok" ? { started_on: t.box.name } : no(`the home helper could not press ${btn} (${code})`);
   }
   try {
-    const out = await startPlaylistOnDevice(env, { id: pid, name, catalog: "spotify" }, device, budget);
+    // `uris`: the set just written, so a start on the playlist's old songs
+    // is asked again (lossless.js).
+    const out = await startPlaylistOnDevice(env, { id: pid, name, catalog: "spotify" }, device, budget, null, { expect: uris });
     // A start Spotify took but did not confirm is still a start, marked so
     // (MC-38 stage 3, Codex's recheck): the ask's trace keeps it apart.
     return out.preset_safe ? { started_on: device } : out.unverified ? { started_on: device, unverified: true }

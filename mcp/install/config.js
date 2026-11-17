@@ -175,6 +175,12 @@ export function viewOf(house, { at = "mcp" } = {}) {
       // Cloudflare's Workers Logs, only in a house that asks for them
       // (2026-11-11): they hold each request's address, keys included.
       logs: house.worker?.logs === true,
+      // Said out loud when it has not (2026-11-15): Cloudflare turns the log
+      // on for a newly made Worker whose config says nothing.
+      noLogs: house.worker?.logs !== true,
+      // With logs on, Cloudflare's own line per request stays out, because
+      // it holds the request's address, unless the house asks for it too.
+      logsNoAddresses: house.worker?.logs === true && house.worker?.requestLog !== true,
     },
     values: {
       "worker.name": house.worker.name,

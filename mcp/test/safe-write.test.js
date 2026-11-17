@@ -789,11 +789,16 @@ test("the agent's list is exactly the allowlist, and the owner's is everything",
   // Which is everything this house can do, and this house has no archive
   // button and no Last.fm key — so the archive's two verbs and Last.fm's one
   // are absent from BOTH lists, and the owner's is short by exactly those.
-  assert.equal(owner.result.tools.length, __test.TOOLS.length - 3);
+  // And Genius's one (2026-11-16): no token here.
+  assert.equal(owner.result.tools.length, __test.TOOLS.length - 4);
   // LAST.FM (the owner's go, 2026-10-18): a read, for a house with the key.
   e.LASTFM_KEY = "c0ffeec0ffeec0ffeec0ffeec0ffee00";
   const withKey = await (await workerDefault.fetch(rpc(`/mcp/${AGENT}`, toolsList), e)).json();
   assert.deepEqual(withKey.result.tools.map((t) => t.name).filter((n) => !names.includes(n)), ["look_up_artist"]);
+  // GENIUS (the owner's go, 2026-11-16): a read, for a house with the token.
+  e.GENIUS_TOKEN = "g".repeat(40);
+  const withGenius = await (await workerDefault.fetch(rpc(`/mcp/${AGENT}`, toolsList), e)).json();
+  assert.deepEqual(withGenius.result.tools.map((t) => t.name).filter((n) => !names.includes(n)), ["look_up_artist", "look_up_song"]);
 });
 
 test("the agent's bearer form works, wrong keys 404, unset means no agent path", async () => {

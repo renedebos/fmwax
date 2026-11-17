@@ -7,7 +7,10 @@ It is a small program on a computer at home. It lets your house see and do what 
 - the names of the presets saved on each WiiM's buttons 1 to 12;
 - radio and other music on the bar at the bottom of your house's app, not only Spotify;
 - pressing any preset from the app;
-- pause and play for anything.
+- pause and play for anything;
+- Spotify Lossless when the app starts the music (see below).
+
+**Lossless, with and without the helper.** A WiiM that has sat idle for some hours plays what the app starts at 320 kbps, even with Spotify Lossless switched on for that speaker. Pressing one of the WiiM's own presets makes that speaker lossless, and it stays so for everything the app starts afterwards, until it has sat idle for hours again. With the helper, the house makes that press for you when it starts a playlist that is on one of the speaker's presets. Without it, press a preset on the WiiM's remote or in WiiM Home first.
 
 Without it, your house can't see what a WiiM has saved, so the setup page's preset steps show a **?**. Those are yours to check, by pressing the preset.
 

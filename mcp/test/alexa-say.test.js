@@ -163,14 +163,19 @@ test("the Talk tab: the box says on or dry run, the last three heard with what w
   } finally { alexaGate.signed = alexaSigned; }
 });
 
-test("What to say, at its own address: for a house with Talk or the skill, and nobody else", async () => {
+test("What to say, at its own address: Talk and the skill where the house has them, the TV's card in every house", async () => {
   const ok = await page(house(), `/buttons/${KEY}/say`);
   assert.equal(ok.status, 200);
   const html = await ok.text();
   assert.match(html, /<h1>What to say<\/h1>[\s\S]*<h2 id="say-talk">Talk<\/h2>[\s\S]*Maple crate <span class="sstate dry">Dry run<\/span>/);
   assert.match(html, /class="tab[^"]*"[^>]*aria-current="page"[^>]*>[\s\S]*?Talk/);
   assert.equal((await page(house(), `/buttons/wrongwrongwrongwrong/say`)).status, 404);
-  assert.equal((await page(house({ OPENAI_API_KEY: undefined, ALEXA_SECRET: undefined }), `/buttons/${KEY}/say`)).status, 404);
+  // Neither Talk nor the skill: the page is the TV's card alone (2026-11-15).
+  const none = await page(house({ OPENAI_API_KEY: undefined, ALEXA_SECRET: undefined }), `/buttons/${KEY}/say`);
+  assert.equal(none.status, 200);
+  const noneHtml = await none.text();
+  assert.match(noneHtml, /Ask the house by voice, on the TV\./);
+  assert.doesNotMatch(noneHtml, /<h2 id="say-talk">|id="say-crate"/);
   const skillOnly = await (await page(house({ OPENAI_API_KEY: undefined }), `/buttons/${KEY}/say`)).text();
   assert.doesNotMatch(skillOnly, /<h2 id="say-talk">/);
   assert.match(skillOnly, /Ask the house by voice, on the Echos\./);

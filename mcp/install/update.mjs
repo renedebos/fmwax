@@ -3,9 +3,13 @@
 // Deploy button lives in its owner's own GitHub copy, which Cloudflare deploys
 // on every push. That copy's "Get the latest version" workflow (made from the
 // setup page, updates.js) clones the public repository and runs THIS file
-// from the clone, so the newest way of updating is always the one used:
+// from the clone. SINCE 2026-11-15 (the release audit) the workflow runs the
+// HOUSE'S OWN copy of this file instead, on an exact commit it has fetched
+// and printed: what has just arrived upstream is copied in, never run in
+// the house's repository. A better way of updating therefore takes effect
+// one update later.
 //
-//   node <latest>/mcp/install/update.mjs <latest> <here>
+//   node mcp/install/update.mjs <latest> <here>
 //
 // Everything of the latest version comes in, and whatever it no longer has
 // goes, except what is the house's own: its .git and .github, and in its

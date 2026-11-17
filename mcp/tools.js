@@ -55,6 +55,7 @@ import { fromRecord, sendBackWords, setBreaks } from "./setcheck.js";
 import { logWeek, repeatsField, weekBreak, weekField } from "./week.js";
 import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
+import { geniusOn, geniusSong } from "./genius.js";
 import { findRecording } from "./recordings.js";
 import { longReadSentBack, weighLongRead } from "./longread.js";
 import { ARCHIVE } from "./archive-identity.js";
@@ -724,11 +725,16 @@ export async function callTool(env, name, args, budget) {
             return { status: "failed", job_id: jobId, what_happened: out.what_happened,
               note: "The fresh set did not land; say so in one line and stop. Do not retry." };
           }
-          let started = null;
+          let started = null, how = "";
           if (startOn) {
             try {
-              await startPlaylistOnDevice(env, { id: p.playlist, name: djName, catalog: "spotify" }, startOn, budget);
+              // The fresh set's own songs, so a start on the playlist's old
+              // ones is asked again (the Sam Cooke night, 2026-11-14).
+              const sr = await startPlaylistOnDevice(env, { id: p.playlist, name: djName, catalog: "spotify" }, startOn, budget, null, { expect: keep });
               started = startOn;
+              how = `${sr?.stale_start === "restarted" ? "; Spotify began on the old songs, so it was started again"
+                : sr?.stale_start ? "; Spotify began on the old songs and kept to them" : ""}${
+                sr?.lossless?.pressed ? `; preset ${sr.lossless.pressed} pressed for lossless (${sr.lossless.code})` : ""}`;
               await endlessNoStart(env, p.button, null);
             } catch (e) {
               logEvents.push({ event: "start-failed", detail: String(e?.message ?? e).slice(0, 200) });
@@ -738,7 +744,7 @@ export async function callTool(env, name, args, budget) {
           resetSession = true;
           // Why it did not start, truly: a start Spotify refused is not one
           // asked too long ago (the trial, 2026-10-17, said the latter for a 403).
-          logEvents.push({ event: "fresh-landed", detail: `${keep.length} songs for the next press${started ? `; started on ${started}`
+          logEvents.push({ event: "fresh-landed", detail: `${keep.length} songs for the next press${started ? `; started on ${started}${how}`
             : startOn ? `; Spotify would not start it on the ${startOn}`
             : job.device ? `; not started on the ${job.device}: asked too long ago` : ""}` });
           result = { status: "fresh", ...(started ? { started_on: started } : {}),
@@ -1087,8 +1093,9 @@ export async function callTool(env, name, args, budget) {
       // settled, because the catalog is the first thing that has to be right.
       let record = null;
       try { record = await getRequestRecord(env, requestId); } catch { /* label only */ }
-      // A set asked by voice starts when it lands (MC-36): its calls are
-      // reserved here, before the claim, or it would land and not start.
+      // A set asked by voice, or with the Ask form's "Play when ready"
+      // (2026-11-15), starts when it lands (MC-36): its calls are reserved
+      // here, before the claim, or it would land and not start.
       if (asksToStart(record) && budget && need + ASK_START_CALLS > budget.remaining && !budget.critical) {
         throw new Error(
           `this set was asked by voice and starts when it lands: ${need + ASK_START_CALLS} lookups, but only ` +
@@ -1332,7 +1339,7 @@ export async function callTool(env, name, args, budget) {
       if (commit?.ok) {
         try {
           start = await startAsked(env, { requestId, record, pid, catalog: cat.name,
-            btn: dest.guest ? dest.guest.btn : dj.button, name: pl.name, budget });
+            btn: dest.guest ? dest.guest.btn : dj.button, name: pl.name, budget, uris: args.uris });
         } catch (e) {
           start = { not_started: String(record?.device ?? ""), why: `the start failed (${String(e?.message ?? e).slice(0, 80)})` };
         }
@@ -1865,6 +1872,18 @@ export async function callTool(env, name, args, budget) {
       };
     }
 
+    case "look_up_song": {
+      if (!geniusOn(env)) throw new Error("look_up_song needs Genius, and this house has no GENIUS_TOKEN secret. Curate from what you know.");
+      const title = String(args.title ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+      const artist = String(args.artist ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+      if (!title || !artist) throw new Error("title and artist are both needed, as plainly as you know them");
+      const g = await geniusSong(env, { title, artist });
+      if (!g) return { found: false, said: `Genius does not know "${title}" by ${artist}: curate from what you know.` };
+      const list = (r) => (r ? { count: r.n, most_read: r.top.map(({ t, a, y }) => ({ title: t, artist: a, ...(y ? { year: y } : {}) })) } : { count: 0, most_read: [] });
+      return { found: true, title: g.title, artist: g.artist, released: g.released, producers: g.producers, writers: g.writers,
+        samples: list(g.samples), sampled_in: list(g.sampledIn), interpolates: list(g.interpolates), cover_of: list(g.coverOf), covered_by: list(g.coveredBy),
+        about: g.about, source: "Genius, written by its readers", url: g.url };
+    }
     case "look_up_artist": {
       const artist = String(args.artist ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
       if (!artist) throw new Error("artist is required: the name, as plainly as you know it");
@@ -2294,7 +2313,7 @@ export async function callTool(env, name, args, budget) {
           begun = { started: false, why: "A Tidal preset is started from the remote: press it." };
         } else {
           try {
-            const p = await startPlaylistOnDevice(env, pl, String(args.device ?? "").trim() || defaultDevice, budget);
+            const p = await startPlaylistOnDevice(env, pl, String(args.device ?? "").trim() || defaultDevice, budget, null, { expect: args.uris });
             begun = { started: p.preset_safe === true, ...p };
           } catch (e) {
             begun = { started: false, why: String(e?.message ?? e).slice(0, 300) };

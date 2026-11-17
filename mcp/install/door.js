@@ -23,7 +23,15 @@ import { createInterface } from "node:readline/promises";
 import { MCP, renderBlankHouse } from "./config.js";
 import { working } from "./working.js";
 
-const WRANGLER = "wrangler@4.129.1";
+// ONE VERSION, CHECKED (the release audit, 2026-11-15): what `npx` fetches
+// for this version is what runs on a household's computer, so it is the
+// version whose own packages were looked up for known advisories (`npm
+// audit` on a fresh resolution: 4.129.1 pulled in four rated high, through
+// miniflare, sharp and undici; 4.162.0 none that day). The Deploy button's
+// command, this house's own deploy and the page check name the same one
+// (a test holds them together). Raising it: resolve it fresh, audit it,
+// then change it here and there.
+const WRANGLER = "wrangler@4.162.0";
 // The app's own date, the one the owner's house runs on (a property of the
 // code, not of a house).
 const COMPATIBILITY_DATE = "2025-06-01";

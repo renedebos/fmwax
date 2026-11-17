@@ -20,6 +20,16 @@ The setup page's **Updates** says when a newer version is out.
 
 Your copy keeps your house's name and stores.
 
+**What an update does, exactly.** It takes the public fmwax repository as it is at one exact commit, and replaces everything in your copy with it, except your copy's own settings: its name and stores, and its `.github` folder (so an update can never change the update itself). If you changed the code in your copy yourself, an update replaces those changes. The program that does the replacing is the one already in your copy, not one that has just arrived.
+
+**To see what changed:** on GitHub, open your copy and click the newest commit, *The latest version of fmwax*. It shows every changed line, and its note names the exact commit of the public repository it was taken from. The run's own log (Actions, the run, *The latest version*) lists the changed files too.
+
+**To go back:** open that commit on GitHub and choose **Revert**. Cloudflare then puts the version before it on your house.
+
+**To take one exact version** and not simply the newest: the **Run workflow** box has a field for a commit of the public repository (its 40 characters). Leave it empty for the newest.
+
+**Updates turned on before 15 November 2026?** Turn them on again once, so your copy gets this safer way of updating: on GitHub, delete `.github/workflows/update.yml` in your copy, then use **Turn updates on** on the setup page again.
+
 ## A house installed from a terminal
 
 Download a new ZIP the same way as when you installed ([Install from a terminal](terminal.md#1-get-the-code)), open a terminal in its `mcp` folder, and run the same command again:
@@ -32,7 +42,11 @@ It finds the same house (by its name: add `--name` if you gave it one) and updat
 
 ## The home helper is updated separately
 
-Only if you use it. The helper is a separate program on a computer at home, and updating your house does not touch it. When an update's note says the helper changed, set it up again on that computer with the new code: [Update it](home-helper.md#update-it-or-after-you-replace-a-wiim). An older helper keeps working with a newer house in the meantime.
+Only if you use it. The helper is a separate program on a computer at home, and updating your house does not touch it. When the helper has changed since you set it up (the list below), set it up again on that computer with the new code: [Update it](home-helper.md#update-it-or-after-you-replace-a-wiim). An older helper keeps working with a newer house in the meantime.
+
+**When the helper last changed:**
+
+- **16 November 2026:** it reads the WiiMs every 3 seconds (it was every 10), so the app and the [TV page](tv.md) follow a new song sooner. For music that isn't Spotify it also passes on the album, the cover and where in the song it is, and it can skip and go back.
 
 ## After some updates: connect Claude or ChatGPT again
 

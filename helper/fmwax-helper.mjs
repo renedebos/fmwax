@@ -49,7 +49,11 @@ import { dirname, join } from "node:path";
 import { readingFrom } from "../mcp/keymap.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const READ_EVERY_MS = 10_000;
+// Every 3 seconds since 2026-11-16 (the owner: the song page changed only
+// after 10 to 30 seconds): a read is the speakers' own, on the home network,
+// and the house is told only when something changed (or once a minute), so
+// reading more often costs the house nothing.
+const READ_EVERY_MS = 3_000;
 // Posted when anything changed, and at least this often, so the house can
 // tell a helper that is on from one that stopped (it trusts 150 s).
 const POST_AT_LEAST_MS = 60_000;
@@ -222,11 +226,24 @@ export function readingOf(name, st, presets = null, eq = null) {
     ? (known(meta.subtitle) ?? (/^wiimradio$/i.test(vendor) ? known(meta.title) : null))?.slice(0, 80) ?? null
     : pandora.length === 1 ? known(pandora[0].name)?.slice(0, 80) ?? null : null;
   const quality = qualityOf(st, meta);
+  // A SONG'S OWN PARTS, ON A SERVICE THAT IS NOT SPOTIFY (2026-11-16, the
+  // owner: a Tidal preset on the TV had no cover, no album and no bar;
+  // measured on the Pro Plus the same night): getMetaInfo's album, its cover
+  // when the address is the service's own (Tidal's resources.tidal.com), its
+  // track id, and getPlayerStatus's place in the song. Spotify's come from
+  // Spotify itself, and a station has no song length.
+  const song = source !== "Spotify" && streaming(st) && PLAYING.test(String(st.status ?? ""));
+  const art = song && /^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(meta.albumArtURI ?? "")) ? String(meta.albumArtURI) : null;
+  const ms = Math.round(Number(st.curpos)), of = Math.round(Number(st.totlen));
+  const pos = song && Number.isFinite(ms) && Number.isFinite(of) && of > 0 && ms >= 0 && ms <= of ? { ms, of } : null;
+  const trackId = song && /^\d{1,15}$/.test(String(meta.trackId ?? "")) ? String(meta.trackId) : null;
   return { name, state, ...(source ? { source } : {}), ...(playlist ? { playlist } : {}),
     ...(station ? { station } : {}),
     ...(unhex(st.Title) ? { track: unhex(st.Title) } : {}),
     ...(unhex(st.Artist) ? { artists: unhex(st.Artist) } : {}),
-    ...(quality ? { quality } : {}), ...(eq ? { eq } : {}) };
+    ...(quality ? { quality } : {}), ...(eq ? { eq } : {}),
+    ...(song && known(meta.album) ? { album: known(meta.album).slice(0, 200) } : {}),
+    ...(art ? { art } : {}), ...(pos ? { pos } : {}), ...(trackId ? { trackId } : {}) };
 }
 
 // The only speaker commands this helper sends. A command from the house not
@@ -236,9 +253,14 @@ const COMMANDS = {
   resume: () => "setPlayerCmd:resume",
   // A preset key, as the remote presses it. Only a whole number 1-12.
   key: (m) => (Number.isInteger(m?.n) && m.n >= 1 && m.n <= 12 ? `MCUKeyShortClick:${m.n}` : null),
+  // The next song and the one before (2026-11-16, the owner: no Skip on a
+  // Tidal preset): the WiiM's own documented next and prev, for a service
+  // that is not Spotify (the house skips Spotify through Spotify).
+  next: () => "setPlayerCmd:next",
+  prev: () => "setPlayerCmd:prev",
 };
 // A key takes a moment to start what it holds before the read-back says so.
-const SETTLE_MS = { pause: 600, resume: 600, key: 3000 };
+const SETTLE_MS = { pause: 600, resume: 600, key: 3000, next: 1500, prev: 1500 };
 
 function status(ip) { return wiim(ip, "getPlayerStatus", true); }
 // The read that names a WiiM and gives its fixed id; null from anything else.
@@ -720,7 +742,9 @@ async function main() {
   for (;;) {
     try {
       const readings = await readAll(cfg.speakers, cfg);
-      const said = JSON.stringify(readings);
+      // A song's place moves at every read: it rides along, but only a change
+      // in anything else (or a minute) sends the readings.
+      const said = JSON.stringify(readings, (k, v) => (k === "pos" ? undefined : v));
       if (said !== sent || Date.now() - sentAt >= POST_AT_LEAST_MS) {
         if (await post(cfg, readings)) { sent = said; sentAt = Date.now(); }
       }

@@ -494,6 +494,21 @@ async function player(env, ctx, kind, room) {
       if (h) return h;
     }
   }
+  if (kind === "skip" || kind === "back") {
+    // A SONG ON TIDAL, skipped by the home helper (2026-11-16, the owner: no
+    // Skip on a Tidal preset): the WiiM's own next or one before, where it
+    // plays a service with songs and not Spotify.
+    const hands = await helperHands(env);
+    const cands = Object.entries(hands?.speakers ?? {}).filter(([name, r]) => wiimOf(env, name) && r.state === "play" && onStream(r)
+      && /^(tidal|prime|amazon|qobuz|deezer)/i.test(String(r.source ?? "")) && (!room || fold(name) === fold(room)));
+    if (cands.length === 1) {
+      const [name] = cands[0];
+      const out = await helperCommand(env, { cmd: kind === "back" ? "prev" : "next", speaker: name });
+      if (out.code === "ok") return { say: kind === "back" ? "Back a song." : "Skipped.", did: { [kind]: "helper", on: name } };
+      if (out.code === "timeout" || out.code === "failed") return { say: `I've sent that to the ${name}; it may take a moment.`, did: { [kind]: out.code, on: name } };
+      return { say: `The helper couldn't reach the ${name}.`, did: { [kind]: out.code, on: name } };
+    }
+  }
   const box = await playingBox(env, room);
   if (!box) {
     const h = kind === "pause" ? await helperTransport(env, room, "pause") : null;
@@ -544,26 +559,39 @@ const STEERED = {
   "no-curator": `${NO_CURATOR}, so a DJ can't be steered. Ask for a new set instead.`,
   failed: "That didn't reach the DJ. Try again.",
 };
+// `s.dj`, from a DJ's own screen on the TV: only that DJ is turned. Another
+// DJ playing is said, and left alone (the review, 2026-11-16: Change it up
+// on Genre's screen changed Hank and spent a DJ run).
 async function steer(env, s) {
   let code;
   if (s.kind === "more" || s.kind === "change") {
     let pl = null;
     try { pl = await playerState(withBudget(env, { remaining: 2 })); } catch { pl = null; }
     const pid = String(pl?.context?.uri ?? "").match(/^spotify:playlist:([A-Za-z0-9]{22})$/)?.[1] ?? null;
-    const preset = pl?.is_playing === true && pid ? (parseEndless(env)?.presets ?? []).find((x) => x.playlist === pid) ?? null : null;
+    const cfg = parseEndless(env);
+    const preset = pl?.is_playing === true && pid ? (cfg?.presets ?? []).find((x) => x.playlist === pid) ?? null : null;
     if (preset) {
+      if (s.dj) {
+        let on = null;
+        try { on = endlessPresets(env, cfg, await endlessLoad(env)).find((x) => x.button === preset.button)?.dj ?? null; } catch { on = null; }
+        const onKey = on ? findDj(env, on)?.key ?? on : null;
+        if (onKey !== s.dj) {
+          return { say: `${onKey ? nameOf(onKey) : "Another DJ"} is playing now, not ${nameOf(s.dj)}, so nothing was turned. Put ${nameOf(s.dj)} on first.`,
+            did: { steer: "other", on: preset.button } };
+        }
+      }
       const r = await endlessPageSteer(env, { button: preset.button, words: s.kind === "more" ? MORE_WORDS : CHANGE_WORDS, leaveWords: s.kind === "change" });
       code = r.status === "asked" ? "asked" : ["not-playing", "day-cap", "throttled", "no-curator"].includes(r.status) ? r.status : "failed";
       return { say: STEERED[code], did: { steer: code, on: preset.button } };
     }
-    return steerWords(env, s.kind === "more" ? MORE_WORDS(pl) : CHANGE_WORDS, true);
+    return steerWords(env, s.kind === "more" ? MORE_WORDS(pl) : CHANGE_WORDS, true, s.dj ?? null);
   }
   return steerWords(env, s.words, false);
 }
-async function steerWords(env, words, replaceRest) {
+async function steerWords(env, words, replaceRest, dj = null) {
   let code;
   try {
-    const r = await callTool(env, "steer_endless", { words, when: "next", ...(replaceRest ? { replace_rest: true } : {}) }, { remaining: 20 });
+    const r = await callTool(env, "steer_endless", { words, when: "next", ...(replaceRest ? { replace_rest: true } : {}), ...(dj ? { dj } : {}) }, { remaining: 20 });
     // Own words over a set on the Requests preset take the gentle way: the
     // set plays to its end as made, then the DJ carries on that way. Taken,
     // so never said as not reaching the DJ (2026-11-07 22:03, "more upbeat").
@@ -577,6 +605,7 @@ async function steerWords(env, words, replaceRest) {
       : m.includes(NO_CURATOR) ? "no-curator"
       : /steering works while|is not the one playing|names no DJ|took over|not playing|nothing .*plays/i.test(m) ? "not-playing" : "failed";
   }
+  if (dj && code === "not-playing") return { say: `${nameOf(findDj(env, dj)?.key ?? dj)} isn't playing now, so nothing was turned.`, did: { steer: code } };
   return { say: STEERED[code], did: { steer: code } };
 }
 

@@ -11,7 +11,7 @@ import { station } from "./station.js";
 import { endlessLoad, endlessSlots, houseDjRoom, parseEndless, talkOn, waiting } from "./endless.js";
 import { configuredPlaylistId } from "./now.js";
 import { ROOM_ARCHIVE_TILE, fallbackDevice, parseRoomDevices, parseSpeakers, readTiles, speakerSlug, tileFor, writeTiles } from "./room.js";
-import { PLAYLIST_PARSERS, SNAP_TTL_S, catalogFor, fold, lastfmOn, parseAliases, programsKV, withBudget } from "./services.js";
+import { PLAYLIST_PARSERS, SNAP_TTL_S, catalogFor, fold, geniusOn, lastfmOn, parseAliases, programsKV, withBudget } from "./services.js";
 import { shelfElsewhere } from "./shelf.js";
 import { curatorKind } from "./curator-events.js";
 import { askDjOn } from "./toollist.js";
@@ -488,10 +488,15 @@ export async function rulesFacts(env) {
       waits,
       archive: !!h.archive, talk, helper, history: env.RULES_HISTORY === "on", newdj: !!houseDjRoom(env, cfg) && !waits,
       lastfm: lastfmOn(env),
+      // Genius's samples, covers and credits (genius.js, 2026-11-16).
+      genius: geniusOn(env),
       // ChatGPT is the house's curator (MC-31 6b): its rules page says so.
       chatgpt: curatorKind(env) === "chatgpt",
       // Talk files a DJ's set for the curator (MC-36).
       talkasks: talk && askDjOn(env),
+      // A curator makes an asked set by itself: the Ask form's "Play when
+      // ready" (2026-11-15) is offered, and a landed set may start by itself.
+      autoasks: requests.length > 0 && askDjOn(env),
       // House radio, the private Alexa skill, acts (MC-38 stage 3).
       alexa: env.ALEXA_ACTS === "on",
     },
@@ -534,7 +539,9 @@ export function presetFlash(env, url) {
   const btn = Number(url.searchParams.get("k"));
   if (!Number.isInteger(btn) || btn < 1 || btn > 12 || !presetOnFile(env, btn)) return null;
   const boxes = parseSpeakers(env);
-  const pool = boxes.length ? boxes : parseRoomDevices(env).map((name) => ({ name, slug: speakerSlug(name) }));
+  // The WiiMs first; then the play form's other rooms, which the TV page's
+  // tiles may name (MC-46: an Echo plays the house's own presets).
+  const pool = [...boxes, ...parseRoomDevices(env).filter((name) => !boxes.some((b) => b.name === name)).map((name) => ({ name, slug: speakerSlug(name) }))];
   const box = pool.find((sp) => sp.slug === String(url.searchParams.get("kon") ?? "")) ?? null;
   if (!box) return null;
   return { code, btn, box };

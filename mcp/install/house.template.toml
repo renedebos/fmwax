@@ -77,6 +77,24 @@ enabled = false
 [observability]
 enabled = true
 #{{end}}
+#{{if logsNoAddresses}}
+# AND NOT EACH REQUEST'S ADDRESS (2026-11-15, the release audit). A house that
+# asks for logs gets what the Worker says with console, which names no key.
+# Cloudflare's own line per request ("invocation logs") holds the request's
+# address, and a keyed page's address is the key: left out unless the house
+# asks for that too (house.json `worker.requestLog`).
+[observability.logs]
+invocation_logs = false
+#{{end}}
+#{{if noLogs}}
+# NO REQUEST LOG, SAID OUT LOUD (2026-11-15, the release audit). Leaving the
+# setting out was not a no: Cloudflare's Workers Logs page says "All newly
+# created Workers will come with the observability setting enabled by
+# default", and a log holds each request's address, keys included. So a house
+# that has not asked for logs says so here, and a deploy sets it.
+[observability]
+enabled = false
+#{{end}}
 
 # Durable store for the streaming services' refresh tokens. Spotify's PKCE
 # rotates its token on refresh, so it must survive restarts — a secret alone is

@@ -9,12 +9,17 @@
      1 and 2 as one page that can do what a guide on GitHub cannot: make the
      setup key (a newcomer had to invent 24 characters, and one who skipped
      that met Cloudflare's form with nothing to paste), hold it across the
-     trip to Cloudflare and GitHub, and open the new house's setup page with
-     the key already in it. Everything happens in this browser: the key is
-     made here, kept in this browser's own storage, and sent nowhere; it
-     reaches the house only in the part of the address after "#", which a
-     browser never sends. No script or font from anywhere else. Served by
-     GitHub Pages from the public copy's docs folder. -->
+     trip to Cloudflare and GitHub, and open the new house's setup page.
+     Everything happens in this browser: the key is made here, kept in this
+     browser's own storage, and sent nowhere. THE KEY IS NEVER PUT IN AN
+     ADDRESS (the release audit, 2026-11-15): until then the last button
+     opened <address>/setup#<key>, and a wrong address, mistyped or the wrong
+     one of two in a pasted log, would have handed the key to whatever page
+     was there (a page's own script can read the "#" part). Now the button
+     copies the key and opens the setup page bare, only at a workers.dev
+     address, and the person pastes the key there. No script or font from
+     anywhere else. Served by GitHub Pages from the public copy's docs
+     folder. -->
 <style>
 :root{--bg:#EDEDE8;--card:#F6F6F1;--ink:#14110F;--ink2:#4A4640;--ink3:#77726A;--rule:#D8D6CE;--deep:#2B3D5C;--on:#F6F6F1;--tint:#DDE3EE;--warm:#9A4A1E}
 @media (prefers-color-scheme:dark){:root{--bg:#15171B;--card:#1D2026;--ink:#F0EEE8;--ink2:#C3BFB6;--ink3:#8F8B83;--rule:#33373F;--deep:#C9D5EA;--on:#15171B;--tint:#262C38;--warm:#E0A070}}
@@ -141,16 +146,20 @@ noscript p{color:var(--warm);font-weight:600}
 
   <section aria-labelledby="h3">
     <h2 id="h3"><span class="n">3</span>Open your setup page</h2>
-    <p>Paste the build log you just copied into this box: the page finds your house's address in it. Then the button
-      opens your house's setup page with your key already filled in. There, click <b>Claim this house</b>.</p>
+    <p>Paste the build log you just copied into this box: the page finds your house's address in it. <b>Check that it
+      is your house's address.</b> Then the button copies your key and opens your house's setup page. There, paste the
+      key and click <b>Claim this house</b>.</p>
     <p class="note">Or paste the address alone. In the log it is the line that starts with <code>https://</code> and ends
       with <code>workers.dev</code>, a few lines above <i>Success</i>. Cloudflare's own pages may say "No URLs enabled":
       the address works all the same.</p>
     <label for="addr">The build log, or your house's address</label>
     <input type="text" id="addr" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
       placeholder="https://fmwax-house.your-name.workers.dev">
-    <div class="row"><a class="btn" id="open" aria-disabled="true" href="#">Open my setup page</a></div>
+    <div class="row"><a class="btn" id="open" aria-disabled="true" href="#" target="_blank" rel="noopener">Copy my key and open my setup page</a></div>
     <p class="said" id="said3" role="status"></p>
+    <p class="note">Your key is never put in a web address: it goes from this page to your clipboard, and you paste it
+      on your house's own page. Once your house is claimed, the key has done its work:
+      <button type="button" class="quiet" id="forget">Forget the key on this page</button></p>
     <p class="note">From there, the setup page is a checklist that ticks itself: Spotify, your speakers, Claude or
       ChatGPT, and your first preset.</p>
   </section>
@@ -178,6 +187,7 @@ noscript p{color:var(--warm);font-weight:600}
   var box = document.getElementById("key"), said = document.getElementById("said");
   function show() { box.textContent = key; link(); }
   function copy() {
+    if (!key) { said.textContent = "The key was forgotten on this page. Reload it for a new one, or use the one in your note."; return; }
     var done = function () { said.textContent = "Copied. Paste it into a note, then into Cloudflare's form."; };
     var byHand = function () { said.textContent = "Select the key above and copy it by hand."; };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(key).then(done, byHand); else byHand();
@@ -197,25 +207,59 @@ noscript p{color:var(--warm);font-weight:600}
     // A whole build log pasted in (Cloudflare's "Copy build log"): the house's
     // address is the workers.dev one in it (the owner's test, 2026-11-09: in
     // the log it is plain text, and Cloudflare's overview shows no link).
-    var inLog = t.match(/https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)+\.workers\.dev/i);
-    if (inLog && t.length > inLog[0].length + 8) return inLog[0].toLowerCase();
+    // ONE ADDRESS, AND A HOUSE'S OWN SHAPE (the release audit, 2026-11-15):
+    // <worker>.<account>.workers.dev and nothing else, so a typed address
+    // elsewhere is never opened from here; and a log that names two
+    // different ones is refused, because the first is not always the house.
+    var HOUSE = /^https:\/\/[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev$/;
+    // Where the name ends, the address ends: "…workers.dev.example" is not one.
+    var found = t.match(/https:\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)+\.workers\.dev(?![a-z0-9-]|\.[a-z0-9])/gi) || [];
+    var seen = [];
+    for (var i = 0; i < found.length; i++) { var f = found[i].toLowerCase(); if (seen.indexOf(f) < 0) seen.push(f); }
+    if (seen.length && t.length > seen[0].length + 8) {
+      if (seen.length > 1) return { why: "That names more than one address (" + seen.join(" and ") + "). Paste your house's address alone." };
+      return HOUSE.test(seen[0]) ? { origin: seen[0] } : { why: "That address is not a house's: it looks like https://fmwax-house.your-name.workers.dev." };
+    }
     if (!/^[a-z]+:\/\//i.test(t)) t = "https://" + t;
-    try { var u = new URL(t); return u.protocol === "https:" && u.hostname.indexOf(".") > 0 ? u.origin : null; } catch (e) { return null; }
+    try {
+      var u = new URL(t);
+      if (u.protocol === "https:" && HOUSE.test(u.origin)) return { origin: u.origin };
+      if (u.protocol === "https:" && u.hostname.indexOf(".") > 0) {
+        return { why: "This page only opens a house at its workers.dev address. For another address, open its /setup page yourself and paste your key there." };
+      }
+    } catch (e) { /* said below */ }
+    return null;
   }
   function link() {
     var o = originOf(addr.value);
-    if (o) {
-      open.href = o + "/setup#" + encodeURIComponent(key);
+    if (o && o.origin) {
+      // The setup page, bare: the key is never part of an address.
+      open.href = o.origin + "/setup";
       open.setAttribute("aria-disabled", "false");
-      said3.textContent = "Your house: " + o;
+      said3.textContent = "Your house: " + o.origin + " (check that this is yours)";
     } else {
       open.href = "#";
       open.setAttribute("aria-disabled", "true");
-      said3.textContent = addr.value.trim() ? "No address found in that. It starts with https:// and ends with workers.dev." : "";
+      said3.textContent = o && o.why ? o.why
+        : addr.value.trim() ? "No address found in that. It starts with https:// and ends with workers.dev." : "";
     }
   }
   addr.addEventListener("input", link);
-  open.addEventListener("click", function (e) { if (open.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+  open.addEventListener("click", function (e) {
+    if (open.getAttribute("aria-disabled") === "true") { e.preventDefault(); return; }
+    if (!key) { said3.textContent = "The key was forgotten on this page: paste the one from your note on your house's page."; return; }
+    // The key to the clipboard as the page opens, for the one paste there.
+    var done = function () { said3.textContent = "Key copied. On your house's page, paste it and click Claim this house."; };
+    var byHand = function () { said3.textContent = "Copy the key from step 1 by hand, and paste it on your house's page."; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(key).then(done, byHand); else byHand();
+  });
+  // Kept only as long as it is needed: the page forgets the key when asked.
+  document.getElementById("forget").addEventListener("click", function () {
+    if (!confirm("Forget the key on this page? Do this once your house is claimed, or once the key is in a note of your own.")) return;
+    try { localStorage.removeItem(STORE); } catch (e) { /* nothing was kept */ }
+    key = ""; box.textContent = "(forgotten: reload this page for a new key)"; link();
+    said3.textContent = "The key is gone from this page.";
+  });
   show();
 })();
 </script>

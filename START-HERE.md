@@ -17,6 +17,7 @@ You install Level 1 first, in about an hour. Everything after it is added later 
 | **Level 3 · Endless** | Your DJ presets add songs by themselves for as long as you listen. A guest DJ preset for any DJ. Ask from the DJ pages in your house's app. | A paid plan: Claude Pro or ChatGPT Plus (or higher). | 30 to 45 minutes |
 | **Extra · Home helper** | A small program on a computer at home. While it runs, your house sees what is saved on each WiiM preset, and can press them for you. | A computer at home (Mac, Windows or Linux). It helps whenever that computer is on; it need not stay on. | 15 minutes |
 | **Extra · Talk** | Ask by voice in your house's app: a DJ, a preset, "more like this". | Your own OpenAI API key, paid by the minute (about 5 cents). Not part of ChatGPT Plus. | 10 to 15 minutes |
+| **Extra · On your TV** | Your house as one screen on the TV, worked with its remote: presets, what's playing, the DJs, the Shelf, and About this song. Ask by voice too. | A Google TV or Android TV with the free TV Bro browser. Nothing to install on the house. | 15 minutes |
 
 The extras can be added at any level.
 
@@ -82,7 +83,7 @@ In this guide, your own fmwax is called **your house**. It has a web address of 
 
 **[Open the start page](https://renedebos.github.io/fmwax/)** and keep it open.
 
-It makes your house's *setup key*: a password that proves the house is yours. The key is made in your own browser and sent nowhere. The page also has the Deploy button for Step 2, and at the end it opens your house's setup page with the key already filled in.
+It makes your house's *setup key*: a password that proves the house is yours. The key is made in your own browser and sent nowhere. The page also has the Deploy button for Step 2, and at the end it copies the key and opens your house's setup page, where you paste it. The key is never put in a web address.
 
 Copy the key into a note of your own too, in case the page is closed before you are done.
 
@@ -125,7 +126,7 @@ Press **Deploy to Cloudflare** on the start page, or this button:
 
    Then click **Deploy**, at the bottom right.
 5. **Wait about a minute.** The steps turn green one by one. The log underneath ends with **Success! Build completed**. A few lines above that is your house's address, as plain text. It looks like `https://fmwax-house.your-name.workers.dev`. (Cloudflare's own pages may say "No URLs enabled": the address works all the same.)
-6. **Click Copy build log** (top right of the log), **paste it into the start page's last box**, and click **Open my setup page**. The start page finds the address in the log, and your house's setup page opens with the key already filled in. (Without the start page: copy the address from the log into your browser's address bar. It goes to the setup page.)
+6. **Click Copy build log** (top right of the log), **paste it into the start page's last box**, check the address it shows is your house's, and click **Copy my key and open my setup page**. The start page finds the address in the log, copies your key, and opens your house's setup page in a new tab. (Without the start page: copy the address from the log into your browser's address bar. It goes to the setup page.)
 
 If the build fails, see [If something goes wrong](docs/install/troubleshooting.md).
 
@@ -133,7 +134,7 @@ If the build fails, see [If something goes wrong](docs/install/troubleshooting.m
 
 Your house's setup page opens and asks for the setup key.
 
-1. Click **Claim this house**. The key is already filled in if you came from the start page; if not, paste it. From now on, only a browser you have signed in can change your house's settings.
+1. **Paste your setup key** (the start page has just copied it for you) and click **Claim this house**. From now on, only a browser you have signed in can change your house's settings.
 2. You are shown a **recovery code**, once. Click **Save it in my passwords**: your browser offers to keep it, like any password. Or click **Copy the code** and paste it into your note. You need it to sign in on your phone or another browser.
 
 This browser stays signed in for a year.
@@ -204,6 +205,7 @@ On the setup page, click **Download a backup**. It's a small file with your hous
 - **[Endless DJs](docs/install/endless.md)** (Level 3): your DJ presets add songs by themselves for as long as you listen, and a guest DJ preset for any DJ. About 30 to 45 minutes to set up; it needs a paid Claude or ChatGPT plan.
 - **[The home helper](docs/install/home-helper.md)** (an extra, at any level): a small program on a computer at home, so your house can see and press the WiiM's presets.
 - **[Talk](docs/install/talk.md)** (an extra, at any level): ask by voice in your house's app. It needs your own OpenAI API key, paid by the minute.
+- **[On your TV](docs/install/tv.md)** (an extra, at any level): your house as one screen on a Google TV, worked with the TV's remote, and voice from it too. About 15 minutes, all of it on the TV.
 - **[Updates](docs/install/updates.md):** how to get a newer version, and which version you have.
 - **[What your house keeps, and who sees it](docs/install/privacy.md).**
 - **[Remove your house](docs/install/remove.md):** how to take it all away again, step by step.

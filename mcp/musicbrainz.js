@@ -226,3 +226,205 @@ export function recordingFacts(rec) {
     live: Array.isArray(perf?.attributes) && perf.attributes.includes("live"),
   };
 }
+
+// SONG FACTS (MC-46, the owner's choice A, 2026-11-15: "use A for endless").
+// About this song on the TV has the DJ's own words only for a song from a
+// Shelf page; for every other Spotify song, an endless set's included, it
+// shows what open databases say of the song, looked up by its code (ISRC),
+// which Spotify's player read already carries. No AI, no DJ run, no Spotify
+// call. Measured before it was built (Al Green, "Tired of Being Alone",
+// US2HK0914201): the code finds the recording; the recording names the
+// studio (Royal Studios), the work and its writers (composer and lyricist:
+// Al Green), its first album, and the work's Wikidata entry, which names the
+// English Wikipedia article whose opening says what the song did.
+//
+// Four requests at most for a song not seen before: MusicBrainz twice, a
+// second apart; Wikidata; Wikipedia. Kept by code for 90 days, a song nobody
+// knows for 14, so a song comes back at once. Everything in it is text from
+// open databases: reference for a listener, never instructions, held to a
+// length, and drawn as text.
+const SONG_INC = "artist-rels+place-rels+area-rels+work-rels+work-level-rels+url-rels+releases+release-groups";
+const SONG_DEADLINE_MS = 10000;
+const SONG_KEEP_S = 90 * 86400, SONG_NONE_S = 14 * 86400, SONG_MISS_S = 900;
+const WRITES = ["writer", "composer", "lyricist"];
+const plainAlbum = (r) => r?.status === "Official" && r?.["release-group"]?.["primary-type"] === "Album" &&
+  !(r["release-group"]["secondary-types"] ?? []).length;
+
+// What a recording (asked with SONG_INC) says, by rule: the writers of its
+// work, where and when it was recorded, the year it first came out and the
+// first studio album that holds it, and the work's Wikidata entry.
+export function songFactsOf(rec) {
+  const base = recordingFacts(rec);
+  const rels = Array.isArray(rec?.relations) ? rec.relations : [];
+  const work = rels.find((r) => r?.["target-type"] === "work" && r?.type === "performance")?.work ?? null;
+  const wrels = Array.isArray(work?.relations) ? work.relations : [];
+  const writers = [];
+  for (const r of wrels) {
+    const n = mbText(r?.artist?.name, 80);
+    if (r?.["target-type"] === "artist" && WRITES.includes(r?.type) && n && !writers.includes(n)) writers.push(n);
+  }
+  const wd = wrels.map((r) => String(r?.url?.resource ?? "")).map((u) => u.match(/^https:\/\/www\.wikidata\.org\/wiki\/(Q\d{1,12})$/)?.[1]).find(Boolean) ?? null;
+  const dated = (r) => String(r?.date || r?.["release-group"]?.["first-release-date"] || "9999");
+  const album = (Array.isArray(rec?.releases) ? rec.releases : []).filter(plainAlbum).sort((a, b) => dated(a).localeCompare(dated(b)))[0] ?? null;
+  const out = {
+    writers: writers.slice(0, 6),
+    recorded: base.recorded, place: base.place, live: base.live,
+    released: mbYear(rec?.["first-release-date"]),
+    album: album ? { title: mbText(album["release-group"]?.title ?? album.title, 120), year: mbYear(album["release-group"]?.["first-release-date"] ?? album.date) } : null,
+    wikidata: wd,
+  };
+  return out;
+}
+
+// The English Wikipedia article a Wikidata entry names, and its opening.
+async function wikiOpening(env, q, deadline) {
+  const left = () => Math.max(500, Math.min(TIMEOUT_MS, deadline - Date.now()));
+  const h = { headers: { "user-agent": MB_UA, accept: "application/json" } };
+  try {
+    const r = await subrequest(env, `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${q}&props=sitelinks&sitefilter=enwiki&format=json`,
+      { ...h, signal: AbortSignal.timeout(left()) });
+    const title = r?.ok ? (await r.json())?.entities?.[q]?.sitelinks?.enwiki?.title : null;
+    if (!title || Date.now() > deadline - 500) return null;
+    const s = await subrequest(env, `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(String(title).replace(/ /g, "_"))}`,
+      { ...h, signal: AbortSignal.timeout(left()) });
+    const d = s?.ok ? await s.json() : null;
+    if (!d || d.type !== "standard") return null;
+    const text = mbText(d.extract, 1400);
+    const url = String(d.content_urls?.desktop?.page ?? "");
+    return text ? { title: mbText(d.title, 160), text, url: /^https:\/\/en\.wikipedia\.org\//.test(url) ? url : null } : null;
+  } catch (e) { if (e?.budgetExhausted) throw e; return null; }
+}
+
+// WHEN THE CODE IS NOT KNOWN (a remaster or a compilation files the song
+// under a code of its own, which MusicBrainz may not have): the song by its
+// title and artist, as one search, a match only at a score of 90 or more and
+// within ten seconds of the track's length. A match by name may be another
+// take of the song (a live one, a re-recording), so only what belongs to the
+// SONG is kept from it: its writers and its Wikipedia article, never where,
+// when or on what that take was recorded.
+const bareTitle = (t) => String(t ?? "").replace(/\s+/g, " ").trim().replace(/\s+-\s+.*$/, "")
+  .replace(/\s*[([][^)\]]*\b(remaster(ed)?|mono|stereo|version|mix|edit|live|demo|session|bonus)\b[^)\]]*[)\]]\s*$/i, "").trim();
+const luceneWords = (v) => String(v ?? "").replace(/[^\p{L}\p{N}' ]+/gu, " ").replace(/\s+/g, " ").trim().slice(0, 120);
+async function songBySearch(env, title, artist, durationMs, deadline, cap) {
+  const t = luceneWords(bareTitle(title)), a = luceneWords(artist);
+  if (!t || !a) return null;
+  const q = encodeURIComponent(`recording:"${t}" AND artist:(${a})`);
+  const got = await ask(env, `/recording?query=${q}&fmt=json&limit=10`, cap.left < 5 ? SPACING_MS : 0, deadline, cap);
+  const near = (r) => !durationMs || !Number.isFinite(r?.length) || Math.abs(r.length - durationMs) <= 10000;
+  const pick = (got && got !== MB_NONE ? got.recordings ?? [] : []).find((r) => r?.id && Number(r?.score) >= 90 && near(r));
+  return pick ? pick.id : null;
+}
+
+// The facts for one song by its code, from the house's own keeping first.
+// Null when nothing is known (or the house does not ask: ARTIST_LOOKUP="off").
+// What goes out: { writers, recorded, place, live, released, album, wiki }.
+// WITHOUT A CODE AT ALL (2026-11-15: the owner saw no About this song on
+// the Bravia, and the live house had made no lookup, so the TV's answers
+// carried no code): the song is found by its title and artist, and kept
+// under them.
+export async function songFacts(env, isrc, durationMs = 0, { title = "", artist = "", deadlineMs = env?.__mbDeadlineMs ?? SONG_DEADLINE_MS } = {}) {
+  if (!artistLookupOn(env)) return null;
+  const code = String(isrc ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const byCode = ISRC_RE.test(code);
+  const named = researchSlug(`${artist} ${bareTitle(title)}`);
+  if (!byCode && !(named && String(artist).trim() && String(title).trim())) return null;
+  const kv = programsKV(env);
+  const tag = byCode ? code.toLowerCase() : `n-${named}`;
+  const key = `songfacts:${tag}`, miss = `mbmiss:song-${tag}`;
+  try {
+    const kept = await kv.get(key, { type: "json" });
+    if (kept) return kept.facts ?? null;
+    if (await kv.get(miss)) return null;
+  } catch { /* asked, then */ }
+  const deadline = Date.now() + deadlineMs;
+  const cap = { left: 5 };
+  let facts = null, answered = false;
+  try {
+    const got = byCode ? await ask(env, `/isrc/${code}?fmt=json`, 0, deadline, cap) : MB_NONE;
+    const recs = got && got !== MB_NONE ? (Array.isArray(got.recordings) ? got.recordings : []).filter((r) => r?.id) : [];
+    let id = null, byName = false;
+    if (recs.length) {
+      const off = (r) => (Number.isFinite(r?.length) && durationMs ? Math.abs(r.length - durationMs) : Infinity);
+      id = recs.slice().sort((a, b) => off(a) - off(b))[0].id;
+    } else if (got === MB_NONE || got) {
+      // The code is unknown: by name, or nobody knows it.
+      id = await songBySearch(env, title, artist, durationMs, deadline, cap);
+      byName = !!id;
+      if (!id) answered = got === MB_NONE || !!got;
+    }
+    if (id) {
+      const rec = await ask(env, `/recording/${encodeURIComponent(id)}?inc=${SONG_INC}&fmt=json`, SPACING_MS, deadline, cap);
+      if (rec && rec !== MB_NONE) {
+        answered = true;
+        const f = songFactsOf(rec);
+        const wiki = f.wikidata ? await wikiOpening(env, f.wikidata, deadline) : null;
+        const { wikidata, ...rest } = f;
+        facts = byName
+          ? { writers: rest.writers, recorded: null, place: null, live: false, released: null, album: null, wiki, byName: true }
+          : { ...rest, wiki };
+        if (!facts.writers.length && !facts.recorded && !facts.place && !facts.released && !facts.album && !wiki) facts = null;
+      } else if (rec === MB_NONE) answered = true;
+    }
+  } catch { answered = false; }
+  try {
+    if (answered) await kv.put(key, JSON.stringify({ at: Date.now(), facts }), { expirationTtl: facts ? SONG_KEEP_S : SONG_NONE_S });
+    else await kv.put(miss, "1", { expirationTtl: SONG_MISS_S });
+  } catch { /* asked again, then */ }
+  return facts;
+}
+
+// MORE FROM WIKIPEDIA (the owner, 2026-11-16: "in a lot of cases there are a
+// lot more paragraphs of wikipedia text ... a button/link below the first
+// paragraph for additional text blocks"). The article's story, as plain
+// text: the rest of its opening, then its sections in order, leaving out
+// what reads badly from the couch (charts, certifications, track listings,
+// credits, release history, references and links: lists and tables).
+// Asked only when the button is pressed, and kept 90 days.
+const WIKI_SKIP = /^(references|notes|footnotes|citations|sources|bibliography|further reading|external links|see also|release history|personnel|credits.*|.*track listings?|.*charts?|.*certifications?.*|accolades|awards|weekly charts|year-end charts|sales.*)$/i;
+const WIKI_MAX_CHARS = 9000;
+export function wikiSections(extract, shown = "") {
+  const lines = String(extract ?? "").split("\n");
+  const out = [];
+  let cur = { h: "", p: [] }, skip = false, skipLevel = 0, lead = true, total = 0;
+  const push = () => { if (cur.p.length) out.push(cur); };
+  const first = String(shown ?? "").trim().slice(0, 80);
+  for (const raw of lines) {
+    const line = raw.trim();
+    const m = line.match(/^(={2,})\s*(.+?)\s*\1$/);
+    if (m) {
+      const level = m[1].length;
+      if (skip && level > skipLevel) continue;
+      skip = WIKI_SKIP.test(m[2]);
+      skipLevel = level;
+      lead = false;
+      push();
+      cur = { h: m[2].slice(0, 120), p: [] };
+      continue;
+    }
+    if (skip || line.length < 60) continue;
+    // The opening's first paragraph is the one already shown.
+    if (lead && first && line.startsWith(first)) continue;
+    if (total + line.length > WIKI_MAX_CHARS) { push(); return out; }
+    cur.p.push(line.slice(0, 2400));
+    total += line.length;
+  }
+  push();
+  return out;
+}
+export async function wikiMore(env, title, shown = "") {
+  if (!artistLookupOn(env)) return null;
+  const t = String(title ?? "").replace(/[\u0000-\u001f]/g, "").trim().slice(0, 160);
+  if (!t) return null;
+  const key = `songwiki:${researchSlug(t).slice(0, 100)}`;
+  const kv = programsKV(env);
+  try { const had = await kv.get(key, { type: "json" }); if (had) return had; } catch { /* asked again */ }
+  try {
+    const r = await subrequest(env, `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsectionformat=wiki&redirects=1&format=json&formatversion=2&titles=${encodeURIComponent(t.replace(/ /g, "_"))}`,
+      { headers: { "user-agent": MB_UA, accept: "application/json" }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    const page = r?.ok ? (await r.json())?.query?.pages?.[0] : null;
+    if (!page || page.missing) return null;
+    const out = { title: mbText(page.title, 160), sections: wikiSections(page.extract, shown) };
+    try { await kv.put(key, JSON.stringify(out), { expirationTtl: 90 * 86400 }); } catch { /* asked again next time */ }
+    return out;
+  } catch (e) { if (e?.budgetExhausted) throw e; return null; }
+}

@@ -28,9 +28,15 @@ function env(over = {}) {
 function spotifyAt(player) {
   const f = installFetch({ contents: Array.from({ length: 10 }, (_, i) => ({ ...track(`t${i}`), duration_ms: 5 * MIN })) });
   const inner = globalThis.fetch;
-  let reads = 0;
+  let reads = 0, histReads = 0;
   globalThis.fetch = async (u, init = {}) => {
     const url = new URL(String(u));
+    // Spotify's history of plays (2026-11-15): `player.history`, newest last.
+    if (url.pathname === "/v1/me/player/recently-played") {
+      histReads++;
+      return Response.json({ items: (player.history ?? []).slice().reverse().map((h) => ({ played_at: new Date(h.at).toISOString(),
+        track: { uri: h.uri, name: "x", artists: [] }, context: h.pid ? { uri: `spotify:playlist:${h.pid}`, type: "playlist" } : null })) });
+    }
     if (url.pathname === "/v1/me/player" && (init.method ?? "GET") === "GET") {
       reads++;
       const p = player.now;
@@ -41,7 +47,7 @@ function spotifyAt(player) {
     }
     return inner(u, init);
   };
-  return { reads: () => reads, f, restore: () => { globalThis.fetch = inner; f.restore(); } };
+  return { reads: () => reads, histReads: () => histReads, f, restore: () => { globalThis.fetch = inner; f.restore(); } };
 }
 const events = (e) => e.STATION.endless.log.map((r) => r.event);
 
@@ -1356,4 +1362,87 @@ test("a top-up a curator is writing is not let go at its 25 minutes, so one top-
     assert.equal((await endlessJobs(e)).length, 0, "and no second job is waiting");
     assert.equal(JSON.parse(e.STATION.endless.doc).runs, 1);
   } finally { globalThis.fetch = inner; bell.restore(); sp.restore(); }
+});
+
+// ---- 2026-11-15: what Spotify's history says was heard, cut as a stop cuts ----
+// The owner: Vibe's list started from "Kiss" four times in one day. A press on
+// a WiiM's remote, a short listen between looks, or the songs after a
+// session's last look were never counted as heard.
+
+const played = (n, at) => ({ uri: `spotify:track:t${n}`, pid: PL, at });
+
+test("a preset heard between two looks, never seen playing: Spotify's history cuts the heard songs from the top and remembers them", async () => {
+  const player = { now: null, history: [] };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    const t = Date.parse("2026-11-15T05:00:00Z");
+    player.history = [0, 1, 2, 3].map((n) => played(n, t - (40 - n * 5) * MIN));
+    await endlessWatch(e, t);
+    assert.deepEqual(events(e).slice(-2), ["heard", "kept"]);
+    assert.match(e.STATION.endless.log.at(-2).detail, /^4 songs played without a look seeing it/);
+    assert.deepEqual(uriList(sp), Array.from({ length: 6 }, (_, i) => `spotify:track:t${i + 4}`), "the next press starts on the first song not heard");
+    const doc = JSON.parse(e.STATION.endless.doc);
+    assert.deepEqual(doc.history.vibe.map((h) => h[0]), [0, 1, 2, 3].map((n) => `spotify:track:t${n}`), "and they count as heard");
+    assert.equal(doc.runs ?? 0, 0, "no DJ run");
+    assert.equal(sp.histReads(), 1);
+    // Half an hour on: read again, and nothing new is heard, so nothing is cut twice.
+    const n = e.STATION.endless.log.length;
+    await endlessWatch(e, t + 30 * MIN);
+    assert.equal(sp.histReads(), 2);
+    assert.ok(!e.STATION.endless.log.slice(n).some((r) => r.event === "heard" || r.event === "kept"));
+    assert.equal(uriList(sp).length, 6);
+  } finally { bell.restore(); sp.restore(); }
+});
+
+test("plays from before the house last wrote the list are not this list's: nothing is cut", async () => {
+  const player = { now: null, history: [] };
+  const sp = spotifyAt(player);
+  try {
+    const e = liveEnv();
+    const t = Date.parse("2026-11-15T05:00:00Z");
+    player.history = [0, 1, 2].map((n) => played(n, t - (50 - n * 5) * MIN));
+    await e.PROGRAMS.put(`mark:${PL}`, JSON.stringify({ n: 10, h: "x", at: new Date(t - 10 * MIN).toISOString() }));
+    await endlessWatch(e, t);
+    assert.ok(!events(e).includes("heard"));
+    assert.equal(uriList(sp).length, 10);
+  } finally { sp.restore(); }
+});
+
+test("a session's end cuts up to the last song Spotify says was heard, not only to the last look's place", async () => {
+  const player = { now: { pid: PL, at: 2 }, history: [] };
+  const sp = spotifyAt(player);
+  const bell = doorbell();
+  try {
+    const e = liveEnv();
+    let t = Date.parse("2026-11-15T05:00:00Z");
+    await endlessWatch(e, t);
+    // t3 and t4 played after that look, then the music stopped.
+    player.history = [played(0, t - 12 * MIN), played(1, t - 7 * MIN), played(2, t + 3 * MIN), played(3, t + 8 * MIN), played(4, t + 13 * MIN)];
+    player.now = null;
+    t += 10 * MIN; await endlessWatch(e, t);
+    t += 10 * MIN; await endlessWatch(e, t);
+    assert.deepEqual(events(e).slice(-3), ["session-end", "heard", "kept"]);
+    assert.match(e.STATION.endless.log.at(-2).detail, /^2 more songs played after the last look/);
+    assert.deepEqual(uriList(sp), Array.from({ length: 5 }, (_, i) => `spotify:track:t${i + 5}`));
+    assert.deepEqual(JSON.parse(e.STATION.endless.doc).history.vibe.map((h) => h[0]), [0, 1, 2, 3, 4].map((n) => `spotify:track:t${n}`));
+  } finally { bell.restore(); sp.restore(); }
+});
+
+test("a WiiM the helper hears playing an endless list wakes the watch for its next run, once in ten minutes", async () => {
+  const { nudgeOnPlay } = await import("../endless.js");
+  const e = liveEnv();
+  await station(e, "endless-put", { doc: { lastLook: Date.now() - 5 * MIN } });
+  const playing = { "Pro Plus": { state: "play", source: "Spotify", playlist: PL } };
+  assert.equal(await nudgeOnPlay(e, { "Pro Plus": { state: "play", source: "TIDAL" } }), false, "not Spotify");
+  assert.equal(await nudgeOnPlay(e, { "Pro Plus": { state: "play", source: "Spotify", playlist: "OTHERPLAYLIST000000001" } }), false, "not an endless list");
+  assert.equal(await nudgeOnPlay(e, playing), true);
+  assert.equal(JSON.parse(e.STATION.endless.doc).lastLook, 0);
+  await station(e, "endless-put", { doc: { ...JSON.parse(e.STATION.endless.doc), lastLook: Date.now() } });
+  assert.equal(await nudgeOnPlay(e, playing), false, "the same list again within ten minutes: the ledger is not read");
+  // A session already running: nothing to wake.
+  const e2 = liveEnv();
+  await station(e2, "endless-put", { doc: { lastLook: Date.now() - 5 * MIN, sessions: { "4": { start: Date.now() - 20 * MIN } } } });
+  assert.equal(await nudgeOnPlay(e2, playing), false);
 });

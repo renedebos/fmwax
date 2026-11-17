@@ -22,16 +22,34 @@ export function githubRepo(value) {
 export const updateSource = (env) => githubRepo(env?.SOURCE_REPO);
 
 export const WORKFLOW_PATH = ".github/workflows/update.yml";
-// The workflow the house's copy runs. The public repository's own update.mjs
-// does the work, so a better way of updating arrives with the next version.
+// The workflow the house's copy runs. HARDENED 2026-11-15 (the release
+// audit: it cloned the public repository's newest commit and ran THAT
+// commit's update.mjs with leave to write here, so whatever had just been
+// pushed upstream ran in the house's own repository before anybody looked):
+//   - the updater that runs is THIS house's own (mcp/install/update.mjs, as
+//     it was when the house was last updated), never the one that arrives.
+//     It keeps .github, so what arrives cannot change this workflow either;
+//   - the exact commit taken is fetched by its id, printed, and written into
+//     the commit made here, with how to go back; the form takes a commit's id
+//     for a household that wants one it has looked at, and takes the newest
+//     when left empty;
+//   - what changes is printed before it is committed, and the commit on
+//     GitHub is the full difference.
+// Still by hand only (workflow_dispatch): nothing reaches a house by itself.
 export function updateWorkflow(source) {
   return `# Get the latest version of fmwax, keeping this house's own name and stores.
 # Made by the house's setup page (Updates). To update: this repository's
 # Actions tab, "Get the latest version", Run workflow. Cloudflare deploys the
-# result as it deploys every push here.
+# result as it deploys every push here. To go back: revert the commit this
+# makes ("The latest version of fmwax"), and Cloudflare deploys the one before.
 name: Get the latest version
 on:
   workflow_dispatch:
+    inputs:
+      revision:
+        description: "Optional: the exact commit of the public repository to take (its 40 characters). Empty: the newest."
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
@@ -42,13 +60,20 @@ jobs:
       - name: The latest version
         env:
           SOURCE: ${source.web}
+          REVISION: \${{ inputs.revision }}
         run: |
-          git clone --depth 1 "$SOURCE" "$RUNNER_TEMP/latest"
-          node "$RUNNER_TEMP/latest/mcp/install/update.mjs" "$RUNNER_TEMP/latest" .
+          if [ -n "$REVISION" ] && ! printf '%s' "$REVISION" | grep -Eq '^[0-9a-f]{40}$'; then echo "A revision is a commit's 40 characters, 0-9 and a-f."; exit 1; fi
+          git init -q "$RUNNER_TEMP/latest"
+          git -C "$RUNNER_TEMP/latest" fetch -q --depth 1 "$SOURCE" "\${REVISION:-HEAD}"
+          git -C "$RUNNER_TEMP/latest" checkout -q FETCH_HEAD
+          REV=$(git -C "$RUNNER_TEMP/latest" rev-parse HEAD)
+          echo "Taking $SOURCE at $REV"
+          node mcp/install/update.mjs "$RUNNER_TEMP/latest" .
           git add -A
           if git diff --cached --quiet; then echo "This house has the latest version already."; exit 0; fi
+          echo "What changes:"; git diff --cached --stat | tail -n 60
           FROM=$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).from.slice(0, 7))' "$RUNNER_TEMP/latest/.fmwax-copy")
-          git -c user.name="fmwax update" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "The latest version of fmwax ($FROM)"
+          git -c user.name="fmwax update" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "The latest version of fmwax ($FROM)" -m "Taken from $SOURCE at $REV. To go back: revert this commit on GitHub, and Cloudflare deploys the version before it."
           git push
 `;
 }

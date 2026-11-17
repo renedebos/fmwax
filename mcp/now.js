@@ -41,6 +41,8 @@ export function roomPlaying(st) {
     // panel's progress line. No extra call.
     sleeve: sleeveOf(st.item, 600),
     album: st.item.album?.name || null,
+    // The recording's code (MC-46's song facts), already in the read.
+    ...(/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(String(st.item.external_ids?.isrc ?? "").toUpperCase()) ? { isrc: String(st.item.external_ids.isrc).toUpperCase() } : {}),
     ...(posOf(st) ? { pos: posOf(st) } : {}),
   };
 }
@@ -97,9 +99,20 @@ export function parseHelperReading(env, body) {
       ...(clip(r.artists, 200) ? { artists: clip(r.artists, 200) } : {}),
       ...(qualityIn(r.quality, source) ? { quality: qualityIn(r.quality, source) } : {}),
       // The EQ in use (MC-39), as the speaker names it, or "off".
-      ...(clip(r.eq, 40) && /^[\w .&'’+#()-]+$/.test(clip(r.eq, 40)) ? { eq: clip(r.eq, 40) } : {}) };
+      ...(clip(r.eq, 40) && /^[\w .&'’+#()-]+$/.test(clip(r.eq, 40)) ? { eq: clip(r.eq, 40) } : {}),
+      // A song on a service that is not Spotify (2026-11-16): its album, its
+      // cover from the service's own address, its place, and its track id.
+      ...(clip(r.album, 200) ? { album: clip(r.album, 200) } : {}),
+      ...(/^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(r.art ?? "")) ? { art: String(r.art) } : {}),
+      ...(posIn(r.pos) ? { pos: posIn(r.pos) } : {}),
+      ...(/^\d{1,15}$/.test(String(r.trackId ?? "")) ? { trackId: String(r.trackId) } : {}) };
   }
   return Object.keys(out).length ? out : null;
+}
+// A place in a song, in milliseconds, as the speaker read it.
+function posIn(p) {
+  const ms = Number(p?.ms), of = Number(p?.of);
+  return Number.isInteger(ms) && Number.isInteger(of) && of > 0 && of <= 6 * 3600000 && ms >= 0 && ms <= of ? { ms, of } : null;
 }
 // A stream's quality (2026-10-25): the speaker's own numbers as the helper
 // read them, sample rate in Hz, bit depth and kilobits a second (0 when the
@@ -489,6 +502,8 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
     track: p.track ?? null, artists: p.artists || null, device: p.device ?? null,
     // The track's own id (MC-43): the About view finds the song on its Shelf page by it.
     ...(/^spotify:track:[A-Za-z0-9]{22}$/.test(String(p.uri ?? "")) ? { uri: p.uri } : {}),
+    // And its code, for the TV's song facts (MC-46).
+    ...(p.isrc ? { isrc: p.isrc } : {}),
     ...(p.art ? { art: p.art } : {}), ...(p.sleeve ? { sleeve: p.sleeve } : {}), ...(p.album ? { album: p.album } : {}),
     // As read, not moved on: two polls on one kept read give one answer
     // (MC-29). The page counts on from `at`.

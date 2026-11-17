@@ -435,12 +435,51 @@ test("the sample house a copy carries renders, and is none of this house", () =>
 // THE REQUEST LOG IS ASKED FOR (Codex's review, 2026-11-11): Cloudflare's
 // Workers Logs keep each request's address, and a house's addresses carry its
 // keys. So no house has them unless its file says so.
-test("Cloudflare's request log is only in a house that asks for it", () => {
-  assert.ok(!/\[observability\]/.test(render(plain(), TEMPLATE)), "a house that says nothing keeps no log");
-  assert.ok(!/\[observability\]/.test(renderButtonHouse({ name: "fmwax-house", compatibilityDate: "2025-06-01" })), "the Deploy button's house");
-  assert.ok(!/\[observability\]/.test(renderBlankHouse({ name: "x", baseUrl: "https://x.example.workers.dev",
-    tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" })), "the terminal installer's house");
+// SAID OUT LOUD (the release audit, 2026-11-15): leaving the setting out was
+// not a no, because Cloudflare turns the log on for a newly made Worker
+// whose config says nothing. And a house that asks for logs gets what the
+// Worker says, not each request's address, unless it asks for that as well.
+test("Cloudflare's request log is only in a house that asks for it, and a new house says no out loud", () => {
+  const OFF = /\n\[observability\]\nenabled = false\n/;
+  const blankHouse = renderBlankHouse({ name: "x", baseUrl: "https://x.example.workers.dev",
+    tokensId: "a".repeat(32), programsId: "b".repeat(32), compatibilityDate: "2025-06-01" });
+  for (const [out, which] of [[render(plain(), TEMPLATE), "a house that says nothing"],
+    [renderButtonHouse({ name: "fmwax-house", compatibilityDate: "2025-06-01" }), "the Deploy button's house"],
+    [blankHouse, "the terminal installer's house"]]) {
+    assert.match(out, OFF, `${which} switches the log off`);
+    assert.ok(!/enabled = true/.test(out.slice(out.indexOf("[dependencies_instrumentation]") + 60, out.indexOf("[[kv_namespaces]]"))), `${which} never switches it on`);
+    assert.equal((out.match(/^\[observability\]$/gm) ?? []).length, 1, `${which} says it once`);
+    assert.ok(!out.includes("[observability.logs]"));
+  }
   const asks = plain();
   asks.worker.logs = true;
-  assert.match(render(asks, TEMPLATE), /\[observability\]\nenabled = true/, "a house that asks has it");
+  const on = render(asks, TEMPLATE);
+  assert.match(on, /\[observability\]\nenabled = true/, "a house that asks has it");
+  assert.match(on, /\[observability\.logs\]\ninvocation_logs = false/, "without each request's address");
+  assert.ok(!OFF.test(on));
+  asks.worker.requestLog = true;
+  const both = render(asks, TEMPLATE);
+  assert.match(both, /\[observability\]\nenabled = true/);
+  assert.ok(!both.includes("[observability.logs]"), "a house that asks for the request lines too keeps Cloudflare's default");
+  // The request lines alone ask for nothing: no logs, no lines.
+  const odd = plain();
+  odd.worker.requestLog = true;
+  assert.match(render(odd, TEMPLATE), OFF);
+});
+
+// ONE WRANGLER (the release audit, 2026-11-15): the version a household's
+// install fetches is the one that was audited, so every place that names one
+// names the same: the terminal door (which the copy script reads for the
+// Deploy button's command), this house's own deploy, and the page check.
+test("every place that names a wrangler names the same pinned version", async () => {
+  const { readFileSync } = await import("node:fs");
+  const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
+  const pinned = read("../install/door.js").match(/const WRANGLER = "(wrangler@\d+\.\d+\.\d+)"/)?.[1];
+  assert.ok(pinned, "the door pins an exact version, never a range or a bare name");
+  for (const [file, text] of [["package.json", read("../package.json")], ["dev/pagecheck.mjs", read("../dev/pagecheck.mjs")],
+    ["dev/door-check.mjs", read("../dev/door-check.mjs")], ["README.md", read("../README.md")]]) {
+    const named = [...new Set(text.match(/wrangler@\d+\.\d+\.\d+/g) ?? [])];
+    assert.deepEqual(named, [pinned], `${file} names ${named.join(", ") || "none"}`);
+  }
+  assert.ok(!/npx (--yes )?wrangler (deploy|kv|secret)/.test(read("../package.json")), "no bare wrangler, which runs whatever is newest");
 });

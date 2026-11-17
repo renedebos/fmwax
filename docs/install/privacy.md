@@ -23,7 +23,8 @@ All of it sits in your Cloudflare account:
 - **What it looked up about an artist,** for 180 days, so the next ask about them is quicker.
 - **When Claude or ChatGPT last called,** and which copy of the tools it held or last fetched, with the short name the app gives itself (such as "openai-mcp"). No address of a caller, and nothing of what was asked beyond the asks above.
 - **Talk:** how many minutes were used each day. Your house keeps no sound and no transcript of a conversation. But a set you ask a DJ for by voice is an ask like any other (above).
-- **No request log.** A new house keeps no log at Cloudflare. Cloudflare can keep one (Workers Logs, three days) if you turn it on for your house yourself. It would hold the address of every request, and those addresses carry your house's keys: never pass such a log on as it is.
+- **No request log.** A new house keeps no log at Cloudflare: its settings switch Cloudflare's log (Workers Logs) off, in so many words, each time it is deployed. Cloudflare can keep one (three days) if you turn it on for your house yourself. It would hold the address of every request, and those addresses carry your house's keys: never pass such a log on as it is.
+  - **A house made before 15 November 2026:** its settings said nothing about the log, and Cloudflare turns the log on for a new Worker that says nothing. Check once: in Cloudflare, open your house (Workers & Pages, then its name), **Settings**, **Observability**. If Workers Logs is on, switch it off, or update your house: the next version switches it off itself. If you ever sent anyone a copy of those logs, treat your house's links as seen: on the setup page, make new ones for Claude or ChatGPT, the curator and the app.
 
 ## Who else sees something
 
@@ -32,7 +33,8 @@ Your house only works by talking to other services. Each sees its own part:
 - **Spotify** sees the playlists and what plays, as with anything on your account. It also serves the album covers on your house's pages.
 - **Claude or ChatGPT** sees what you ask, and the songs and DJ notes your house hands back. That is covered by your account and privacy settings with Anthropic or OpenAI, not by fmwax. The same goes for the curator.
 - **OpenAI** hears your voice during a Talk conversation, under your own OpenAI API account. Only if you set up Talk.
-- **MusicBrainz and Wikipedia** (and Last.fm, if you add its key) are asked about artists by name. They see the artist's name, not who is asking.
+- **MusicBrainz and Wikipedia** (and Last.fm and Genius, if you add their keys) are asked about artists and songs by name: an artist a DJ looks up, and the song playing while the [TV page](tv.md) is open. They see the names, not who is asking.
+- **On a TV,** TV Bro's voice search uses the TV's own speech recognition (Google's, on a Google TV), as any voice search on that TV does. Your house gets the words it heard. Only if you set up voice on the TV.
 - **Google** serves the fonts of your house's pages, so it sees that a browser opened a page. It doesn't see what is on it.
 - **GitHub** is asked, now and then, whether a newer version of fmwax is out. A house from the Deploy button also has a copy of the code in your GitHub account (private, if you ticked that box on the form). It holds the code and no keys.
 - **The home helper,** if you install it, runs on your own computer. It talks to your WiiMs on your home network and to your house, and to nothing else. It tells your house what each WiiM is playing and what is saved on its presets.

@@ -13,6 +13,9 @@
   "dependencies_instrumentation": {
     "enabled": false
   },
+  "observability": {
+    "enabled": false
+  },
   "kv_namespaces": [
     {
       "binding": "TOKENS"

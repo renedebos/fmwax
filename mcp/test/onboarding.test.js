@@ -75,9 +75,10 @@ test("the starter songs are three Spotify tracks, and Spotify refusing them stil
 
 // THE START PAGE (docs/index.html, served by GitHub Pages from the public
 // copy): the setup key made in the browser, the Deploy button, and the way
-// into the new house's setup page with the key in the address's "#" part,
-// which the setup page's own script reads.
-test("the start page makes a key of 32 plain characters, loads nothing from elsewhere, and opens /setup#key", async () => {
+// into the new house's setup page. THE KEY IS NEVER PUT IN AN ADDRESS (the
+// release audit, 2026-11-15): the page copies it and opens the setup page
+// bare, only at a house's own workers.dev address; the person pastes it.
+test("the start page makes a key of 32 plain characters, loads nothing from elsewhere, and opens /setup with no key in the address", async () => {
   const { readFileSync } = await import("node:fs");
   const vm = await import("node:vm");
   const html = readFileSync(new URL("../../docs/index.html", import.meta.url), "utf8");
@@ -88,8 +89,9 @@ test("the start page makes a key of 32 plain characters, loads nothing from else
   const el = (id) => (els[id] ??= { id, textContent: "", value: "", href: "#", attrs: {}, on: {},
     addEventListener(t, f) { this.on[t] = f; }, setAttribute(k, v) { this.attrs[k] = v; }, getAttribute(k) { return this.attrs[k]; } });
   const store = new Map();
-  const ctx = { document: { getElementById: el }, localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) },
-    crypto: globalThis.crypto, navigator: {}, URL, confirm: () => true, encodeURIComponent, Uint8Array };
+  const copied = [];
+  const ctx = { document: { getElementById: el }, localStorage: { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) },
+    crypto: globalThis.crypto, navigator: { clipboard: { writeText: (t) => { copied.push(t); return Promise.resolve(); } } }, URL, confirm: () => true, encodeURIComponent, Uint8Array };
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   vm.runInNewContext(script, ctx);
   const key = els.key.textContent;
@@ -97,23 +99,54 @@ test("the start page makes a key of 32 plain characters, loads nothing from else
   assert.equal(store.get("fmwax-setup-key"), key, "kept for a return to the page");
   els.addr.value = "fmwax-house.someone.workers.dev/setup";
   els.addr.on.input();
-  assert.equal(els.open.href, `https://fmwax-house.someone.workers.dev/setup#${key}`);
+  assert.equal(els.open.href, "https://fmwax-house.someone.workers.dev/setup", "the setup page, bare");
+  assert.ok(!els.open.href.includes(key) && !els.open.href.includes("#"), "the key is never part of an address");
   assert.equal(els.open.attrs["aria-disabled"], "false");
+  // The press copies the key for the one paste on the house's own page.
+  els.open.on.click({ preventDefault() { throw new Error("an open button is not stopped"); } });
+  assert.deepEqual(copied, [key]);
   // The whole build log pasted in: the address is found in it.
-  els.addr.value = "21:01:52.291 Deployed fmwax-test triggers (0.54 sec) 21:01:52.291 https://fmwax-test.someone.workers.dev 21:01:52.292 schedule: */10 * * * * " +
+  const LOG = "21:01:52.291 Deployed fmwax-test triggers (0.54 sec) 21:01:52.291 https://fmwax-test.someone.workers.dev 21:01:52.292 schedule: */10 * * * * " +
     "Cloudflare collects anonymous telemetry. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/x Success! Build completed.";
+  els.addr.value = LOG;
   els.addr.on.input();
-  assert.equal(els.open.href, `https://fmwax-test.someone.workers.dev/setup#${key}`);
-  assert.equal(els.said3.textContent, "Your house: https://fmwax-test.someone.workers.dev");
-  els.addr.value = "http://plain.example";
+  assert.equal(els.open.href, "https://fmwax-test.someone.workers.dev/setup");
+  assert.equal(els.said3.textContent, "Your house: https://fmwax-test.someone.workers.dev (check that this is yours)");
+  // A log that names two different addresses is refused: the first is not always the house.
+  els.addr.value = `${LOG} see also https://other.someone-else.workers.dev for details`;
   els.addr.on.input();
-  assert.equal(els.open.attrs["aria-disabled"], "true", "https only");
+  assert.equal(els.open.attrs["aria-disabled"], "true");
+  assert.equal(els.open.href, "#");
+  assert.match(els.said3.textContent, /more than one address \(https:\/\/fmwax-test\.someone\.workers\.dev and https:\/\/other\.someone-else\.workers\.dev\)/);
+  // Nothing but a house's own workers.dev address is opened from here: not
+  // another site, not plain http, not a workers.dev address of another shape.
+  for (const bad of ["http://plain.example", "https://evil.example/setup", "https://fmwax-house.someone.workers.dev.evil.example",
+    "https://a.b.c.workers.dev", "http://fmwax-house.someone.workers.dev"]) {
+    els.addr.value = bad;
+    els.addr.on.input();
+    assert.equal(els.open.attrs["aria-disabled"], "true", bad);
+    assert.equal(els.open.href, "#", bad);
+  }
+  let stopped = 0;
+  els.open.on.click({ preventDefault() { stopped++; } });
+  assert.equal(stopped, 1, "a disabled button goes nowhere");
+  assert.equal(copied.length, 1, "and copies nothing");
+  // Forgotten when asked: gone from this browser's storage, and no longer copied.
+  els.addr.value = "fmwax-house.someone.workers.dev";
+  els.addr.on.input();
+  els.forget.on.click();
+  assert.equal(store.has("fmwax-setup-key"), false);
+  els.open.on.click({ preventDefault() {} });
+  els.copy.on.click();
+  assert.equal(copied.length, 1, "a forgotten key is not copied");
+  store.set("fmwax-setup-key", key);
   // Run again: the same key, not a new one.
   const els1 = key;
   for (const k of Object.keys(els)) delete els[k];
   vm.runInNewContext(script, ctx);
   assert.equal(els.key.textContent, els1);
-  // And the setup page takes the key from there.
+  // The setup page still takes a key from the "#" part: the terminal
+  // installer's own link, to the Worker it has just made itself.
   const e = await blank();
   assert.match(await (await go(e, "/setup")).text(), /location\.hash\.slice\(1\)[\s\S]*i\.value = decodeURIComponent\(h\)/);
 });

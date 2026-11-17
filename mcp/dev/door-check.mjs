@@ -71,7 +71,7 @@ try {
   let c = calls();
   ok(c.map(what).join(", ") === "whoami, kv namespace list, kv namespace create, kv namespace create, kv namespace list, deploy, deploy, secret put",
     `Cloudflare's tool asked in order: ${c.map(what).join(", ")}`);
-  ok(c.every((x) => x.version === "wrangler@4.129.1" && x.account === ACCOUNT), "every call on the pinned wrangler and the chosen account");
+  ok(c.every((x) => x.version === "wrangler@4.162.0" && x.account === ACCOUNT), "every call on the pinned wrangler and the chosen account");
   ok(c.filter((x) => x.title).map((x) => x.title).join(" ") === `${NAME}-TOKENS ${NAME}-PROGRAMS`, "its two stores made by name");
   const deploys = c.filter((x) => x.args[0] === "deploy");
   ok(deploys.length === 2 && deploys.every((d) => d.config?.name === NAME && d.config.main && d.config.covers && d.config.kv.length === 2),

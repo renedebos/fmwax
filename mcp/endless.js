@@ -726,6 +726,33 @@ export async function nudgeWatch(env) {
   if (waiting(env)) return;
   try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { /* the idle look finds it */ }
 }
+// A WiiM PLAYING AN ENDLESS PRESET THE WATCH HAS NOT SEEN (2026-11-15): a
+// press on its remote, or a key from a page, says nothing to the house, so
+// the watch found it at its next half-hourly look. The home helper reads the
+// speakers every ten seconds and names the playlist a WiiM plays from, so its
+// reading wakes the watch for its next run (ten minutes at most). The ledger
+// is read only for a reading that names an endless list, and once in ten
+// minutes for the same list.
+const NUDGED = new Map();
+export async function nudgeOnPlay(env, speakers, now = Date.now()) {
+  const cfg = parseEndless(env);
+  if (!cfg || cfg.mode !== "live" || waiting(env)) return false;
+  const pids = Object.values(speakers ?? {}).filter((r) => r?.state === "play" && /^spotify/i.test(String(r.source ?? "")) && r.playlist)
+    .map((r) => String(r.playlist));
+  if (!pids.length) return false;
+  const k = env?.STATION ?? env;
+  const seen = NUDGED.get(k) ?? {};
+  const fresh = pids.filter((pid) => !(now - (seen[pid] ?? 0) < 10 * 60000));
+  if (!fresh.length) return false;
+  let state;
+  try { state = await endlessLoad(env); } catch { return false; }
+  const hit = endlessPresets(env, cfg, state).find((p) => fresh.includes(p.playlist) && !state.sessions?.[String(p.button)]);
+  for (const pid of fresh) seen[pid] = now;
+  NUDGED.set(k, seen);
+  if (!hit || !state.lastLook) return false;
+  try { await endlessUpdate(env, (st) => { st.lastLook = 0; return {}; }); } catch { return false; }
+  return true;
+}
 // The playlist's tracks, lengths and labels, [uri, ms, "Artist — Title"] in
 // order — read once a session, and again after each write.
 export async function endlessTracks(env, pid) {
@@ -1012,6 +1039,61 @@ export async function endlessAssign(env, { dj, button }) {
 }
 
 // Kept only when it is worth a press: at least this many songs and minutes.
+// SPOTIFY'S OWN HISTORY (the owner, 2026-11-15: Vibe's list started from
+// "Kiss" four times in one day). The watch only knows a preset played when a
+// look catches it playing: a press on a WiiM's remote, a short listen between
+// two looks, or the songs after the last look of a session were never counted
+// as heard, so they were never cut, and the next press began on them again.
+// Spotify keeps the account's last 50 plays (a play is 30 seconds or more),
+// each with the playlist it came from, so the watch reads it: at most once
+// every half hour, and at the end of a session. One Spotify call each time.
+// Null when it cannot be read (the quota, a failure): nothing is cut then.
+export async function recentPlays(env) {
+  try {
+    if (await throttledUntil(env)) return null;
+    const res = await spotify(env, "GET", "/me/player/recently-played", { params: { limit: 50 } });
+    return (Array.isArray(res?.items) ? res.items : []).map((it) => ({
+      uri: String(it?.track?.uri ?? ""), at: Date.parse(it?.played_at ?? "") || 0,
+      pid: String(it?.context?.uri ?? "").match(/^spotify:playlist:([A-Za-z0-9]{22})$/)?.[1] ?? null,
+    })).filter((x) => /^spotify:track:/.test(x.uri) && x.at && x.pid);
+  } catch { return null; }
+}
+// The furthest place in `tracks` ([uri, ms, label]) that a play from this
+// playlist since `since` reached, or -1.
+export function heardUpTo(tracks, plays, pid, since = 0) {
+  const at = new Map((tracks ?? []).map((t, i) => [t?.[0], i]));
+  let far = -1;
+  for (const x of plays ?? []) if (x.pid === pid && x.at > since && at.has(x.uri)) far = Math.max(far, at.get(x.uri));
+  return far;
+}
+// When the house last wrote a playlist (room.js's mark), or 0.
+async function writtenAt(env, pid) {
+  try { return Date.parse(JSON.parse(await programsKV(env).get(`mark:${pid}`) ?? "null")?.at ?? "") || 0; } catch { return 0; }
+}
+// What a stop leaves for the next press (2026-09-25, option 2): the songs not
+// heard, kept and cut from the top when there are enough; otherwise a fresh
+// opening for the next press, one DJ run. A session's end and Spotify's
+// history both come here.
+function afterHeard(cfg, state, p, key, left, now, out, bells, say) {
+  const leftMs = left.reduce((a, t) => a + (Number(t?.[1]) || 0), 0);
+  if (cfg.mode === "live" && left.length >= ENDLESS_KEEP_MIN_SONGS && leftMs >= ENDLESS_KEEP_MIN_MS) {
+    out.trims.push({ btn: p.button, dj: p.dj, playlist: p.playlist, uris: left.map((t) => t[0]),
+      gen: Number(state.gen[key]) || 0, ...(p.lane ? { lane: true, tenancy: p.tenancy } : {}) });
+    say(p.button, "kept", `${left.length} unplayed songs (${Math.round(leftMs / 60000)} min) kept: the next press carries on`);
+    return;
+  }
+  if ((state.runs ?? 0) >= cfg.dailyRuns) {
+    say(p.button, "day-cap", "no fresh set today; the next press plays the old one");
+  } else if (cfg.mode === "live") {
+    // STAGE 3: a fresh opening set for the next press, made now.
+    const id = `endless-${p.button}-fresh-${now}`;
+    endlessFile(state, { id, kind: "fresh", btn: p.button, dj: p.dj, playlist: p.playlist,
+      minutes: p.freshMinutes, at: now, gen: Number(state.gen[key]) || 0 }, bells);
+    say(p.button, "fresh", `asked for a fresh ${p.freshMinutes}-min opening of ${p.dj} for the next press`);
+  } else {
+    say(p.button, "would-fresh", `a fresh opening set of ${p.dj} for the next press`);
+  }
+}
 export const ENDLESS_KEEP_MIN_SONGS = 4;
 export const ENDLESS_KEEP_MIN_MS = 15 * 60000;
 // The heard songs cut from the top of a kept list, so the key starts where
@@ -1078,6 +1160,13 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
   let state;
   try { state = await endlessLoad(env); } catch { return { outcome: "failed" }; }
   endlessDay(env, state, now);
+  // Spotify's history, read once in this look when it is needed (null: not
+  // readable).
+  let plays;
+  const history = async () => {
+    if (plays === undefined) { plays = await recentPlays(env); if (plays) state.histAt = now; }
+    return plays;
+  };
   // Jobs nobody answered. A top-up is let go by its session's look below;
   // a fresh set or a steer here.
   let swept = false;
@@ -1279,28 +1368,55 @@ export async function endlessWatch(env, now = Date.now(), retry = true) {
         // carries on with it; the heard songs are cut from the top so the key
         // starts where the set stopped. No fresh set, no DJ run: top-ups
         // follow as it runs low, and Start fresh gives a new opening on asking.
-        const left = Array.isArray(s.tracks) && s.idx != null && !s.stopped ? s.tracks.slice(s.idx + 1) : [];
-        const leftMs = left.reduce((a, t) => a + (Number(t?.[1]) || 0), 0);
-        if (cfg.mode === "live" && left.length >= ENDLESS_KEEP_MIN_SONGS && leftMs >= ENDLESS_KEEP_MIN_MS) {
-          out.trims.push({ btn: p.button, dj: p.dj, playlist: p.playlist, uris: left.map((t) => t[0]),
-            gen: Number(state.gen[key]) || 0, ...(p.lane ? { lane: true, tenancy: p.tenancy } : {}) });
-          say(p.button, "kept", `${left.length} unplayed songs (${Math.round(leftMs / 60000)} min) kept: the next press carries on`);
-          continue;
+        // THE SONGS AFTER THE LAST LOOK (2026-11-15): the last look saw the
+        // place up to ten minutes before the music stopped; Spotify's history
+        // says how far it really got, so those songs are cut too.
+        let idx = s.idx;
+        if (Array.isArray(s.tracks) && idx != null && !s.stopped && cfg.mode === "live") {
+          const far = heardUpTo(s.tracks, await history(), p.playlist, s.start - 3600e3);
+          if (far > idx) {
+            const from = Math.max(idx + 1, p.lane ? Number(state.lane?.head) || 0 : 0);
+            const added = endlessRemember(state, p, s.tracks.slice(from, far + 1));
+            if (added.length) heard.push({ dj: p.dj, btn: p.button, playlist: p.playlist, tracks: added });
+            say(p.button, "heard", `${far - idx} more song${far - idx === 1 ? "" : "s"} played after the last look (Spotify's history)`);
+            idx = far;
+          }
         }
-        if ((state.runs ?? 0) >= cfg.dailyRuns) {
-          say(p.button, "day-cap", "no fresh set today; the next press plays the old one");
-        } else if (cfg.mode === "live") {
-          // STAGE 3: a fresh opening set for the next press, made now.
-          const id = `endless-${p.button}-fresh-${now}`;
-          endlessFile(state, { id, kind: "fresh", btn: p.button, dj: p.dj, playlist: p.playlist,
-            minutes: p.freshMinutes, at: now, gen: Number(state.gen[key]) || 0 }, bells);
-          say(p.button, "fresh", `asked for a fresh ${p.freshMinutes}-min opening of ${p.dj} for the next press`);
-        } else {
-          say(p.button, "would-fresh", `a fresh opening set of ${p.dj} for the next press`);
-        }
+        const left = Array.isArray(s.tracks) && idx != null && !s.stopped ? s.tracks.slice(idx + 1) : [];
+        afterHeard(cfg, state, p, key, left, now, out, bells, say);
       } else {
         state.sessions[key] = s;
       }
+    }
+  }
+  // HEARD WITHOUT A SESSION (2026-11-15): a preset played between two looks,
+  // or pressed and left before any look saw it. Spotify's history says which
+  // of its songs were heard since the house last wrote the list (or last cut
+  // it this way); they are cut from the top and remembered as heard, as a
+  // session's end does. At most once every half hour; the list is read only
+  // for a preset whose songs the history holds.
+  if (cfg.mode === "live" && now - (Number(state.histAt) || 0) >= ENDLESS_IDLE_MS) {
+    const idle = endlessPresets(env, cfg, state).filter((p) => !state.sessions[String(p.button)] && !p.program &&
+      !(p.lane && state.lane?.ready === false) && !events.some((e) => e.btn === p.button && e.event === "session-end") &&
+      !Object.values(state.jobs).some((j) => j?.btn === p.button && j?.kind === "fresh"));
+    const got = idle.length ? await history() : null;
+    state.cutAt = state.cutAt && typeof state.cutAt === "object" ? state.cutAt : {};
+    for (const p of got ? idle : []) {
+      const key = String(p.button);
+      const since = Math.max(Number(state.cutAt[key]) || 0, await writtenAt(env, p.playlist));
+      const mine = got.filter((x) => x.pid === p.playlist && x.at > since);
+      if (!mine.length) continue;
+      state.cutAt[key] = Math.max(...mine.map((x) => x.at));
+      let tracks = null;
+      try { tracks = await endlessTracks(env, p.playlist); } catch (e) { say(p.button, "tracks-failed", String(e?.message ?? e).slice(0, 200)); continue; }
+      const far = heardUpTo(tracks, mine, p.playlist, since);
+      if (far < 0) continue;
+      const from = p.lane ? Number(state.lane?.head) || 0 : 0;
+      const added = endlessRemember(state, p, tracks.slice(from, far + 1));
+      if (added.length) heard.push({ dj: p.dj, btn: p.button, playlist: p.playlist, tracks: added });
+      say(p.button, "heard", `${far + 1} song${far ? "s" : ""} played without a look seeing it (Spotify's history): cut from the top`);
+      if (p.lane && state.lane) state.lane.head = 0;
+      afterHeard(cfg, state, p, key, tracks.slice(far + 1), now, out, bells, say);
     }
   }
   let saved = false;

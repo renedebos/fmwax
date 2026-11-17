@@ -365,6 +365,18 @@ test("steering: the bar's two buttons on an endless preset, and a direction in t
   assert.equal(none.say, "No DJ is playing to steer. Put one on first.");
 });
 
+test("steering from a DJ's own screen on the TV turns only that DJ (the review, 2026-11-16)", async () => {
+  const e = env();
+  const ctx = { waitUntil() {} };
+  spotify({ playing: playingOn("Pro Plus") });
+  const other = await alexaAct(e, ctx, { kind: "steer", steer: { kind: "change", dj: "genre" } });
+  assert.equal(other.say, "Hank is playing now, not Genre, so nothing was turned. Put Genre on first.");
+  assert.equal(other.did.steer, "other");
+  spotify({ playing: playingOn("Pro Plus") });
+  const own = await alexaAct(e, ctx, { kind: "steer", steer: { kind: "more", dj: "hank" } });
+  assert.deepEqual(own.did, { steer: "asked", on: 5 });
+});
+
 test("back a song: Spotify's previous, on the speaker playing", async () => {
   spotify({ playing: playingOn("Pro Plus") });
   assert.equal((await act(intent("BackIntent"))).say, "Back a song.");

@@ -29,14 +29,29 @@ test("a GitHub repository, however it is pasted; anything else is not one", () =
   }
 });
 
-test("the workflow: run by hand, the public repository's own update.mjs, a pinned checkout, a commit only when something changed", () => {
+test("the workflow: run by hand, the house's OWN updater on an exact commit it names, a pinned checkout, a commit only when something changed", () => {
   const wf = updateWorkflow(githubRepo(SOURCE));
   assert.match(wf, /^name: Get the latest version$/m);
   assert.match(wf, /^ {2}workflow_dispatch:$/m);
   assert.ok(!/schedule:|push:/.test(wf), "never by itself: one bad version must not reach every house at once");
   assert.match(wf, /SOURCE: https:\/\/github\.com\/someone\/fmwax$/m);
   assert.match(wf, /actions\/checkout@[0-9a-f]{40} # v7\.0\.1/);
-  assert.match(wf, /node "\$RUNNER_TEMP\/latest\/mcp\/install\/update\.mjs" "\$RUNNER_TEMP\/latest" \./);
+  // THE HOUSE'S OWN UPDATER (the release audit, 2026-11-15): what has just
+  // arrived upstream is copied in, never run here with leave to write.
+  assert.match(wf, /^ {10}node mcp\/install\/update\.mjs "\$RUNNER_TEMP\/latest" \.$/m);
+  assert.ok(!/node "\$RUNNER_TEMP\/latest\//.test(wf), "nothing is run from what was fetched");
+  assert.ok(!wf.includes("git clone"), "an exact commit is fetched, not a branch's tip cloned");
+  // The exact commit: fetched by its id (the form's, or the newest), said, and written into the commit made here.
+  assert.match(wf, /^ {6}revision:$/m);
+  assert.match(wf, /^ {10}REVISION: \$\{\{ inputs\.revision \}\}$/m, "through the environment, never pasted into the script");
+  assert.match(wf, /grep -Eq '\^\[0-9a-f\]\{40\}\$'/, "a revision is a commit's whole id or nothing");
+  assert.match(wf, /fetch -q --depth 1 "\$SOURCE" "\$\{REVISION:-HEAD\}"/);
+  assert.match(wf, /REV=\$\(git -C "\$RUNNER_TEMP\/latest" rev-parse HEAD\)/);
+  assert.match(wf, /echo "Taking \$SOURCE at \$REV"/);
+  assert.match(wf, /git diff --cached --stat/, "what changes is shown before it is committed");
+  assert.match(wf, /-m "Taken from \$SOURCE at \$REV\. To go back: revert this commit on GitHub/);
+  assert.match(wf, /^permissions:\n {2}contents: write$/m);
+  assert.ok(!/\$\{\{[^}]*\}\}/.test(wf.split("run: |")[1]), "no expression inside the script itself");
   assert.match(wf, /git diff --cached --quiet; then echo "This house has the latest version already\."; exit 0; fi/);
   const link = turnOnLink(githubRepo("you/fmwax-house2"), githubRepo(SOURCE));
   assert.ok(link.startsWith(`https://github.com/you/fmwax-house2/new/main?filename=${WORKFLOW_PATH}&value=`));

@@ -213,6 +213,20 @@ test("hush and carry on reach the radio and Tidal through the helper, one room s
   assert.deepEqual(two.asked.at(-1), { cmd: "pause", speaker: "Ultra" });
 });
 
+test("skip and go back reach a Tidal song through the helper; the radio has no next song (2026-11-16)", async () => {
+  spotify();
+  const t = await house({ speakers: { Ultra: { name: "Ultra", state: "play", source: "Tidal", track: "I Touch Myself", artists: "Lime Cordiale" } },
+    hands: async (a) => ({ ok: true, reading: { name: a.speaker, state: "play", source: "Tidal", track: "Next One" } }) });
+  assert.equal((await act(t.e, intent("SkipIntent"))).say, "Skipped.");
+  assert.deepEqual(t.asked.at(-1), { cmd: "next", speaker: "Ultra" });
+  assert.equal((await act(t.e, intent("BackIntent"))).say, "Back a song.");
+  assert.deepEqual(t.asked.at(-1), { cmd: "prev", speaker: "Ultra" });
+  spotify();
+  const r = await house({ speakers: { "Pro Plus": { name: "Pro Plus", state: "play", source: "TuneIn", station: "KQED" } }, hands: pressed });
+  await act(r.e, intent("SkipIntent"));
+  assert.equal(r.asked.length, 0, "a station is not skipped");
+});
+
 test("what's playing names the radio or Tidal when Spotify plays nothing", async () => {
   spotify();
   const { e } = await house({ speakers: { "Pro Plus": { name: "Pro Plus", state: "play", source: "TuneIn", station: "KQED" } } });

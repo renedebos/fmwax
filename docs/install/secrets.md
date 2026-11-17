@@ -190,6 +190,17 @@ name and a line of description; no callback). Free, no billing. Push it with
 `wrangler secret put LASTFM_KEY`. Without it, `look_up_artist` carries no
 Last.fm part, and the per-request notes don't mention it.
 
+**Genius for the songs** (2026-11-16, `mcp/genius.js`): a song's producers
+and writers, what it samples, who sampled it, and who covered it, from
+Genius's official API (never its lyrics). Two users: About this song on the
+[TV page](tv.md), and the DJs' `look_up_song`, for sets built on samples and
+covers. Read by the Worker and kept 90 days in KV (`genius:<artist title>`),
+a song Genius doesn't know for 14. Needs `GENIUS_TOKEN`: at
+genius.com/api-clients, sign in, **New API Client** (an app name and any
+website address), then **Generate Access Token**. Free, no billing. Push it
+with `wrangler secret put GENIUS_TOKEN`. Without it, About this song shows
+MusicBrainz and Wikipedia only, and the DJs have no `look_up_song`.
+
 **The house's own MusicBrainz lookup** (2026-10-24, `mcp/musicbrainz.js`):
 `look_up_artist` makes the artist's folder when the house has none: the
 studio albums with their years, and the names the artist recorded under.

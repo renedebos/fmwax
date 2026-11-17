@@ -20,7 +20,7 @@ import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCh
 import { setupChecklist, zoneValid } from "./checklist.js";
 import { checkHouse, makeBackup, restoreBackup } from "./backup.js";
 import { READ_ENVELOPE, READ_ACTION, CONTROL_PORT, CONTROL_PATH } from "./keymap.js";
-import { askByVoice, fileAsk, logArgs } from "./asks.js";
+import { askByVoice, asksToStart, fileAsk, logArgs, startExtra } from "./asks.js";
 import {
   station, stationStub, fingerprintUris, putRequestRecord,
   getRequestRecord,
@@ -34,11 +34,11 @@ import {
   endlessOwed, endlessPageSteer, endlessPresets, endlessSlots, endlessStartFresh,
   endlessUpdate, forgetPreset, houseDjRoom, MAX_HOUSE_DJS, parseEndless, playEndless, readNoStart, retiredKey,
   nextPressWords, sleptThrough, startsOn, tabOwed, tabState, talkEndless, talkOn, toSaveKey, vibeHourWords,
-  waiting, NO_CURATOR, noCuratorWords, nudgeWatch,
+  waiting, NO_CURATOR, noCuratorWords, nudgeWatch, nudgeOnPlay,
 } from "./endless.js";
 import {
   askDay, askedTag, atWords, djPlaces, djSlotsExist, findDj, guestAlias,
-  GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, guestLabel, helperKeyFlash, house,
+  GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, ownPresetKeys, guestLabel, helperKeyFlash, house,
   houseClockWords, liveGuests, loadedWords, newestOn, parseButtons, pastTheList, playableKeys, presetFlash,
   presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash,
 } from "./house.js";
@@ -80,15 +80,21 @@ import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSum
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
 import { aboutStop, aboutView, askLink, assistantOf } from "./about.js";
 import { LISTEN_CALLS, dropListen, listenId, listenable, makeListen, removeListen } from "./listen.js";
+import { renderTv, tvAnswer, tvFlashWords, tvReadSig, tvSong } from "./tv.js";
+import { renderTvDj, renderTvDjs, renderTvNotes, renderTvShelf, renderTvTune } from "./tvpages.js";
+import { songFacts, wikiMore } from "./musicbrainz.js";
+import { geniusForTv, geniusSong } from "./genius.js";
+import { TV_NOT_CAUGHT, tvIntent, tvLine } from "./tvsay.js";
+import { TV_DJ_COOKIE, cookieOf, tvDjAct, tvDjClear, tvDjCookie, tvDjFacts, tvDjList, tvDjSettings } from "./tvdj.js";
 import { ARCHIVE } from "./archive-identity.js";
-import { ALEXA_BODY_MAX, alexaBox, alexaDoor } from "./alexa.js";
+import { ALEXA_BODY_MAX, alexaBox, alexaDoor, alexaHeard } from "./alexa.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
 // Onions (Booker T. & the M.G.'s), Lovely Day (Bill Withers) and Roxette
 // (Dr. Feelgood), by their Spotify ids, checked 2026-11-09.
 export const STARTER_SONGS = ["spotify:track:4fQMGlCawbTkH9yPPZ49kP", "spotify:track:0bRXwKfigvpKZUurwqAlEh",
   "spotify:track:7zC4pfRgOHd0ueckJs5vjR"];
 import { sayExamples } from "./alexa-say.js";
-import { alexaActs } from "./alexa-act.js";
+import { alexaAct, alexaActs } from "./alexa-act.js";
 import { talkMove, talkOwnKey, talkPressPreset, talkTransport, talkWiims } from "./talk-press.js";
 import { moveOn, pauseNoted, pauseOn, playAgainOn, skipOn } from "./transport.js";
 
@@ -216,6 +222,9 @@ export async function handleRequest(request, env, ctx) {
       const speakers = parseHelperReading(env, body);
       if (!speakers) return Response.json({ ok: false, code: "no-speakers" }, { status: 400 });
       await station(env, "helper-put", { doc: { at: Date.now(), speakers } });
+      // A WiiM playing an endless preset the watch has not seen: it looks on
+      // its next run (endless.js nudgeOnPlay).
+      try { await nudgeOnPlay(env, speakers); } catch { /* the half-hourly look finds it */ }
       return Response.json({ ok: true, speakers: Object.keys(speakers) });
     }
     // ITS PRESET READINGS (MC-25): the table the helper read from a speaker
@@ -550,6 +559,15 @@ export async function handleRequest(request, env, ctx) {
     // Every room page goes out through here so the nonce on the header and
     // the nonce on the tags cannot come apart. The renderers write bare
     // <script> tags; nothing else on these pages is one.
+    // AN ANSWER FOR THE TV PAGE through a short-lived note, never in its
+    // address (tvsay.js keeps voice answers the same way): `vx`, a press's
+    // answer, keeps the buttons on screen with the tile in hand (`k`).
+    const tvAnswerNote = async (envX, said, roomName, btn = null) => {
+      const id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+      try { await programsKV(envX).put(`tvsaid:${id}`, JSON.stringify({ heard: "", said: String(said).slice(0, 400) }), { expirationTtl: 900 }); } catch { /* the page then says nothing */ }
+      const q = [roomName ? `room=${encodeURIComponent(speakerSlug(roomName))}` : "", btn ? `k=${btn}` : "", `vx=${id}`].filter(Boolean).join("&");
+      return new Response(null, { status: 303, headers: { location: `/buttons/${envX.PROGRAM_LIBRARY_KEY}/tv?${q}`, "cache-control": "no-store" } });
+    };
     const roomPage = (html, init = {}) => new Response(
       html.replaceAll("<script>", `<script nonce="${nonce}">`),
       { ...init, headers: { ...roomHeaders, ...(init.headers ?? {}) } });
@@ -1733,12 +1751,15 @@ export async function handleRequest(request, env, ctx) {
     //
     // Above the picker and the DJ page, which would otherwise read "wiim" as
     // a DJ slug.
-    const speakersPage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/wiim(\/.*)?$/);
+    // THE TV PAGE (MC-46 stage 2, tv.js) is this page's reading on a big
+    // screen: `/buttons/<key>/tv` takes the same look at the house and draws
+    // it for a TV's remote. Its presses are this page's forms, sent back there.
+    const speakersPage = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/(?:wiim(\/.*)?|(tv))$/);
     if (speakersPage) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(speakersPage[1], key)) return notFound();
       const base = `/buttons/${key}`;
-      const sub = speakersPage[2] ?? "";
+      const sub = speakersPage[3] ? "/tv" : speakersPage[2] ?? "";
       // THE PAUSE (MC-20, moved onto the now bar by MC-21 — tasks/done/mc20-speaker-pause.md,
       // tasks/done/mc21-now-bar.md). Spotify only, pause only, and it never starts
       // anything: the keys do that. Two ways in. The now bar's script asks
@@ -1765,7 +1786,7 @@ export async function handleRequest(request, env, ctx) {
         // Back where the press was made: Speakers, Loaded, or a DJ's page.
         const bk = String(form?.get("back") ?? "");
         const djBack = /^dj:([a-z0-9-]{1,40})$/.exec(bk)?.[1] ?? null;
-        const page = bk === "loaded" ? base : djBack && (djBack === "archive" || house(env).djs[djBack]) ? `${base}/${djBack}` : `${base}/wiim`;
+        const page = bk === "loaded" ? base : bk === "tv" ? `${base}/tv` : djBack && (djBack === "archive" || house(env).djs[djBack]) ? `${base}/${djBack}` : `${base}/wiim`;
         return new Response(null, { status: 303, headers: {
           location: `${page}?hk=${code}&k=${n}&kon=${encodeURIComponent(box.slug)}`,
           "cache-control": "no-store",
@@ -1795,7 +1816,7 @@ export async function handleRequest(request, env, ctx) {
         // have taken the room away from Tidal and called that un-pausing.
         // "again" is a fresh start of the set the bar's pause wrote down —
         // what tapping that key does — and only from the bar's script.
-        if (verb !== "pause" && !((verb === "again" || verb === "move" || verb === "next" || verb === "prev" || verb === "hpause" || verb === "hplay" || verb === "hmove" || verb === "hkey") && json)) return refuse(400, "verb", "The form must say pause.");
+        if (verb !== "pause" && !((verb === "again" || verb === "move" || verb === "next" || verb === "prev" || verb === "hpause" || verb === "hplay" || verb === "hnext" || verb === "hprev" || verb === "hmove" || verb === "hkey") && json)) return refuse(400, "verb", "The form must say pause.");
         const boxes = parseSpeakers(env);
         const wanted = String(form?.get("device") ?? "").trim();
         // A WiiM, or since 2026-09-23 any other speaker the play form may
@@ -1828,12 +1849,14 @@ export async function handleRequest(request, env, ctx) {
         // something that is not Spotify, which only the helper on the LAN can
         // reach. Not Spotify's, so no quota; a WiiM only; the helper takes
         // "pause" and "resume" and nothing it is not told here.
-        if (verb === "hpause" || verb === "hplay") {
+        // And the next song and the one before (2026-11-16, the owner: no
+        // Skip on a Tidal preset): the WiiM's own, through the helper.
+        if (verb === "hpause" || verb === "hplay" || verb === "hnext" || verb === "hprev") {
           let hcode = "failed";
           if (!boxes.some((sp) => sp.name === box.name)) hcode = "not-wiim";
           else {
             try {
-              const out = await station(env, "helper-command", { cmd: verb === "hpause" ? "pause" : "resume", speaker: box.name });
+              const out = await station(env, "helper-command", { cmd: { hpause: "pause", hplay: "resume", hnext: "next", hprev: "prev" }[verb], speaker: box.name });
               hcode = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable"].includes(out?.code) ? out.code : "failed";
               // Its read-back is the freshest word on that speaker: kept, so the
               // bar's next look says paused or playing at once.
@@ -1924,7 +1947,7 @@ export async function handleRequest(request, env, ctx) {
           location: `${base}/wiim?tp=${code}&tdo=${verb}&ton=${encodeURIComponent(box.slug)}`,
           "cache-control": "no-store" } });
       }
-      if (sub === "" || sub === "/") {
+      if (sub === "" || sub === "/" || sub === "/tv") {
         if (request.method !== "GET") return roomRefuse(405, "The speakers page only answers GET.");
         // A KEY'S PLAY, BACK FROM ITS 303 (MC-19): parsed first, because a
         // flash that parses is the one request that bypasses the checklist
@@ -1944,7 +1967,10 @@ export async function handleRequest(request, env, ctx) {
             throttle ? Promise.resolve({ unknown: true, throttled: true })
               // The house's kept answer (MC-29). A flash of either kind
               // reads fresh: after a pause or a key it may still say playing.
-              : housePlayer(withBudget(env, { remaining: 4 }), { fresh: !!(kp || tp), deadlineMs: PLAYER_DEADLINE_MS })
+              // So does a program just started from the TV's Shelf, or music
+              // just moved from the TV page (MC-46).
+              : housePlayer(withBudget(env, { remaining: 4 }), { fresh: !!(kp || tp || (sub === "/tv" &&
+                (url.searchParams.get("sp") || url.searchParams.get("mv")))), deadlineMs: PLAYER_DEADLINE_MS })
                 .then(roomPlaying).catch(() => ({ unknown: true })),
             readReadings(env, boxes),
           ]);
@@ -2025,6 +2051,52 @@ export async function handleRequest(request, env, ctx) {
           // Dutch · endless", not the speaker's saved name for 3 ("Endless ·
           // endless").
           const np = onPreset && barNow.state === "playing" && barNow.preset?.btn === onPreset.btn ? barNow.preset : null;
+          if (sub === "/tv") {
+            // THE ROOM THIS SCREEN SHOWS: the one its chip named (which is a
+            // choice, kept as every page keeps one); the one a press just
+            // named; else the house's one speaker, as every page reads it.
+            const names = [...new Set([...shownSpeakers.map((sp) => sp.name), ...parseRoomDevices(env)])];
+            const rooms = names.map((name) => ({ name, slug: speakerSlug(name), wiim: shownSpeakers.some((sp) => sp.name === name) }));
+            const bySlug = (x) => (x ? rooms.find((r) => r.slug === String(x)) ?? null : null);
+            const chosen = bySlug(url.searchParams.get("room"));
+            const room = chosen ?? bySlug(url.searchParams.get("kon")) ?? rooms.find((r) => r.name === barNow.pick?.name) ??
+              rooms.find((r) => r.name === fallbackDevice(env)) ?? rooms[0] ?? null;
+            if (room) room.other = !room.wiim;
+            // Whose set is on each requests preset, for its tile.
+            const holders = houseKeys ? {} : await guestHolders(env).catch(() => ({}));
+            const reqDj = Object.fromEntries(Object.values(holders).filter((h) => h?.guest?.btn && h.on?.dj)
+              .map((h) => [h.guest.btn, findDj(env, h.on.dj)?.name ?? null]).filter(([, n]) => n));
+            // The house's own Spotify presets, for a room with no keys of its
+            // own to read: an Echo, or every room of a house that reads none.
+            // For an Echo only the presets the house fills (requests, the
+            // DJs' endless ones), not a number an old alias still points at.
+            const ownRows = houseKeys ? (await ownPresetRows(env, endlessKeys)).map((k) => ({ btn: k.btn, name: k.name, sub: k.eyebrow }))
+              : room && !room.wiim ? ownPresetKeys(env, endlessKeys)
+                .filter((k) => !/was button/.test(presetOnFile(env, k.btn)?.via ?? "was button"))
+                .map((k) => (k.endless ? { btn: k.btn, name: k.name, sub: "Endless" }
+                  : { btn: k.btn, name: "Requests", sub: reqDj[k.btn] ?? "Spotify", who: reqDj[k.btn] ?? null })) : null;
+            const hflash = helperKeyFlash(env, url);
+            // What a program started from the TV's Shelf, or a turn of the
+            // dials there, came to: a code of ours, said in the band.
+            const sp = /^(ok|jumbled|sent|asleep|failed|throttled|gone|no)$/.exec(url.searchParams.get("sp") ?? "")?.[0] ?? null;
+            const tn = /^(applied|saved|store|saved-[a-z-]{1,20})$/.exec(url.searchParams.get("tn") ?? "")?.[0] ?? null;
+            // What was said to TV Bro's voice search, and what the house did.
+            let voice = null;
+            const vs = /^[a-f0-9]{16}$/.exec(url.searchParams.get("vs") ?? url.searchParams.get("vx") ?? "")?.[0] ?? null;
+            if (vs) { try { voice = await programsKV(env).get(`tvsaid:${vs}`, { type: "json" }); } catch { voice = null; } }
+            // The TV's home names no DJ for what is said next (tvdj.js).
+            const tvRes = roomPage(renderTv({
+              canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null,
+              shelf: sp ? { code: sp, on: room?.name ?? "" } : null, tune: tn, voice,
+              base, rooms, room, now: barNow, lan: barNow.lan ?? null, endlessKeys, ownKeys: ownRows, reqDj,
+              playable: playableKeys(env, boxes, recs), ...readingsShown(env, recs),
+              fills: roster.filter((r) => r.guest && r.live).map((r) => r.btn),
+              hflash, flash: hflash || !kp ? null : { code: kp.code, on: kp.box.name,
+                name: (ownRows ?? []).find((k) => k.btn === kp.btn)?.name ?? flash?.name ?? `preset ${kp.btn}` },
+            }), chosen ? { headers: { "set-cookie": pickCookie(chosen.name) } } : {});
+            tvRes.headers.append("set-cookie", tvDjClear);
+            return tvRes;
+          }
           return roomPage(renderSpeakersNow({
             now: barNow, justPaused: justPaused?.slug ?? null, held: barNow.paused ?? null,
             lan: barNow.lan ?? null,
@@ -2157,9 +2229,12 @@ export async function handleRequest(request, env, ctx) {
     if (sayPage) {
       const key = env.PROGRAM_LIBRARY_KEY;
       const crate = !!(env.ALEXA_SECRET && env.ALEXA_SKILL_ID);
-      if (!key || !sameSecret(sayPage[1], key) || (!talkOn(env) && !crate)) return notFound();
+      // Every house has the TV page, so every house has this page (its TV card).
+      if (!key || !sameSecret(sayPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The What to say page only answers GET.");
       return roomPage(renderSay({ base: `/buttons/${key}`, ...(await tabState(env)), talk: talkOn(env),
+        tv: { address: `${url.origin}/buttons/${key}/tv/say?q=[query]`, page: `${url.origin}/buttons/${key}/tv`, djs: house(env).roster.map((d) => d.key),
+          room: parseRoomDevices(env).find((n) => n !== fallbackDevice(env) && !/^everywhere$/i.test(n)) ?? null },
         alexa: crate ? { acts: alexaActs(env) } : null, examples: crate ? sayExamples(env) : null,
         // Talk's presses (MC-39), in a house with WiiMs.
         presses: parseSpeakers(env).length > 0 }));
@@ -2499,12 +2574,227 @@ export async function handleRequest(request, env, ctx) {
         return say(200, { error: talkErrorWords(err) });
       }
     }
+    // THE TV PAGE'S OTHER SCREENS (MC-46, tv.js and tvpages.js), all GET and
+    // all from what the house keeps: no Spotify call.
+    //   …/tv/song   once a song: what comes next and the DJ's words, as JSON
+    //   …/tv/shelf  the Shelf's programs as covers; a press is the Shelf's own
+    //               Play (/notes/<key>/play, `back=tv`)
+    //   …/tv/tune/<dj>  a DJ's dials as sliders; Apply is the Tune route's own
+    //               POST (/<dj>/tune, `back=tv`)
+    //   …/tv/notes/<slug>  a program's whole notes, for reading (tvpages.js)
+    //   …/tv/say?q=<words>  what was said to TV Bro's voice search, done as
+    //               maple crate does it, then back to the TV page (tvsay.js)
+    //   …/tv/djs     every DJ, in three groups (tvdj.js, tvpages.js)
+    //   …/tv/dj/<dj> one DJ's screen; a POST is a press on it
+    //   …/tv/face/<dj>.jpg  a DJ's sleeve (art/covers, the COVERS binding)
+    const tvMore = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/tv\/(song|shelf|say|djs|tune\/([a-z0-9-]{1,40})|notes\/([a-z0-9-]{1,64})|dj\/([a-z0-9-]{1,40})|face\/([a-z0-9-]{1,40})\.jpg)$/);
+    if (tvMore) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      if (!key || !sameSecret(tvMore[1], key)) return notFound();
+      if (request.method !== "GET" && !(tvMore[5] && request.method === "POST")) return roomRefuse(405, "This page only answers GET.");
+      const base = `/buttons/${key}`;
+      const q = url.searchParams;
+      // A DJ'S SLEEVE: the cover their playlist wears, the same file a swap
+      // uploads (room.js faceBase64). A DJ of this house only.
+      if (tvMore[6]) {
+        const dj = findDj(env, tvMore[6]);
+        let res = null;
+        if (dj && !dj.archiveOnly && typeof env.COVERS?.fetch === "function") {
+          try { res = await env.COVERS.fetch(new Request(`https://covers.invalid/${dj.key}.jpg`, { method: "GET" })); } catch { res = null; }
+        }
+        if (!res?.ok) return new Response("No sleeve.", { status: 404, headers: { "cache-control": "no-store" } });
+        return new Response(res.body, { headers: { "content-type": "image/jpeg", "cache-control": "private, max-age=86400",
+          "x-content-type-options": "nosniff" } });
+      }
+      if (tvMore[2] === "song" && q.get("more") === "1") {
+        // MORE FROM WIKIPEDIA, asked by the button (musicbrainz.js wikiMore).
+        let more = null;
+        try { more = await wikiMore(env, String(q.get("w") ?? "").slice(0, 160), String(q.get("s") ?? "").slice(0, 120)); } catch { more = null; }
+        return new Response(JSON.stringify({ more }), { headers: { "content-type": "application/json; charset=utf-8",
+          "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+      }
+      if (tvMore[2] === "song") {
+        const slug = String(q.get("slug") ?? ""), btn = Number(q.get("btn"));
+        let rec = null, session = null, dj = null;
+        if (/^[a-z0-9-]{1,64}$/.test(slug)) {
+          try { rec = await programsKV(env).get(`program:${slug}`, { type: "json" }); } catch { rec = null; }
+          dj = rec ? programDj(env, rec.dj)?.name ?? null : null;
+        } else if (Number.isInteger(btn) && btn >= 1 && btn <= 12 && parseEndless(env)?.mode === "live" && env.STATION) {
+          try { session = (await endlessLoad(env))?.sessions?.[String(btn)] ?? null; } catch { session = null; }
+        }
+        // And the song facts (MusicBrainz, Wikipedia) by the song's code,
+        // for any Spotify song: kept by code, so a song is looked up once.
+        const isrc = String(q.get("isrc") ?? "");
+        let facts = null;
+        // And Genius (genius.js, 2026-11-16): producers, samples, covers, and
+        // its About text, asked beside the facts, by title and artist.
+        let genius = null;
+        if (isrc || (q.get("t") && q.get("a"))) {
+          const t = String(q.get("t") ?? ""), a = String(q.get("a") ?? "");
+          [facts, genius] = await Promise.all([
+            songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a }).catch(() => null),
+            t && a ? geniusSong(env, { title: t, artist: a }).then(geniusForTv).catch(() => null) : null,
+          ]);
+        }
+        return new Response(JSON.stringify({ ...tvSong({ uri: q.get("uri"), title: String(q.get("t") ?? "").slice(0, 300), rec, session, dj }), facts, genius }), {
+          headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
+            "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow" } });
+      }
+      // The room these screens act for: the one the TV page showed, else the
+      // house's one speaker, as every page reads it.
+      const roomNames = parseRoomDevices(env);
+      const roomName = roomNames.find((n) => speakerSlug(n) === String(q.get("room") ?? "")) ??
+        roomNames.find((n) => n === speakerFor(request, env)) ?? roomNames.find((n) => n === fallbackDevice(env)) ?? roomNames[0] ?? null;
+      const room = roomName ? { name: roomName, slug: speakerSlug(roomName) } : null;
+      // An answer for the TV page, through a short-lived note (never in its address).
+      const toTv = async (heard, said, onRoom = room) => {
+        const id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        try { await programsKV(env).put(`tvsaid:${id}`, JSON.stringify({ heard, said }), { expirationTtl: 900 }); } catch { /* the page then says nothing */ }
+        return new Response(null, { status: 303, headers: {
+          location: `${base}/tv?${onRoom ? `room=${encodeURIComponent(onRoom.slug)}&` : ""}vs=${id}`, "cache-control": "no-store" } });
+      };
+      // THE DJS (tvdj.js): the list, and one DJ's screen; a press on it is a
+      // POST here, done as the Echo door or the voice ask does it, and its
+      // answer shows on the TV page. The DJ's screen names the DJ for what is
+      // said to TV Bro's voice search while it is open (a cookie the other
+      // screens clear).
+      if (tvMore[2] === "djs") {
+        const res = roomPage(renderTvDjs({ base, room, groups: await tvDjList(env) }));
+        res.headers.append("set-cookie", tvDjClear);
+        return res;
+      }
+      if (tvMore[5]) {
+        const dkey = house(env).djs[tvMore[5]]?.key ?? tvMore[5];
+        if (request.method === "POST") {
+          const origin = request.headers.get("origin");
+          if (origin && origin !== "null" && origin !== url.origin) return roomRefuse(403, `This was sent from ${origin}, not from ${url.origin}.`);
+          let form = null;
+          try { form = await request.formData(); } catch { form = null; }
+          const act = String(form?.get("do") ?? "");
+          if (!["play", "fresh", "more", "change", "words", "surprise"].includes(act)) return roomRefuse(400, "That is not a press this screen has.");
+          const rn = roomNames.find((n) => speakerSlug(n) === String(form?.get("room") ?? "")) ?? room?.name ?? null;
+          const onRoom = rn ? { name: rn, slug: speakerSlug(rn) } : null;
+          const out = await tvDjAct(env, ctx, { key: dkey, act, words: String(form?.get("words") ?? ""), set: tvDjSettings(request, dkey, env),
+            room: onRoom?.name ?? null, rooms: roomNames });
+          return toTv(out.heard, tvLine(out.said), onRoom);
+        }
+        const d = await tvDjFacts(env, dkey);
+        if (!d) return new Response(null, { status: 303, headers: { location: `${base}/tv/djs${room ? `?room=${room.slug}` : ""}`, "cache-control": "no-store" } });
+        const tune = d.kind !== "writer" && env.HOUSE && dialsOf(d.key).length ? `${base}/tv/tune/${d.key}${room ? `?room=${room.slug}` : ""}` : null;
+        const res = roomPage(renderTvDj({ base, room, d, set: tvDjSettings(request, d.key, env), action: `${base}/tv/dj/${d.key}`, tune }));
+        res.headers.append("set-cookie", tvDjCookie(d.key));
+        return res;
+      }
+      // SAY IT (tvsay.js): TV Bro's search engine is this address, so what is
+      // said to its voice search arrives here as `q`. Read against maple
+      // crate's own sentences and done by its door, in the TV's room unless
+      // another is said; the same words twice within a minute are done once
+      // (a reload, a second press). What was heard and done goes to the TV
+      // page by a short-lived note, never in its address.
+      if (tvMore[2] === "say") {
+        const words = String(q.get("q") ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
+        const kv = programsKV(env);
+        let said;
+        const x = words ? tvIntent(words, roomNames) : null;
+        // A DJ'S SCREEN IS OPEN: words that name no DJ and are no command
+        // ("acoustic piano blues", "the Cramps in 1979") are for that DJ,
+        // with their settings on this TV.
+        const ctxRaw = cookieOf(request, TV_DJ_COOKIE);
+        const ctxKey = ctxRaw && house(env).djs[ctxRaw] ? house(env).djs[ctxRaw].key ?? ctxRaw : null;
+        // Once a minute, as an act below is: a page loaded twice files one set.
+        if (words && ctxKey && (!x || x.body.request.intent.name === "AskIntent")) {
+          const once = `tvsay:dj:${ctxKey}:${words.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 120)}:${room?.slug ?? ""}`;
+          let before = null;
+          try { before = await kv.get(once); if (!before) await kv.put(once, "\u2026", { expirationTtl: 60 }); } catch { before = null; }
+          if (before) return toTv(words, before === "\u2026" ? "Already on it." : `Already done a moment ago: ${before}`);
+          const out = await tvDjAct(env, ctx, { key: ctxKey, act: "words", words, set: tvDjSettings(request, ctxKey, env),
+            room: room?.name ?? null, rooms: roomNames });
+          const line = tvLine(out.said);
+          try { await kv.put(once, line.slice(0, 400), { expirationTtl: 60 }); } catch { /* the placeholder lapses */ }
+          return toTv(words, line);
+        }
+        if (!x) said = TV_NOT_CAUGHT;
+        else {
+          // ONCE, FOR WHAT CHANGES SOMETHING (the owner's first try, 2026-11-15:
+          // "what's playing" asked twice got "done a moment ago" the second
+          // time): a question is answered every time; an act said again
+          // within a minute is not done twice, and its first answer is shown.
+          const asks = x.body.request.intent.name === "NowIntent";
+          const once = `tvsay:${x.said.replace(/[^a-z0-9]+/g, "-").slice(0, 120)}:${room?.slug ?? ""}`;
+          let before = null;
+          if (!asks) {
+            try { before = await kv.get(once); if (!before) await kv.put(once, "\u2026", { expirationTtl: 60 }); } catch { before = null; }
+          }
+          if (before) said = before === "\u2026" ? "Already on it." : `Already done a moment ago: ${before}`;
+          else {
+            const envTv = room ? { ...env, DEFAULT_DEVICE: room.name } : env;
+            const read = alexaHeard(x.body, envTv, Date.now());
+            let acted = null;
+            try { acted = await alexaAct(envTv, ctx, read); } catch {
+              acted = { say: "Something went wrong on the house's side; nothing more was done." };
+            }
+            said = tvLine(acted?.say ?? read.say ?? TV_NOT_CAUGHT);
+            if (!asks) { try { await kv.put(once, said.slice(0, 400), { expirationTtl: 60 }); } catch { /* the placeholder lapses */ } }
+          }
+        }
+        const id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+        try { await kv.put(`tvsaid:${id}`, JSON.stringify({ heard: words, said }), { expirationTtl: 900 }); } catch { /* the page then says nothing */ }
+        return new Response(null, { status: 303, headers: {
+          location: `${base}/tv?${room ? `room=${encodeURIComponent(room.slug)}&` : ""}vs=${id}`, "cache-control": "no-store" } });
+      }
+      if (tvMore[4]) {
+        // From the Shelf (`from=shelf`, the owner, 2026-11-16: a press opens
+        // the program, and Play is on its page) or from the song page.
+        const fromShelf = q.get("from") === "shelf";
+        let rec = null, meta = null;
+        try { ({ value: rec, metadata: meta } = await programsKV(env).getWithMetadata(`program:${tvMore[4]}`, { type: "json" })); } catch { rec = null; }
+        if (!rec) {
+          return new Response(null, { status: 303, headers: { location: fromShelf ? `${base}/tv/shelf${room ? `?room=${room.slug}` : ""}`
+            : `${base}/tv${room ? `?room=${room.slug}&v=dis` : "?v=dis"}`, "cache-control": "no-store" } });
+        }
+        const uri = String(q.get("uri") ?? "");
+        const cat = programCatalog(rec);
+        const SONG_URI = /^(spotify|tidal):track:[A-Za-z0-9]{1,30}$/;
+        const su = programSpotifyUris(rec);
+        // A TIDAL PROGRAM TOO (the owner, 2026-11-16): put on the Tidal requests
+        // preset and its key pressed by the home helper, as the phone's Shelf
+        // does, on a WiiM only.
+        const tidalHands = cat === "tidal" && room && parseSpeakers(env).some((b) => b.name === room.name) && guestFor(env, "tidal")?.live
+          ? !!(await helperView(env)).lan?.hands : false;
+        const canPlay = fromShelf && !!room && (tidalHands || (catalogAvailable(env, "spotify") && (!cat || cat === "spotify") && su.uris.length > 0 && !su.notSpotify.length));
+        const sp = /^(ok|jumbled|sent|asleep|failed|throttled|gone|no|helper|tidal-busy)$/.exec(q.get("sp") ?? "")?.[0] ?? null;
+        const said = !sp ? "" : sp === "ok" ? `Playing on the ${room?.name ?? "speaker"}.` : tvFlashWords({ shelf: { code: sp, on: room?.name ?? "" } });
+        return roomPage(renderTvNotes({ base, room, rec, uri: SONG_URI.test(uri) ? uri : "",
+          dj: programDj(env, rec.dj)?.name ?? (rec.dj ? String(rec.dj) : null), from: fromShelf ? "shelf" : "dis", said,
+          play: canPlay ? { action: `/notes/${key}/play`, slug: tvMore[4] } : null, meta,
+          noPlay: fromShelf && !canPlay ? (cat === "tidal" ? "A Tidal program plays on a WiiM, with the home helper on." : cat === "files" ? "An archive set starts from the archive preset." : null) : null }));
+      }
+      if (tvMore[2] === "shelf") {
+        const { rows, unreadable } = await shelfState(env);
+        return roomPage(renderTvShelf({ base, room, unreadable,
+          rows: rows.map((r) => ({ id: r.id, title: r.title ?? r.id, dj: (r.dj && findDj(env, r.dj)?.name) || r.dj || null,
+            runtime: r.runtime ?? null, catalog: r.catalog ?? null, image: r.image ?? null })) }));
+      }
+      const slugKey = house(env).djs[tvMore[3]]?.key ?? tvMore[3];
+      const who = house(env).djs[slugKey];
+      if (!who || who.archiveOnly || !dialsOf(slugKey).length || !env.HOUSE) {
+        return new Response(null, { status: 303, headers: { location: `${base}/tv${room ? `?room=${room.slug}` : ""}`, "cache-control": "no-store" } });
+      }
+      const cfgT = parseEndless(env);
+      let stT = null;
+      try { stT = cfgT?.mode === "live" ? await endlessLoad(env) : null; } catch { stT = null; }
+      const runsLeft = cfgT ? (stT?.day === houseDay(env, Date.now()) ? Math.max(0, cfgT.dailyRuns - (stT.runs ?? 0)) : cfgT.dailyRuns) : 0;
+      return roomPage(renderTvTune({ base, room, dj: { key: slugKey, name: who.name }, action: `${base}/${slugKey}/tune`,
+        dials: tuneDials(env, slugKey), runsLeft }));
+    }
     // WHAT IS PLAYING, FOR A PAGE THAT WENT OUT WITHOUT IT (2026-09-12). The
     // presets page draws first when Spotify is slow and asks here after; the
     // answer is what the page would have drawn: which band, what track,
     // which speaker. Keyed, GET, no-store; before the DJ catch-all, so
     // "playing" is never read as a DJ.
-    const nowRoute = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/playing$/);
+    // AND THE TV PAGE'S LOOK (MC-46, tv.js): `/tv/now?room=<slug>` is the same
+    // answer, said for one room in the words its band shows.
+    const nowRoute = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/(playing|tv\/now)$/);
     if (nowRoute) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(nowRoute[1], key)) return notFound();
@@ -2541,6 +2831,14 @@ export async function handleRequest(request, env, ctx) {
       const answer = await nowAnswer(env, request, p, { recs, holders, throttle, hv: helperViewOf(env, got),
         note: throttle ? null : await pauseNoteBeside(env, p) });
       env.__watch?.lap("answer");
+      if (nowRoute[2] !== "playing") {
+        const names = [...new Set([...(answer.speakers ?? []).map((sp) => sp.name), ...parseRoomDevices(env)])];
+        const name = names.find((n) => speakerSlug(n) === String(url.searchParams.get("room") ?? "")) ?? null;
+        if (!name) return say(400, { error: "That is not one of this house's rooms." });
+        const wiim = (answer.speakers ?? []).some((sp) => sp.name === name);
+        return say(200, tvAnswer(answer, { name, slug: speakerSlug(name), wiim, other: !wiim },
+          { readAt, readSig: tvReadSig(recs), canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null }));
+      }
       return say(200, { ...extra, ...answer });
     }
 
@@ -3269,6 +3567,11 @@ export async function handleRequest(request, env, ctx) {
             // was asked for from the moment it was asked, and an unreadable
             // record renders a plain card rather than a false negative.
             keep: rec?.keep === true,
+            // "Play when ready", or an ask by voice (2026-11-15, the owner:
+            // the card said "nothing will play until someone presses Play"
+            // over an ask that starts by itself): the speaker it starts on,
+            // while it still may (asks.js asksToStart), and one of ours.
+            ...(asksToStart(rec) && parseRoomDevices(env).includes(String(rec.device)) ? { startsOn: String(rec.device) } : {}),
             // A writer's kept set's notes, as the form chose (2026-10-18).
             ...(rec?.keep === true && rec.notes ? { notes: rec.notes } : {}),
             // Whether that answer is real. `keep: false` off an unreadable
@@ -3521,6 +3824,8 @@ export async function handleRequest(request, env, ctx) {
       // here and the visitor's text never rides in a query string.
       const ask = url.searchParams.get("ask");
       if (ask) {
+        // "Play when ready" was ticked: a speaker of this house's, or nothing.
+        const askStartsOn = parseRoomDevices(env).find((d) => d === url.searchParams.get("on")) ?? null;
         const ASK_LINES = {
           // Named: who was asked, and the preset the set lands on (the owner,
           // 2026-09-13: "I can't tell which DJ or if it succeeded").
@@ -3528,7 +3833,8 @@ export async function handleRequest(request, env, ctx) {
             ? ` When it is ready it goes on preset ${boundGuest.btn} (${
               boundGuest.name ?? guestLabel(boundGuest.catalog)}), replacing the set there.` : ""} ` +
             (env.AUTOFULFILL_ENABLED === "true"
-              ? "It is usually ready in a few minutes — this page checks on its own."
+              ? `It is usually ready in a few minutes — this page checks on its own.${askStartsOn
+                ? ` It starts on the ${askStartsOn} by itself when it lands, unless something else was started in the meantime.` : ""}`
               // The row learned this on 2026-09-07 and the flash did not, so the
               // most visible moment of the whole flow — the instant after Send —
               // still promised minutes nobody was counting (Codex).
@@ -3917,6 +4223,12 @@ export async function handleRequest(request, env, ctx) {
         return new Response(JSON.stringify({ ok: code === "saved" || code === "applied", code, summary }), { headers: {
           "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
       }
+      // From the TV's dials (MC-46): back to the TV page, which says it.
+      if (form?.get("back") === "tv") {
+        const rs = String(form.get("room") ?? "");
+        return new Response(null, { status: 303, headers: {
+          location: `/buttons/${key}/tv?tn=${encodeURIComponent(code)}${/^[a-z0-9-]{1,40}$/.test(rs) ? `&room=${rs}` : ""}`, "cache-control": "no-store" } });
+      }
       return new Response(null, { status: 303, headers: {
         location: `/buttons/${key}/${slugKey}?tune=${encodeURIComponent(code)}`, "cache-control": "no-store" } });
     }
@@ -4199,7 +4511,7 @@ export async function handleRequest(request, env, ctx) {
       // An old key is its DJ's (the merges, 2026-10-13): the page it goes
       // back to is the one the ledger and the Shelf read.
       const slugKey = house(env).djs[roomAsk[2]]?.key ?? roomAsk[2];
-      let fields = {};
+      let fields = {}, startOn = null;
       try {
         const form = await request.formData();
         fields = { mood: form.get("mood"), length: form.get("length"), avoid: form.get("avoid"),
@@ -4209,13 +4521,20 @@ export async function handleRequest(request, env, ctx) {
           // that matters: nothing is kept unless it was asked for, and a
           // hand-built POST cannot turn it on with a truthy-looking string.
           keep: form.get("keep") === "1", notes: form.get("notes"), service: form.get("service") };
+        // PLAY WHEN READY (2026-11-15): the box's own value and a speaker of
+        // this house's, or it is not asked. The set then starts as a voice
+        // ask's does (asks.js startAsked).
+        const on = String(form.get("device") ?? "").trim();
+        if (form.get("start") === "1" && parseRoomDevices(env).includes(on)) startOn = on;
       } catch { /* no body reads as empty, and empty is refused there */ }
+      let extra = null;
+      if (startOn) { try { extra = await startExtra(env, startOn); } catch { extra = { via: "form", device: startOn }; } }
       // The filing itself is shared with Talk's ask_dj (MC-36, asks.js).
-      const out = await fileAsk(env, ctx, { slug: slugKey, ...fields });
+      const out = await fileAsk(env, ctx, { slug: slugKey, ...fields, ...(extra ? { extra } : {}) });
       if (out.refuse) return roomRefuse(out.refuse.status, out.refuse.say);
       return new Response(null, {
         status: 303,
-        headers: { location: `${base}/${slugKey}?ask=${out.code}`,
+        headers: { location: `${base}/${slugKey}?ask=${out.code}${startOn && out.code === "sent" ? `&on=${encodeURIComponent(startOn)}` : ""}`,
           "cache-control": "no-store" },
       });
     }
@@ -4305,6 +4624,12 @@ export async function handleRequest(request, env, ctx) {
       // No body at all is the grid's old form, which had no device field.
       let form = null;
       try { form = await request.formData(); } catch { form = null; }
+      // FROM THE TV (MC-46; the review of 2026-11-16): a refusal goes back to
+      // the TV page as its line, with the tile in hand, never to a page the
+      // remote cannot leave.
+      const tvFrom = form?.get("back") === "tv" ? String(form?.get("device") ?? "") : null;
+      const refuse = (status, why) => tvFrom === null ? roomRefuse(status, why)
+        : tvAnswerNote(env, why, tvFrom, Number(form?.get("btn")) || null);
       // WHAT TO START. A DJ's preset or crate, as ever. Since MC-18 stage 4, a
       // DJ on no preset whose set a live guest holds: that guest. And a guest
       // preset itself, from its band on the presets page or step 1 of its save
@@ -4315,9 +4640,9 @@ export async function handleRequest(request, env, ctx) {
       if (slugKey === "guest") {
         const gb = Number(form?.get("btn"));
         const g = Object.values(house(env).guest ?? {}).find((x) => x && x.btn === gb) ?? null;
-        if (!g) return roomRefuse(404, "There is no guest preset with that number here.");
+        if (!g) return refuse(404, "There is no guest preset with that number here.");
         if (g.catalog !== "spotify") {
-          return roomRefuse(400,
+          return refuse(400,
             `${g.name} is on ${catalogFor(env, g.catalog).label}, which cannot be started from a ` +
             `page — playback from here goes through Spotify Connect. Press ${g.btn} on the remote.`);
         }
@@ -4333,26 +4658,30 @@ export async function handleRequest(request, env, ctx) {
         // budget, below, where the other targets' plays begin.
         const n = Number(form?.get("btn"));
         if (!Number.isInteger(n) || n < 1 || n > 12) {
-          return roomRefuse(404, "There is no preset with that number — the remote has 1 to 12.");
+          return refuse(404, "There is no preset with that number — the remote has 1 to 12.");
         }
         const boxes = parseSpeakers(env);
         const wanted = String(form?.get("device") ?? "").trim();
         const box = boxes.find((sp) => sp.name === wanted) ?? null;
-        const ownFile = !boxes.length ? presetOnFile(env, n) : null;
-        if (!boxes.length) {
+        // A ROOM THAT IS NOT A WIIM, FROM THE TV PAGE (MC-46): an Echo has no
+        // keys to read, so its tiles there are the house's own presets, as in
+        // a house with no WiiM addresses. Only for a room the play form may name.
+        const ownRoom = !boxes.length || (!box && form?.get("back") === "tv" && otherRooms(env).includes(wanted));
+        const ownFile = ownRoom ? presetOnFile(env, n) : null;
+        if (ownRoom) {
           // A HOUSE WITH NO WIIM ADDRESSES (MC-31): the house's own preset, on
           // a speaker chosen at setup. Nothing is read from the speaker, so
           // there is no saved name to check the playlist against.
           const rooms = parseRoomDevices(env);
           if (!rooms.includes(wanted)) {
-            return roomRefuse(400, `"${wanted.slice(0, 60)}" is not one of this house's speakers` +
+            return refuse(400, `"${wanted.slice(0, 60)}" is not one of this house's speakers` +
               `${rooms.length ? ` (${rooms.join(", ")})` : ""}. Nothing was played.`);
           }
-          if (!ownFile) return roomRefuse(400, `This house has no Spotify playlist on preset ${n}. Nothing was played.`);
+          if (!ownFile) return refuse(400, `This house has no Spotify playlist on preset ${n}. Nothing was played.`);
           target = { pl: { ...ownFile, name: ownFile.name ?? ownKeyName(env, n) }, btn: n, guest: null,
             preset: { n, box: { name: wanted, slug: speakerSlug(wanted) }, saw: null, own: true } };
         } else if (!box) {
-          return roomRefuse(400, boxes.length
+          return refuse(400, boxes.length
             ? `The preset keys belong to the speakers this house named (${boxes.map((b) => b.name).join(", ")}); ` +
               `"${wanted.slice(0, 60)}" is not one of them. Nothing was played.`
             : "This house has named no WiiM speakers (WIIM_SPEAKERS), so no preset key can be played from a page.");
@@ -4360,22 +4689,22 @@ export async function handleRequest(request, env, ctx) {
         if (!target) {
         const rec = (await readReadings(env, [box]))[box.slug];
         if (!rec) {
-          return roomRefuse(400, `No phone has read the ${box.name} yet, so this page cannot tell what preset ${n} ` +
+          return refuse(400, `No phone has read the ${box.name} yet, so this page cannot tell what preset ${n} ` +
             "holds there. Read the speakers first. Nothing was played.");
         }
         const held = rec.presets.find((x) => x.btn === n) ?? null;
         if (!held) {
-          return roomRefuse(400, `The ${box.name} has nothing saved on preset ${n}, as the speakers were last read. ` +
+          return refuse(400, `The ${box.name} has nothing saved on preset ${n}, as the speakers were last read. ` +
             "Nothing was played.");
         }
         if (held.source !== "Spotify") {
-          return roomRefuse(400, `The ${box.name} holds ${held.name} (${held.source ?? "not Spotify"}) on preset ${n} — ` +
+          return refuse(400, `The ${box.name} holds ${held.name} (${held.source ?? "not Spotify"}) on preset ${n} — ` +
             "nothing this server can start, since playback from here goes through Spotify Connect. " +
             `Press ${n} on the remote.`);
         }
         const onFile = presetOnFile(env, n);
         if (!onFile) {
-          return roomRefuse(400, `The ${box.name} holds ${held.name} on preset ${n}, but this house has no Spotify ` +
+          return refuse(400, `The ${box.name} holds ${held.name} on preset ${n}, but this house has no Spotify ` +
             `playlist on file for ${n}, so there is nothing to start it from. Nothing was played.`);
         }
         target = { pl: { ...onFile, name: held.name }, btn: n, guest: null,
@@ -4383,11 +4712,11 @@ export async function handleRequest(request, env, ctx) {
         }
       } else {
         const dj = house(env).djs[slugKey];
-        if (!dj) return roomRefuse(404, `No DJ named "${slugKey.slice(0, 60)}".`);
+        if (!dj) return refuse(404, `No DJ named "${slugKey.slice(0, 60)}".`);
         const places = djPlaces(dj, dj.button ? {} : await guestHolders(env));
         const place = places ? (places[0] ?? null) : null;
         if (places && !place) {
-          return roomRefuse(400,
+          return refuse(400,
             `${dj.name} has no set on a guest preset now — each holds one set at a time, and ` +
             `another has taken its place. Ask ${dj.name} for a set, or put one back from the ` +
             "shelf. Nothing was played.");
@@ -4397,7 +4726,7 @@ export async function handleRequest(request, env, ctx) {
         // card never offers this Play, so only a hand-built POST gets here.
         if (cat && cat !== "spotify") {
           const label = catalogFor(env, cat).label;
-          return roomRefuse(400, place?.kind === "guest"
+          return refuse(400, place?.kind === "guest"
             ? `${dj.name}'s set is on the ${label} requests preset, which cannot be started from a page ` +
               "— playback from here goes through Spotify Connect. " +
               `Press ${place.guest.btn} on the remote.`
@@ -4407,7 +4736,7 @@ export async function handleRequest(request, env, ctx) {
         }
         const pid = place ? place.pid : configuredPlaylistId(env, dj.alias);
         if (!pid) {
-          return roomRefuse(500, dj.button
+          return refuse(500, dj.button
             ? `${dj.name} is on ${dj.button}, but BUTTONS gives that button no ` +
               "playlist this server can resolve."
             : `${dj.name} has no playlist this server can resolve — no preset, and ` +
@@ -4437,7 +4766,7 @@ export async function handleRequest(request, env, ctx) {
       // in words, before anything is sent (2026-09-06).
       const throttle = await throttledUntil(env);
       if (throttle) {
-        return roomRefuse(503,
+        return refuse(503,
           `Spotify is limiting this account's requests for about ${waitWords(minutesLeft(throttle))} ` +
           "more (quota exceeded), so this site cannot start or pause a speaker until then. " +
           "Nothing was sent. The presets on the speaker itself still work.");
@@ -4463,7 +4792,7 @@ export async function handleRequest(request, env, ctx) {
       if (!device) device = speakerFor(request, env) ?? "";
       const allowed = parseRoomDevices(env);
       if (!allowed.includes(device)) {
-        return roomRefuse(400,
+        return refuse(400,
           `"${device.slice(0, 60)}" is not one of the configured speakers ` +
           `(${allowed.join(", ")}). Nothing was played.`);
       }
@@ -4486,11 +4815,11 @@ export async function handleRequest(request, env, ctx) {
         let meta = null;
         try { meta = await catalogFor(withBudget(env, budget), "spotify").playlist(target.pl.id); } catch { meta = null; }
         if (!meta?.name) {
-          return roomRefuse(502, `Could not read the playlist on file for preset ${n} from Spotify just now, so its ` +
+          return refuse(502, `Could not read the playlist on file for preset ${n} from Spotify just now, so its ` +
             `name could not be checked against what the ${box.name} holds. Nothing was played.`);
         }
         if (!sameName(meta.name, saw)) {
-          return roomRefuse(409, `The ${box.name} calls preset ${n} "${saw}"; the playlist on file for ${n} is ` +
+          return refuse(409, `The ${box.name} calls preset ${n} "${saw}"; the playlist on file for ${n} is ` +
             `"${meta.name}". They no longer match — re-save the preset on the speaker, then Read again — so ` +
             "nothing was played.");
         }
@@ -4530,7 +4859,7 @@ export async function handleRequest(request, env, ctx) {
           location: target.preset
             // A key's Play comes back to the Speakers page with a flash of its
             // own — never ?on= ?played=, which open the re-save checklist.
-            ? `${base}/wiim?kp=${played}&k=${target.btn}&kon=${encodeURIComponent(target.preset.box.slug)}`
+            ? `${base}/${form?.get("back") === "tv" ? "tv" : "wiim"}?kp=${played}&k=${target.btn}&kon=${encodeURIComponent(target.preset.box.slug)}`
             : toSpeakers
             ? `${base}/wiim?on=${encodeURIComponent(speakerSlug(device))}&ask=${target.btn}&played=${played}#asked`
             : target.guest
@@ -4572,16 +4901,33 @@ export async function handleRequest(request, env, ctx) {
         return roomRefuse(403,
           `This form was submitted from ${origin}, not from ${url.origin}.`);
       }
-      let slug = "", device = "", filter = "", svcFilter = "", findKeep = null;
+      let slug = "", device = "", filter = "", svcFilter = "", findKeep = null, fromTv = false, fromTvNotes = false, tvFirst = null;
       try {
         const form = await request.formData();
+        fromTv = form.get("back") === "tv";
+        fromTvNotes = form.get("back") === "tvnotes";
         slug = String(form.get("slug") ?? "").trim();
         device = String(form.get("device") ?? "").trim();
         filter = String(form.get("dj") ?? "").trim();
         svcFilter = String(form.get("svc") ?? "").trim();
         findKeep = shelfFind(form.get("q"));
       } catch { /* no body: refused below as no slug */ }
+      // FROM THE TV'S SHELF (MC-46, tvpages.js): every outcome goes back to
+      // the TV page as a code it says in its band, on the room played on. A
+      // refusal page's way home is the phone's Shelf, which a remote should
+      // not land on. The TV's Shelf starts Spotify programs only.
+      // From a program's page on the TV (`back=tvnotes`): back to that page,
+      // which stays, says what happened and marks the first stop.
+      const tvBack = fromTv || fromTvNotes ? (code, extra = {}) => {
+        const roomQ = device ? `room=${encodeURIComponent(speakerSlug(device))}` : "";
+        const started = code === "ok" || code === "jumbled" || code === "sent";
+        const location = !fromTvNotes ? `/buttons/${key}/tv?sp=${code}${roomQ ? `&${roomQ}` : ""}`
+          : code === "gone" || !/^[a-z0-9-]{1,80}$/.test(slug) ? `/buttons/${key}/tv/shelf${roomQ ? `?${roomQ}` : ""}`
+          : `/buttons/${key}/tv/notes/${slug}?${roomQ ? `${roomQ}&` : ""}from=shelf&sp=${code}${started && tvFirst ? `&uri=${encodeURIComponent(tvFirst)}` : ""}`;
+        return new Response(null, { status: 303, headers: { location, "cache-control": "no-store", ...extra } });
+      } : null;
       if (!/^[a-z0-9-]{1,80}$/.test(slug)) {
+        if (tvBack) return tvBack("gone");
         return roomRefuse(400, "No program was named. Go back to the Shelf and press Play on a row.");
       }
       // Back to the view the press came from — the writer filter is display
@@ -4592,10 +4938,16 @@ export async function handleRequest(request, env, ctx) {
         findKeep ? `&q=${encodeURIComponent(findKeep)}` : ""}`;
       const rec = await programsKV(env).get(`program:${slug}`, { type: "json" });
       if (!rec) {
+        if (tvBack) return tvBack("gone");
         return roomRefuse(404, "That program is not on the shelf any more. Nothing was started.");
       }
+      tvFirst = (Array.isArray(rec.sections) ? rec.sections : []).flatMap((x) => (Array.isArray(x?.tracks) ? x.tracks : []))
+        .map((t) => String(t?.uri ?? "")).find((u) => /^(spotify|tidal):track:[A-Za-z0-9]{1,30}$/.test(u)) ?? null;
       const title = String(rec.title ?? slug).slice(0, 120);
       const cat = programCatalog(rec);
+      if (tvBack && cat !== "tidal" && ((cat && cat !== "spotify") || !programSpotifyUris(rec).uris.length || programSpotifyUris(rec).notSpotify.length)) return tvBack("no");
+      // From the TV, a Tidal program plays only on a WiiM the TV shows.
+      if (tvBack && cat === "tidal" && !parseSpeakers(env).some((b) => b.name === device)) return tvBack("no");
       if (cat === "files") {
         const slot = house(env).archive;
         return roomRefuse(400,
@@ -4621,6 +4973,7 @@ export async function handleRequest(request, env, ctx) {
               if (out.activated === false) throw new Error("not put");
               if (out.undo_snapshot) undoKey = out.undo_snapshot;
             } catch (err) {
+              if (tvBack) return tvBack(err?.guestBusy ? "tidal-busy" : "failed");
               return new Response(null, { status: 303, headers: {
                 location: back(`played=${err?.guestBusy ? "tidal-busy" : "tidal-failed"}&on=&slug=${encodeURIComponent(slug)}`),
                 "cache-control": "no-store" } });
@@ -4629,6 +4982,7 @@ export async function handleRequest(request, env, ctx) {
           const boxes = parseSpeakers(env);
           const box = boxes.find((b) => b.name === device) ?? boxes.find((b) => b.name === fallbackDevice(env)) ?? boxes[0];
           const code = box ? await helperPress(env, box, tg.btn) : "failed";
+          if (tvBack) return tvBack(code === "ok" ? "ok" : "helper", code === "ok" && box ? { "set-cookie": pickCookie(box.name) } : {});
           return new Response(null, { status: 303, headers: {
             location: back(`played=${code !== "ok" ? "helper" : isOn ? "ok" : "ok-put"}&on=${encodeURIComponent(box?.name ?? "")}&slug=${encodeURIComponent(slug)}${
               undoKey ? `&undo=${encodeURIComponent(undoKey)}` : ""}`),
@@ -4637,6 +4991,7 @@ export async function handleRequest(request, env, ctx) {
         }
       }
       if (cat && cat !== "spotify") {
+        if (tvBack) return tvBack("no");
         const label = catalogFor(env, cat).label;
         const dj = programDj(env, rec.dj);
         return roomRefuse(400,
@@ -4662,6 +5017,7 @@ export async function handleRequest(request, env, ctx) {
       // in words, before anything is sent — the same gate the wall's Play has.
       const throttle = await throttledUntil(env);
       if (throttle) {
+        if (tvBack) return tvBack("throttled");
         return roomRefuse(503,
           `Spotify is limiting this account's requests for about ${waitWords(minutesLeft(throttle))} ` +
           "more (quota exceeded), so this site cannot start a speaker until then. " +
@@ -4681,6 +5037,7 @@ export async function handleRequest(request, env, ctx) {
       }
       // As its preset if one holds it, else as its own tracks (playShelfSet).
       const played = (await playShelfSet(env, rec, uris, device, { remaining: 40 })).code;
+      if (tvBack) return tvBack(played, played === "failed" || played === "asleep" ? {} : { "set-cookie": pickCookie(device) });
       // Redirect rather than render: a refresh must not start the room twice.
       return new Response(null, {
         status: 303,

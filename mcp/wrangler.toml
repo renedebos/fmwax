@@ -39,6 +39,13 @@ preview_urls = false
 [dependencies_instrumentation]
 enabled = false
 
+# NO REQUEST LOG, SAID OUT LOUD (2026-11-15, the release audit). Leaving the
+# setting out was not a no: Cloudflare's Workers Logs page says "All newly
+# created Workers will come with the observability setting enabled by
+# default", and a log holds each request's address, keys included. So a house
+# that has not asked for logs says so here, and a deploy sets it.
+[observability]
+enabled = false
 
 # Durable store for the streaming services' refresh tokens. Spotify's PKCE
 # rotates its token on refresh, so it must survive restarts — a secret alone is

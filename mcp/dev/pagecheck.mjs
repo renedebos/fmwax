@@ -17,6 +17,7 @@ import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { execFileSync } from "node:child_process";
+import { Console } from "node:console";
 
 import { makePreview, serve, KEY, PROGRAMS } from "./preview.mjs";
 
@@ -28,15 +29,24 @@ const PORT = Number(process.env.PAGECHECK_PORT) || 8797;
 const BASE = `http://localhost:${PORT}`;
 const ROOM = `/buttons/${KEY}`;
 
+// THIS CHECK'S OWN VOICE (found 2026-11-15, with wrangler 4.162.0): the
+// deploy's bundle brings stand-ins for Node's parts, and loaded here they take
+// the place of Node's own `process`, so the plain console printed into a
+// stand-in that shows nothing. The check still stopped a bad deploy by its
+// exit code, but said nothing of what it found. This console holds Node's own
+// streams from before the bundle is loaded.
+const { log, error } = new Console({ stdout: process.stdout, stderr: process.stderr });
+const quit = process.exit.bind(process);
+
 if (!existsSync(PLAYWRIGHT)) {
-  console.log("pagecheck: skipped — Playwright is not installed (npm install in tools/browser/).");
-  process.exit(0);
+  log("pagecheck: skipped — Playwright is not installed (npm install in tools/browser/).");
+  quit(0);
 }
 
 // The deploy's bundle: the same wrangler, the same config, nothing uploaded.
 const out = mkdtempSync(join(tmpdir(), "pagecheck-"));
 process.on("exit", () => rmSync(out, { recursive: true, force: true }));
-execFileSync("npx", ["--yes", "wrangler@4.129.1", "deploy", "--dry-run", "--outdir", out],
+execFileSync("npx", ["--yes", "wrangler@4.162.0", "deploy", "--dry-run", "--outdir", out],
   { cwd: MCP, stdio: ["ignore", "ignore", "inherit"] });
 const mod = await import(pathToFileURL(join(out, "worker.js")).href);
 
@@ -71,6 +81,15 @@ const PAGES = [
   // Comedy's page (asked sets only) went with Comedy, 2026-10-13; the
   // Professor's, the writer's, with him, 2026-10-15.
   ["a writer", `${ROOM}/the-librarian`],
+  // The TV page (MC-46, tv.js): no bar, its own script; a WiiM's twelve keys
+  // and an Echo's house presets.
+  ["the TV page", `${ROOM}/tv`], ["the TV page, an Echo", `${ROOM}/tv?room=living-room`],
+  // And its Shelf (tvpages.js). The dials' page needs the settings store,
+  // which this check has none of: test/tv.test.js draws it.
+  ["the TV's Shelf", `${ROOM}/tv/shelf?room=pro-plus`],
+  // The DJs on the TV (tvdj.js): the list, a writer's screen and a guest's.
+  ["the TV's DJs", `${ROOM}/tv/djs?room=pro-plus`], ["the TV, the Librarian", `${ROOM}/tv/dj/the-librarian?room=pro-plus`],
+  ["the TV, Genre", `${ROOM}/tv/dj/genre?room=pro-plus`],
   // The archive's page only in a house with an archive preset (the owner's
   // switched off 2026-11-05, Sessions on 6): anywhere else it is a 404.
   ...(houseButtons(env).some((b) => b.archive) ? [["the archive", `${ROOM}/archive`]] : []),
@@ -151,15 +170,15 @@ for (const [name, path] of PAGES) {
   await page.waitForTimeout(150);
   const all = [...errors, ...thrown];
   if (all.length) failed += 1;
-  console.log(`${all.length ? "FAIL" : "ok  "} ${name.padEnd(22)} ${path.replace(KEY, "KEY")}`);
-  for (const e of all) console.log(`       ${String(e).slice(0, 300)}`);
+  log(`${all.length ? "FAIL" : "ok  "} ${name.padEnd(22)} ${path.replace(KEY, "KEY")}`);
+  for (const e of all) log(`       ${String(e).slice(0, 300)}`);
 }
 
 await browser.close();
 server.close();
 if (failed) {
-  console.error(`pagecheck: ${failed} of ${PAGES.length} pages had a script error in the deploy's bundle. Not deployed.`);
-  process.exit(1);
+  error(`pagecheck: ${failed} of ${PAGES.length} pages had a script error in the deploy's bundle. Not deployed.`);
+  quit(1);
 }
-console.log(`pagecheck: ${PAGES.length} pages, the bar handed ${Object.keys(SAMPLES).length} answers on each, no script error.`);
-process.exit(0);
+log(`pagecheck: ${PAGES.length} pages, the bar handed ${Object.keys(SAMPLES).length} answers on each, no script error.`);
+quit(0);

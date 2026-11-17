@@ -5,12 +5,14 @@ import { CATALOGS } from "./catalog.js";
 import { findDj, house } from "./house.js";
 import { PERSONAS } from "./djs.js";
 import { ARCHIVE } from "./archive-identity.js";
-import { artistLookupOn, houseCatalogNames, lastfmOn } from "./services.js";
+import { artistLookupOn, geniusOn, houseCatalogNames, lastfmOn } from "./services.js";
 import { parseSpeakers } from "./room.js";
 
 // Last.fm's one verb (lastfm.js), for a house with the key: here, not
 // imported from there, which would bring this file in a loop.
 export const LASTFM_TOOLS = new Set(["look_up_artist"]);
+// Genius (genius.js, 2026-11-16): listed only in a house with GENIUS_TOKEN.
+export const GENIUS_TOOLS = new Set(["look_up_song"]);
 
 // ----------------------------------------------------------------- programs
 
@@ -947,6 +949,26 @@ export const TOOLS = [
         artist: { type: "string", description: "The artist's name, as plainly as you know it." },
       },
       required: ["artist"],
+    },
+  },
+  {
+    // GENIUS FOR THE DJS (genius.js, 2026-11-16): listed only in a house with
+    // the token.
+    name: "look_up_song",
+    description:
+      "One song on Genius, kept by the house: what it SAMPLES, who SAMPLED it, what it is a COVER of and who COVERED it " +
+      "(each list with how many there are and the most-read ones, title, artist and year), its producers and writers, " +
+      "and Genius's short About text. Use it for sets built on those links: the records hip-hop sampled and the records " +
+      "that sampled them, a song and who sang it next, a cover and its original. The lists are Genius readers' work: " +
+      "check a link you are not sure of against what you know, and still resolve every song with search_tracks. " +
+      "Never lyrics. If Genius does not know the song, the answer says so: curate from what you know.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "The song's title, as plainly as you know it." },
+        artist: { type: "string", description: "The artist who recorded it." },
+      },
+      required: ["title", "artist"],
     },
   },
   {
@@ -2145,6 +2167,8 @@ export const AGENT_TOOLS = new Set([
   "extend_endless",
   // Added with Last.fm (2026-10-18): a read, and a KV copy of what it read.
   "look_up_artist",
+  // Added with Genius (2026-11-16): a read, and a KV copy of what it read.
+  "look_up_song",
   // Added with the recording finder (MC-41 stage 0, 2026-11-12): a read, as
   // search_tracks is, and a KV copy of what it found. The curator makes the
   // asked sets, so it is offered wherever search_tracks is.
@@ -2237,6 +2261,7 @@ export const TOOL_META = {
   // folder: a copy of a read, nothing a person would miss.
   find_recording: ["Find a Classical Recording", { ...READ, openWorldHint: true }],
   look_up_artist: ["Look Up an Artist on Last.fm", { ...READ, openWorldHint: true }],
+  look_up_song: ["Look Up a Song's Samples and Covers", { ...READ, openWorldHint: true }],
   list_devices: ["List Speakers", { ...READ, openWorldHint: true }],
   // A read by default; relabel writes, so the hint says so.
   talk_ledger: ["Read the Talk Ledger", {
@@ -2343,7 +2368,9 @@ function listedTools(env) {
   const archive = Boolean(house(env).archive);
   // look_up_artist: Last.fm's side, or the house's own MusicBrainz lookup (2026-10-24).
   const lastfm = lastfmOn(env) || artistLookupOn(env);
-  return TOOLS.filter((t) => (archive || !ARCHIVE_TOOLS.has(t.name)) && (lastfm || !LASTFM_TOOLS.has(t.name))).map((t) => {
+  const genius = geniusOn(env);
+  return TOOLS.filter((t) => (archive || !ARCHIVE_TOOLS.has(t.name)) && (lastfm || !LASTFM_TOOLS.has(t.name))
+    && (genius || !GENIUS_TOOLS.has(t.name))).map((t) => {
     const meta = TOOL_META[t.name];
     if (!meta) return t;
     const [title, annotations] = meta;

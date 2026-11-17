@@ -3,7 +3,7 @@
   "private": true,
   "description": "fmwax: a house of radio DJs on the presets of a WiiM. This file is for the Deploy to Cloudflare button; the house itself is in mcp/.",
   "scripts": {
-    "deploy": "npx wrangler@4.129.1 deploy"
+    "deploy": "npx wrangler@4.162.0 deploy"
   },
   "cloudflare": {
     "bindings": {

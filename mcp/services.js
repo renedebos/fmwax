@@ -457,7 +457,10 @@ export async function playerState(env, { deadlineMs = 0 } = {}) {
     // back under its OLD name the next time the fault returned.
     await rememberDeviceName(env, st.device.id, st.device.name);
     const shown = await deviceDisplayName(env, st.device);
-    if (shown !== st.device.name) st.device = { ...st.device, name: shown };
+    // `published`: the name as Spotify gave it, kept beside the one shown.
+    // A WiiM under its own id is a WiiM that has sat idle, and what it plays
+    // then is not lossless (lossless.js reads this, 2026-11-15).
+    if (shown !== st.device.name) st.device = { ...st.device, name: shown, published: st.device.name };
   }
   // When this was read, for where the song is (the now panel's progress
   // line, 2026-10-13); a kept answer carries it too.
@@ -1210,6 +1213,8 @@ export function tokensKV(env) {
 // A house with Last.fm (lastfm.js, 2026-10-18): the owner's free key, a
 // secret. Here, below both of its readers.
 export const lastfmOn = (env) => typeof env?.LASTFM_KEY === "string" && env.LASTFM_KEY.trim().length >= 16;
+// Genius (genius.js, 2026-11-16): a house with the GENIUS_TOKEN secret.
+export const geniusOn = (env) => typeof env?.GENIUS_TOKEN === "string" && env.GENIUS_TOKEN.trim().length >= 20;
 // The house looking artists up on MusicBrainz itself (musicbrainz.js,
 // 2026-10-24): on unless ARTIST_LOOKUP is "off".
 export const artistLookupOn = (env) => String(env?.ARTIST_LOOKUP ?? "").trim().toLowerCase() !== "off";

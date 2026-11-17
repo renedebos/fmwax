@@ -1289,7 +1289,7 @@ function renderTracks(tracks, hue, start = 0, released = false) {
 // cut (the owner), and their shapes with them — night, correspondence,
 // session and chain. A record still carrying one renders as an argument,
 // like any shape this table does not know.
-const SHAPE_LABELS = {
+export const SHAPE_LABELS = {
   argument: { kind: "Program", complications: "Where this could be wrong",
     coda: "What the set is arguing" },
   survey: { kind: "Survey", complications: "What is not here",
@@ -2476,6 +2476,11 @@ li.bandreq a:hover{color:var(--ink)}
    on one row and the list appears under them (the owner, 2026-09-05; as a
    flex item the fold wrapped under Programme the moment it opened). */
 .djpage .chiprow::after{content:"";display:block;clear:both}
+/* The start of a house DJ's other set, in that set's own section. */
+.djpage .gplay{display:flex;align-items:center;flex-wrap:wrap;gap:.3rem .8rem;margin:0 0 .7rem}
+.djpage .gplay form{margin:0}
+.djpage .gnote{margin:0 0 .7rem;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);line-height:1.4;color:var(--ink-2)}
+.djpage .gplay .gnote{margin:0}
 .djpage .chiprow>a.chipbtn{float:left;margin:0 .6rem .6rem 0}
 .djpage .tlfold{display:block}
 .djpage .tlfold>summary{list-style:none;display:inline-flex;margin:0 0 .6rem}
@@ -2926,6 +2931,14 @@ details[open]>summary .chev::after{content:" ▴"}
 .djpage .keepbox input{width:1.1rem;height:1.1rem;accent-color:var(--q-ink);margin:0}
 .djpage .askwhere{margin:.2rem 0 0;font-size:var(--fs-14);color:var(--ink-2);line-height:1.4}
 .djpage .askwhere b{color:var(--ink)}
+/* The two ticks one above the other, Ask beside them: three in a row do
+   not fit a phone. The speaker's name sits in the sentence, as a word. */
+.djpage .asktix{display:flex;flex-direction:column;gap:.55rem}
+.djpage .askstart{display:none;margin:.2rem 0 0;font-size:var(--fs-14);color:var(--ink-2);line-height:1.7}
+.djpage .askstart .devsel{display:inline-block;width:auto;max-width:11rem;height:auto;min-height:0;padding:0 1.1rem 0 0;margin:0;border:0;border-radius:0;
+  background-color:transparent;font-size:var(--fs-14);font-weight:700;color:var(--ink);vertical-align:baseline;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule)}
+.djpage .askcard:has(.startbox input:checked) .askstart{display:block}
 /* SHORT NOTES OR THE LONG READ (the owner, 2026-10-18, board A of
    https://claude.ai/artifact/EV8axCzhAPaamK7Zzon8yM): on a writer's page, the
    choice appears while Keep is ticked, and its line follows the choice. No
@@ -7685,6 +7698,11 @@ export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0
 // reader by the node suite (alexa-say.js), each with what it does. From the
 // Talk tab: its "?" and its maple crate box; the Talk tab stays lit on it.
 const SAY_CSS = `
+.say .setcopy{min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--rule);background:var(--raised);
+  color:var(--ink);font:600 var(--fs-14) "Archivo","Helvetica Neue",Arial,sans-serif;cursor:pointer}
+.say .setval{display:block;margin:.4rem 0 .6rem;padding:.6rem .8rem;border-radius:8px;background:var(--q-tint);color:var(--ink);
+  font-size:var(--fs-12);overflow-wrap:anywhere;user-select:all}
+.say ol.tvsteps{margin:.6rem 0 .2rem;padding-left:1.3rem;display:grid;gap:.45rem;font-size:var(--fs-14);line-height:1.45}
 .say .rcard ul.says{list-style:none;margin:0;padding:0;display:block}
 .say .says li{display:flex;flex-direction:column;gap:.2rem;padding:.7rem 0;border-top:1px solid var(--rule-soft)}
 .say .says li:first-child{border-top:0;padding-top:.2rem}
@@ -7701,7 +7719,57 @@ const SAY_CSS = `
 .say .sstate.dry{background:transparent;color:var(--ink-3);border:1.5px solid var(--rule)}
 .say .rq p+p{margin-top:.35rem}
 `;
-export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false }) {
+// WHAT TO SAY ON THE TV (the owner, 2026-11-16: "what commands can I give
+// the tv app? Can you build me a list?", then "Yes" to having it here). Each
+// sentence was matched against the house's own reading of the words
+// (tvsay.js tvIntent) before it was written down. `tv.djs` the house's DJs,
+// so a sentence names only a DJ this house has; `tv.room` a room to name.
+function tvSays(tv) {
+  const has = (k) => !tv?.djs || tv.djs.includes(k);
+  const room = tv?.room ? String(tv.room) : "Ultra";
+  const row = ([label, said, result]) => `
+      <li><span class="slab">${esc(label)}</span><q>${esc(said)}</q><span class="sres">${esc(result)}</span></li>`;
+  const group = (id, title, sub, rows) => rows.length ? `
+  <section class="ucard rcard" aria-labelledby="say-${id}">
+    <h2 id="say-${id}">${esc(title)}</h2>${sub ? `
+    <p class="rsub">${esc(sub)}</p>` : ""}
+    <ul class="says">${rows.map(row).join("")}
+    </ul>
+  </section>` : "";
+  const djRows = [
+    has("hank") && ["A DJ put on", "Hank", "Hank starts: their own preset, or the guest preset. “Play Hank” and “put on Hank” work too."],
+    has("hank") && ["A set from a DJ", "Hank, Daptone", "A one-off set by Hank on the Requests preset, ready in a few minutes."],
+    has("the-librarian") && ["With a length", "The Librarian, an hour of Stiff Records", "A set with notes, an hour long."],
+    has("deep-dive") && ["One artist", "Deep Dive, Sammy Davis Junior", "Their whole career, as a set."],
+    has("genre") && ["A genre", "Genre, northern soul", "Say the DJ first: “put on Genre ska” isn't understood."],
+    has("hank") && ["Endless", "Hank, Daptone, endless", "The DJ keeps going that way: their own preset turns toward it, or a guest DJ goes on the guest preset."],
+    has("the-librarian") && ["Kept", "The Librarian, the Cramps, and keep it", "The set is kept on the Shelf, with its page."],
+    has("hank") && ["A fresh start", "Start Hank fresh", "A new opening for their preset; it uses one DJ run."],
+    has("hank") && ["In another room", `Put on Hank on the ${room}`, "There instead of the room the TV page shows."],
+    ["On a DJ's screen", "Northern soul", "Only what you want: it goes to the DJ whose screen is open, with the settings chosen there."],
+  ].filter(Boolean);
+  return group("tv-music", "On the TV: the music", "Press the voice search key and say it plainly: no “Alexa”, no skill name. It acts in the room the TV page shows unless you name another.", [
+    ["What's playing", "What's playing", "The song, said on the TV page. “What is this” and “who is this” work too."],
+    ["Pause", "Pause", "“Stop” and “hush” work too."],
+    ["Play again", "Play", "“Carry on” and “resume” work too."],
+    ["Skip", "Skip", "“Next” and “skip this song” work too."],
+    ["One song back", "Go back", "“Previous song” works too."],
+    ["A preset", "Preset 7", "Starts preset 7. “Press 7” works too; a number alone (“seven”) doesn't."],
+    ["A preset elsewhere", `Play preset 7 on the ${room}`, "In that room."],
+  ]) + group("tv-djs", "On the TV: the DJs", "A DJ and what you'd like is a set; add “endless” to keep it going, “and keep it” to keep it on the Shelf.", djRows)
+  + group("tv-turn", "On the TV: turning the DJ who plays", "", [
+    ["Same way", "More like this", "“More of this” works too."],
+    ["Somewhere else", "Change it up", "“Something different” works too."],
+    ["Your own way", "More upbeat", "Also “less ballads”, “make it slower”, “steer toward Stax”. After this song."],
+    ["Move it", `Move the music to the ${room}`, "The same song carries on there. Spotify only."],
+    ["Keep it", "Keep this set", "The set playing on the Requests preset is kept on the Shelf."],
+  ]) + `
+  <section class="ucard rcard" aria-labelledby="say-tv-not">
+    <h2 id="say-tv-not">On the TV: not understood</h2>
+    <p class="rsub">The volume (the house doesn't change it), a number on its own, and “put on” with words after a DJ's name. If TV Bro says it can't recognize the words, restarting the TV has helped.</p>
+  </section>`;
+}
+export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false, tv = null }) {
   const row = (r) => `
       <li><span class="slab">${esc(r.label)}</span><q>${esc(r.said)}</q><span class="sres">${esc(r.result)}</span></li>`;
   const card = (s) => `
@@ -7743,18 +7811,51 @@ export function renderSay({ base, talk = false, alexa = null, examples = null, l
     </ul>
     <p class="rsub">Before it rewrites a playlist on the call, it says what it will do and waits for a yes.</p>
   </section>` : "";
+  // ON THE TV (tvsay.js, 2026-11-15): TV Bro's own voice search, its search
+  // engine set to this house's address once. The address is copied here, on
+  // the phone, and pasted on the TV with the Google TV app's keyboard: typed
+  // with a remote it would be eighty letters.
+  const tvCard = tv ? `
+  <section class="ucard rcard" aria-labelledby="say-tv">
+    <h2 id="say-tv">On the TV</h2>${tv.page ? `
+    <p><b>The TV page</b> is this house as one screen for a TV's remote. Open it in TV Bro on the TV (paste it with the keyboard of the Google TV app on this phone) and bookmark it:</p>
+    <code class="setval">${esc(tv.page)}</code><button class="setcopy" type="button" data-copy="${esc(tv.page)}" hidden>Copy</button>` : ""}
+    <p><b>TV Bro's own voice search</b> can send what you say to the house, which does it as the Echos would, in the room the TV page shows unless you name another. The remote's microphone button belongs to the TV's own search, so the voice search goes on another key.</p>
+    <ol class="tvsteps">
+      <li>Copy this address, on this phone:</li>
+    </ol>
+    <code class="setval">${esc(tv.address)}</code><button class="setcopy" type="button" data-copy="${esc(tv.address)}" hidden>Copy</button>
+    <ol class="tvsteps" start="2">
+      <li>On the TV, in TV Bro: <b>Settings</b>, <b>Search and home page</b>, <b>Search engine</b>, <b>Custom URL</b>. Paste the address there with the keyboard of the Google TV app on this phone.</li>
+      <li>In TV Bro's settings, under <b>Remote and cursor</b>, put <b>Voice search</b> on a key of the remote. On a Sony Bravia's remote the <b>Guide</b> key works.</li>
+      <li>On the TV page, press that key and say it: “Sessions, acoustic piano”, “Hank”, “preset 7”, “pause”, “skip”, “more like this”, “what's playing”.</li>
+    </ol>
+    <p class="rsub">What it heard and what it did shows on the TV page for a while. Every search in TV Bro then goes to the house, not to a search engine. The address holds the house's key: keep it to this TV.</p>
+  </section>${tvSays(tv)}` : "";
   return `${head("What to say", crate ? `What to say to ${talk ? "Talk and " : ""}${inv}, and what it does.` : "What to say to Talk, and what it does.", ROOM_CSS + USE_CSS + RULES_CSS + SAY_CSS, WALL_FONTS + appMeta(base))}
 <main class="page spk use rules say tabbed">
   <header class="masthead wallhead">
     <h1>What to say</h1>
   </header>
   <p class="ulede">${talk && crate ? "Two ways to ask the house by voice: Talk, in this app, and maple crate, on the Echos."
-    : crate ? "Ask the house by voice, on the Echos." : "Ask the house by voice, in this app."}</p>${talkCard}${crate}
+    : crate ? "Ask the house by voice, on the Echos." : talk ? "Ask the house by voice, in this app." : "Ask the house by voice, on the TV."}</p>${talkCard}${crate}${tvCard}
   <footer class="roomfoot" id="roomfoot">
     <div class="chips footchips"><a class="chip" href="${esc(base)}/${talk ? "talk" : "wiim"}">${icon("back", 16)}${talk ? "Talk" : "Speakers"}</a></div>
   </footer>
   ${tabBar({ base, active: talk ? "talk" : "speakers", owed, talk, loaded })}
 </main>
+<script>
+(function () {
+  // Copy, where the phone can (the TV card's address).
+  if (!navigator.clipboard) return;
+  document.querySelectorAll("button[data-copy]").forEach(function (b) {
+    b.hidden = false;
+    b.addEventListener("click", function () {
+      navigator.clipboard.writeText(b.getAttribute("data-copy")).then(function () { b.textContent = "Copied"; }, function () { b.textContent = "Select it and copy"; });
+    });
+  });
+})();
+</script>
 </body>
 </html>
 `;
@@ -8379,7 +8480,7 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
   <section class="spks" aria-label="The speakers">${all.map(block).join("")}
   </section>${elsewhere}${holds}
   <footer class="roomfoot" id="roomfoot">
-    <div class="chips footchips">${ownKeys ? "" : `<a class="chip" href="${esc(base)}/readings">What the speakers hold</a>`}<a class="chip" href="${esc(base)}/use">Use</a><a class="chip" href="${esc(base)}/spotify">Spotify</a><a class="chip" href="${esc(base)}/rules">House rules</a></div>
+    <div class="chips footchips">${ownKeys ? "" : `<a class="chip" href="${esc(base)}/readings">What the speakers hold</a>`}<a class="chip" href="${esc(base)}/use">Use</a><a class="chip" href="${esc(base)}/spotify">Spotify</a><a class="chip" href="${esc(base)}/rules">House rules</a><a class="chip" href="${esc(base)}/tv">TV</a><a class="chip" href="${esc(base)}/say#say-tv">Voice on the TV</a></div>
   </footer>
   ${tabBar({ base, active: "speakers", owed, talk, loaded, now })}
 </main>
@@ -9395,6 +9496,38 @@ function giveUpRow(dj, e) {
     <div class="endacts"><form method="post" action="${esc(e.action)}"><input type="hidden" name="do" value="giveup"><button class="chipbtn" type="submit">Give up preset ${n}</button></form></div>
     </details>`;
 }
+// THE PAGE FOLLOWS THE BAR (the owner, 2026-11-15, with a screenshot: the bar
+// said "Paused" and Sessions' page still said "Playing endless on preset 6",
+// with no Play to press). The page is drawn once, by the server; the bar
+// asks every few seconds. When the bar has said twice running that this DJ
+// is playing where the page was drawn as not, or the other way round, the
+// page is fetched again: never while an ask is being typed or a sheet is
+// open, and once only for a change, until the bar and the page have agreed
+// again, so a page and a bar that go on disagreeing cannot loop.
+function endlessFollow(djKey, on) {
+  return `<script>
+(function () {
+  var dj = ${JSON.stringify(String(djKey)).replace(/</g, "\\u003c")}, was = ${on ? "true" : "false"}, seen = 0, agreed = false;
+  document.addEventListener("house:now", function (e) {
+    var o = e.detail;
+    if (!o || (o.state !== "playing" && o.state !== "quiet")) { seen = 0; return; }
+    var now = o.state === "playing" && !!o.who && !!o.who.endless && o.who.dj === dj;
+    if (now === was) {
+      seen = 0;
+      if (!agreed) { agreed = true; try { sessionStorage.removeItem("dj:follow"); } catch (x) {} }
+      return;
+    }
+    if (++seen < 2) return;
+    var ask = document.getElementById("askmood"), a = document.activeElement;
+    if ((ask && ask.value) || (a && /^(TEXTAREA|INPUT|SELECT)$/.test(a.tagName)) || document.querySelector(".msheet.open, .sheetlock")) return;
+    var k = null; try { k = JSON.parse(sessionStorage.getItem("dj:follow") || "null"); } catch (x) {}
+    if (k && k.dj === dj && k.on === now) return;
+    try { sessionStorage.setItem("dj:follow", JSON.stringify({ dj: dj, on: now, t: Date.now() })); } catch (x) { return; }
+    location.reload();
+  });
+})();
+</script>`;
+}
 // WHILE A SET IS BEING MADE, THE PAGE WAITS FOR IT (the owner, 2026-09-24:
 // Sunny started on the Master Bedroom and the page still said "being made").
 // It asks the form's own address, which answers from the ledger with no
@@ -9935,7 +10068,38 @@ export function renderDjRoom({
   // playlist, so the page says where the press is instead of offering one
   // that could only refuse.
   const onTidal = !archive && !!dj.catalog && dj.catalog !== "spotify";
-  const act = unplayable ? "" : archive && hkey
+  // A HOUSE DJ WITH A SET ON THE TIDAL REQUESTS PRESET TOO (the owner,
+  // 2026-11-15: on Sessions' page, playing endless on 6, the one triangle at
+  // the top pressed preset 2, an old Tidal set, and "Take On Me" came on).
+  // The header is the DJ's own; the start of that other set goes down to its
+  // own section, "On preset 2 …", named (guestPlay, below).
+  // AND ON THE SPOTIFY REQUESTS PRESET (the owner, the same day: "clean up the
+  // double play button issue we see on sessions page"): two Plays stood at
+  // the top, the round one for the set asked on preset 1 and the pill for
+  // the DJ's own endless preset. One Play at the top, the DJ's own; the
+  // asked set's goes with that set, whichever service it is on.
+  const guestStart = !archive && !!dj.guest && !!endless;
+  const PLAY_GLYPH = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"></path></svg>`;
+  const PAUSE_GLYPH = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" fill="currentColor"></rect><rect x="14" y="5" width="4" height="14" fill="currentColor"></rect></svg>`;
+  const setName = lastLoaded?.title ?? "this set";
+  const guestPlay = !guestStart || unplayable ? "" : !onTidal
+    // The same form the round button was: the set on the requests preset,
+    // on the speaker picked at the top; a pause while it plays here.
+    ? `
+    <div class="gplay"><form class="gact" method="post" action="${esc(base)}/${esc(dj.key)}/play">${playingHere
+        ? `<input type="hidden" name="pause" value="1"><input type="hidden" name="back" value="dj">` : ""}
+      <button type="submit" class="chipbtn solid" data-busy="${playingHere ? "Pausing…" : "Starting…"}" aria-label="${
+        playingHere ? `Pause ${esc(setName)}` : `Play ${esc(setName)}`}">${playingHere ? `${PAUSE_GLYPH}Pause` : `${PLAY_GLYPH}Play`}</button>
+      <label class="devon" hidden>on <select class="devsel" name="device" data-pick aria-label="Speaker">${
+        devices.map((d) => `<option${d === defaultDevice ? " selected" : ""}>${esc(d)}</option>`).join("")}</select></label></form>
+      <p class="gnote">${playingHere ? "Playing now." : "Plays on the speaker picked at the top of this page."}</p></div>`
+    : hkey && hkey.btn === dj.guest.btn
+    ? `
+    <div class="gplay">${helperKeyForm(base, hkey, `dj:${dj.key}`, `Play ${setName} on the ${hkey.on}`, "chipbtn solid", `${PLAY_GLYPH}Play`)}
+      <p class="gnote">The home helper presses ${esc(String(hkey.btn))} on the ${esc(hkey.on)}.</p></div>`
+    : `
+    <p class="gnote">Nothing here can start ${esc(service)}: press ${esc(String(dj.guest.btn))} on the remote${dj.guest.open ? ", or open it in the app" : ""}.</p>`;
+  const act = unplayable || guestStart ? "" : archive && hkey
     // The archive's key, pressed by the home helper (MC-25).
     ? `<div class="row hrow">${helperKeyForm(base, hkey, `dj:${dj.key}`, `Play the archive on the ${hkey.on}`, "go",
         `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"></path></svg>`)}
@@ -9990,19 +10154,22 @@ export function renderDjRoom({
         type="hidden" name="request_id" value="${esc(act.id)}"><button
         type="submit">${label}</button></form>`
     : "";
+  // What happens when it lands: nothing until a press, or, for an ask with
+  // "Play when ready" (or one by voice), a start on the speaker it named.
+  const whenReady = request?.startsOn
+    ? `it starts on the ${esc(request.startsOn)} by itself when it lands, unless something else was started in the meantime.`
+    : "nothing will play until someone presses Play.";
   const REQ_LINES = {
     pending: auto
       ? "Pending — the curator has not made this set yet. Usually ready in " +
-        "five to fifteen minutes. This page checks on its own; nothing will " +
-        "play until someone presses Play."
+        `five to fifteen minutes. This page checks on its own; ${whenReady}`
       // No promise of a time, because nothing is coming on its own. It says
       // what IS true: it is written down, and a person with Claude open is
       // what turns it into a set.
       : `On the list for ${esc(dj.name)}. Nobody is making it yet — these are ` +
         "filled when somebody ASKS Claude for them. Opening the app does not " +
         "do it on its own. Reload to see if it has been.",
-    claimed: "The curator is making this set right now. This page checks on its " +
-      "own; nothing will play until someone presses Play.",
+    claimed: `The curator is making this set right now. This page checks on its own; ${whenReady}`,
     // Only reachable in an automatic house: it means nobody picked it up when
     // something should have. Left as it was.
     slow: "Taking longer than usual — the curator has not picked this up yet. It " +
@@ -10310,6 +10477,7 @@ export function renderDjRoom({
     premise?.label === "The ask" && !(request && !merged && !readyQuiet && request.asked)
       ? `
     <p class="askline"><span class="cardtag">The ask · </span>“${esc(premise.text)}” <span class="asktag inline">${esc(premise.tag)}</span></p>` : ""}${
+    guestPlay}${
     list
       ? `${problem?.kind === "throttled" ? `
     ${problemLine}` : ""}
@@ -10403,6 +10571,10 @@ export function renderDjRoom({
   // requesting a set is too messy"). Open, not folded: a box, the length, a
   // Keep tick and Ask, in two rows. Everything else a request can carry —
   // the examples, what to avoid, which service — is one fold inside it.
+  // PLAY WHEN READY (the owner, 2026-11-14): a tick, and where. Only where a
+  // curator makes the set by itself (the house starts it within 25 minutes
+  // of the ask, asks.js) and there is a speaker to name.
+  const startable = !!composer && auto && !dj.archiveOnly && Array.isArray(devices) && devices.length > 0;
   const composerBlock = composer
     ? `<form method="post" action="${esc(composer.action)}" class="reqform askcard">
         <label class="vh" for="askmood">What are you after?</label>
@@ -10430,9 +10602,12 @@ export function renderDjRoom({
           </select></label>` : ""}
         </div>
         <div class="askrow askgo">
-          <label class="keepbox"><input type="checkbox" name="keep" value="1"><span>Save on Shelf</span></label>
+          ${startable ? `<span class="asktix">` : ""}<label class="keepbox"><input type="checkbox" name="keep" value="1"><span>Save on Shelf</span></label>${startable ? `
+          <label class="keepbox startbox"><input type="checkbox" name="start" value="1"><span>Play when ready</span></label></span>` : ""}
           <button type="submit" class="asksend" data-busy="Sending…">Ask</button>
-        </div>${composer.notes ? `
+        </div>${startable ? `
+        <p class="askstart">Starts by itself on the <select class="devsel" name="device" data-pick aria-label="Speaker to start on">${
+          devices.map((d) => `<option${d === defaultDevice ? " selected" : ""}>${esc(d)}</option>`).join("")}</select> when it lands, unless something else was started in the meantime.</p>` : ""}${composer.notes ? `
         <div class="asknotes">
           <div class="askrow">
             <span class="askonl" aria-hidden="true">Notes</span>
@@ -10652,7 +10827,7 @@ export function renderDjRoom({
         return `<div class="vrow">${disc}${loadedLine}${facts ? `<p class="vfacts">${esc(facts)}</p>` : ""}${song}</div>`;
       })()
       : `${act}
-    ${loadedLine}${facts ? `
+    ${loadedLine}${facts && !guestStart ? `
     <p class="vfacts">${esc(facts)}</p>` : ""}`}${laneOffer ? `
     <form class="laneform" method="post" action="${esc(laneOffer.action)}"><input type="hidden" name="do" value="lane">${
       // A DJ who is told what to play (Deep Dive's artist, 2026-10-10): the
@@ -10679,7 +10854,10 @@ export function renderDjRoom({
   ${holdsBlock}
   ${listBlock}
   ${asksBlock}
-  ${shelfBlock}${more}${spkSheet}
+  ${shelfBlock}${more}${spkSheet}${
+    // Not while a set is being made or turned: that wait reloads the page itself.
+    !archive && (endless || laneOffer) && !(endless?.making || endless?.steering)
+      ? endlessFollow(dj.key, !!(endless?.playing || laneOffer?.playing)) : ""}
   ${tabBar({ base, active: "djs", owed, talk, loaded })}
 </main>
 ${SUBMIT_GUARD}

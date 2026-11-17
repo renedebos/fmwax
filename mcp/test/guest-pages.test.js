@@ -1513,6 +1513,61 @@ test("the meter has its own address, the old one still answers, and no tab is ad
   assert.equal((await worker.fetch(get(`/buttons/${"x".repeat(24)}/use`), e)).status, 404);
   assert.ok((await page(e, `/buttons/${KEY}/wiim`)).includes(`<a class="chip" href="/buttons/${KEY}/use">Use</a>`));
 });
+// A HOUSE DJ WITH A SET ON THE TIDAL REQUESTS PRESET TOO (the owner,
+// 2026-11-15: on Sessions' page, playing endless on 6, the one triangle at
+// the top pressed preset 2 and an old Tidal set came on).
+test("a house DJ's other set, on the Tidal requests preset, is started from its own section, never from the top of the page", async () => {
+  const { station } = await import("../station.js");
+  const f = installFetch({ contents: [track("a"), track("b")] });
+  const td = installTidalFetch({ contents: ["7"] });
+  try {
+    const ENDLESS = JSON.stringify({ mode: "live", dailyRuns: 20, presets: [{ button: 6, dj: "dr-funkenstein", playlist: P(6) }] });
+    const mk = async ({ hands }) => {
+      const e = flipEnv({ REQUESTS_ENABLED: "true", ENDLESS, HELPER_SECRET: "home-key" });
+      if (hands) e.STATION.endless.hands = async () => ({ ok: true });
+      await station(e, "helper-put", { doc: { at: Date.now(), speakers: { "Pro Plus": { name: "Pro Plus", state: "stop" } } } });
+      await e.PROGRAMS.put("reading:pro-plus", JSON.stringify({ at: new Date().toISOString(), by: "helper",
+        presets: [{ btn: 2, name: "DJ Guest · Tidal", source: "TIDAL" }, { btn: 6, name: FUNK, source: "Spotify" }] }));
+      await putOn(e, GT, { dj: "dr-funkenstein", ref: "funk-tidal", at: minutesAgo(3),
+        program: { slug: "funk-tidal", by: FUNK, title: "Big Choruses", catalog: "tidal" } });
+      return e;
+    };
+    // The helper on: a Play, named, in the set's own section.
+    const html = await page(await mk({ hands: true }), `/buttons/${KEY}/dr-funkenstein`);
+    const head = html.slice(html.indexOf('<header class="djhead">'), html.indexOf("</header>", html.indexOf('<header class="djhead">')));
+    assert.ok(!head.includes('class="bplay hkey"'), "nothing at the top of the page presses 2");
+    assert.ok(!head.includes("the home helper presses"), "and no line there says so");
+    assert.match(head, /House DJ on preset 6|preset 6/, "the top is the DJ's own preset");
+    const holds = html.slice(html.indexOf('<section class="block holds"'));
+    assert.match(holds, /<h2 class="blabel" id="holdsh">On preset 2 \(DJ Guest · Tidal\)<\/h2>\s*<div class="gplay"><form method="post" action="\/buttons\/abcdefabcdefabcdefabcdef\/wiim\/key" class="bplay hkey"><input type="hidden" name="btn" value="2">/);
+    assert.match(holds, /<button type="submit" class="chipbtn solid" data-busy="Pressing…" aria-label="Play Big Choruses on the Pro Plus">/);
+    assert.match(holds, /<p class="gnote">The home helper presses 2 on the Pro Plus\.<\/p>/);
+    // THE SAME FOR A SET ON THE SPOTIFY REQUESTS PRESET (the owner, the same
+    // day: two Plays stood at the top of Sessions' page). One Play at the
+    // top, the DJ's own endless one; the asked set's is in its own section.
+    const sp = await mk({ hands: true });
+    await sp.PROGRAMS.delete(`on:${GT}`);
+    await putOn(sp, GS, { dj: "dr-funkenstein", ref: "funk-asked", at: minutesAgo(3),
+      program: { slug: "funk-asked", by: FUNK, title: "Acoustic blues" } });
+    const two = await page(sp, `/buttons/${KEY}/dr-funkenstein`);
+    const top = two.slice(two.indexOf('<header class="djhead">'), two.indexOf("</header>", two.indexOf('<header class="djhead">')));
+    assert.ok(!top.includes('class="vact"') && !top.includes("/dr-funkenstein/play"), "no round Play for the asked set at the top");
+    assert.ok(!top.includes('class="vfacts"'), "nor its count and length under the DJ's own lines");
+    assert.match(top, /Also on preset 1 \(DJ Guest\)/, "the top still says where the asked set is");
+    assert.equal((top.match(/>Play</g) ?? []).length + (top.match(/<span>Play<\/span>/g) ?? []).length >= 1, true, "the DJ's own Play is there");
+    const own = two.slice(two.indexOf('<section class="block holds"'));
+    assert.match(own, /<h2 class="blabel" id="holdsh">On preset 1 \(DJ Guest\)<\/h2>/);
+    assert.match(own, /<div class="gplay"><form class="gact" method="post" action="\/buttons\/abcdefabcdefabcdefabcdef\/dr-funkenstein\/play">\s*<button type="submit" class="chipbtn solid" data-busy="Starting…" aria-label="Play Acoustic blues">/);
+    assert.match(own, /<select class="devsel" name="device" data-pick aria-label="Speaker">/, "on the speaker picked at the top");
+    assert.match(own, /<p class="gnote">Plays on the speaker picked at the top of this page\.<\/p>/);
+    // The helper off: where the press is, in the same section.
+    const off = await page(await mk({ hands: false }), `/buttons/${KEY}/dr-funkenstein`);
+    const offHead = off.slice(off.indexOf('<header class="djhead">'), off.indexOf("</header>", off.indexOf('<header class="djhead">')));
+    assert.ok(!offHead.includes("Nothing here can start"));
+    assert.match(off.slice(off.indexOf('<section class="block holds"')), /<p class="gnote">Nothing here can start Tidal: press 2 on the remote, or open it in the app\.<\/p>/);
+  } finally { td.restore(); f.restore(); }
+});
+
 
 // WORK WAITING TOO LONG (MC-31 stage 6b, step 4; the owner, 2026-10-19): an
 // ask nobody has answered past twenty minutes says so under its band, with

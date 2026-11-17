@@ -11,7 +11,7 @@
     "login": "node install/login.js",
     "check:pages": "node dev/pagecheck.mjs",
     "check:door": "node dev/door-check.mjs",
-    "deploy": "node install/config.js --check && node install/rules.js --check && node dev/pagecheck.mjs && npx wrangler@4.129.1 deploy"
+    "deploy": "node install/config.js --check && node install/rules.js --check && node dev/pagecheck.mjs && npx wrangler@4.162.0 deploy"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "^1.4.7",

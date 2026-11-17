@@ -670,7 +670,7 @@ retrying the latter can duplicate tracks.
     npx wrangler secret put MCP_SECRET        # long random string, see below
     npx wrangler secret put TIDAL_CLIENT_ID      # only for a house with a Tidal button
     npx wrangler secret put TIDAL_REFRESH_TOKEN  # from tidal/probe.py's login; TIDAL_COUNTRY is a var
-    npx wrangler@4.129.1 deploy
+    npx wrangler@4.162.0 deploy
 
 **The version is pinned on purpose, and the reason survived the thing that
 caused it.** Wrangler is not a dependency here — there is no `node_modules`, no

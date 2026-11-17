@@ -29,6 +29,21 @@ const send = (e, body, secret = SECRET) => worker.fetch(new Request("https://x.t
   method: "POST", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
   body: JSON.stringify(body) }), e);
 
+test("a song on Tidal: its cover, album, place and track id ride along (2026-11-16, as the Pro Plus answered)", () => {
+  const st = { mode: "10", vendor: "Tidal", status: "play", curpos: "146904", totlen: "215308", Title: hex("I Touch Myself"), Artist: hex("Lime Cordiale"),
+    meta: { metaData: { album: "I Touch Myself (triple j Like A Version)", title: "I Touch Myself", subtitle: "unknow", artist: "Lime Cordiale",
+      albumArtURI: "https://resources.tidal.com/images/bf9427b5/985b/4e6d/b6d4/6258713a1fa8/640x640.jpg", sampleRate: "44100", bitDepth: "16", bitRate: "986", trackId: "195651662" } } };
+  const r = readingOf("Pro Plus", st);
+  assert.equal(r.album, "I Touch Myself (triple j Like A Version)");
+  assert.equal(r.art, "https://resources.tidal.com/images/bf9427b5/985b/4e6d/b6d4/6258713a1fa8/640x640.jpg");
+  assert.deepEqual(r.pos, { ms: 146904, of: 215308 });
+  assert.equal(r.trackId, "195651662");
+  // A cover from anywhere else is not passed on; nor are Spotify's parts, or a station's.
+  assert.equal(readingOf("Pro Plus", { ...st, meta: { metaData: { ...st.meta.metaData, albumArtURI: "https://evil.test/x.jpg" } } }).art, undefined);
+  const sp = readingOf("Ultra", { ...st, mode: "31", vendor: "spotify:playlist:SAMPLEPLAYLIST00000027" });
+  assert.equal(sp.art, undefined); assert.equal(sp.pos, undefined); assert.equal(sp.album, undefined);
+});
+
 test("the helper reads getPlayerStatus into the house's words: source, state, the hex-coded title and artist", () => {
   // As the Pro Plus answered on 2026-09-24, playing preset 2.
   assert.deepEqual(readingOf("Pro Plus", { mode: "10", vendor: "Tidal", status: "play",
@@ -215,6 +230,12 @@ test("the helper obeys only pause and resume, only for a speaker it knows, and a
   assert.equal((await obey(speakers, { id: "b2", cmd: "key", n: 13, speaker: "Pro Plus" }, send, read)).code, "refused");
   assert.equal((await obey(speakers, { id: "b3", cmd: "key", n: "2;reboot", speaker: "Pro Plus" }, send, read)).code, "refused");
   assert.equal((await obey(speakers, { id: "b4", cmd: "toString", speaker: "Pro Plus" }, send, read)).code, "refused");
+  // Next and the one before, as the WiiM's own commands (2026-11-16).
+  const sentNext = [];
+  const send2 = async (ip, cmd) => { sentNext.push(cmd); return "OK"; };
+  assert.equal((await obey(speakers, { id: "n", cmd: "next", speaker: "Pro Plus" }, send2, read)).ok, true);
+  assert.equal((await obey(speakers, { id: "p", cmd: "prev", speaker: "Pro Plus" }, send2, read)).ok, true);
+  assert.deepEqual(sentNext, ["setPlayerCmd:next", "setPlayerCmd:prev"]);
   assert.equal((await obey(speakers, { id: "c", cmd: "pause", speaker: "Kitchen" }, send, read)).code, "refused");
   assert.equal(sent.length, 1, "nothing refused reached a speaker");
   assert.equal((await obey(speakers, { id: "d", cmd: "resume", speaker: "Pro Plus" }, async () => null, read)).code, "unreachable");
