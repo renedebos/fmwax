@@ -143,7 +143,8 @@ export async function fileAsk(env, ctx, { slug, mood, length, avoid, keep = fals
   // request stays honestly pending for the hourly sweep.
   if (env.AUTOFULFILL_ENABLED === "true") {
     const ring = (async () => {
-      const emitted = await emitRequestEvent(env, id);
+      const note = {};
+      const emitted = await emitRequestEvent(env, id, "", note);
       if (!emitted) {
         try {
           // Re-put on the SHORT clock on purpose — the record is
@@ -151,7 +152,7 @@ export async function fileAsk(env, ctx, { slug, mood, length, avoid, keep = fals
           // pattern must never be copied to a post-settle path, where it
           // would silently shrink 90 days to 30.
           const rec = await getRequestRecord(env, id);
-          if (rec) await putRequestRecord(env, { ...rec, dispatch: "failed" });
+          if (rec) await putRequestRecord(env, { ...rec, dispatch: "failed", ...(note.why ? { dispatch_why: note.why } : {}) });
         } catch { /* the sweep needs no flag; this is for the operator */ }
       }
     })();

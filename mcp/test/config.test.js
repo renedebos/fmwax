@@ -476,10 +476,20 @@ test("every place that names a wrangler names the same pinned version", async ()
   const read = (p) => readFileSync(new URL(p, import.meta.url), "utf8");
   const pinned = read("../install/door.js").match(/const WRANGLER = "(wrangler@\d+\.\d+\.\d+)"/)?.[1];
   assert.ok(pinned, "the door pins an exact version, never a range or a bare name");
-  for (const [file, text] of [["package.json", read("../package.json")], ["dev/pagecheck.mjs", read("../dev/pagecheck.mjs")],
+  // The house's own deploy runs through dev/deploy.mjs since 2026-11-17 (it stamps the version).
+  assert.match(read("../package.json"), /node dev\/deploy\.mjs/);
+  for (const [file, text] of [["dev/deploy.mjs", read("../dev/deploy.mjs")], ["dev/pagecheck.mjs", read("../dev/pagecheck.mjs")],
     ["dev/door-check.mjs", read("../dev/door-check.mjs")], ["README.md", read("../README.md")]]) {
     const named = [...new Set(text.match(/wrangler@\d+\.\d+\.\d+/g) ?? [])];
     assert.deepEqual(named, [pinned], `${file} names ${named.join(", ") || "none"}`);
   }
   assert.ok(!/npx (--yes )?wrangler (deploy|kv|secret)/.test(read("../package.json")), "no bare wrangler, which runs whatever is newest");
+});
+
+test("only a house that names its public copy says PUBLIC_COPY (2026-11-17)", () => {
+  assert.equal(parseToml(render(plain(), TEMPLATE)).vars.PUBLIC_COPY, undefined);
+  const named = plain(); named.site.publicCopy = "you/fmwax";
+  assert.equal(parseToml(render(named, TEMPLATE)).vars.PUBLIC_COPY, "you/fmwax");
+  const odd = plain(); odd.site.publicCopy = "not a repo";
+  assert.equal(parseToml(render(odd, TEMPLATE)).vars.PUBLIC_COPY, undefined);
 });

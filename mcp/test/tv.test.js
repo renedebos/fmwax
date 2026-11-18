@@ -1027,3 +1027,14 @@ test("a song or a station the helper reads in the room shown is a cheap look (ev
   const b = tvAnswer({ state: "quiet", lan: { hands: true, speakers: { "Pro Plus": { state: "pause", source: "Tidal", track: "x" } } } }, PRO);
   assert.equal(b.cheap, false, "paused: the page slows down as before");
 });
+
+// 2026-11-17: the version line at the foot of the rooms screen, and nowhere when the house knows none.
+test("the rooms screen ends with the version line", () => {
+  const PRO = { name: "Pro Plus", slug: "pro-plus", wiim: true };
+  const line = "This house runs the version of 17 November 2026 (code e462000). GitHub has the version of 17 November 2026 (code 4a04154), 3 changes behind.";
+  const html = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: null, readings: {}, version: line });
+  const rooms = html.match(/<div class="view vrooms"[\s\S]*?\n  <\/div>/)[0];
+  assert.ok(rooms.endsWith(`<p class="rver">${line}</p>\n  </div>`), "last in the rooms view");
+  assert.equal(html.split('class="rver"').length, 2, "on the rooms screen only");
+  assert.ok(!renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: null, readings: {} }).includes('class="rver"'));
+});

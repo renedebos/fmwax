@@ -843,8 +843,12 @@ export async function endlessRing(env, bells, say) {
   if (env.AUTOFULFILL_ENABLED !== "true") return;
   for (const id of bells) {
     let rang = false;
-    try { rang = await emitRequestEvent(env, id); } catch { rang = false; }
-    if (!rang) say(null, "doorbell-failed", "the hourly sweep will find the job");
+    const note = {};
+    try { rang = await emitRequestEvent(env, id, "", note); } catch (e) {
+      rang = false;
+      note.why ??= e?.budgetExhausted ? "out of subrequests in this call" : "the ring threw";
+    }
+    if (!rang) say(null, "doorbell-failed", `the hourly sweep will find the job${note.why ? ` (${note.why})` : ""}`);
   }
 }
 // After any write to an endless or steered playlist: the mark follows it (so

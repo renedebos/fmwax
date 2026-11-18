@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import worker from "../worker.js";
-import { dayWords, githubRepo, turnOnLink, updateFacts, updateWorkflow, versionCode, versionWords, WORKFLOW_PATH } from "../updates.js";
+import { dayWords, githubRepo, houseVersion, turnOnLink, updateFacts, updateWorkflow, versionCode, versionLine, versionWords, WORKFLOW_PATH } from "../updates.js";
 import { renderRules, renderSetup } from "../programs.js";
 import { mergeConfig, update } from "../install/update.mjs";
 import { makeEnv, makeHouseStore } from "./harness.js";
@@ -203,7 +203,7 @@ test("a version is the day it was made, in words, with a seven-letter code; the 
   assert.equal(versionWords(), VERSION ? versionWords(VERSION) : null, "this repository's own: the author's house says none");
   // Its last line on the House rules page, only where there is one.
   const page = (version) => renderRules({ base: "/buttons/k", md: "# House rules\n", version });
-  assert.match(page("the version of 5 November 2026 (code b8a5d8a)"), /<p class="unote rver">This house runs the version of 5 November 2026 \(code b8a5d8a\)\.<\/p>\s*<footer class="roomfoot"/);
+  assert.match(page("This house runs the version of 5 November 2026 (code b8a5d8a)."), /<p class="unote rver">This house runs the version of 5 November 2026 \(code b8a5d8a\)\.<\/p>\s*<footer class="roomfoot"/);
   assert.ok(!page(null).includes(`class="unote rver"`));
 });
 
@@ -237,5 +237,65 @@ test("the Updates step says both versions by their day, its code, and an updated
     up = await updateFacts(e, t0 + 4 * 3600e3, { current: OLD, currentDay: null, updated: false });
     assert.equal(up.latestWhen, "31 October 2026");
     assert.match(renderSetup({ state: "updates", updates: up }), /A newer version is out, of 31 October 2026\. This house has version aaaaaaa\./);
+  } finally { globalThis.fetch = inner; }
+});
+
+// 2026-11-17, the owner: "is there a way to see what version we are running
+// on the tv page... on the phone app and what version is on github?"
+test("the version line: this house's own, stamped at the deploy or from the copy, then GitHub's", async () => {
+  const HEAD = "e462000" + "1".repeat(33), COPY = "4a04154" + "2".repeat(33), NEWER = "c".repeat(40);
+  const inner = globalThis.fetch;
+  let copy = { from: COPY, day: "2026-11-17" };
+  const asked = [];
+  globalThis.fetch = async (u, init) => {
+    if (String(u).startsWith("https://raw.githubusercontent.com/")) { asked.push(String(u)); return Response.json(copy); }
+    return inner(u, init);
+  };
+  try {
+    // The author's house: no version.js, the deploy's stamp, its public copy.
+    const author = () => {
+      const e = makeEnv();
+      e.HOUSE_COMMIT = HEAD; e.HOUSE_COMMIT_DAY = "2026-11-17"; e.PUBLIC_COPY = "you/fmwax";
+      e.HOUSE_AHEAD_OF = COPY; e.HOUSE_AHEAD = "3";
+      return e;
+    };
+    const none = { current: null, currentDay: null };
+    let e = author();
+    assert.deepEqual(houseVersion(e, none), { sha: HEAD, day: "2026-11-17", stamped: true, changed: false });
+    assert.equal(await versionLine(e, Date.now(), none),
+      "This house runs the version of 17 November 2026 (code e462000). GitHub has the version of 17 November 2026 (code 4a04154), 3 changes behind.");
+    assert.equal(asked[0], "https://raw.githubusercontent.com/you/fmwax/main/.fmwax-copy");
+    // Kept an hour, under its own key: the next look asks GitHub nothing.
+    await versionLine(e, Date.now(), none);
+    assert.equal(asked.length, 1);
+    // One change.
+    e = author(); e.HOUSE_AHEAD = "1";
+    assert.match(await versionLine(e, Date.now(), none), /\(code 4a04154\), 1 change behind\.$/);
+    // No app change since the copy, or the copy made from this very commit: the same.
+    e = author(); e.HOUSE_AHEAD = "0";
+    assert.match(await versionLine(e, Date.now(), none), /GitHub has the same version\.$/);
+    // A copy pushed after the deploy: the count is about another copy, so none is said.
+    e = author(); e.HOUSE_AHEAD_OF = NEWER;
+    assert.match(await versionLine(e, Date.now(), none), /GitHub has the version of 17 November 2026 \(code 4a04154\)\.$/);
+    // Deployed with the app's changes not yet committed.
+    e = author(); e.HOUSE_COMMIT = `${HEAD}+`;
+    assert.match(await versionLine(e, Date.now(), none), /^This house runs the version of 17 November 2026 \(code e462000\), with changes not yet committed\. /);
+    // GitHub out of reach: this house's own alone.
+    e = author(); globalThis.fetch = async () => { throw new Error("offline"); };
+    assert.equal(await versionLine(e, Date.now(), none), "This house runs the version of 17 November 2026 (code e462000).");
+    globalThis.fetch = async (u, init) => (String(u).startsWith("https://raw.githubusercontent.com/") ? Response.json(copy) : inner(u, init));
+    // Nothing stamped and no version.js: no line at all.
+    assert.equal(await versionLine(makeEnv(), Date.now(), none), null);
+    assert.equal(houseVersion({ HOUSE_COMMIT: "e462000" }, none), null, "only a whole commit");
+
+    // A house made from the copy: version.js says its version, SOURCE_REPO its GitHub.
+    const house = makeEnv(); house.SOURCE_REPO = SOURCE;
+    const mine = { current: COPY, currentDay: "2026-11-17" };
+    assert.equal(await versionLine(house, Date.now(), mine),
+      "This house runs the version of 17 November 2026 (code 4a04154). GitHub has the same version.");
+    copy = { from: NEWER, day: "2026-11-20" };
+    const later = makeEnv(); later.SOURCE_REPO = SOURCE;
+    assert.equal(await versionLine(later, Date.now(), mine),
+      "This house runs the version of 17 November 2026 (code 4a04154). GitHub has a newer version: the version of 20 November 2026 (code ccccccc).");
   } finally { globalThis.fetch = inner; }
 });

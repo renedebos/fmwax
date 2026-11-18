@@ -14,7 +14,7 @@ import {
   speakerRule, canonicalDevice, voicePrompt, backendPrompt,
 } from "./voice.js";
 import { iconBytes } from "./icons.js";
-import { githubRepo, updateFacts, versionWords } from "./updates.js";
+import { githubRepo, updateFacts, versionLine } from "./updates.js";
 import { MADE_KEYS, choosePageSetting, choosePageSettings, claimedInStore, giveHouseKey, houseClaimed, noteSeen, noteToolFetch, readSeen, readToolList, renewHouseKey, toolClient } from "./settings.js";
 import { claimHouse, cookieToken, ensureClaimMark, ensureHouseKeys, helperPairCheck, helperPairCode, helperPairFirst, isOwner, newRecoveryCode, ownerCookie, ownerState, recoverOwner, sameSecret, SETUP_KEY_MIN, setupOpen, signOutOthers } from "./claim.js";
 import { setupChecklist, zoneValid } from "./checklist.js";
@@ -2062,6 +2062,9 @@ export async function handleRequest(request, env, ctx) {
             const room = chosen ?? bySlug(url.searchParams.get("kon")) ?? rooms.find((r) => r.name === barNow.pick?.name) ??
               rooms.find((r) => r.name === fallbackDevice(env)) ?? rooms[0] ?? null;
             if (room) room.other = !room.wiim;
+            // The version line at the foot of the rooms screen (2026-11-17),
+            // asked beside the reads below, not after them.
+            const verP = versionLine(env).catch(() => null);
             // Whose set is on each requests preset, for its tile.
             const holders = houseKeys ? {} : await guestHolders(env).catch(() => ({}));
             const reqDj = Object.fromEntries(Object.values(holders).filter((h) => h?.guest?.btn && h.on?.dj)
@@ -2085,8 +2088,9 @@ export async function handleRequest(request, env, ctx) {
             const vs = /^[a-f0-9]{16}$/.exec(url.searchParams.get("vs") ?? url.searchParams.get("vx") ?? "")?.[0] ?? null;
             if (vs) { try { voice = await programsKV(env).get(`tvsaid:${vs}`, { type: "json" }); } catch { voice = null; } }
             // The TV's home names no DJ for what is said next (tvdj.js).
+            const version = await verP;
             const tvRes = roomPage(renderTv({
-              canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null,
+              canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null, version,
               shelf: sp ? { code: sp, on: room?.name ?? "" } : null, tune: tn, voice,
               base, rooms, room, now: barNow, lan: barNow.lan ?? null, endlessKeys, ownKeys: ownRows, reqDj,
               playable: playableKeys(env, boxes, recs), ...readingsShown(env, recs),
@@ -2218,9 +2222,10 @@ export async function handleRequest(request, env, ctx) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(rulesPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The house rules page only answers GET.");
-      // Its version on the last line, the one a problem report asks for (2026-11-05).
-      return roomPage(renderRules({ base: `/buttons/${key}`, md: RULES_MD, facts: await rulesFacts(env), ...(await tabState(env)),
-        version: versionWords() }));
+      // Its version on the last line, the one a problem report asks for
+      // (2026-11-05), and GitHub's beside it (2026-11-17).
+      const [facts, tabs, version] = await Promise.all([rulesFacts(env), tabState(env), versionLine(env).catch(() => null)]);
+      return roomPage(renderRules({ base: `/buttons/${key}`, md: RULES_MD, facts, ...tabs, version }));
     }
 
     // WHAT TO SAY (2026-11-08): Talk and maple crate, with this house's own

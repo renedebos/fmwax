@@ -89,11 +89,12 @@ export const runLink = (own) => `${own.web}/actions/workflows/update.yml`;
 // cannot be read.
 const LATEST_KEY = "update:latest";
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-export async function latestVersion(env, now = Date.now()) {
-  const source = updateSource(env);
+export async function latestVersion(env, now = Date.now(), source = updateSource(env)) {
   if (!source) return null;
+  // The author's house reads its public copy (PUBLIC_COPY) under its own key.
+  const key = source.slug === updateSource(env)?.slug ? LATEST_KEY : `${LATEST_KEY}:copy`;
   try {
-    const kept = await programsKV(env).get(LATEST_KEY, { type: "json" });
+    const kept = await programsKV(env).get(key, { type: "json" });
     if (kept?.from && now - kept.read < 3600e3) return { from: kept.from, day: DAY.test(kept.day ?? "") ? kept.day : null };
   } catch { /* read it again */ }
   try {
@@ -103,7 +104,7 @@ export async function latestVersion(env, now = Date.now()) {
     const from = String(copy?.from ?? "");
     if (!/^[0-9a-f]{40}$/.test(from)) return null;
     const day = DAY.test(String(copy?.day ?? "")) ? copy.day : DAY.test(String(copy?.at ?? "").slice(0, 10)) ? String(copy.at).slice(0, 10) : null;
-    try { await programsKV(env).put(LATEST_KEY, JSON.stringify({ from, day, read: now }), { expirationTtl: 86400 }); } catch { /* read again next time */ }
+    try { await programsKV(env).put(key, JSON.stringify({ from, day, read: now }), { expirationTtl: 86400 }); } catch { /* read again next time */ }
     return { from, day };
   } catch { return null; }
 }
@@ -125,6 +126,45 @@ export function versionWords(sha = VERSION, day = VERSION_DAY) {
   if (!code) return null;
   const when = dayWords(day);
   return when ? `the version of ${when} (code ${code})` : `version ${code}`;
+}
+
+// WHICH VERSION THIS HOUSE RUNS, AND GITHUB'S (2026-11-17, the owner: "is
+// there a way to see what version we are running on the tv page... on the
+// phone app and what version is on github?"). A copy's own (version.js)
+// first; else the commit `npm run deploy` stamped (dev/deploy.mjs:
+// HOUSE_COMMIT, a "+" when the app had changes not yet committed, and
+// HOUSE_COMMIT_DAY), which is how the author's house knows its own.
+const SHA = /^[0-9a-f]{40}$/;
+export function houseVersion(env, { current = VERSION, currentDay = VERSION_DAY } = {}) {
+  if (SHA.test(String(current ?? ""))) return { sha: current, day: DAY.test(currentDay ?? "") ? currentDay : null, stamped: false, changed: false };
+  const m = /^([0-9a-f]{40})(\+?)$/.exec(String(env?.HOUSE_COMMIT ?? ""));
+  if (!m) return null;
+  return { sha: m[1], day: DAY.test(env.HOUSE_COMMIT_DAY ?? "") ? env.HOUSE_COMMIT_DAY : null, stamped: true, changed: m[2] === "+" };
+}
+// The one line both screens show, the House rules page's last and the foot
+// of the TV's rooms screen: this house's version, then GitHub's. GitHub's is
+// the public repository the house came from (SOURCE_REPO), or, in the
+// author's house, the public copy made from it (PUBLIC_COPY). How far behind
+// that copy is was counted at the deploy (HOUSE_AHEAD changes to the app
+// since HOUSE_AHEAD_OF), and is said only while GitHub still has that copy.
+// Null when the house knows no version of its own.
+export async function versionLine(env, now = Date.now(), opts = {}) {
+  const mine = houseVersion(env, opts);
+  if (!mine) return null;
+  const words = versionWords(mine.sha, mine.day);
+  const own = `This house runs ${words}${mine.changed ? ", with changes not yet committed" : ""}.`;
+  const copy = githubRepo(env?.PUBLIC_COPY);
+  const source = updateSource(env) ?? copy;
+  const newest = source ? await latestVersion(env, now, source).catch(() => null) : null;
+  if (!newest?.from) return own;
+  const theirs = versionWords(newest.from, newest.day);
+  const ahead = Number(env?.HOUSE_AHEAD);
+  const counted = !!copy && !updateSource(env) && env?.HOUSE_AHEAD_OF === newest.from && Number.isInteger(ahead) && ahead >= 0;
+  const github = newest.from === mine.sha || (counted && ahead === 0) ? "GitHub has the same version."
+    : counted ? `GitHub has ${theirs}, ${ahead} ${ahead === 1 ? "change" : "changes"} behind.`
+    : mine.stamped ? `GitHub has ${theirs}.`
+    : `GitHub has a newer version: ${theirs}.`;
+  return `${own} ${github}`;
 }
 
 // What the setup page says: null for a house with no source (the author's,

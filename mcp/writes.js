@@ -494,7 +494,9 @@ export async function reviseProgram(env, args, budget) {
 // degrades to slower, never to lost.
 // `again` marks a re-ring, sent when a request has sat unanswered or a claim
 // died — see the DJ page's route.
-export async function emitRequestEvent(env, id, again = "") {
+// `note`, when given, is an object a failed ring writes its reason into
+// (`note.why`), for the caller's log; the answer stays true or false.
+export async function emitRequestEvent(env, id, again = "", note = null) {
   // ONE CURATOR (MC-31 6b, step 5; curator-events.js): a house whose
   // curator is ChatGPT rings it by event and nothing else; a Claude house
   // rings its routine and never the events. A house that chose neither
@@ -503,9 +505,12 @@ export async function emitRequestEvent(env, id, again = "") {
   if (kind !== "claude") {
     let heard = false;
     try { heard = await sendWorkEvent(env, id, again); } catch (e) { if (e?.budgetExhausted) throw e; }
-    if (kind === "chatgpt" || heard) return heard;
+    if (kind === "chatgpt" || heard) {
+      if (!heard && note) note.why = "no ChatGPT subscription answered";
+      return heard;
+    }
   }
-  return fireRoutine(env, id, again);
+  return fireRoutine(env, id, again, note);
 }
 
 // THE DOORBELL BY WEB CALL (MC-31 stage 2, 2026-10-16). The routine's own
@@ -519,10 +524,17 @@ export async function emitRequestEvent(env, id, again = "") {
 // routine's page at claude.ai.
 export const ROUTINE_FIRE = "https://api.anthropic.com/v1/claude_code/routines";
 export const ROUTINE_BETA = "experimental-cc-routine-2026-04-01";
-export async function fireRoutine(env, id, again = "") {
+// WHY A RING FAILED, KEPT (2026-11-17: every ring failed from at least 17:30
+// to 19:42 while the hourly runs still came, and the house had thrown the
+// answer away). `note.why` gets the status, the API's error type and
+// message, and Retry-After, short, any key-like text blanked.
+export async function fireRoutine(env, id, again = "", note = null) {
   const routine = env.REQUEST_ROUTINE_ID;
   const token = env.REQUEST_ROUTINE_TOKEN;
-  if (!routine || !token) return false;
+  if (!routine || !token) {
+    if (note) note.why = "no routine or token set on the house";
+    return false;
+  }
   try {
     const res = await subrequest(env, `${ROUTINE_FIRE}/${encodeURIComponent(routine)}/fire`, {
       method: "POST",
@@ -535,10 +547,32 @@ export async function fireRoutine(env, id, again = "") {
       },
       body: JSON.stringify({ text: `request ${id}${again ? " (again)" : ""}` }),
     });
+    if (!res.ok && note) note.why = await ringRefusal(res);
     return res.ok;
-  } catch {
+  } catch (e) {
+    if (note) {
+      note.why = e?.budgetExhausted ? "out of subrequests in this call"
+        : e?.name === "TimeoutError" || e?.name === "AbortError" ? "no answer in 5 s"
+        : `unreachable: ${blankKeys(String(e?.message ?? e)).slice(0, 80)}`;
+    }
     return false;
   }
+}
+const blankKeys = (s) => s.replace(/sk-ant-[\w-]+/g, "[key]").replace(/Bearer\s+\S+/gi, "Bearer [key]");
+export async function ringRefusal(res) {
+  let type = "", message = "";
+  try {
+    const text = await res.text();
+    try {
+      const j = JSON.parse(text);
+      type = String(j?.error?.type ?? "");
+      message = String(j?.error?.message ?? "");
+    } catch { message = text; }
+  } catch { /* the status says enough */ }
+  const retry = res.headers?.get?.("retry-after");
+  const words = [type, message.replace(/\s+/g, " ").trim()].filter(Boolean).join(": ");
+  return blankKeys(`HTTP ${res.status}${words ? ` ${words}` : ""}`).slice(0, 160)
+    + (retry ? `, retry after ${/^\d+$/.test(retry) ? `${retry} s` : retry.slice(0, 40)}` : "");
 }
 
 // THE RE-FIRE (MC-18 decision 9). A request refused because its guest was

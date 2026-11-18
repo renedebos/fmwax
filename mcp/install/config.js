@@ -170,6 +170,9 @@ export function viewOf(house, { at = "mcp" } = {}) {
       playerReuseOff: house.player?.reuse === false,
       // The house rules page shows this house's own history (2026-10-18).
       rulesHistory: house.rules?.history === true,
+      // The public copy made from this repository, "owner/repo" (2026-11-17):
+      // only the author's house names one; its version shows beside the house's.
+      publicCopy: /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/.test(String(house.site?.publicCopy ?? "")),
       // House radio acts (MC-38 stage 3); absent, its door is a dry run.
       alexaActs: house.alexa?.acts === true,
       // Cloudflare's Workers Logs, only in a house that asks for them
@@ -191,6 +194,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       "site.baseUrl": house.site?.baseUrl ?? "",
       "site.source": house.site?.source ?? "",
       "site.timezone": house.site?.timezone ?? "",
+      "site.publicCopy": house.site?.publicCopy ?? "",
       "kv.TOKENS": house.kv?.TOKENS ?? "",
       "kv.PROGRAMS": house.kv?.PROGRAMS ?? "",
       "devices.default": devices?.default ?? "",

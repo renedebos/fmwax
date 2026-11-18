@@ -256,6 +256,14 @@ ALEXA_ACTS = "on"
 RULES_HISTORY = "on"
 
 #{{end}}
+#{{if publicCopy}}
+# The public copy made from this repository (house.json `site.publicCopy`,
+# 2026-11-17): its version on GitHub shows beside this house's own, on the
+# House rules page and at the foot of the TV's rooms screen. Only the author's
+# house names one; a house made from that copy has SOURCE_REPO instead.
+PUBLIC_COPY = {{site.publicCopy}}
+
+#{{end}}
 #{{if endless}}
 # The endless DJ (MC-22, tasks/done/mc22-endless-dj.md): which presets play for as
 # long as anyone listens, their DJs and limits, and whether the cron below

@@ -534,6 +534,7 @@ main.tv[data-tone=off] .b1{font-size:1.5rem}
 .dq span+span{font-size:.9375rem;color:var(--ink-3)}
 .dright{display:flex;align-items:center;justify-content:flex-end;gap:.625rem}
 .vmove,.vrooms,.vabout{padding:1.5rem 2.5rem;flex-direction:column;gap:1.25rem}
+.vrooms .rver{margin:auto 0 0;font-size:.9375rem;line-height:1.4;color:var(--ink-3)}
 a.mroom{text-decoration:none}
 html.scroll,html.scroll body{height:auto;overflow:visible}
 html.scroll{overflow-y:auto;overflow-x:hidden}
@@ -614,7 +615,7 @@ function bandHtml(b, say, tuneHref) {
 
 // THE DISPLAY, MOVE AND ABOUT THIS SONG: three more views of the same page,
 // drawn empty and filled by the script from the same answer the band shows.
-function viewsHtml(b, rooms, room = null, on = {}, base = "") {
+function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
   return `
   <div class="view vdis" aria-label="Now playing, large">
     <div class="dbg" aria-hidden="true"></div>
@@ -644,7 +645,8 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "") {
   </div>
   <div class="view vrooms" aria-label="Choose a room">
     <div class="vhead"><h1>Choose a room</h1><button type="button" class="pill rcancel" data-open="ctl">Cancel</button></div>
-    <div class="mgrid">${rooms.map((r) => `<a class="mroom rroom${r.slug === room?.slug ? " here" : ""}" data-f="r:${esc(r.slug)}" data-room="${esc(r.slug)}" href="${esc(base)}/tv?room=${esc(encodeURIComponent(r.slug))}"><span>${esc(r.name)}</span><small>${r.wiim ? WIIM_USE : ""}<span class="mst">${r.slug === room?.slug ? "Showing" : on[r.slug] ? "Playing" : ""}</span></small></a>`).join("")}</div>
+    <div class="mgrid">${rooms.map((r) => `<a class="mroom rroom${r.slug === room?.slug ? " here" : ""}" data-f="r:${esc(r.slug)}" data-room="${esc(r.slug)}" href="${esc(base)}/tv?room=${esc(encodeURIComponent(r.slug))}"><span>${esc(r.name)}</span><small>${r.wiim ? WIIM_USE : ""}<span class="mst">${r.slug === room?.slug ? "Showing" : on[r.slug] ? "Playing" : ""}</span></small></a>`).join("")}</div>${version ? `
+    <p class="rver">${esc(version)}</p>` : ""}
   </div>
   <div class="view vvoice" aria-label="Say it to the TV">
     <div class="vcard">
@@ -683,7 +685,7 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "") {
 // `shelf` and `tune` what a press on the Shelf or the dials came to.
 export function renderTv({ base, rooms = [], room = null, now = null, readings = {}, readAt = 0, endlessKeys = {},
   playable = {}, fills = [], lan = null, ownKeys = null, reqDj = {}, hflash = null, flash = null,
-  canTune = false, tz = null, shelf = null, tune = null, voice = null, clock = Date.now() }) {
+  canTune = false, tz = null, shelf = null, tune = null, voice = null, version = null, clock = Date.now() }) {
   const answer = tvAnswer(now ?? { state: "unknown" }, room ?? { name: "" }, { readAt, readSig: tvReadSig(readings), now: clock, canTune, tz });
   const say = tvFlashWords({ hflash, flash, shelf, tune, voice });
   const band = answer.band;
@@ -778,7 +780,7 @@ export function renderTv({ base, rooms = [], room = null, now = null, readings =
 <div class="view vctl">${roomsRow}
   <section class="grid" aria-label="${esc(label)}">${grid}
   </section>${bandHtml(band, say, tuneHref)}
-</div>${viewsHtml(band, rooms, room, answer.rooms, base)}
+</div>${viewsHtml(band, rooms, room, answer.rooms, base, version)}
 </main>
 ${TV_SCRIPT}
 </body>

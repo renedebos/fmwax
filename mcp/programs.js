@@ -7681,7 +7681,7 @@ export function renderRules({ base, md = "", facts = {}, loaded = true, owed = 0
     <h2>All the rules</h2>
     <p class="rsub">Tap a heading to open it.</p>${rulesFolds(doc.sections)}
   </section>` : ""}${version ? `
-  <p class="unote rver">This house runs ${esc(version)}.</p>` : ""}
+  <p class="unote rver">${esc(version)}</p>` : ""}
   <footer class="roomfoot" id="roomfoot">
     <div class="chips footchips"><a class="chip" href="${esc(base)}/wiim">${icon("back", 16)}Speakers</a></div>
   </footer>

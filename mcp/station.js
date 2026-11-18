@@ -1210,7 +1210,14 @@ export class StationLedger {
   // helper's answer comes back up it. Hibernatable, so an idle line costs
   // nothing, and a "ping" is answered without waking the object.
   #waiting = new Map();
-  #helperSocket() { return this.state.getWebSockets("helper")[0] ?? null; }
+  // AN OPEN LINE ONLY (2026-11-17, after the 19:51 deploy: for five minutes
+  // the house counted a line it could no longer send on, so the TV page drew
+  // its presets as presses and each press came back "not connected", while
+  // the runtime's own ping/pong kept the helper sure it was connected). A
+  // line closing or closed is no line; one whose send fails is closed here,
+  // so `hands` reads false and the helper's minute check opens a new one.
+  #helperSocket() { return this.state.getWebSockets("helper").find((ws) => !(ws.readyState >= 2)) ?? null; }
+  #dropLine(ws) { try { ws.close(1011, "the house could not send on this line"); } catch { /* gone already */ } }
   // One document of endless_state by its key, or null.
   #stateDoc(k) {
     const row = this.sql.exec("SELECT doc FROM endless_state WHERE k = ?", k).toArray()[0];
@@ -1223,6 +1230,7 @@ export class StationLedger {
     if (done) { this.#waiting.delete(m.id); done(m); }
   }
   webSocketClose(ws) { try { ws.close(); } catch { /* already closed */ } }
+  webSocketError(ws) { this.#dropLine(ws); }
 
   async fetch(request) {
     if (request.headers.get("upgrade") === "websocket") {
@@ -1542,7 +1550,7 @@ export class StationLedger {
         // dropped here at first, and the helper rightly refused a key with
         // no number).
         try { ws.send(JSON.stringify({ id, cmd: args.cmd, speaker: args.speaker, ...(Number.isInteger(args.n) ? { n: args.n } : {}) })); }
-        catch { this.#waiting.delete(id); resolve({ ok: false, code: "helper-off" }); return; }
+        catch { this.#waiting.delete(id); this.#dropLine(ws); resolve({ ok: false, code: "helper-off" }); return; }
         setTimeout(() => { if (this.#waiting.delete(id)) resolve({ ok: false, code: "timeout" }); }, 10000);
       });
       return Response.json({ ok: !!reply?.ok, code: reply?.code ?? (reply?.ok ? "ok" : "failed"), reading: reply?.reading ?? null });

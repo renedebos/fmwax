@@ -330,6 +330,26 @@ test("live: running low opens a job, rings the doorbell, and offers it with the 
   } finally { bell.restore(); sp.restore(); }
 });
 
+test("a refused ring's reason goes in the log line (2026-11-17)", async () => {
+  const player = { now: { pid: PL, at: 0 } };
+  const sp = spotifyAt(player);
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => String(u).startsWith("https://api.anthropic.com/")
+    ? Response.json({ type: "error", error: { type: "authentication_error", message: "OAuth access token is invalid." } }, { status: 401 })
+    : inner(u, init);
+  try {
+    const e = liveEnv();
+    let t = Date.parse("2026-09-24T02:00:00Z");
+    await endlessWatch(e, t);
+    player.now = { pid: PL, at: 8 };
+    t += 10 * MIN; await endlessWatch(e, t);
+    const failed = e.STATION.endless.log.filter((l) => l.event === "doorbell-failed");
+    assert.equal(failed.length, 1);
+    assert.equal(failed[0].detail,
+      "the hourly sweep will find the job (HTTP 401 authentication_error: OAuth access token is invalid.)");
+  } finally { globalThis.fetch = inner; sp.restore(); }
+});
+
 test("extend_endless appends the job's songs to the playing preset, drops recent ones, and closes the job", async () => {
   const player = { now: { pid: PL, at: 0 } };
   const sp = spotifyAt(player);

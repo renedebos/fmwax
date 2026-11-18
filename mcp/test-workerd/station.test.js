@@ -588,6 +588,43 @@ describe("the home helper's line against the real binding", () => {
     expect(seen[0]).toMatchObject({ cmd: "key", n: 2, speaker: "Pro Plus" });
     ws.close();
   });
+
+  // 2026-11-17: after a deploy the house counted a line it could not send on.
+  // A line that is closing or closed is no line: hands false, and a press is
+  // answered "helper-off" at once, not sent into it.
+  test("a closed line is not counted, and a press on it is helper-off at once", async () => {
+    const stub = env.STATION.get(env.STATION.idFromName(crypto.randomUUID()));
+    const up = await stub.fetch("https://station/", { headers: { upgrade: "websocket" } });
+    const ws = up.webSocket;
+    ws.accept();
+    const call = (op, args) => stub.fetch("https://station/", { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify({ op, args }) }).then((r) => r.json());
+    expect((await call("helper-get", {})).hands).toBe(true);
+    ws.close(1000, "gone");
+    let hands = true;
+    for (let i = 0; i < 20 && hands; i++) {
+      await new Promise((r) => setTimeout(r, 50));
+      hands = (await call("helper-get", {})).hands;
+    }
+    expect(hands).toBe(false);
+    const t0 = Date.now();
+    const out = await call("helper-command", { cmd: "key", n: 2, speaker: "Pro Plus" });
+    expect(out).toMatchObject({ ok: false, code: "helper-off" });
+    expect(Date.now() - t0).toBeLessThan(5000);
+  });
+
+  test("a line the house has closed is not counted while its close is still on the way", async () => {
+    const stub = env.STATION.get(env.STATION.idFromName(crypto.randomUUID()));
+    const up = await stub.fetch("https://station/", { headers: { upgrade: "websocket" } });
+    const ws = up.webSocket;
+    ws.accept(); // and never answers the close: the line sits closing
+    const call = (op, args) => stub.fetch("https://station/", { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify({ op, args }) }).then((r) => r.json());
+    expect((await call("helper-get", {})).hands).toBe(true);
+    expect((await call("helper-drop", {})).dropped).toBe(1);
+    expect((await call("helper-get", {})).hands).toBe(false);
+    expect(await call("helper-command", { cmd: "key", n: 2, speaker: "Pro Plus" })).toMatchObject({ ok: false, code: "helper-off" });
+  });
 });
 
 // MC-29: the kept player answer and the helper's changedAt, in real SQLite.

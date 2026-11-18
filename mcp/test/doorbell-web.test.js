@@ -64,6 +64,50 @@ test("a refused or unreachable trigger, or no routine, answers false and calls n
   } finally { w.restore(); }
 });
 
+test("a failed ring says why in its note: status, the API's error, Retry-After, no key (2026-11-17)", async () => {
+  let w = wire(() => Response.json(
+    { type: "error", error: { type: "authentication_error", message: "OAuth access token is invalid." } }, { status: 401 }));
+  try {
+    const note = {};
+    assert.equal(await emitRequestEvent(house(), "req-9", "", note), false);
+    assert.equal(note.why, "HTTP 401 authentication_error: OAuth access token is invalid.");
+  } finally { w.restore(); }
+
+  w = wire(() => new Response(JSON.stringify({ error: { type: "rate_limit_error", message: "slow down" } }),
+    { status: 429, headers: { "retry-after": "1800" } }));
+  try {
+    const note = {};
+    assert.equal(await emitRequestEvent(house(), "req-9", "", note), false);
+    assert.equal(note.why, "HTTP 429 rate_limit_error: slow down, retry after 1800 s");
+  } finally { w.restore(); }
+
+  w = wire(() => new Response("bad key sk-ant-oat01-abcDEF_123 and Bearer routine-token", { status: 400 }));
+  try {
+    const note = {};
+    await emitRequestEvent(house(), "req-9", "", note);
+    assert.equal(note.why, "HTTP 400 bad key [key] and Bearer [key]");
+    assert.ok(!note.why.includes("routine-token"));
+  } finally { w.restore(); }
+
+  w = wire(() => { const e = new Error("The operation was aborted due to timeout"); e.name = "TimeoutError"; throw e; });
+  try {
+    const note = {};
+    assert.equal(await emitRequestEvent(house(), "req-9", "", note), false);
+    assert.equal(note.why, "no answer in 5 s");
+  } finally { w.restore(); }
+
+  const note = {};
+  assert.equal(await emitRequestEvent(house({ routine: false }), "req-9", "", note), false);
+  assert.equal(note.why, "no routine or token set on the house");
+
+  w = wire(() => Response.json({ type: "routine_fire" }));
+  try {
+    const ok = {};
+    assert.equal(await emitRequestEvent(house(), "req-9", "", ok), true);
+    assert.equal(ok.why, undefined, "a ring that worked leaves the note empty");
+  } finally { w.restore(); }
+});
+
 test("the config names the routine only when requests are on and one is given", () => {
   const base = { worker: { name: "w", compatibilityDate: "2025-06-01" }, site: { baseUrl: "https://x.test" },
     kv: { TOKENS: "t", PROGRAMS: "p" }, buttons: [] };
