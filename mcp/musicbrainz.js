@@ -277,22 +277,106 @@ export function songFactsOf(rec) {
 }
 
 // The English Wikipedia article a Wikidata entry names, and its opening.
+const WIKI_H = { headers: { "user-agent": MB_UA, accept: "application/json" } };
+const leftOf = (deadline) => Math.max(500, Math.min(TIMEOUT_MS, deadline - Date.now()));
 async function wikiOpening(env, q, deadline) {
-  const left = () => Math.max(500, Math.min(TIMEOUT_MS, deadline - Date.now()));
-  const h = { headers: { "user-agent": MB_UA, accept: "application/json" } };
   try {
     const r = await subrequest(env, `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${q}&props=sitelinks&sitefilter=enwiki&format=json`,
-      { ...h, signal: AbortSignal.timeout(left()) });
+      { ...WIKI_H, signal: AbortSignal.timeout(leftOf(deadline)) });
     const title = r?.ok ? (await r.json())?.entities?.[q]?.sitelinks?.enwiki?.title : null;
     if (!title || Date.now() > deadline - 500) return null;
+    return await wikiSummary(env, title, deadline);
+  } catch (e) { if (e?.budgetExhausted) throw e; return null; }
+}
+// An article's opening by its title (a disambiguation page or a missing one: null).
+async function wikiSummary(env, title, deadline) {
+  if (!title || Date.now() > deadline - 500) return null;
+  try {
     const s = await subrequest(env, `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(String(title).replace(/ /g, "_"))}`,
-      { ...h, signal: AbortSignal.timeout(left()) });
+      { ...WIKI_H, signal: AbortSignal.timeout(leftOf(deadline)) });
     const d = s?.ok ? await s.json() : null;
     if (!d || d.type !== "standard") return null;
     const text = mbText(d.extract, 1400);
     const url = String(d.content_urls?.desktop?.page ?? "");
     return text ? { title: mbText(d.title, 160), text, url: /^https:\/\/en\.wikipedia\.org\//.test(url) ? url : null } : null;
   } catch (e) { if (e?.budgetExhausted) throw e; return null; }
+}
+
+// THE ALBUM'S ARTICLE (2026-11-17, the owner: "yes build it", after a
+// measurement: of 19 songs with no Wikipedia article of their own, the album
+// each first came out on led to its article for 13, 12 of them right;
+// tasks/album-article-trial.mjs). Asked only when the song has none, and
+// always said as the album's ("about the album …"), so a wrong one shows.
+// The album: the earliest official album holding the recording, a
+// soundtrack allowed, never a compilation, a live record, a remix or a
+// mixtape. Its release group's Wikidata (or Wikipedia) link first; then
+// Wikipedia's search for the album and the artist, kept only when the
+// article's title is the album's and its opening names the artist and says
+// album. Last, the album Spotify plays the song from, by the same search,
+// unless its name reads as a collection.
+const NOT_ORIGINAL = /compilation|live|remix|dj-mix|mixtape|demo/i;
+export function firstAlbumOf(rec) {
+  const dated = (r) => String(r?.date || r?.["release-group"]?.["first-release-date"] || "9999");
+  const ok = (r) => (!r?.status || r.status === "Official") && r?.["release-group"]?.["primary-type"] === "Album"
+    && !(r["release-group"]["secondary-types"] ?? []).some((t) => NOT_ORIGINAL.test(String(t)));
+  const first = (Array.isArray(rec?.releases) ? rec.releases : []).filter(ok).sort((a, b) => dated(a).localeCompare(dated(b)))[0];
+  const rg = first?.["release-group"];
+  const title = mbText(rg?.title ?? first?.title, 120);
+  return rg?.id && title ? { id: String(rg.id), title } : null;
+}
+const fold = (v) => String(v ?? "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+// Spotify's album name without its reissue words; a collection is no album here.
+export const cleanAlbum = (v) => String(v ?? "").replace(/\s+/g, " ").trim()
+  .replace(/\s+-\s+.*\b(remaster(ed)?|deluxe|edition|expanded|anniversary|version|mono|stereo)\b.*$/i, "")
+  .replace(/\s*[([][^)\]]*\b(remaster(ed)?|deluxe|edition|expanded|anniversary|bonus|version|mono|stereo)\b[^)\]]*[)\]]\s*$/i, "").trim().slice(0, 120);
+const COLLECTION = /\b(greatest hits|best of|the best|gold|anthology|collection|essential|definitive|ultimate|singles|retrospective|hits)\b/i;
+async function albumBySearch(env, album, artist, deadline) {
+  const a = fold(album);
+  if (!a || !fold(artist) || Date.now() > deadline - 1000) return null;
+  try {
+    const r = await subrequest(env, `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(`${album} ${artist} album`)}&srlimit=3&format=json&formatversion=2`,
+      { ...WIKI_H, signal: AbortSignal.timeout(leftOf(deadline)) });
+    const hits = r?.ok ? (await r.json())?.query?.search ?? [] : [];
+    // The album's own title ("Super Fly (soundtrack)" for "Superfly"), at
+    // most two tried: a song of the same name may come first.
+    const same = (h) => fold(String(h?.title ?? "").replace(/\s*\([^)]*\)$/, "")).replace(/ /g, "") === a.replace(/ /g, "");
+    for (const hit of hits.slice(0, 3).filter(same).slice(0, 2)) {
+      const s = await wikiSummary(env, hit.title, deadline);
+      if (isAlbumArticle(s, artist)) return s;
+    }
+    return null;
+  } catch (e) { if (e?.budgetExhausted) throw e; return null; }
+}
+// An album's article says so in its first sentence ("… is the third studio
+// album by …"), and names the artist. A song's article that mentions its
+// album later ("Superfly is a song by … the title track from his album",
+// found live on the first try, 2026-11-17) is not one.
+export function isAlbumArticle(s, artist) {
+  const text = String(s?.text ?? "").slice(0, 600);
+  // The first sentence only: a song's article calls itself "the second
+  // single from the album" further on.
+  const first = fold(text.split(/(?<=[a-z0-9)"'\u201d])\.\s+(?=[A-Z])/)[0]);
+  const who = fold(artist).replace(/^the /, "").split(" ")[0];
+  return !!(s && who && fold(text).includes(who) && /\b(is|was) (a|an|the)( [a-z0-9]+){0,6} (album|soundtrack|lp|ep|record)\b/.test(first));
+}
+async function albumArticle(env, rg, spotifyAlbum, artist, deadline, cap) {
+  if (rg) {
+    const g = await ask(env, `/release-group/${encodeURIComponent(rg.id)}?inc=url-rels&fmt=json`, SPACING_MS, deadline, cap);
+    const urls = g && g !== MB_NONE ? (Array.isArray(g.relations) ? g.relations : []).map((r) => String(r?.url?.resource ?? "")) : [];
+    const q = urls.map((u) => u.match(/^https:\/\/www\.wikidata\.org\/wiki\/(Q\d{1,12})$/)?.[1]).find(Boolean);
+    let w = q ? await wikiOpening(env, q, deadline) : null;
+    const en = w ? null : urls.map((u) => u.match(/^https:\/\/en\.wikipedia\.org\/wiki\/([^?#]+)$/)?.[1]).find(Boolean);
+    if (en) { try { w = await wikiSummary(env, decodeURIComponent(en).replace(/_/g, " "), deadline); } catch (e) { if (e?.budgetExhausted) throw e; } }
+    if (w && !isAlbumArticle(w, artist)) w = null;
+    if (!w) w = await albumBySearch(env, rg.title, artist, deadline);
+    if (w) return { ...w, album: rg.title };
+  }
+  const sp = cleanAlbum(spotifyAlbum);
+  if (sp && !COLLECTION.test(sp) && fold(sp) !== fold(rg?.title)) {
+    const w = await albumBySearch(env, sp, artist, deadline);
+    if (w) return { ...w, album: sp };
+  }
+  return null;
 }
 
 // WHEN THE CODE IS NOT KNOWN (a remaster or a compilation files the song
@@ -322,7 +406,7 @@ async function songBySearch(env, title, artist, durationMs, deadline, cap) {
 // the Bravia, and the live house had made no lookup, so the TV's answers
 // carried no code): the song is found by its title and artist, and kept
 // under them.
-export async function songFacts(env, isrc, durationMs = 0, { title = "", artist = "", deadlineMs = env?.__mbDeadlineMs ?? SONG_DEADLINE_MS } = {}) {
+export async function songFacts(env, isrc, durationMs = 0, { title = "", artist = "", album: spotifyAlbum = "", deadlineMs = env?.__mbDeadlineMs ?? SONG_DEADLINE_MS } = {}) {
   if (!artistLookupOn(env)) return null;
   const code = String(isrc ?? "").toUpperCase().replace(/[^A-Z0-9]/g, "");
   const byCode = ISRC_RE.test(code);
@@ -331,14 +415,18 @@ export async function songFacts(env, isrc, durationMs = 0, { title = "", artist 
   const kv = programsKV(env);
   const tag = byCode ? code.toLowerCase() : `n-${named}`;
   const key = `songfacts:${tag}`, miss = `mbmiss:song-${tag}`;
+  // A song kept before the album's article (no `v`) and without an article
+  // of its own is asked once more, for its album's (2026-11-17).
+  let old = null;
   try {
     const kept = await kv.get(key, { type: "json" });
-    if (kept) return kept.facts ?? null;
-    if (await kv.get(miss)) return null;
+    if (kept && (kept.v >= 2 || kept.facts?.wiki)) return kept.facts ?? null;
+    if (kept) old = kept.facts ?? null;
+    else if (await kv.get(miss)) return null;
   } catch { /* asked, then */ }
   const deadline = Date.now() + deadlineMs;
   const cap = { left: 5 };
-  let facts = null, answered = false;
+  let facts = null, answered = false, rg = null;
   try {
     const got = byCode ? await ask(env, `/isrc/${code}?fmt=json`, 0, deadline, cap) : MB_NONE;
     const recs = got && got !== MB_NONE ? (Array.isArray(got.recordings) ? got.recordings : []).filter((r) => r?.id) : [];
@@ -357,6 +445,7 @@ export async function songFacts(env, isrc, durationMs = 0, { title = "", artist 
       if (rec && rec !== MB_NONE) {
         answered = true;
         const f = songFactsOf(rec);
+        rg = firstAlbumOf(rec);
         const wiki = f.wikidata ? await wikiOpening(env, f.wikidata, deadline) : null;
         const { wikidata, ...rest } = f;
         facts = byName
@@ -365,9 +454,17 @@ export async function songFacts(env, isrc, durationMs = 0, { title = "", artist 
         if (!facts.writers.length && !facts.recorded && !facts.place && !facts.released && !facts.album && !wiki) facts = null;
       } else if (rec === MB_NONE) answered = true;
     }
+    // No article of the song's own: its album's, said as the album's.
+    if (answered && !facts?.wiki) {
+      const albumWiki = await albumArticle(env, rg, spotifyAlbum, artist, deadline, cap);
+      if (facts) facts.albumWiki = albumWiki;
+      else if (albumWiki) facts = { writers: [], recorded: null, place: null, live: false, released: null, album: null, wiki: null, albumWiki, byName: true };
+    }
   } catch { answered = false; }
+  // Asked again and not answered (MusicBrainz busy): what was kept stands.
+  if (!answered && old) return old;
   try {
-    if (answered) await kv.put(key, JSON.stringify({ at: Date.now(), facts }), { expirationTtl: facts ? SONG_KEEP_S : SONG_NONE_S });
+    if (answered) await kv.put(key, JSON.stringify({ at: Date.now(), v: 2, facts }), { expirationTtl: facts ? SONG_KEEP_S : SONG_NONE_S });
     else await kv.put(miss, "1", { expirationTtl: SONG_MISS_S });
   } catch { /* asked again, then */ }
   return facts;

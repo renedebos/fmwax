@@ -2637,7 +2637,7 @@ export async function handleRequest(request, env, ctx) {
         if (isrc || (q.get("t") && q.get("a"))) {
           const t = String(q.get("t") ?? ""), a = String(q.get("a") ?? "");
           [facts, genius] = await Promise.all([
-            songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a }).catch(() => null),
+            songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a, album: String(q.get("al") ?? "").slice(0, 200) }).catch(() => null),
             t && a ? geniusSong(env, { title: t, artist: a }).then(geniusForTv).catch(() => null) : null,
           ]);
         }

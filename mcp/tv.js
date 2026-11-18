@@ -933,7 +933,7 @@ const TV_SCRIPT = `<script>
     }).catch(function () {});
     /* By the song's code when the answer carries one, else by its title and
        artist (the house finds it by name). */
-    if (s.isrc || band.artist) fetch(at + "&isrc=" + enc(s.isrc || "") + "&ms=" + enc(s.ms || "") + "&a=" + enc(band.artist || ""), { cache: "no-store" }).then(got()).then(function (a) {
+    if (s.isrc || band.artist) fetch(at + "&isrc=" + enc(s.isrc || "") + "&ms=" + enc(s.ms || "") + "&a=" + enc(band.artist || "") + "&al=" + enc(band.album || ""), { cache: "no-store" }).then(got()).then(function (a) {
       if (!a || song.key !== key || !(a.facts || a.genius)) return;
       song.facts = a.facts || null; song.genius = a.genius || null; drawSong();
     }).catch(function () {});
@@ -1017,17 +1017,18 @@ const TV_SCRIPT = `<script>
         row("Sampled in", names(g.sampledIn));
         row("Covered by", names(g.coveredBy));
       }
-      var w = f && f.wiki;
-      /* Genius's own words only where Wikipedia has none: they are shorter,
-         and written by its readers. */
-      var gw = !(w && w.text) && g && g.about ? g.about : "";
-      show(q(".awiki"), !!((w && w.text) || gw));
-      set(q(".awlbl"), gw ? "From Genius" : "From Wikipedia");
-      set(q(".awp"), w && w.text ? w.text : gw);
+      /* The song's own article; else its album's, said as the album's
+         (2026-11-17); else Genius's own words, which are shorter and written
+         by its readers. */
+      var w = wikiOf(f), aw = w && w === f.albumWiki;
+      var gw = !w && g && g.about ? g.about : "";
+      show(q(".awiki"), !!(w || gw));
+      set(q(".awlbl"), aw ? "From Wikipedia, about the album " + (w.album || w.title) : gw ? "From Genius" : "From Wikipedia");
+      set(q(".awp"), w ? w.text : gw);
       /* MORE FROM WIKIPEDIA (the owner, 2026-11-16): the rest of the article's
          story, asked for only when the button is pressed. */
       drawMore();
-      var dbs = [f ? "MusicBrainz" : "", w && w.text ? "Wikipedia" : ""].filter(Boolean).join(" and ");
+      var dbs = [f ? "MusicBrainz" : "", w ? "Wikipedia" : ""].filter(Boolean).join(" and ");
       set(q(".asrc"), (dbs ? "From " + dbs + ", open databases anyone can edit." : "") + (g ? (dbs ? " " : "") + "From Genius, written by its readers." : ""));
     }
     /* The whole page the DJ wrote, on a page of its own (the owner,
@@ -1036,8 +1037,11 @@ const TV_SCRIPT = `<script>
     show(nl, !!s.slug);
     if (s.slug) nl.setAttribute("href", base + "/tv/notes/" + enc(s.slug) + "?room=" + enc(room) + "&uri=" + enc(s.uri || ""));
   }
+  function wikiOf(f) {
+    return f && f.wiki && f.wiki.text ? f.wiki : f && f.albumWiki && f.albumWiki.text ? f.albumWiki : null;
+  }
   function drawMore() {
-    var f = song.facts, w = f && f.wiki, box = q(".awmore"), btn = q(".awbtn");
+    var f = song.facts, w = wikiOf(f), box = q(".awmore"), btn = q(".awbtn");
     box.textContent = "";
     var m = song.more;
     if (m && m.sections) {
@@ -1050,7 +1054,7 @@ const TV_SCRIPT = `<script>
     if (btn && !btn.getAttribute("aria-busy")) set(btn, m && m.none ? "No more on Wikipedia" : "More from Wikipedia");
   }
   function askMore(btn) {
-    var f = song.facts, w = f && f.wiki, key = song.key;
+    var f = song.facts, w = wikiOf(f), key = song.key;
     if (!w || !w.title || btn.getAttribute("aria-busy") === "true") return;
     btn.setAttribute("aria-busy", "true"); set(btn, "Loading\u2026");
     fetch(base + "/tv/song?more=1&w=" + enc(w.title) + "&s=" + enc(String(w.text || "").slice(0, 80)), { cache: "no-store" })

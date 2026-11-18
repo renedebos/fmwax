@@ -1038,3 +1038,116 @@ test("the rooms screen ends with the version line", () => {
   assert.equal(html.split('class="rver"').length, 2, "on the rooms screen only");
   assert.ok(!renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: null, readings: {} }).includes('class="rver"'));
 });
+
+// THE ALBUM'S ARTICLE (2026-11-17): a song with no Wikipedia article of its
+// own shows the opening of the album it first came out on, said as the
+// album's. Shaped on Curtis Mayfield's "Pusherman" (Super Fly, a soundtrack).
+test("song facts: no article of the song's own, so the first album's, from its release group's Wikidata link", async () => {
+  const e = env();
+  e.ARTIST_LOOKUP = "on"; e.__mbSleep = async () => {};
+  const f = installFetch();
+  const REC = "11111111-pusher", RG = "22222222-superfly";
+  const heard = [];
+  const below = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => {
+    const url = new URL(String(u));
+    if (url.hostname === "musicbrainz.org") {
+      heard.push(`mb ${url.pathname}`);
+      if (url.pathname === "/ws/2/recording") return Response.json({ recordings: [{ id: REC, score: 100, length: 305000 }] });
+      if (url.pathname === `/ws/2/recording/${REC}`) return Response.json({ id: REC, relations: [
+        { "target-type": "work", type: "performance", work: { title: "Pusherman", relations: [{ "target-type": "artist", type: "composer", artist: { name: "Curtis Mayfield" } }] } }],
+        releases: [
+          { title: "The Very Best of Curtis Mayfield", date: "1997", status: "Official", "release-group": { id: "rg-best", title: "The Very Best of Curtis Mayfield", "primary-type": "Album", "secondary-types": ["Compilation"] } },
+          { title: "Curtis/Live!", date: "1971", status: "Official", "release-group": { id: "rg-live", title: "Curtis/Live!", "primary-type": "Album", "secondary-types": ["Live"] } },
+          { title: "Superfly", date: "1972-07-11", status: "Official", "release-group": { id: RG, title: "Superfly", "primary-type": "Album", "secondary-types": ["Soundtrack"] } }] });
+      if (url.pathname === `/ws/2/release-group/${RG}`) {
+        assert.equal(url.searchParams.get("inc"), "url-rels");
+        return Response.json({ id: RG, relations: [{ url: { resource: "https://www.wikidata.org/wiki/Q1210542" } }] });
+      }
+      return Response.json({ error: "Not Found" }, { status: 404 });
+    }
+    if (url.hostname === "www.wikidata.org") {
+      heard.push(`wikidata ${url.searchParams.get("ids")}`);
+      return Response.json({ entities: { Q1210542: { sitelinks: { enwiki: { title: "Super Fly (soundtrack)" } } } } });
+    }
+    if (url.hostname === "en.wikipedia.org") {
+      heard.push(`wikipedia ${decodeURIComponent(url.pathname)}`);
+      return Response.json({ type: "standard", title: "Super Fly (soundtrack)",
+        extract: "Super Fly is the third studio album by American soul musician Curtis Mayfield, released on July 11, 1972.",
+        content_urls: { desktop: { page: "https://en.wikipedia.org/wiki/Super_Fly_(soundtrack)" } } });
+    }
+    return below(u, init);
+  };
+  try {
+    const q = `${KEY}/tv/song?uri=${encodeURIComponent("spotify:track:0000000000000000000001")}&isrc=&ms=305000&t=Pusherman&a=${encodeURIComponent("Curtis Mayfield")}&al=${encodeURIComponent("Move On Up: The Gold of Curtis Mayfield")}`;
+    const a = (await (await call(e, q)).json()).facts;
+    assert.equal(a.wiki, null);
+    assert.deepEqual(a.albumWiki, { title: "Super Fly (soundtrack)", album: "Superfly",
+      text: "Super Fly is the third studio album by American soul musician Curtis Mayfield, released on July 11, 1972.",
+      url: "https://en.wikipedia.org/wiki/Super_Fly_(soundtrack)" });
+    assert.ok(heard.includes(`mb /ws/2/release-group/${RG}`), "the soundtrack, not the earlier live record or the compilation");
+    assert.ok(!heard.some((h) => h.includes("rg-best") || h.includes("rg-live")));
+    // Kept: asked again, nothing sent.
+    const n = heard.length;
+    assert.deepEqual((await (await call(e, q)).json()).facts, a); assert.equal(heard.length, n);
+    assert.equal(JSON.parse(await e.PROGRAMS.get("songfacts:n-curtis-mayfield-pusherman")).v, 2);
+  } finally { globalThis.fetch = below; f.restore(); }
+});
+
+test("song facts: MusicBrainz knows no album, so Spotify's (not a collection) by Wikipedia's search, and an old kept song is asked once more", async () => {
+  const e = env();
+  e.ARTIST_LOOKUP = "on"; e.__mbSleep = async () => {};
+  const f = installFetch();
+  const searched = [];
+  const below = globalThis.fetch;
+  let article = { type: "standard", title: "Too Far to Care", extract: "Too Far to Care is the third studio album by American alt-country band Old 97's, released in 1997.",
+    content_urls: { desktop: { page: "https://en.wikipedia.org/wiki/Too_Far_to_Care" } } };
+  globalThis.fetch = async (u, init = {}) => {
+    const url = new URL(String(u));
+    if (url.hostname === "musicbrainz.org") return Response.json({ recordings: [] });
+    if (url.hostname === "en.wikipedia.org" && url.pathname === "/w/api.php") {
+      searched.push(url.searchParams.get("srsearch"));
+      return Response.json({ query: { search: [{ title: "Old 97's" }, { title: "Too Far to Care" }] } });
+    }
+    if (url.hostname === "en.wikipedia.org") return Response.json(article);
+    return below(u, init);
+  };
+  try {
+    // Kept before the album's article: no `v`, no article of its own.
+    await e.PROGRAMS.put("songfacts:n-old-97-s-salome", JSON.stringify({ at: 1, facts: null }));
+    const q = (al) => `${KEY}/tv/song?uri=${encodeURIComponent("spotify:track:0000000000000000000002")}&isrc=&ms=200000&t=Salome&a=${encodeURIComponent("Old 97's")}&al=${encodeURIComponent(al)}`;
+    const a = (await (await call(e, q("Too Far to Care (Deluxe Edition)"))).json()).facts;
+    assert.deepEqual(searched, ["Too Far to Care Old 97's album"], "Spotify's album without its reissue words");
+    assert.equal(a.albumWiki.title, "Too Far to Care"); assert.equal(a.albumWiki.album, "Too Far to Care");
+    assert.deepEqual(a.writers, []); assert.equal(a.wiki, null);
+    // A collection is never taken for the album, and an article that does not name the artist is not kept.
+    const e2 = env(); e2.ARTIST_LOOKUP = "on"; e2.__mbSleep = async () => {};
+    searched.length = 0;
+    assert.equal((await (await call(e2, q("The Very Best of Old 97's"))).json()).facts, null);
+    assert.deepEqual(searched, []);
+    article = { ...article, extract: "Too Far to Care is a 1997 novel." };
+    assert.equal((await (await call(e2, `${KEY}/tv/song?uri=${encodeURIComponent("spotify:track:0000000000000000000003")}&isrc=&ms=1&t=Other&a=${encodeURIComponent("Old 97's")}&al=${encodeURIComponent("Too Far to Care")}`)).json()).facts, null);
+  } finally { globalThis.fetch = below; f.restore(); }
+});
+
+test("About this song names the album when the article is the album's", () => {
+  const html = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: null, readings: {} });
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.ok(script.includes('"From Wikipedia, about the album " + (w.album || w.title)'));
+  assert.ok(script.includes('"&al=" + enc(band.album || "")'), "the album Spotify plays it from rides along");
+  assert.doesNotThrow(() => new vm.Script(script));
+});
+
+test("an album's article says so in its first sentence; a song's article that names its album later is not one (Superfly, found live)", async () => {
+  const { isAlbumArticle, cleanAlbum } = await import("../musicbrainz.js");
+  const t = (text, a) => isAlbumArticle({ text }, a);
+  assert.equal(t("\"Superfly\" is a song by American soul musician Curtis Mayfield, the title track from his 1972 album Super Fly. It was the second single from the album.", "Curtis Mayfield"), false);
+  assert.equal(t("Super Fly is the third studio album by American soul musician Curtis Mayfield, released on July 11, 1972.", "Curtis Mayfield"), true);
+  assert.equal(t("Free Your Mind... and Your Ass Will Follow is the second studio album by the American funk rock band Funkadelic.", "Funkadelic"), true);
+  assert.equal(t("This Is Hardcore is the sixth studio album by the English rock band Pulp.", "Pulp"), true);
+  assert.equal(t("Fresh is the sixth album by American funk band Sly and the Family Stone.", "Sly & The Family Stone"), true);
+  assert.equal(t("Too Far to Care is the third studio album by Wilco.", "Old 97's"), false, "another artist's");
+  assert.equal(cleanAlbum("A.M. (2017 Remaster)"), "A.M.");
+  assert.equal(cleanAlbum("Superfly - Deluxe 25th Anniversary Edition"), "Superfly");
+  assert.equal(cleanAlbum("Black Rhythm Revolution!"), "Black Rhythm Revolution!");
+});
