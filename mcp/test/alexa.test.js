@@ -424,7 +424,7 @@ test("the model: every DJ has an ask and a put-on of their own, said with their 
 });
 
 test("the model keeps Amazon's rules: plain words in samples, one free-text slot and never beside another, no repeats", () => {
-  const m = alexaModel({ roster: ROSTER, rooms: JSON.parse(readFileSync(new URL("../house.json", import.meta.url))).devices.rooms })
+  const m = alexaModel({ roster: ROSTER, rooms: JSON.parse(readFileSync(new URL("../house.json", import.meta.url))).devices.rooms, playNow: true })
     .interactionModel.languageModel;
   const seen = new Map();
   for (const it of m.intents) {

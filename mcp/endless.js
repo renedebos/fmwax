@@ -888,7 +888,14 @@ export function endlessLaneTakeover(env, cfg, state, { dj, program = null, now, 
   const key = String(lane.button);
   delete state.sessions[key];
   state.gen[key] = (Number(state.gen[key]) || 0) + 1;
-  for (const [id, j] of Object.entries(state.jobs)) if (j?.btn === lane.button) delete state.jobs[id];
+  for (const [id, j] of Object.entries(state.jobs)) {
+    if (j?.btn !== lane.button) continue;
+    // A TURN GIVEN BACK (the owner, 2026-11-18: three play-now asks a minute
+    // apart spent three of the day's runs on steers no curator ever began).
+    // A job of today's that no curator has taken is dropped with its run.
+    if (!j.claimed && !j.done && houseDay(env, Number(j.at) || 0) === state.day && (state.runs ?? 0) > 0) state.runs -= 1;
+    delete state.jobs[id];
+  }
   delete state.queued[key];
   const tenancy = (Number(state.lane?.tenancy) || 0) + 1;
   // `head`: songs at the top of the list that were the leaving DJ's (a hand-
@@ -1520,7 +1527,24 @@ export async function endlessBar(env, btn, pid = null, state = null) {
 // hour), and a turn there is a steer.
 // A steered program on the Spotify guest is the other endless state: the
 // lane supersedes it (the account plays one thing) and closes its work.
-export async function playEndless(env, { dj: djRef, device, budget, when = null, words = null }) {
+// PLAY NOW'S BRIDGE (MC-47 stage 3, tasks/mc47-build.md): `opening` is a
+// handful of songs found by a search for the words ({ uris, title }), given
+// from outside. The lane is taken with them as its opening, started at once
+// (the start read back against them), and a STEER by the words is filed for
+// the curator: the DJ's own songs replace what is queued after the song
+// playing when they land. No opening is made, so the takeover itself costs
+// no run; the steer costs one, and with the day's runs spent the songs play
+// and nobody follows (`follows: "day-cap"`).
+// `press(button)`: the door's way to press a key on the speaker (a WiiM,
+// through the home helper). PRESSED FIRST, before any Spotify start (the
+// owner, 2026-11-18): the Pro Plus woke from standby by Spotify's start,
+// played a moment, stopped, and played again when the key was pressed after
+// it; a press plays the key's list and lifts a cold WiiM to lossless (MC-44,
+// measured 2026-11-15). It answers the press's code, or null when nothing
+// reached the WiiM (the helper off): then Spotify starts it, as before. A
+// press not confirmed (a timeout) is never followed by a start: the player
+// is read once, and the lane's list playing counts as pressed.
+export async function playEndless(env, { dj: djRef, device, budget, when = null, words = null, opening: bridge = null, press = null }) {
   const cfg = parseEndless(env);
   const lane = cfg?.presets.find((p) => p.lane) ?? null;
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
@@ -1531,14 +1555,18 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   // artist), and for any guest who is given it (2026-10-13). Kept on the
   // guest DJ, so every job after carries it.
   const asked = String(words ?? "").replace(/\s+/g, " ").trim().slice(0, 120) || null;
+  // The bridge, only with the words it was found for and enough of it.
+  const bridgeUris = [...new Set((Array.isArray(bridge?.uris) ? bridge.uris : []).filter((u) => /^spotify:track:[A-Za-z0-9]+$/.test(String(u))))].slice(0, 20);
+  const given = asked && bridgeUris.length >= 3 ? { uris: bridgeUris, title: String(bridge?.title ?? asked).slice(0, 120), given: true } : null;
   const now = Date.now();
   const events = [];
   const say = (btn, event, detail) => events.push({ at: now, btn, event, detail });
   // A start that took makes the watch look on its next run (Codex's review 6).
   const looked = () => nudgeWatch(env);
-  const start = async (pl, label) => {
+  const start = async (pl, label, expect = null) => {
     try {
-      const r = await startPlaylistOnDevice(env, { id: pl, name: label, catalog: "spotify" }, device, budget);
+      const r = await startPlaylistOnDevice(env, { id: pl, name: label, catalog: "spotify" }, device, budget, null,
+        expect ? { expect } : {});
       const ok = r?.preset_safe ? "ok" : r?.unverified ? "sent" : "stuck";
       if (ok !== "stuck") await looked();
       return ok;
@@ -1574,7 +1602,8 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   const theirs = state.lane?.dj === who.key && ready;
   if (who.needsWords && !asked && !(theirs && state.lane.words)) return { status: "needs-words", needs: who.needsWords };
   // 2. The lane already theirs: playing, or carry on where it stopped.
-  if (theirs && !(asked && !sameWords(asked, state.lane.words))) {
+  // A bridge is always a new opening: what was asked for plays first.
+  if (!given && theirs && !(asked && !sameWords(asked, state.lane.words))) {
     if (laneLive) return { status: "already", button: lane.button };
     return { status: "carry-on", button: lane.button, start: await start(lane.playlist, `Guest DJ · ${who.name}`) };
   }
@@ -1587,7 +1616,7 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
   // 3 and 4. A takeover, with the opening decided before it. A DJ told what
   // to play opens with it, never with an old program of theirs about
   // something else: the opening is made.
-  const opening = who.needsWords || asked ? null : await arrivingSet(env, who, catalogFor(env, "spotify")).catch(() => null);
+  const opening = given ?? (who.needsWords || asked ? null : await arrivingSet(env, who, catalogFor(env, "spotify")).catch(() => null));
   const usable = opening && opening.uris.length >= 3 ? opening : null;
   // ONE WRITER (Codex's review 1): the lease is held from before the
   // takeover until the list is written, so no curator, steer or trim filed
@@ -1603,7 +1632,7 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
     // leaving DJ's; the new DJ's opening replaces what was queued after it,
     // and nothing is restarted. Only with an opening in hand, and only while
     // the lane really is what Spotify plays; otherwise it is "now".
-    if (playing && when === "next" && usable && heard && laneLive) {
+    if (playing && when === "next" && usable && !given && heard && laneLive) {
       let tracks = null, at = null;
       try {
         tracks = await endlessTracks(env, lane.playlist);
@@ -1664,9 +1693,10 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
           say(g.btn, "steer-superseded", `the guest DJ took over from the steered program`);
         }
         const r = endlessLaneTakeover(env, cfg, st, { dj: who.key, now, words: asked,
-          program: usable ? { slug: usable.slug, title: usable.title } : null });
+          program: usable && !given ? { slug: usable.slug, title: usable.title } : null });
         if (!r.ok) return { abort: true, status: r.status };
-        say(lane.button, "lane-taken", `${who.name}${asked ? ` on "${asked}"` : ""}${usable ? `, from "${usable.title}"` : ", an opening to be made"} (tenancy ${r.tenancy})`);
+        say(lane.button, "lane-taken", `${who.name}${asked ? ` on "${asked}"` : ""}${given ? `, ${given.uris.length} songs found for it first`
+          : usable ? `, from "${usable.title}"` : ", an opening to be made"} (tenancy ${r.tenancy})`);
         if (!usable) {
           endlessFile(st, { id: `endless-${lane.button}-fresh-${now}`, kind: "fresh", btn: lane.button, dj: who.key,
             playlist: lane.playlist, minutes: lane.freshMinutes, at: now, device, gen: Number(st.gen[key]) || 0 }, bells);
@@ -1684,7 +1714,8 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
     try {
       out = await replacePlaylistSafely(env, { pl: { id: lane.playlist, name: "Guest DJ", catalog: "spotify", via: "endless" },
         uris: usable.uris, budget, endless: true,
-        description: `Guest DJ · ${who.name}, from "${usable.title}", ${new Date(now).toISOString().slice(0, 10)}.` });
+        description: given ? `Guest DJ · ${who.name} on "${asked}", ${new Date(now).toISOString().slice(0, 10)}.`
+          : `Guest DJ · ${who.name}, from "${usable.title}", ${new Date(now).toISOString().slice(0, 10)}.` });
     } catch (e) {
       // A copy that threw before or while writing is undone like one that
       // said it failed (Codex's fix check 1).
@@ -1699,9 +1730,51 @@ export async function playEndless(env, { dj: djRef, device, budget, when = null,
     }
     await laneReady(env, taken.tenancy);
     await dropPauseNoteFor(env, lane.playlist);
-    const started = await start(lane.playlist, `Guest DJ · ${who.name}`);
+    let started = null;
+    if (given && typeof press === "function") {
+      let code = null;
+      try { code = await press(lane.button); } catch { code = "failed"; }
+      if (code === "ok") started = "pressed";
+      else if (code) {
+        let st = null;
+        try { await new Promise((r) => setTimeout(r, env.__staleWaitsMs ? 0 : 2000)); st = await playerState(env); } catch { st = null; }
+        started = st?.is_playing === true && String(st?.context?.uri ?? "") === `spotify:playlist:${lane.playlist}` ? "pressed" : "press-sent";
+      }
+      if (code) say(lane.button, "lane-pressed", `key ${lane.button} pressed on ${device}: ${code}${started === "pressed" && code !== "ok" ? ", and it plays" : ""}`);
+      if (started === "pressed") await looked();
+    }
+    if (!started) started = await start(lane.playlist, `Guest DJ · ${who.name}`, given ? given.uris : null);
     await endlessLog(env, [...events, { at: now, btn: lane.button, event: "lane-started", detail: `${usable.uris.length} songs on ${device}: ${started}` }]);
-    return { status: "started", button: lane.button, program: usable.title, start: started };
+    if (!given) return { status: "started", button: lane.button, program: usable.title, start: started };
+    // THE DJ FOLLOWS (MC-47): a steer by the words, only once the songs
+    // play. The session is begun here with the steer as its open job, so the
+    // watch's first look (five songs is under its top-up line) asks for no
+    // top-up beside it.
+    let follows = "no";
+    if (started === "ok" || started === "sent" || started === "pressed") {
+      const bells2 = [], events2 = [];
+      const say2 = (btn, event, detail) => events2.push({ at: Date.now(), btn, event, detail });
+      try {
+        const f = await endlessUpdate(env, (st) => {
+          events2.length = 0; bells2.length = 0;
+          const at = Date.now();
+          endlessDay(env, st, at);
+          if (st.lane?.dj !== who.key || (Number(st.lane?.tenancy) || 0) !== taken.tenancy) return { abort: true, status: "moved" };
+          if ((st.runs ?? 0) >= cfg.dailyRuns) return { abort: true, status: "day-cap" };
+          const id = `endless-${lane.button}-steer-${at}`;
+          endlessFile(st, { id, kind: "steer", btn: lane.button, dj: who.key, playlist: lane.playlist,
+            minutes: steerMinutes(lane), at, when: "next" }, bells2);
+          st.sessions[key] = { ...(st.sessions[key] ?? { start: at, misses: 0, topups: 0, device }), pending: id };
+          say2(lane.button, "steer", `"${asked}", by play now: ${who.name}'s songs come in after the playing one`);
+          return { status: "asked" };
+        });
+        follows = f.abort ? f.status ?? "failed" : "asked";
+        if (!f.abort) await endlessRing(env, bells2, say2);
+        else if (f.status === "day-cap") say2(lane.button, "steer-day-cap", `the day's runs are spent: the ${given.uris.length} songs play and nobody follows`);
+        await endlessLog(env, events2);
+      } catch { follows = "failed"; }
+    }
+    return { status: "started", button: lane.button, start: started, bridge: given.uris.length, follows };
   } finally {
     await laneUnlock(env, lockId);
   }

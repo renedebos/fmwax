@@ -30,6 +30,8 @@ import { fingerprintUris, getRequestRecord, putRequestRecord, SETTLED_TTL_MS } f
 import { callTool } from "./tools.js";
 import { writerKindFor } from "./toollist.js";
 import { moveOn, pauseOn, playAgainOn, skipOn } from "./transport.js";
+import { playNowMode } from "./playnow.js";
+import { playNowPlays, pressFor, startDjWithWords, startPlayNow } from "./playnow-start.js";
 import { emitRequestEvent } from "./writes.js";
 
 export const ACT_DEADLINE_MS = 5000;
@@ -89,7 +91,7 @@ export async function wiimReadings(env) {
 }
 const notSpotify = (r) => !!r?.source && !/spotify/i.test(r.source);
 // Known not pressed: nothing reached the WiiM, so today's start may follow.
-const NOT_PRESSED = ["not-wiim", "bad-key", "helper-off", "unreachable"];
+export const NOT_PRESSED = ["not-wiim", "bad-key", "helper-off", "unreachable"];
 export async function wiimPress(env, deviceName, n) {
   const box = wiimOf(env, deviceName);
   if (!box) return { code: "not-wiim" };
@@ -663,16 +665,34 @@ const BEGUN = {
   // press for preset 7 on the Master Bedroom" was said of a start).
   preset: (h) => (h.pressing ? `I've sent the press for preset ${h.preset} ${onWords(h.device)}`
     : `Starting preset ${h.preset} ${onWords(h.device)}`) + "; it may take a moment. The app shows when it plays.",
-  endless: (h) => `Starting ${nameOf(h.dj)} endless ${onWords(h.device ?? h.reading?.device)}; the app shows when it plays.`,
+  endless: (h) => `Starting ${nameOf(h.dj)} ${onWords(h.device ?? h.reading?.device)}; it may take a few seconds. The app shows when it plays.`,
   fresh: (h) => `Asking ${nameOf(h.dj)} for a fresh set; the app shows when it plays.`,
   steer: () => "Asking the DJ; the app shows the new songs when they come.",
   keep: () => "Asking the DJ to keep it; the Shelf shows it when the page is written.",
 };
 
+// PLAY NOW, FOR REAL (MC-47 stage 3): with the house's `playNow` "on", what
+// the reading plays is started (playnow-start.js) inside what is left of the
+// five seconds after its search; later than that, Alexa says it is starting
+// and the work finishes after the answer. Null (the dry run's sentence
+// stands) when play now is not on, or the reading plays nothing.
+export async function playNowAct(env, ctx, heard) {
+  const x = heard.result;
+  if (playNowMode(env) !== "on" || !playNowPlays(x)) return null;
+  const ms = Math.max(2500, alexaActClock.deadlineMs - (Number(heard.play?.ms) || 0));
+  // A WiiM's key is pressed through the home helper, before any Spotify start.
+  const out = await inTime(ctx, startPlayNow(env, x, { budget: { remaining: 40 }, press: pressFor(env, x.device) }), "PlayNowIntent", ms);
+  if (out) return out;
+  const name = x.kind === "song" ? `${x.title} by ${x.by}` : x.kind === "album" ? `${x.album.name} by ${x.album.artist}`
+    : x.kind === "artist" ? x.title : x.place?.own ? nameOf(x.dj) : x.words;
+  return { say: `Starting ${name}${x.device ? ` ${onWords(x.device)}` : ""}; it may take a few seconds. The app shows when it plays.`, did: { late: true } };
+}
+
 // The act for what the dry run read: { say, did } or null when this kind of
 // request does nothing more than the dry run says (launch, help, which DJ?,
 // a refusal of the words).
 export async function alexaAct(env, ctx, heard) {
+  if (heard.kind === "play-now") return playNowAct(env, ctx, heard);
   const kinds = ["ask-dj", "put-on", "preset", "now", "pause", "again", "skip", "move", "endless", "fresh", "steer", "back", "keep"];
   if (!kinds.includes(heard.kind)) return null;
   // Spotify limiting the account (its daily quota): nothing that needs it is
@@ -696,6 +716,11 @@ export async function alexaAct(env, ctx, heard) {
     if (heard.kind === "ask-dj") return ask(env, ctx, heard.dj, heard.reading);
     if (heard.kind === "put-on") return putOn(env, heard.dj, device, { when: heard.when ?? heard.reading?.when ?? null, limited });
     if (heard.kind === "endless") {
+      // Play now on (MC-47 stage 5): at once, the WiiM pressed first, a guest
+      // with the songs found for the words.
+      if (playNowMode(env) === "on") {
+        return startDjWithWords(env, { dj: heard.dj, words: endlessWords(heard.reading), device, press: pressFor(env, device) });
+      }
       return putOn(env, heard.dj, device, { words: endlessWords(heard.reading), when: heard.reading?.when ?? null });
     }
     if (heard.kind === "fresh") return fresh(env, heard.dj, device);

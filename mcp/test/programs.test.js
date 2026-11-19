@@ -2405,6 +2405,9 @@ test("the destructive set is exactly the tools that overwrite something", () => 
     // Added with MC-27 (2026-09-25): taking over the endless lane replaces
     // what it held, after a backup, and starts music.
     "play_endless",
+    // Added with MC-47 stage 4 (2026-11-18): play now replaces what the
+    // guest DJ's list held, after a backup, and starts music.
+    "play_now",
     "replace_playlist",
     "restore_playlist",
     // Added 2026-09-07: it overwrites a published record and, on air, the
@@ -2423,9 +2426,11 @@ test("activate_program is not idempotent, and that is deliberate", () => {
 
 test("tools/list carries the title in both places a client might look", async () => {
   const listed = toolsWithMeta(withArchive);
-  assert.equal(listed.length, TOOLS.length - 2, "all but Last.fm's verb and Genius's, in a house with neither key (2026-10-18, 2026-11-16)");
-  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00" }).length, TOOLS.length - 1);
-  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40) }).length, TOOLS.length);
+  assert.equal(listed.length, TOOLS.length - 3, "all but Last.fm's verb, Genius's and play now, in a house with neither key and play now off (2026-10-18, 2026-11-16, 2026-11-18)");
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00" }).length, TOOLS.length - 2);
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40) }).length, TOOLS.length - 1);
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40), PLAY_NOW: "on" }).length, TOOLS.length);
+  assert.ok(toolsWithMeta({ ...withArchive, PLAY_NOW: "dry" }).some((t) => t.name === "play_now"), "dry lists it too");
   const one = listed.find((t) => t.name === "replace_playlist");
   assert.equal(one.title, "Replace What a Button Plays");
   assert.equal(one.annotations.title, "Replace What a Button Plays");

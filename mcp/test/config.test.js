@@ -76,6 +76,14 @@ test("MC-29's switch: the kept player answer is on unless house.json says player
   assert.match(render({ ...plain(), player: { reuse: false } }, TEMPLATE), /\nPLAYER_REUSE = "off"\n/);
 });
 
+test("MC-47's switch: play now is off unless house.json says dry or on, and nothing else is taken", () => {
+  assert.ok(!render(plain(), TEMPLATE).includes("PLAY_NOW"), "off by saying nothing");
+  assert.ok(!render({ ...plain(), playNow: "off" }, TEMPLATE).includes("PLAY_NOW"));
+  assert.match(render({ ...plain(), playNow: "dry" }, TEMPLATE), /\nPLAY_NOW = "dry"\n/);
+  assert.match(render({ ...plain(), playNow: "on" }, TEMPLATE), /\nPLAY_NOW = "on"\n/);
+  assert.throws(() => render({ ...plain(), playNow: true }, TEMPLATE), /playNow is "true": it must be "off", "dry" or "on"/);
+});
+
 test("a house with the pipe off names no routine at all", () => {
   const out = render(plain(), TEMPLATE);
   assert.match(out, /REQUESTS_ENABLED = "false"/);

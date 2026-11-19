@@ -53,10 +53,10 @@ function compile(sample) {
 
 // The model's patterns for a house's rooms, built once per list of rooms.
 const KEPT = new Map();
-function patterns(rooms) {
-  const key = JSON.stringify(rooms);
+function patterns(rooms, playNow = false) {
+  const key = JSON.stringify([rooms, playNow]);
   if (KEPT.has(key)) return KEPT.get(key);
-  const intents = alexaModel({ roster: ROSTER, rooms }).interactionModel.languageModel.intents;
+  const intents = alexaModel({ roster: ROSTER, rooms, playNow }).interactionModel.languageModel.intents;
   const out = [];
   for (const it of intents) {
     for (const s of [...(it.samples ?? []), ...(TV_SAMPLES[it.name] ?? [])]) out.push({ intent: it.name, ...compile(s) });
@@ -82,13 +82,15 @@ export function tvWords(text) {
 
 // The intent Amazon would have sent for these words, as an Alexa request's
 // body, or null when no sample of the skill fits them.
-export function tvIntent(text, rooms = []) {
+// `playNow`: the house's play now is not off, so "play …" is play now's
+// (MC-47 stage 4), as on the Echos.
+export function tvIntent(text, rooms = [], { playNow = false } = {}) {
   const said = tvWords(text);
   if (!said) return null;
   const roomBy = new Map();
   for (const r of rooms) { const v = spoken(r); roomBy.set(v, r); if (v.startsWith("the ")) roomBy.set(v.slice(4), r); }
   let best = null;
-  for (const p of patterns(rooms)) {
+  for (const p of patterns(rooms, playNow)) {
     const m = said.match(p.re);
     if (!m) continue;
     const slots = {};

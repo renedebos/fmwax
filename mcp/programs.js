@@ -8112,6 +8112,16 @@ const SPK_NOW_CSS = `
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .spknow .kname.none{font-style:italic;font-weight:400;color:var(--ink-3)}
 .spknow .ksrc{font-size:var(--fs-12);color:var(--ink-3)}
+/* A Requests or guest DJ key's small line (2026-11-18): one line, "…" at
+   rest. Too long for the key, it slides along and back once when the page
+   opens, and keeps sliding on the key that is playing. Still for anyone who
+   asked for less motion. */
+.spknow .ksub{display:block;align-self:stretch;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spknow .ksub.run{text-overflow:clip}
+.spknow .ksub.run>span{display:inline-block;animation:kslide var(--dur,6s) ease-in-out 2 alternate}
+.spknow .key.lit .ksub.run>span{animation-iteration-count:infinite}
+@keyframes kslide{0%,18%{transform:translateX(0)}82%,100%{transform:translateX(var(--shift,0))}}
+@media (prefers-reduced-motion:reduce){.spknow .ksub.run>span{animation:none}}
 .spknow .holds.own .khead{margin:0 0 .6rem}
 .spknow .prows{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .spknow .prow{display:flex;align-items:center;gap:14px;background:var(--raised);border:1px solid var(--rule);border-radius:14px;padding:12px 14px}
@@ -8190,7 +8200,7 @@ function helperKeyForm(base, hkey, back, label, cls = "go", inner = "") {
 export function renderSpeakersNow({ base, speakers = [], playing = null, readings = {}, readAt = 0,
   fills = [], archive = null, names = {}, defaultDevice = "", flash = null, playable = {}, rooms = [], tflash = null,
   loaded = true, owed = 0, talk = false, now = undefined, justPaused = null, held = null, others = [], endlessKeys = {}, pick = null, lan = null, hflash = null,
-  login = null, ownKeys = null, setupHref = null }) {
+  login = null, ownKeys = null, setupHref = null, keyLines = {} }) {
   const norm = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
   // `live` is a speaker Spotify is PLAYING on. Not "holds": a session
   // Spotify has paused on a speaker says nothing about the speaker, which
@@ -8353,13 +8363,18 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
         // it now; a speaker still saying the one who left owes a save.
         const ek = endlessKeys[n] ?? null;
         const owes = !!ek && (ek.owed ?? []).includes(sp.slug);
-        const cls = `key${p && (fillOf(n, p) || (ek && p.source === "Spotify")) ? " fill" : ""}${differs.has(n) ? " dot" : ""}${owes ? " owe" : ""}${
+        // A REQUESTS OR GUEST DJ KEY, named for who is on it now and what
+        // (house.js requestKeyLines): only where this speaker's key is on the
+        // same service, so a key saved to something else keeps its own name.
+        const kl = !ek && p && keyLines[n] && (!keyLines[n].source || p.source === keyLines[n].source) ? keyLines[n] : null;
+        const cls = `key${p && (fillOf(n, p) || kl || (ek && p.source === "Spotify")) ? " fill" : ""}${differs.has(n) ? " dot" : ""}${owes ? " owe" : ""}${
           p && lit && lit.btn === n && norm(lit.speaker) === norm(sp.name) ? " lit" : ""}`;
         const title = owes ? ` title="Save preset ${n} again on the ${esc(sp.name)}: it plays ${esc(ek.name)} now"`
           : differs.has(n) ? ` title="Held differently on the ${esc(differs.get(n).map((o) => o.name).join(" and "))}"` : "";
         const inner = `<span class="knum">${n}</span>${p
           ? ek && p.source === "Spotify"
             ? `<span class="kname">${esc(ek.name)}</span>${owes ? `<span class="ksrc kflag"><i aria-hidden="true"></i>Save again</span>` : `<span class="ksrc">Endless</span>`}`
+            : kl ? `<span class="kname">${esc(kl.name)}</span>${kl.sub ? `<span class="ksrc ksub"><span>${esc(kl.sub)}</span></span>` : ""}`
             : `<span class="kname">${esc(p.name)}</span>${p.source ? `<span class="ksrc">${esc(KEY_SOURCE[p.source] ?? p.source)}</span>` : ""}`
           : `<span class="kname none">nothing saved</span>`}${KEY_LEVELS}`;
         // A PLAYABLE KEY IS A FORM AND NOTHING ELSE (MC-19 stage 3b): the
@@ -8375,8 +8390,8 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
         // the Spotify keys take the MC-19 path and the rest are links.
         const byHelper = p && lan?.hands && !sp.other;
         keys.push(byHelper ? `
-      <form method="post" action="${esc(base)}/wiim/key" class="kform"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="${esc(sp.name)}"><button type="submit" class="${cls} play" data-k="${n}" data-busy="Pressing…" aria-label="Press ${n}, ${esc(p.name)}, on the ${esc(sp.name)}"${title}>${inner}${KEY_PLAY}</button></form>` : p && plays.has(n) ? `
-      <form method="post" action="${esc(base)}/preset/play" class="kform"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="${esc(sp.name)}"><button type="submit" class="${cls} play" data-k="${n}" data-busy="Starting…" aria-label="Play ${esc(p.name)} on the ${esc(sp.name)}"${title}>${inner}${KEY_PLAY}</button></form>` : `
+      <form method="post" action="${esc(base)}/wiim/key" class="kform"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="${esc(sp.name)}"><button type="submit" class="${cls} play" data-k="${n}" data-busy="Pressing…" aria-label="Press ${n}, ${esc(kl ? `${kl.name}, ${kl.sub}` : p.name)}, on the ${esc(sp.name)}"${title}>${inner}${KEY_PLAY}</button></form>` : p && plays.has(n) ? `
+      <form method="post" action="${esc(base)}/preset/play" class="kform"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="${esc(sp.name)}"><button type="submit" class="${cls} play" data-k="${n}" data-busy="Starting…" aria-label="Play ${esc(kl ? `${kl.name}, ${kl.sub}` : p.name)} on the ${esc(sp.name)}"${title}>${inner}${KEY_PLAY}</button></form>` : `
       <a class="${cls}" data-k="${n}" href="${esc(base)}/readings#p${n}"${title}>${inner}</a>`);
       }
     }
@@ -8585,6 +8600,7 @@ const SPEAKERS_LIVE = `<script>
     });
     if (remember) pickSet(slug);
     tidy();
+    kslides();
     /* The now bar speaks for the picked speaker, on this tab and the rest. */
     document.dispatchEvent(new CustomEvent("house:pick"));
   }
@@ -8603,6 +8619,24 @@ const SPEAKERS_LIVE = `<script>
     if (!now || (cur && cur.getAttribute("data-slug") === now)) return;
     pick(now, false);
   });
+  /* A KEY'S SMALL LINE TOO LONG FOR IT (2026-11-18) slides along and back
+     once, then rests with its "…"; the playing key's keeps sliding (CSS). */
+  function kslide(el) {
+    if (!el || el.offsetParent === null) return;
+    el.classList.remove("run");
+    var over = el.scrollWidth - el.clientWidth;
+    if (over > 4) {
+      el.style.setProperty("--shift", "-" + (over + 2) + "px");
+      el.style.setProperty("--dur", Math.max(3, Math.round(over / 20)) + "s");
+      void el.offsetWidth; el.classList.add("run");
+    }
+  }
+  function kslides() { Array.prototype.forEach.call(main.querySelectorAll("section.holds:not([hidden]) .ksub"), kslide); }
+  main.addEventListener("animationend", function (e) {
+    var s = e.target && e.target.parentNode;
+    if (s && s.classList && s.classList.contains("ksub")) s.classList.remove("run");
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(kslides); else kslides();
   var names = {}; try { names = JSON.parse(main.getAttribute("data-names") || "{}"); } catch (e) {}
   var shown = Number(main.getAttribute("data-read-at")) || 0;
   var EVERY = ${WALL_EVERY_MS}, IDLE = ${WALL_IDLE_MS}, QUIET = ${JSON.stringify(SPK_QUIET)},
@@ -8724,7 +8758,9 @@ const SPEAKERS_LIVE = `<script>
     Array.prototype.forEach.call(main.querySelectorAll(".holds[data-slug] .key[data-k]"), function (k) {
       var h = k.closest(".holds"), on = !!lk && Number(k.getAttribute("data-k")) === lk.btn &&
         h.getAttribute("data-slug") === slugOf(lk.speaker) && !k.querySelector(".kname.none");
+      var was = k.classList.contains("lit");
       k.classList.toggle("lit", on);
+      if (on && !was) kslide(k.querySelector(".ksub"));
     });
   }
   /* The now bar's own pause redraws through here, so the blocks follow it. */

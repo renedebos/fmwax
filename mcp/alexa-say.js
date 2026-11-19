@@ -18,6 +18,7 @@ import { parseEndless } from "./endless.js";
 import { house } from "./house.js";
 import { fallbackDevice, parseRoomDevices } from "./room.js";
 import { askDjOn } from "./toollist.js";
+import { playNowMode } from "./playnow.js";
 
 // The words Amazon hands over for a sentence as shown: no commas, no
 // capitals, what follows the DJ's name.
@@ -37,6 +38,11 @@ export function sayExamples(env) {
   const reqBtn = house(env).guest?.spotify?.btn ?? null;
   const asks = askDjOn(env) && reqBtn != null;
   const helper = !!(env.HELPER_SECRET && env.WIIM_SPEAKERS);
+  // PLAY NOW (MC-47): "play …" with no DJ, where it is not off; and with it
+  // on (stage 5), a DJ with words and no length plays now: only a length,
+  // "a set" or keeping it makes a set.
+  const pn = playNowMode(env);
+  const now = pn === "on";
   const nm = (k) => ROSTER[k]?.name ?? k;
   const at = (d) => (d ? (/^everywhere$/i.test(d) ? "everywhere" : `on the ${d}`) : "");
   const own = pick([...ownOf.keys()], "hank");
@@ -66,15 +72,32 @@ export function sayExamples(env) {
     djRows.push(dj(artist, "", `${nm(artist)} with no artist`, { kind: "put-on" },
       `Alexa asks which artist, unless preset ${lane.button} is still playing one: then ${nm(artist)} carries on with it.`));
   }
+  if (now && asker && ownOf.has(asker)) {
+    djRows.push(dj(asker, ", acoustic grunge", "A DJ and music", { kind: "endless", words: "acoustic grunge", device: dflt },
+      `${/s$/.test(nm(asker)) ? `${nm(asker)}'` : `${nm(asker)}'s`} preset ${ownBtn(asker)} starts ${at(dflt)} at once, and turns toward acoustic grunge after the first song.`));
+    if (one) djRows.push(dj(asker, `, acoustic grunge, on the ${one}`, "And a speaker", { kind: "endless", device: one }, `The same, on the ${one}.`));
+  }
   if (asks && asker) {
     const set = (rest, label, expect, result) => djRows.push(dj(asker, rest, label, { kind: "ask-dj", ...expect }, result));
-    set(", acoustic grunge", "A DJ and music", { words: "acoustic grunge", device: dflt, minutes: 60 },
-      `A new one-hour set on preset ${reqBtn}. It starts by itself ${at(dflt)} in about five minutes, unless something else is started before then.`);
-    if (one) set(`, acoustic grunge, on the ${one}`, "And a speaker", { device: one }, `The same, on the ${one}.`);
-    set(", acoustic grunge, for two hours", "And a length", { minutes: 120 }, "A two-hour set.");
-    set(", acoustic grunge, no Pearl Jam", "And what to leave out", { avoid: "pearl jam" }, "The set, without Pearl Jam.");
+    if (now) {
+      set(", an hour of acoustic grunge", "A set: say a length", { words: "acoustic grunge", device: dflt, minutes: 60 },
+        `A new one-hour set, made for you, on preset ${reqBtn}. It starts by itself ${at(dflt)} in about five minutes, unless something else is started before then.`);
+      set(", a set of acoustic grunge", "Or say \"a set\"", { minutes: 60 }, "The same: a new one-hour set.");
+      set(", acoustic grunge, for two hours", "A longer set", { minutes: 120 }, "A two-hour set.");
+      set(", an hour of acoustic grunge, no Pearl Jam", "And what to leave out", { avoid: "pearl jam" }, "The set, without Pearl Jam.");
+    } else {
+      set(", acoustic grunge", "A DJ and music", { words: "acoustic grunge", device: dflt, minutes: 60 },
+        `A new one-hour set on preset ${reqBtn}. It starts by itself ${at(dflt)} in about five minutes, unless something else is started before then.`);
+      if (one) set(`, acoustic grunge, on the ${one}`, "And a speaker", { device: one }, `The same, on the ${one}.`);
+      set(", acoustic grunge, for two hours", "And a length", { minutes: 120 }, "A two-hour set.");
+      set(", acoustic grunge, no Pearl Jam", "And what to leave out", { avoid: "pearl jam" }, "The set, without Pearl Jam.");
+    }
     set(", acoustic grunge, and put it on the shelf", "And keep it", { keep: true },
       "The set, and it goes on the Shelf with a page of its own.");
+  }
+  if (lane && artist) {
+    djRows.push(dj(artist, "", `${nm(artist)} with no artist`, { kind: "put-on" },
+      `Alexa asks which artist, unless preset ${lane.button} is still playing one: then ${nm(artist)} carries on with it.`));
   }
   if (lane && artist) {
     djRows.push(dj(artist, " on Nick Drake, endless", "A guest DJ, music, endless", { kind: "endless", words: "nick drake" },
@@ -89,6 +112,20 @@ export function sayExamples(env) {
       `A new opening set on ${nm(own)}'s preset, in about four minutes. It uses one of the day's endless runs.`));
   }
   if (djRows.length) sections.push({ id: "dj", title: "Ask a DJ", sub: "The DJ's name first. The rest can come in any order; put \"endless\" and \"put it on the shelf\" last.", rows: djRows });
+
+  // "PLAY …" WITH NO DJ (MC-47), where play now is not off.
+  if (pn !== "off" && lane) {
+    const pr = [];
+    const p = (words, label, result) => pr.push({ label, said: `…to play ${words}`, ask: { intent: "PlayNowIntent", words: wordsOf(words) },
+      expect: { kind: "play-now" }, result });
+    const lead = pn === "dry" ? "The dry run says what it would do: " : "";
+    p("the Beatles", "An artist", `${lead}their songs start at once on preset ${lane.button}, and Deep Dive carries on with more of them after the first song.`);
+    p("Waterloo Sunset", "A song", `${lead}the song first, then more of the Kinks, and Deep Dive carries on.`);
+    p("Abbey Road", "An album", `${lead}the album itself, in order. No preset, no DJ after it.`);
+    p("some 80s hip hop", "A genre", `${lead}a few songs of it at once on preset ${lane.button}; Genre carries on. A style a house DJ owns ("funk from the seventies") starts that DJ's own preset instead.`);
+    p(one ? `Jolene on the ${one}` : "Jolene", "When it's both a song and an album", "Alexa asks \"the album, or the song?\": answer \"the song\" or \"the album\".");
+    sections.push({ id: "now", title: "Play something now", sub: `No DJ named: "play" and what you'd like. It plays in a few seconds; a DJ named, or a length, works as below.${pn === "dry" ? " (Dry run: nothing plays yet.)" : ""}`, rows: pr });
+  }
 
   const pre = [];
   const press = (n, room, label, result) => pre.push({ label, said: `…to play preset ${n}${room ? ` on the ${room}` : ""}`,
@@ -125,8 +162,8 @@ export function sayExamples(env) {
       ...(one ? [`A name of one word needs "on": "on the ${one}". Said bare, "${wordsOf(one)}" stays in the music.`] : []),
       `No speaker said: ${dflt ? `the ${dflt}` : "none"}.`,
     ], checks: [
-      ...(two && asker && asks ? [{ ask: { dj: asker, words: `acoustic grunge ${wordsOf(two)}` }, expect: { kind: "ask-dj", device: two } }] : []),
-      ...(one && asker && asks ? [{ ask: { dj: asker, words: `acoustic grunge ${wordsOf(one)}` }, expect: { kind: "ask-dj", device: dflt, words: `acoustic grunge ${wordsOf(one)}` } }] : []),
+      ...(two && asker && asks ? [{ ask: { dj: asker, words: `acoustic grunge ${wordsOf(two)}` }, expect: { kind: now ? "endless" : "ask-dj", device: two } }] : []),
+      ...(one && asker && asks ? [{ ask: { dj: asker, words: `acoustic grunge ${wordsOf(one)}` }, expect: { kind: now ? "endless" : "ask-dj", device: dflt, words: `acoustic grunge ${wordsOf(one)}` } }] : []),
     ] });
   }
   if (asks && asker) {
@@ -146,6 +183,6 @@ export function sayExamples(env) {
     ...(own ? [`"Fresh" works only on its own: "${nm(own)}, new funk, fresh" asks for a set of "new funk fresh".`] : []),
     `"Alexa, open ${ALEXA_INVOCATION}" is refused under Alexa+: say it all in one breath.`,
     "\"Hush\" and \"carry on\" often go to Alexa itself: the bar's pause is the sure way.",
-  ], checks: own && asks ? [{ ask: { dj: own, words: "new funk fresh" }, expect: { kind: "ask-dj", words: "new funk fresh" } }] : [] });
+  ], checks: own && asks ? [{ ask: { dj: own, words: "new funk fresh" }, expect: { kind: now ? "endless" : "ask-dj", words: "new funk fresh" } }] : [] });
   return { invocation: ALEXA_INVOCATION, sections, notes };
 }

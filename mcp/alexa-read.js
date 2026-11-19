@@ -29,7 +29,7 @@
 import { spoken } from "./alexa-model.js";
 import { askMinutes } from "./asks.js";
 
-const squash = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9.' ]+/g, " ").replace(/\s+/g, " ").trim();
+export const squash = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9.' ]+/g, " ").replace(/\s+/g, " ").trim();
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // The numbers Alexa may write as words; it mostly writes digits ("2 hours").
@@ -73,7 +73,7 @@ function speakerForms(rooms) {
 // owner, 2026-11-08: "Sessions … living room" came as the words "living
 // room" and was asked as taste). A one-word name at the end stays taste:
 // "songs for my son" is no speaker.
-function lastSpeaker(text, rooms, { bareOnly = false } = {}) {
+export function lastSpeaker(text, rooms, { bareOnly = false } = {}) {
   let best = null;
   const take = (re, room) => {
     for (const m of text.matchAll(re)) {
@@ -92,7 +92,7 @@ function lastSpeaker(text, rooms, { bareOnly = false } = {}) {
   return best;
 }
 
-const cut = (text, at, end) => `${text.slice(0, at)} ${text.slice(end)}`.replace(/\s+/g, " ").trim();
+export const cut = (text, at, end) => `${text.slice(0, at)} ${text.slice(end)}`.replace(/\s+/g, " ").trim();
 // Words that only joined what was taken out.
 const tidy = (s) => s.replace(/^(?:(?:and|but|with|for|on|about|of) )+/, "").replace(/(?: (?:and|but|with|for))+$/, "").trim();
 
@@ -118,6 +118,23 @@ function marks(text) {
   return { rest, how };
 }
 
+// The length said, snapped to the form's lengths, and the text without it:
+// { minutes, lengthSaid, text }. The first pattern that matches is the
+// length; none, and it is 60 and not said. Play now reads it too
+// (playnow.js), where a length said means a set.
+export function takeLength(text) {
+  for (const [re, toMinutes] of LENGTHS) {
+    const m = text.match(re);
+    if (!m) continue;
+    const n = toMinutes(m);
+    if (Number.isFinite(n) && n > 0) {
+      return { minutes: askMinutes(n), lengthSaid: true, text: cut(text, m.index, m.index + m[0].length) };
+    }
+    break;
+  }
+  return { minutes: 60, lengthSaid: false, text };
+}
+
 // { words, minutes, lengthSaid, avoid, device, deviceFrom, said, endless?,
 // fresh?, keep?, when? }. `rooms` is the house's speaker list
 // (parseRoomDevices), `fallback` its default.
@@ -127,18 +144,9 @@ export function readWords(words, { rooms = [], fallback = null } = {}) {
   let device = null;
   const where = lastSpeaker(text, rooms);
   if (where) { device = where.room; text = cut(text, where.at, where.end); }
-  let minutes = 60, lengthSaid = false;
-  for (const [re, toMinutes] of LENGTHS) {
-    const m = text.match(re);
-    if (!m) continue;
-    const n = toMinutes(m);
-    if (Number.isFinite(n) && n > 0) {
-      minutes = askMinutes(n);
-      lengthSaid = true;
-      text = cut(text, m.index, m.index + m[0].length);
-    }
-    break;
-  }
+  const len = takeLength(text);
+  const { minutes, lengthSaid } = len;
+  text = len.text;
   let when = null;
   let bare = text;
   for (const [name, re] of WHEN) {

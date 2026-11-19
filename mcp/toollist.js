@@ -521,13 +521,39 @@ export const TOOLS = [
     },
   },
   {
+    name: "play_now",
+    description:
+      "PLAY SOMETHING NOW (MC-47): \"play the Beatles\", \"put on Kind of Blue in the kitchen\", \"play Waterloo " +
+      "Sunset\", \"play some 80s hip hop\": an artist, a song, an album or a genre, with NO DJ named and NO length. " +
+      "One Spotify search reads it; an artist, a song or a genre starts at once on the guest DJ's preset (3) with " +
+      "the songs it found, and the DJ who fits (Deep Dive for an artist or a song, Genre for a genre) carries it on " +
+      "from the next song, endless; an album plays as itself, in order; a style a house DJ owns (funk of the 70s, " +
+      "Stax, acoustic) starts that DJ's own preset, steered toward it. Whoever was the guest DJ is replaced, at once. " +
+      "A DJ NAMED is play_endless, never this; a LENGTH or \"a set\" is a set asked of a DJ. " +
+      "`status` \"unsure\": the search found two things (the album Pet Sounds and the song): ask the person " +
+      "`question`, then call again with \"the album …\", \"the song …\" or \"the band …\" before the words. " +
+      "Nothing found, a mood, classical, the charts or \"something like\" are said in `said`, and nothing starts. " +
+      "Spotify only. Say what happened in one line from `said`.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        words: { type: "string", description: "What to play, as the person said it, without the speaker: \"the " +
+          "Beatles\", \"Waterloo Sunset\", \"the album Pet Sounds\", \"80s hip hop\"." },
+        device: { type: "string", description: "The speaker's exact name. Omit for the house's default." },
+      },
+      required: ["words"],
+    },
+  },
+  {
     name: "play_endless",
     description:
       "Play any DJ ENDLESS on a speaker (MC-27): the set keeps going in their brief for as long as anyone " +
       "listens, new songs added as it runs low, up to four hours a start. For \"Americana, play endless on the " +
       "Pro Plus\", \"put Hank on endless\", \"keep Dr. Funkenstein going\" — and the plain \"play Hank\" or \"put on Gatefold\": a " +
-      "DJ named to play is this call. Only an ask for A SET (a length, a mood, a subject) is a new set made " +
-      "the other way.\n\n" +
+      "DJ named to play is this call. Only an ask for A SET is a new set made the other way: a length or " +
+      "\"a set\" where the house's play now is on (other words with no length are this call with `words`, " +
+      "and play now: a house DJ's own preset steered toward them), and a mood or a subject too where it is off; " +
+      "get_dj's how_to_play says which.\n\n" +
       "ONE ARTIST, ENDLESS is Deep Dive with the artist in `words`: \"Michael Jackson, endless\". A GENRE " +
       "no DJ owns is Genre with the genre in `words`: \"80s new wave, endless\". LIVE VERSIONS, a band in " +
       "a small room (sessions, unplugged, Tiny Desk) are Sessions, with a series or years in `words` if said. " +
@@ -2203,6 +2229,8 @@ export const VOICE_TOOLS = new Set([
   "steer_endless",
   // ANY DJ, ENDLESS (MC-27): "Americana, play endless on the Pro Plus".
   "play_endless",
+  // PLAY NOW (MC-47 stage 4): "play the Beatles on the Ultra", no DJ named.
+  "play_now",
   // KEEP IT (the owner, 2026-09-28): the set on a requests preset, onto the
   // Shelf. Bounded as keep_request_set is: the tracks are read from the
   // preset, never passed; the DJ is the one the preset names; one page per set.
@@ -2314,6 +2342,9 @@ export const TOOL_META = {
   steer_endless: ["Steer the Playing DJ", {
     readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }],
   // Starts music, and replaces what the lane held with a backup first.
+  // Starts music at once, replacing the guest DJ's list with a backup first.
+  play_now: ["Play Something Now", {
+    readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }],
   play_endless: ["Play a DJ Endless", {
     readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }],
   keep_request_set: ["Keep a Set on the Shelf", {
@@ -2369,8 +2400,10 @@ function listedTools(env) {
   // look_up_artist: Last.fm's side, or the house's own MusicBrainz lookup (2026-10-24).
   const lastfm = lastfmOn(env) || artistLookupOn(env);
   const genius = geniusOn(env);
+  // Play now, only where it is not off (house.json `playNow`, MC-47).
+  const playNow = env?.PLAY_NOW === "dry" || env?.PLAY_NOW === "on";
   return TOOLS.filter((t) => (archive || !ARCHIVE_TOOLS.has(t.name)) && (lastfm || !LASTFM_TOOLS.has(t.name))
-    && (genius || !GENIUS_TOOLS.has(t.name))).map((t) => {
+    && (genius || !GENIUS_TOOLS.has(t.name)) && (playNow || t.name !== "play_now")).map((t) => {
     const meta = TOOL_META[t.name];
     if (!meta) return t;
     const [title, annotations] = meta;
@@ -2538,6 +2571,10 @@ export const VOICE_BRIEFS = {
     "program's end unless they said to replace the rest (`replace_rest: true`). First get_dj for the playing " +
     "DJ, pick about 25 minutes in their brief turned that way, resolve with search_tracks (catalog spotify), " +
     "and pass `uris`. Tidal cannot be steered.",
+  play_now: "Play something now, no DJ named and no length: `words` the artist, song, album or genre as said, " +
+    "`device` the speaker. It starts at once and the fitting DJ carries it on; an album plays as itself. A DJ named " +
+    "is play_endless; a length is a set. `status` unsure: ask `question`, then call again with \"the album …\" or " +
+    "\"the song …\" first. Say the line in `said`.",
   play_endless: "Play a DJ endless on a speaker: `dj` by name, `device` the speaker's exact name. A house DJ " +
     "plays their own preset; anyone else becomes the guest DJ on 3 and starts at once from their newest program, " +
     "or makes an opening in about four minutes. Deep Dive takes the artist in `words` (one artist, endless), " +
@@ -2653,7 +2690,7 @@ export function voiceFunctions(env) {
       let parameters = t.inputSchema;
       if (parameters?.properties?.device) {
         const required = new Set(parameters.required ?? []);
-        if (t.name === "play_playlist" || t.name === "play_program") required.add("device");
+        if (t.name === "play_playlist" || t.name === "play_program" || t.name === "play_now") required.add("device");
         parameters = { ...parameters,
           properties: { ...parameters.properties, device: VOICE_DEVICE },
           required: [...required] };

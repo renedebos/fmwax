@@ -23,9 +23,9 @@
 // request kept whole (`alexa:raw`, the signature check's test material in
 // stages 1 and 2) is no longer logged: it held Alexa's access token.
 
-import { ALEXA_INVOCATION, ALEXA_NAME, djFreshIntents, djIntents, djPlayIntents, roomOfId } from "./alexa-model.js";
+import { ALEXA_INVOCATION, ALEXA_NAME, alexaRoomId, djFreshIntents, djIntents, djPlayIntents, roomOfId, spoken } from "./alexa-model.js";
 import { alexaAct, alexaActs } from "./alexa-act.js";
-import { endlessWords, readWords } from "./alexa-read.js";
+import { endlessWords, readWords, squash } from "./alexa-read.js";
 import { alexaSigned } from "./alexa-sign.js";
 import { ASK_LENGTHS, LENGTH_WORDS, onWords } from "./asks.js";
 import { ROSTER } from "./djs.js";
@@ -34,6 +34,8 @@ import { parseEndless } from "./endless.js";
 import { fallbackDevice, parseRoomDevices } from "./room.js";
 import { station } from "./station.js";
 import { askDjOn } from "./toollist.js";
+import { beforeSearch, playNow, playNowMode, playNowPlaces, readPlayNow, sayFor } from "./playnow.js";
+import { catalogFor, throttledUntil } from "./services.js";
 
 export const ALEXA_WINDOW_MS = 150 * 1000;
 // The signature check the door runs: alexa-sign.js's. A test that is not
@@ -192,14 +194,20 @@ const isAsk = (r) => !!(r.words || r.avoid);
 // the owner, 2026-11-07): a fresh start; the DJ endless with the words; a set
 // (kept when "and keep it" was said); else the DJ put on, now or after this
 // song when said.
-const kindOf = (r) => (r.fresh ? "fresh" : r.endless && isAsk(r) ? "endless" : isAsk(r) ? "ask-dj" : "put-on");
+// STAGE 5 OF PLAY NOW (MC-47, the owner, 2026-11-18): with the house's
+// play now on, a DJ with words and no length plays now ("Hank, some 70s
+// soul": Hank's preset, steered); only a length, "a set" or "keep it" makes
+// a set. `env` says which house.
+export const asksForSet = (r) => !!(r.lengthSaid || r.keep || /(?:^| )(?:a |another |new |fresh )?(?:set|mix)(?: |$)/.test(String(r.said ?? r.words ?? "")));
+const kindOf = (r, env = null) => (r.fresh ? "fresh" : r.endless && isAsk(r) ? "endless"
+  : isAsk(r) && playNowMode(env) === "on" && !asksForSet(r) ? "endless" : isAsk(r) ? "ask-dj" : "put-on");
 const WHEN_SAID = { now: ", taking the guest preset over now if another DJ is on it",
   next: ", taking the guest preset over after this song if another DJ is on it" };
 // The speaker as said; a house with no default and none said has none.
 const at = (device) => (device ? onWords(device) : "on no speaker, since this house has no default one");
 function doFor(env, key, r) {
   const dj = ROSTER[key].name;
-  const kind = kindOf(r);
+  const kind = kindOf(r, env);
   if (kind === "fresh") return `I'd start ${dj} fresh: a new opening set, starting ${at(r.device)} once it's made.`;
   if (kind === "endless") {
     // A DJ with a preset of their own starts it and is steered by the words
@@ -273,11 +281,18 @@ export function alexaHeard(body, env = {}, now = Date.now()) {
   const stop = name === "AMAZON.StopIntent" || name === "AMAZON.CancelIntent" || name === "AMAZON.NavigateHomeIntent";
   if (stop) return { kind: "stop", intent: name, say: "Okay.", end: true };
 
+  // PLAY NOW (MC-47): only marked here; read and searched in alexaPlayNow,
+  // since the search is the one thing a reading waits for. A new ask, even
+  // inside an open "Which DJ?".
+  if (name === "PlayNowIntent" || PICK_INTENTS[name]) {
+    return { kind: "play-now", intent: name, words, pick: PICK_INTENTS[name] ?? null, say: "I'd look that up on Spotify.", end: true };
+  }
+
   // The answer to "Which DJ?".
   const pending = pendingOf(body, rooms, fallback, now);
   if (pending) {
     if (djKey && !words) {
-      return { kind: kindOf(pending), intent: name, dj: djKey, reading: pending, answered: true,
+      return { kind: kindOf(pending, env), intent: name, dj: djKey, reading: pending, answered: true,
         say: doFor(env, djKey, pending), end: true };
     }
     return { kind: "no-dj", intent: name, words, say: NO_DJ, end: true };
@@ -285,7 +300,7 @@ export function alexaHeard(body, env = {}, now = Date.now()) {
 
   if (djKey) {
     const reading = readWords(words, { rooms, fallback });
-    return { kind: kindOf(reading), intent: name, dj: djKey, words, reading,
+    return { kind: kindOf(reading, env), intent: name, dj: djKey, words, reading,
       say: doFor(env, djKey, reading), end: true };
   }
   if (name === "AskIntent") {
@@ -354,6 +369,143 @@ export function alexaHeard(body, env = {}, now = Date.now()) {
   return { kind: "other", intent: name, say: `I heard ${name || "an intent"} that ${ALEXA_INVOCATION} does not know.`, end: true };
 }
 
+// ------------------------------------------------------------- play now
+//
+// "PLAY THE BEATLES ON THE ULTRA" (MC-47, tasks/mc47-build.md; playnow.js
+// reads it). STAGE 2, the dry run: with house.json `playNow` "dry" the ask is
+// read and searched on Spotify (one or two searches) and the door says what
+// it WOULD play, the first songs named, whatever `alexa.acts` says for the
+// other sentences; it starts, writes and files nothing. STAGE 3, "on" (and
+// `alexa.acts` on): what plays is started (alexa-act.js playNowAct, through
+// playnow-start.js) and the sentence is what was done; what does not play
+// (an unsure ask's question, nothing found, a mood) is said as in the dry run.
+
+const PICK_INTENTS = { PickAlbumIntent: "album", PickSongIntent: "song", PickArtistIntent: "band" };
+// The kind said as the words of a "play …" (Amazon may hand "play the album"
+// to PlayNowIntent): the answer to the question, when one is open.
+const PICK_WORDS = /^(?:just |only )?(?:the |that )?(?:whole )?(album|record|lp|l p|song|track|single|band|artist|singer|group)(?: one)?(?: please)?$/;
+const PICK_OF = { album: "album", record: "album", lp: "album", "l p": "album", song: "song", track: "song", single: "song",
+  band: "band", artist: "band", singer: "band", group: "band" };
+export const PLAY_NOW_MS = 5000;
+const PLAY_NOW_OFF = `Playing at once is off in this house. Ask for a DJ and what you'd like, for example: Sessions, acoustic grunge.`;
+const PLAY_NOW_NO_PICK = "Say play, then what to play, for example: play the album Abbey Road.";
+const PLAY_NOW_NOT_ONE = "That wasn't one of the two, so I've let it go. Say play, then the album or the song and its name.";
+const PLAY_NOW_NOTHING = "What should I play? For example: play the Beatles on the Ultra.";
+const PLAY_NOW_LIMITED = "Spotify is limiting the house's requests for a while, so I can't look that up now. Try again later.";
+const PLAY_NOW_SLOW = "Spotify took too long to answer, so I've let it go. Ask again in a moment.";
+const PLAY_NOW_FAILED = "I couldn't search Spotify just now, so I've let it go. Ask again in a moment.";
+
+// "Pet Sounds: the album, or the song?" asked with the line open: the ask
+// rides in the session's attributes for ONE turn, as "Which DJ?" does; taken
+// only from the same session, not new, two minutes at most.
+function pickPendingOf(body, now) {
+  const s = body?.session;
+  const p = s?.attributes?.houseRadio;
+  if (!s || s.new !== false || !p || p.kind !== "play-now-which" || p.session !== s.sessionId) return null;
+  if (!Number.isFinite(p.at) || now - p.at < 0 || now - p.at > PENDING_MS) return null;
+  if (typeof p.words !== "string" || !p.words || p.words.length > 300) return null;
+  const kinds = Array.isArray(p.kinds) ? p.kinds.filter((k) => ["album", "song", "band"].includes(k)).slice(0, 2) : [];
+  return { words: p.words, kinds };
+}
+
+// THE NEIGHBOURS, should one land on "play {words}" rather than its own
+// intent (MC-47 stage 2's console check is that none does): a DJ's name
+// ("play hank on the ultra"), a preset by number, play again, the next or the
+// previous song, something different, more like this. Each is handed back to
+// alexaHeard as its own intent would have come, the speaker as Amazon would
+// have matched it, so it is said, and with `alexa.acts` done, as today.
+const NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+function neighbourOf(r) {
+  const w = r.words;
+  const named = beforeSearch(r);
+  if (named?.kind === "dj") return { intent: PUT_ON_OF[named.dj], slots: {} };
+  const p = w.match(/^(?:preset|button|number|key) (\d{1,2}|[a-z]+)$/);
+  if (p && (/^\d+$/.test(p[1]) || NUMBER_WORDS[p[1]])) {
+    return { intent: "PresetIntent", slots: { number: { value: String(/^\d+$/.test(p[1]) ? Number(p[1]) : NUMBER_WORDS[p[1]]) } } };
+  }
+  if (/^(?:it |the music |that |this )?again$/.test(w)) return { intent: "AgainIntent", slots: {} };
+  if (/^(?:the )?next (?:song|track|one)$/.test(w)) return { intent: "SkipIntent", slots: {} };
+  if (/^(?:the )?(?:previous|last) (?:song|track|one)(?: again)?$/.test(w)) return { intent: "BackIntent", slots: {}, noRoom: true };
+  if (/^something (?:different|else)$/.test(w)) return { intent: "ChangeUpIntent", slots: {}, noRoom: true };
+  if (/^more (?:like this|of this)(?: one| song)?$/.test(w)) return { intent: "MoreLikeIntent", slots: {}, noRoom: true };
+  return null;
+}
+const PUT_ON_OF = Object.fromEntries(Object.entries(djPlayIntents(ROSTER)).map(([intent, key]) => [key, intent]));
+// The speaker said, as Amazon hands a matched slot over.
+const roomSlotFor = (device) => ({ value: spoken(device), resolutions: { resolutionsPerAuthority: [
+  { authority: "house", status: { code: "ER_SUCCESS_MATCH" }, values: [{ value: { id: alexaRoomId(device), name: spoken(device) } }] }] } });
+
+// The race with Alexa's eight seconds: the reading, or null when Spotify was
+// slower than PLAY_NOW_MS (nothing to finish afterwards: it only searched).
+async function inTimeOrNull(work, ms) {
+  let timer;
+  const late = new Promise((r) => { timer = setTimeout(() => r(null), ms); });
+  try { return await Promise.race([work, late]); } finally { clearTimeout(timer); }
+}
+
+// The play-now reading said: { kind, say, end, play?, … }, completing what
+// alexaHeard marked. `catalog` is Spotify's (a test hands its own).
+export async function alexaPlayNow(body, env, heard, { now = Date.now(), catalog = null, ms = PLAY_NOW_MS } = {}) {
+  const mode = playNowMode(env);
+  if (mode === "off") return { ...heard, kind: "play-now-off", say: PLAY_NOW_OFF, end: true };
+  const rooms = parseRoomDevices(env);
+  const fallback = fallbackDevice(env) || null;
+  const pending = pickPendingOf(body, now);
+  let words = heard.words ? squash(String(heard.words)) : "";
+  let pick = heard.pick;
+  const asWords = !pick && pending ? words.replace(/\./g, "").replace(/\s+/g, " ").trim().match(PICK_WORDS) : null;
+  if (asWords) pick = PICK_OF[asWords[1]];
+  if (pick) {
+    if (!pending) return { ...heard, kind: "play-now-pick", say: PLAY_NOW_NO_PICK, end: true };
+    if (pending.kinds.length && !pending.kinds.includes(pick)) return { ...heard, kind: "play-now-pick", say: PLAY_NOW_NOT_ONE, end: true };
+    words = `the ${pick} ${pending.words}`;
+  }
+  if (!words) return { ...heard, kind: "play-now-nothing", say: PLAY_NOW_NOTHING, end: false, reprompt: "What should I play?" };
+
+  const r = readPlayNow(words, { rooms, fallback });
+  const near = pick ? null : neighbourOf(r);
+  if (near?.intent) {
+    const slots = { ...near.slots };
+    if (r.deviceFrom === "words" && !near.noRoom) slots.room = roomSlotFor(r.device);
+    if (near.intent.startsWith("Play") && /(?:^| )(?:right )?now$/.test(squash(String(heard.words)))) {
+      slots.when = { value: "now", resolutions: { resolutionsPerAuthority: [{ authority: "house", status: { code: "ER_SUCCESS_MATCH" }, values: [{ value: { id: "now", name: "now" } }] }] } };
+    }
+    const named = Object.fromEntries(Object.entries(slots).map(([k, v]) => [k, { name: k, ...v }]));
+    const again = { ...body, session: body?.session ? { ...body.session, attributes: {} } : body?.session,
+      request: { ...body.request, intent: { name: near.intent, confirmationStatus: "NONE", slots: named } } };
+    return { ...alexaHeard(again, env, now), via: "PlayNowIntent", words: heard.words };
+  }
+
+  if (await throttledUntil(env)) return { ...heard, kind: "play-now-limited", say: PLAY_NOW_LIMITED, end: true };
+  const places = playNowPlaces(parseEndless(env));
+  const t0 = Date.now();
+  let x;
+  try {
+    x = await inTimeOrNull(playNow(words, { catalog: catalog ?? catalogFor(env, "spotify"), rooms, fallback, places }), ms);
+  } catch (e) {
+    return { ...heard, kind: "play-now-failed", say: PLAY_NOW_FAILED, end: true, error: String(e?.message ?? e).slice(0, 120) };
+  }
+  if (!x) return { ...heard, kind: "play-now-slow", say: PLAY_NOW_SLOW, end: true };
+  const play = { kind: x.kind, dj: x.dj, button: x.place?.button ?? null, title: x.title, by: x.by,
+    first: x.songs.slice(0, 3).map((s) => s.name), album: x.album?.name ?? null, readings: x.readings, why: x.why,
+    device: x.device, from: x.deviceFrom, searches: x.searches, ms: Date.now() - t0, ...(pick ? { pick } : {}) };
+  const sessionId = body?.session?.sessionId ?? null;
+  // Unsure: asked with the line open, the ask kept for the answer, unless
+  // this was already the answer (a second question would go round).
+  if (x.kind === "unsure" && sessionId && !pick) {
+    const [a, b] = x.readings.map((g) => (g.kind === "artist" ? "band" : g.kind));
+    if (a !== b) {
+      return { ...heard, kind: "play-now", play, say: sayFor(x, { dry: true, open: true }), end: false, reprompt: `The ${a}, or the ${b}?`,
+        attributes: { houseRadio: { kind: "play-now-which", session: sessionId, at: now, words: String(heard.words ?? "").slice(0, 300), kinds: [a, b] } } };
+    }
+  }
+  const length = x.lengthSaid && x.kind !== "unsure" && x.kind !== "none"
+    ? " I'd leave out the length: a set of a length is asked of a DJ." : "";
+  // `result`: the reading whole, for the act when the house's play now is on
+  // (alexa-act.js playNowAct); never logged.
+  return { ...heard, kind: "play-now", play, result: x, say: `${sayFor(x, { dry: true })}${length}`, end: true };
+}
+
 // WHAT MAPLE CRATE HEARD, IN WORDS (the Talk tab's box, the owner,
 // 2026-11-08): a request as Alexa passed it on, near enough to the sentence
 // said ("Deep Dive frank Sinatra and Cupid" shows the "keep it" Alexa lost).
@@ -361,13 +513,15 @@ export function alexaHeard(body, env = {}, now = Date.now()) {
 // back together from those; null for what is not worth showing.
 const SAID_AS = { NowIntent: "what's playing", QuietIntent: "hush", AgainIntent: "carry on", SkipIntent: "skip",
   BackIntent: "one song back", KeepIntent: "keep this set", MoreLikeIntent: "more like this", ChangeUpIntent: "change it up",
-  "AMAZON.HelpIntent": "help", "AMAZON.FallbackIntent": "something not caught" };
+  "AMAZON.HelpIntent": "help", "AMAZON.FallbackIntent": "something not caught",
+  PickAlbumIntent: "the album", PickSongIntent: "the song", PickArtistIntent: "the band" };
 export function heardWords(h) {
   if (!h || h.kind === "ended" || h.kind === "stop" || h.kind === "other") return null;
   if (h.kind === "launch") return "maple crate, opened";
   const dj = h.dj ? ROSTER[h.dj]?.name ?? h.dj : null;
   const room = h.room?.heard ?? null;
   const w = h.words ? String(h.words) : "";
+  if (h.intent === "PlayNowIntent" || h.via === "PlayNowIntent") return w ? `play ${w}` : "play";
   if (h.kind === "preset") return [`preset ${h.preset}`, room].filter(Boolean).join(" ");
   if (h.intent === "MoveIntent") return `send the music${room ? ` to ${room}` : ""}`;
   if (h.steer) return /^steer /.test(h.steer.said) ? h.steer.said : `steer ${h.steer.said}`;
@@ -407,7 +561,9 @@ export async function alexaDoor(request, env, raw, now = Date.now(), ctx = null)
     console.log(`alexa: ${body.request?.type ?? "?"} unchecked: the ledger did not answer; nothing done ${Date.now() - t0}ms`);
     return Response.json(alexaSays(ALEXA_UNCHECKED), { headers: { "cache-control": "no-store" } });
   }
-  const read = alexaHeard(body, env, now);
+  let read = alexaHeard(body, env, now);
+  // Play now's search, the one reading that waits (MC-47 stage 2).
+  if (read.kind === "play-now") read = await alexaPlayNow(body, env, read, { now });
   // STAGE 3: with ALEXA_ACTS "on" the reading is acted on (alexa-act.js),
   // and what is said is what was done. Off, the dry run's answer stands.
   let heard = read;
@@ -424,8 +580,9 @@ export async function alexaDoor(request, env, raw, now = Date.now(), ctx = null)
     `${heard.room !== undefined ? ` room=${slotLog(heard.room)}` : ""}${heard.reason ? ` reason=${heard.reason}` : ""}` +
     `${heard.dj ? ` dj=${heard.dj}` : ""}${heard.preset ? ` preset=${heard.preset}` : ""}${heard.answered ? " answered=which-dj" : ""}` +
     `${heard.when ? ` when=${heard.when}` : ""}${heard.steer ? ` steer=${q(heard.steer.said)}` : ""}` +
+    `${heard.via ? ` via=${heard.via}` : ""}${heard.play ? ` play=${JSON.stringify(heard.play)}` : ""}${heard.error ? ` error=${q(heard.error)}` : ""}` +
     `${heard.reading ? ` read=${JSON.stringify((({ said, ...r }) => r)(heard.reading))}` : ""}` +
-    `${heard.did ? ` did=${JSON.stringify(heard.did)}` : alexaActs(env) ? "" : " dry"}` +
+    `${heard.did ? ` did=${JSON.stringify(heard.did)}` : alexaActs(env) && !heard.play ? "" : " dry"}` +
     ` said=${q(heard.say)} locale=${body.request?.locale ?? "-"} device=…${device} ${Date.now() - t0}ms`);
   // Kept for the Talk tab's box, after the answer where the runtime allows.
   const words = heardWords(heard);

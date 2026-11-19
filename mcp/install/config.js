@@ -125,6 +125,14 @@ const PATHS = {
   mcp: { main: "worker.js", covers: "../art/covers" },
   root: { main: "mcp/worker.js", covers: "art/covers" },
 };
+// PLAY NOW's switch (MC-47, house.json `playNow`): off, dry or on; absent is
+// off. Anything else is refused, so a typo never turns it on.
+const PLAY_NOW = ["off", "dry", "on"];
+function playNowOf(house) {
+  const v = house.playNow ?? "off";
+  if (!PLAY_NOW.includes(v)) throw new Error(`playNow is "${String(v).slice(0, 20)}": it must be "off", "dry" or "on"`);
+  return v;
+}
 export function viewOf(house, { at = "mcp" } = {}) {
   const paths = PATHS[at];
   if (!paths) throw new Error(`no config is rendered for "${at}"`);
@@ -175,6 +183,8 @@ export function viewOf(house, { at = "mcp" } = {}) {
       publicCopy: /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/.test(String(house.site?.publicCopy ?? "")),
       // House radio acts (MC-38 stage 3); absent, its door is a dry run.
       alexaActs: house.alexa?.acts === true,
+      // Play now (MC-47), only where it is not off.
+      playNow: playNowOf(house) !== "off",
       // Cloudflare's Workers Logs, only in a house that asks for them
       // (2026-11-11): they hold each request's address, keys included.
       logs: house.worker?.logs === true,
@@ -208,6 +218,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       "requests.enabled": String(Boolean(requests.enabled)),
       "requests.autofulfill": String(Boolean(requests.autofulfill)),
       "requests.routine": requests.routine ?? "",
+      playNow: playNowOf(house),
       // ALWAYS rendered, empty when there is nothing to run: wrangler leaves
       // a deployed cron in place when `crons` is missing and removes it only
       // on an empty list, so a house that drops its schedule must say []. The

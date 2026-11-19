@@ -202,6 +202,23 @@ const BACK_SAMPLES = ["go back a song", "go back", "back a song", "one song back
 const KEEP_SAMPLES = ["keep this set", "keep this", "keep it", "keep the set", "keep this one", "save this set",
   "put this set on the shelf", "put it on the shelf"];
 
+// PLAY NOW (MC-47, tasks/mc47-build.md): "play the Beatles on the Ultra",
+// read and searched by playnow.js, the speaker read out of the words (a
+// free-text slot stands alone). Only in a house whose `playNow` is not off.
+// The DJ put-ons ("play hank"), presets ("play preset 3"), "play again",
+// "play more …" and the rest stay their own intents: their words are written
+// in, which Amazon matches first; the door reads a few of them back should
+// one land here all the same (alexa.js playNowNeighbour).
+const PLAY_NOW_SAMPLES = ["play {words}", "play some {words}", "play me {words}", "play me some {words}",
+  "put on {words}", "put on some {words}"];
+// The answer to "Pet Sounds by the Beach Boys: the album, or the song?",
+// asked with the line kept open (MC-47 stage 2): the kind alone.
+const PICK_SAMPLES = {
+  PickAlbumIntent: ["the album", "album", "the album please", "the whole album", "the record", "the l. p."],
+  PickSongIntent: ["the song", "song", "the song please", "just the song", "the track", "the single"],
+  PickArtistIntent: ["the band", "band", "the artist", "the singer", "the group"],
+};
+
 const NOW_SAMPLES = ["what's playing", "what is playing", "what's on", "what is on", "what is this",
   "what song is this", "who is this", "who is playing", "what's playing on the {room}", "what is playing on the {room}",
   "what's playing in the {room}", "what is playing in the {room}"];
@@ -238,8 +255,9 @@ function roomValues(rooms) {
   return out;
 }
 
-// The whole model, as the console's JSON Editor takes it.
-export function alexaModel({ roster, rooms, invocation = ALEXA_INVOCATION }) {
+// The whole model, as the console's JSON Editor takes it. `playNow`: the
+// house's play now is not off (house.json `playNow`).
+export function alexaModel({ roster, rooms, invocation = ALEXA_INVOCATION, playNow = false }) {
   const djs = Object.entries(roster);
   const intents = [
     { name: "AMAZON.CancelIntent", samples: [] },
@@ -268,6 +286,10 @@ export function alexaModel({ roster, rooms, invocation = ALEXA_INVOCATION }) {
     { name: "SteerToIntent", slots: [{ name: "words", type: "AMAZON.SearchQuery" }], samples: STEER_TO_SAMPLES },
     { name: "BackIntent", samples: BACK_SAMPLES },
     { name: "KeepIntent", samples: KEEP_SAMPLES },
+    ...(playNow ? [
+      { name: "PlayNowIntent", slots: [{ name: "words", type: "AMAZON.SearchQuery" }], samples: PLAY_NOW_SAMPLES },
+      ...Object.entries(PICK_SAMPLES).map(([name, samples]) => ({ name, samples })),
+    ] : []),
   ];
   const types = [{ name: "HOUSE_ROOM", values: roomValues(rooms) }, { name: "HOUSE_WHEN", values: WHEN_VALUES }];
   return { interactionModel: { languageModel: { invocationName: invocation, intents, types } } };

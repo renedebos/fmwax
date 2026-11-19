@@ -308,11 +308,16 @@ export const VOICE_PROMPT = voicePrompt();
 // guest for its service, and the confirmation covers the guests too.
 // TALK TAKES THE ORDER (MC-36): with `asks`, a set asked of a DJ is ask_dj,
 // made by the curator after the call; the rest of the rule is as it was.
-function askRule(guests) {
+// STAGE 5 OF PLAY NOW (MC-47): `now`, the house's play now is on, so only a
+// length or "a set" makes a set; a DJ with other words plays now.
+function askRule(guests, now = false) {
   const where = guests.length ? ` (${guests.map((g) => `preset ${g.btn} for a ${g.label} set`).join(", ")})` : "";
-  return `A SET ASKED OF A DJ BY NAME — a length, a mood or a subject for them: "an
+  return `${now ? `A SET ASKED OF A DJ BY NAME — a LENGTH or "a set": "an hour of acoustic grunge
+from Sessions", "a set from Gatefold", "Hank, a set for cooking" — is ask_dj (a DJ
+with other words and no length plays now: play_endless with \`words\`, as "Any DJ,
+endless" says),` : `A SET ASKED OF A DJ BY NAME — a length, a mood or a subject for them: "an
 hour of acoustic grunge from Sessions", "Hank, something for cooking", "a set
-from Gatefold" — is ask_dj, never made on the call: the house's curator makes
+from Gatefold" — is ask_dj,`} never made on the call: the house's curator makes
 it after the call, so the person can hang up. No get_dj and no search first.
 Pass \`dj\`, \`words\` (what they asked for, without the DJ's name or the
 length; "your pick" when they left it to the DJ), \`minutes\` when they said a
@@ -329,9 +334,9 @@ none and lists the DJs: then call ask_dj again at once with the one that was
 meant, and ask the person only when none is near. Then say the one line in
 \`said\`, as it is.`;
 }
-function whereASetGoes(replay, guests, asks = false) {
+function whereASetGoes(replay, guests, asks = false, now = false) {
   if (!guests.length) {
-    return `${asks ? askRule(guests) : `A set asked OF A DJ BY NAME is written straight onto that DJ's own playlist —
+    return `${asks ? askRule(guests, now) : `A set asked OF A DJ BY NAME is written straight onto that DJ's own playlist —
 their preset's (a DJ with no preset has nowhere for a set: say so), with replace_playlist,
 and then started with play_playlist if the person wants it now.`} A set asked
 for with NO DJ named ("play some Prince", "something for cooking") goes onto
@@ -344,7 +349,7 @@ is started from there.`;
   // named no DJ played from the replay playlist, which no preset holds, and
   // nothing said so. The report says it now, and offers the Spotify guest.
   const spotifyGuest = guests.find((g) => g.label === "Spotify") ?? null;
-  return `${asks ? askRule(guests) : `A set asked OF A DJ BY NAME is written onto the guest preset for its
+  return `${asks ? askRule(guests, now) : `A set asked OF A DJ BY NAME is written onto the guest preset for its
 service:
 ${list}.
 Write it with replace_playlist, replacing whichever DJ's set is there, with
@@ -407,7 +412,7 @@ these takes are not on Spotify or Tidal.
 // STEERING (MC-23): only in a house with an endless DJ preset or a live
 // Spotify guest — otherwise there is nothing to steer and the prompt is as
 // it was. `endless` is [{ name, btn }].
-function steerRule(endless, guests, replay = "replay") {
+function steerRule(endless, guests, replay = "replay", now = false) {
   const g = guests.find((x) => x.label === "Spotify") ?? null;
   if (!endless.length && !g) return "";
   const what = [endless.length ? `An ENDLESS DJ preset (${endless.map((e) => `${e.name} on ${e.btn}`).join(", ")}) keeps
@@ -432,9 +437,14 @@ A DJ NAMED TO PLAY is play_endless with \`dj\` and \`device\`: "play Hank",
 Ultra", "make Gatefold the guest DJ". The house DJs play their own
 preset, as its key would — no new set, no DJ run; anyone else becomes the
 GUEST DJ on preset 3 and starts at once from their newest program (or makes
-an opening, about four minutes). Only an ask for A SET — a length, a mood or
+an opening, about four minutes). ${now ? `A DJ named WITH WORDS and no length
+("Hank, some 70s soul", "Sessions, acoustic grunge", "Deep Dive, Prince") is
+this call with \`words\` too: it plays now, a house DJ's own preset steered
+toward the words, a guest DJ with songs found for them. Only a LENGTH or "a
+set" ("an hour of Hank", "a set from Gatefold") is a new set, written as
+"Where a set goes" says.` : `Only an ask for A SET — a length, a mood or
 a subject for them: "a set from Gatefold", "an hour of Hank", "Hank, something
-for cooking" — is a new set, written as "Where a set goes" says.
+for cooking" — is a new set, written as "Where a set goes" says.`}
 The ask is the yes. If it answers \`busy\`, another DJ is the guest DJ: ask
 whether to take over after this song or now, then call again with \`when\`
 "next" or "now". Say the one line in \`said\`.
@@ -447,9 +457,10 @@ The old names are theirs: "play Stax" is Soul with "the South (Stax)",
 Sunny" Vibe with "the room", "play Nightside" Vibe with "the small hours",
 "play Morning" Vibe with "the morning". The words stay for every top-up;
 other words while that DJ is the guest are play_endless again (a new
-opening), never a steer. A house DJ's own preset takes no words: it plays
+opening), never a steer. ${now ? `A house DJ given words starts their own
+preset and is steered toward them: one call, no steer after it.` : `A house DJ's own preset takes no words: it plays
 as it is (Vibe there reads the hour); steer it only if they asked for the
-turn outright.
+turn outright.`}
 ${
   // AN ARTIST OR A STYLE, ENDLESS (the owner, 2026-10-10: "change to Jayhawks
   // on endless mode", Americana playing, became a set on the replay list,
@@ -514,8 +525,23 @@ EQ: name the one in use when asked.
 `;
 }
 
+// PLAY NOW (MC-47 stage 4): only in a house whose play now is not off.
+function playNowRule(on) {
+  if (!on) return "";
+  return `# Play something now
+"Play the Beatles", "put on Kind of Blue", "play Waterloo Sunset in the
+kitchen", "some 80s hip hop": an artist, a song, an album or a genre with NO
+DJ named and NO length is play_now with \`words\` as said and \`device\`. It
+starts at once; the DJ who fits carries it on. A DJ named is still
+play_endless; a length or "a set" is a set, as "Where a set goes" says. If it
+answers \`unsure\`, ask its \`question\` and call again with "the album …" or
+"the song …" before the words. Say the line in \`said\`.
+
+`;
+}
+
 export function backendPrompt({ devices = [], defaultDevice = "", replay = "replay", guests = [], endless = [], archive = null,
-  asks = false, wiims = [] } = {}) {
+  asks = false, wiims = [], playNow = false, playNowOn = false } = {}) {
   return `# Role
 You are the backend for a spoken conversation in a house with a set of DJ
 characters and speakers. You are helping an assistant that is talking; its
@@ -561,12 +587,12 @@ start: the same song carries on there. Only Spotify moves: for Tidal or the
 radio, say so, and that the bar can move the radio. Say the line in \`said\`.
 
 # Where a set goes
-${whereASetGoes(replay, guests, asks)} To adjust a set that is playing, call now_playing
+${whereASetGoes(replay, guests, asks, playNowOn)} To adjust a set that is playing, call now_playing
 and read_playlist (it reports what is LEFT after the current track), then
 rewrite what is left with replace_playlist, keeping the current track at the head.
 "Put it back" or "undo that" is restore_playlist: show first, then confirm.
 
-${steerRule(endless, guests, replay)}${archiveRule(archive)}${pressRule(wiims)}# Programs and the shelf
+${playNowRule(playNow)}${steerRule(endless, guests, replay, playNowOn)}${archiveRule(archive)}${pressRule(wiims)}# Programs and the shelf
 A PROGRAMME is a set with notes: a page a person reads later, kept on the
 house's shelf. Two DJs write them — the Librarian and Gatefold —
 through the one write_program tool, with the DJ's key in \`dj\`; the others have no

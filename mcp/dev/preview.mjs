@@ -111,14 +111,15 @@ export async function seed(env, mod = null) {
   await env.PROGRAMS.put(`current:${REQUESTS_PL}`, "aint-nobody-every-woman-w1x2");
   // Gatefold's Spirit of Eden set on 2, Tidal.
   await env.PROGRAMS.put(`on:${TIDAL_PL}`, JSON.stringify({ dj: "gatefold", ref: "spirit-of-eden-p1a2b3", at: new Date(Date.now() - 90 * 60e3).toISOString() }));
+  await env.PROGRAMS.put(`current:${TIDAL_PL}`, "spirit-of-eden-p1a2b3");
   // Pub Rock as the guest DJ (Dr. Funkenstein was, until he took preset 4
   // when Monk was cut, 2026-10-15).
   const { __test } = mod ?? await import("../worker.js");
-  await __test.endlessUpdate(env, (st) => { st.lane = { btn: 7, dj: "pub-rock", tenancy: 8, program: null, since: Date.now() - 3 * 3600e3, head: 0 }; return {}; });
+  await __test.endlessUpdate(env, (st) => { st.lane = { btn: 3, dj: "deep-dive", tenancy: 8, program: null, since: Date.now() - 3 * 3600e3, head: 0, words: "Victoria Williams" }; return {}; });
   // What the speakers hold, as the helper last read them: 4 and 8 still say
   // Monk and The Selector, as the WiiMs do until they are saved again.
-  const presets = [[1, "Requests - Spotify", "Spotify"], [2, "Requests - Tidal", "Tidal"], [3, "Novato", "Prime"],
-    [4, "Monk", "Spotify"], [5, "Hank", "Spotify"], [6, ARCHIVE.name, "Web stream"], [7, "Guest DJ", "Spotify"],
+  const presets = [[1, "Requests - Spotify", "Spotify"], [2, "Requests - Tidal", "Tidal"], [3, "Guest DJ", "Spotify"],
+    [4, "Monk", "Spotify"], [5, "Hank", "Spotify"], [6, "Sessions", "Spotify"], [7, "Americana", "Spotify"],
     [8, "The Selector", "Spotify"], [9, "Sunny", "Spotify"], [10, "Pub Rock", "Spotify"], [11, "Americana", "Spotify"], [12, "The Librarian", "Spotify"]]
     .map(([btn, name, source]) => ({ btn, name, source, saved: null }));
   for (const [slug, speaker] of [["pro-plus", "Pro Plus"], ["ultra", "Ultra"]]) {

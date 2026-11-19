@@ -68,6 +68,21 @@ test("every example on the What to say page is read the way the page says", () =
   }
 });
 
+test("with play now on (MC-47 stage 5) a DJ with words plays now, a length or \"a set\" makes a set, and \"play …\" has its section", () => {
+  const e = env({ PLAY_NOW: "on" });
+  const { sections, notes } = sayExamples(e);
+  const rows = sections.flatMap((s) => s.rows);
+  for (const row of rows) check(e, row.ask, row.expect, row.said);
+  for (const n of notes) for (const c of n.checks) check(e, c.ask, c.expect, `${n.title}: ${c.ask.words}`);
+  const said = rows.map((r) => `${r.said} → ${r.result}`).join("\n");
+  assert.match(said, /…for Sessions, acoustic grunge → Sessions' preset 6 starts on the Pro Plus at once/);
+  assert.match(said, /…for Sessions, an hour of acoustic grunge → A new one-hour set/);
+  assert.match(said, /…for Sessions, a set of acoustic grunge → The same: a new one-hour set/);
+  assert.match(said, /…to play the Beatles → their songs start at once on preset 3/);
+  assert.ok(sections.some((s) => s.id === "now"));
+  assert.ok(!sayExamples(env()).sections.some((s) => s.id === "now"), "off: no play-now section");
+});
+
 test("the examples are this house's own: its DJs, presets and speakers", () => {
   const { sections } = sayExamples(env());
   const said = sections.flatMap((s) => s.rows.map((r) => `${r.said} → ${r.result}`)).join("\n");

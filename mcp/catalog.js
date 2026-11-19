@@ -116,6 +116,11 @@
 //                                 fifty with `total`
 //   albumTracks(id, offset, limit) → { tracks, total }: more of them
 //
+//   Spotify's alone, for play now (playnow.js, MC-47; play now is Spotify
+//   only, the plan's *Settings and limits*):
+//   searchAll(query, limit)       → { artists, albums, tracks }, one search
+//                                 of all three, Spotify's own shapes
+//
 // Every verb is one or more subrequests through the transport the Worker
 // hands the implementation, so the per-invocation budget and the point-of-no-
 // return flag are counted there, not here. A verb throws an Error carrying

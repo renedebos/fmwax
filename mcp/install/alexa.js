@@ -1,7 +1,8 @@
 // mcp/alexa-model.js -> mcp/install/alexa-house-radio.json (MC-38)
 //
 // House radio's interaction model, made from the roster (djs.js) and the
-// house's speakers (house.json `devices.rooms`), for the owner to paste into
+// house's speakers (house.json `devices.rooms`), with play now's intents when
+// house.json `playNow` is dry or on (MC-47), for the owner to paste into
 // Amazon's developer console: Build → Interaction Model → JSON Editor. The
 // test compares the file with what this makes, so a DJ or a speaker that
 // changed without `npm run alexa` fails the suite. --check exits 1 without
@@ -18,7 +19,8 @@ export const ALEXA_MODEL_FILE = join(HERE, "alexa-house-radio.json");
 const HOUSE_JSON = join(HERE, "..", "house.json");
 
 export function renderModel(house = JSON.parse(readFileSync(HOUSE_JSON, "utf8"))) {
-  return JSON.stringify(alexaModel({ roster: ROSTER, rooms: house.devices?.rooms ?? [] }), null, 2) + "\n";
+  const playNow = ["dry", "on"].includes(house.playNow);
+  return JSON.stringify(alexaModel({ roster: ROSTER, rooms: house.devices?.rooms ?? [], playNow }), null, 2) + "\n";
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

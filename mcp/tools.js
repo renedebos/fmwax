@@ -59,6 +59,8 @@ import { geniusOn, geniusSong } from "./genius.js";
 import { findRecording } from "./recordings.js";
 import { longReadSentBack, weighLongRead } from "./longread.js";
 import { ARCHIVE } from "./archive-identity.js";
+import { playNow, playNowMode, playNowPlaces, sayFor } from "./playnow.js";
+import { playNowPlays, pressFor, startDjWithWords, startPlayNow } from "./playnow-start.js";
 
 // A DJ NAMED: by voice, the name was heard, so a near miss finds its DJ
 // (findSpokenDj); typed, it must be the DJ's name, as it always was.
@@ -861,12 +863,58 @@ export async function callTool(env, name, args, budget) {
     // The defaults are the gentle ones (the owner, 2026-09-23): after the
     // playing song, and on a program after the program ends. `now` and
     // `replace_rest` only when the listener said so outright.
+    // PLAY NOW (MC-47 stage 4): "play the Beatles on the Ultra" from any
+    // door, read and searched as maple crate reads it (playnow.js) and, with
+    // the house's play now on, started (playnow-start.js); dry, only said.
+    case "play_now": {
+      const mode = playNowMode(env);
+      if (mode === "off") throw new Error("Playing at once is off in this house. A DJ named is play_endless; a set is asked of a DJ.");
+      const words = String(args.words ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+      if (!words) throw new Error("say what to play in `words`: an artist, a song, an album or a genre.");
+      if (await throttledUntil(env)) throw new Error("Spotify is limiting the house's requests for a while, so nothing can be looked up now. Nothing was started.");
+      const rooms = parseRoomDevices(env);
+      const said = String(args.device ?? "").trim();
+      const device = said ? rooms.find((r) => r.toLowerCase() === said.toLowerCase()) ?? null : null;
+      if (said && !device) throw new Error(`no speaker called "${said.slice(0, 40)}". The speakers: ${rooms.join(", ")}.`);
+      const x = await playNow(words, { catalog: catalogFor(env, "spotify"), rooms, fallback: device ?? fallbackDevice(env) ?? null,
+        places: playNowPlaces(parseEndless(env)) });
+      const base = { kind: x.kind, ...(x.dj ? { dj: findDj(env, x.dj)?.name ?? x.dj } : {}), ...(x.place ? { preset: x.place.button } : {}),
+        title: x.title, ...(x.by ? { by: x.by } : {}), device: x.device, songs: x.songs.map((t) => `${t.name} — ${t.artist}`) };
+      if (x.kind === "dj") {
+        return { ...base, status: "a-dj", started: false,
+          said: `${findDj(env, x.dj)?.name ?? x.dj} is a DJ: call play_endless with dj "${findDj(env, x.dj)?.name ?? x.dj}" and the speaker.` };
+      }
+      if (x.kind === "unsure") {
+        return { ...base, status: "unsure", started: false, readings: x.readings, question: sayFor(x, { open: true }),
+          said: `${sayFor(x, { open: true })} Ask the person, then call again with "the album …", "the song …" or "the band …" first.` };
+      }
+      if (mode === "dry" || !playNowPlays(x)) {
+        return { ...base, status: mode === "dry" && playNowPlays(x) ? "dry" : x.kind, started: false, said: sayFor(x, { dry: mode === "dry" }) };
+      }
+      const out = await startPlayNow(env, x, { budget, press: pressFor(env, x.device) });
+      const d = out.did ?? {};
+      const ok = ["ok", "sent", "pressed"].includes(d.start) || ["making"].includes(d.put);
+      return { ...base, status: d.put === "making" ? "making" : ok ? "started" : "not-started", started: ok,
+        ...(d.follows ? { dj_follows: d.follows } : {}), said: out.say };
+    }
+
     case "play_endless": {
       const who = djNamed(env, String(args.dj ?? ""));
       if (!who) throw new Error(`no DJ called "${String(args.dj ?? "").slice(0, 40)}". get_dj lists them.`);
       const device = String(args.device ?? "").trim() || env.DEFAULT_DEVICE || parseRoomDevices(env)[0] || "";
       if (!device) throw new Error("name a speaker: list_devices shows them.");
       const words = String(args.words ?? "").replace(/\s+/g, " ").trim().slice(0, 120) || null;
+      // PLAY NOW, STAGE 5 (MC-47): a DJ given words plays them now, on their
+      // own preset steered toward them, or as the guest DJ with the songs a
+      // search found first (Deep Dive's artist, Genre's genre).
+      if (words && playNowMode(env) === "on") {
+        const out = await startDjWithWords(env, { dj: who.key, words, device, budget, press: pressFor(env, device) });
+        const d = out.did ?? {};
+        const ok = ["ok", "sent", "pressed"].includes(d.start) || d.put === "making";
+        return { status: d.put === "making" ? "making" : ok ? "started" : (d.put ?? "not-started"), ...(d.button ? { preset: d.button } : {}),
+          ...(d.start ? { start: d.start } : {}), ...(d.steer ? { steer: d.steer } : {}), ...(d.follows ? { dj_follows: d.follows } : {}),
+          started: ok, said: out.say };
+      }
       const r = await playEndless(env, { dj: who.key, device, budget, words,
         when: args.when === "now" || args.when === "next" ? args.when : null });
       const bad = r.start && r.start !== "ok" && r.start !== "sent";

@@ -789,8 +789,8 @@ test("the agent's list is exactly the allowlist, and the owner's is everything",
   // Which is everything this house can do, and this house has no archive
   // button and no Last.fm key — so the archive's two verbs and Last.fm's one
   // are absent from BOTH lists, and the owner's is short by exactly those.
-  // And Genius's one (2026-11-16): no token here.
-  assert.equal(owner.result.tools.length, __test.TOOLS.length - 4);
+  // And Genius's one (2026-11-16): no token here. And play now (2026-11-18): off here.
+  assert.equal(owner.result.tools.length, __test.TOOLS.length - 5);
   // LAST.FM (the owner's go, 2026-10-18): a read, for a house with the key.
   e.LASTFM_KEY = "c0ffeec0ffeec0ffeec0ffeec0ffee00";
   const withKey = await (await workerDefault.fetch(rpc(`/mcp/${AGENT}`, toolsList), e)).json();

@@ -176,8 +176,8 @@ test("a session: the offer goes to OpenAI inside the documented shape, and an an
     // This house has no archive preset, so the archive's two are not offered,
     // takes no asks, so neither is ask_dj (MC-36), and has no WiiMs, so neither
     // is press_preset (MC-39, test/talk-press.test.js).
-    assert.deepEqual(fns, [...__test.VOICE_TOOLS].filter((n) => !/_archive$/.test(n) && n !== "ask_dj" && n !== "press_preset").sort(),
-      "exactly the voice's tools");
+    assert.deepEqual(fns, [...__test.VOICE_TOOLS].filter((n) => !/_archive$/.test(n) && n !== "ask_dj" && n !== "press_preset" && n !== "play_now").sort(),
+      "exactly the voice's tools (play now is off in this house)");
     // The one writer (MC-17): the Librarian's shape (the Professor's until the owner cut
     // him, 2026-10-15) with the DJ's key first, every field's description cut to a
     // sentence, and none of the make_<dj>_program tools beside it. Three writers from

@@ -38,7 +38,7 @@ import {
 } from "./endless.js";
 import {
   askDay, askedTag, atWords, djPlaces, djSlotsExist, findDj, guestAlias,
-  GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, ownPresetKeys, guestLabel, helperKeyFlash, house,
+  GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, laneKeyLine, ownPresetKeys, requestKeyLines, guestLabel, helperKeyFlash, house,
   houseClockWords, liveGuests, loadedWords, newestOn, parseButtons, pastTheList, playableKeys, presetFlash,
   presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash,
 } from "./house.js";
@@ -87,7 +87,8 @@ import { geniusForTv, geniusSong } from "./genius.js";
 import { TV_NOT_CAUGHT, tvIntent, tvLine } from "./tvsay.js";
 import { TV_DJ_COOKIE, cookieOf, tvDjAct, tvDjClear, tvDjCookie, tvDjFacts, tvDjList, tvDjSettings } from "./tvdj.js";
 import { ARCHIVE } from "./archive-identity.js";
-import { ALEXA_BODY_MAX, alexaBox, alexaDoor, alexaHeard } from "./alexa.js";
+import { ALEXA_BODY_MAX, alexaBox, alexaDoor, alexaHeard, alexaPlayNow } from "./alexa.js";
+import { playNowMode } from "./playnow.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
 // Onions (Booker T. & the M.G.'s), Lovely Day (Bill Withers) and Roxette
 // (Dr. Feelgood), by their Spotify ids, checked 2026-11-09.
@@ -152,8 +153,9 @@ const HELPER_REMOVED_SAID = {
 function talkStarted(name, args, out) {
   if (name === "play_playlist" || name === "play_program") return true;
   if (name === "playback_control") return args?.action === "resume";
-  if (name === "play_endless") return TALK_ENDLESS_STARTS.has(out?.status) && (!out?.start || out.start === "ok" || out.start === "sent");
+  if (name === "play_endless") return out?.started === true || (TALK_ENDLESS_STARTS.has(out?.status) && (!out?.start || out.start === "ok" || out.start === "sent"));
   if (name === "play_archive") return out?.started === true;
+  if (name === "play_now") return out?.started === true;
   return false;
 }
 // What a caught error may say back to Talk's page (2026-10-25, CodeQL on the
@@ -1963,6 +1965,8 @@ export async function handleRequest(request, env, ctx) {
         {
           const boxes = parseSpeakers(env);
           const throttle = await throttledUntil(env);
+          // What the Requests keys hold, read beside the player (house.js).
+          const requestLinesP = boxes.length ? requestKeyLines(env).catch(() => ({})) : Promise.resolve({});
           const [pRead, recs] = await Promise.all([
             throttle ? Promise.resolve({ unknown: true, throttled: true })
               // The house's kept answer (MC-29). A flash of either kind
@@ -2011,9 +2015,11 @@ export async function handleRequest(request, env, ctx) {
           // still says the DJ who left.
           const ecfg = parseEndless(env);
           let endlessKeys = {};
+          let laneLine = {};
           if (ecfg?.mode === "live" && env.STATION) {
             try {
               const est = await endlessLoad(env);
+              laneLine = laneKeyLine(env, ecfg, est);
               const slots = endlessSlots(env, ecfg, est);
               const owed = endlessOwed(env, slots, recs);
               endlessKeys = Object.fromEntries(slots.map((x) => [x.button, { name: x.name,
@@ -2093,6 +2099,7 @@ export async function handleRequest(request, env, ctx) {
               canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null, version,
               shelf: sp ? { code: sp, on: room?.name ?? "" } : null, tune: tn, voice,
               base, rooms, room, now: barNow, lan: barNow.lan ?? null, endlessKeys, ownKeys: ownRows, reqDj,
+              keyLines: { ...(await requestLinesP), ...laneLine },
               playable: playableKeys(env, boxes, recs), ...readingsShown(env, recs),
               fills: roster.filter((r) => r.guest && r.live).map((r) => r.btn),
               hflash, flash: hflash || !kp ? null : { code: kp.code, on: kp.box.name,
@@ -2113,6 +2120,7 @@ export async function handleRequest(request, env, ctx) {
             playing: p ? { ...p, from: onPreset ? `${onPreset.autoplay ? "Spotify's pick, after " : ""}${np?.lane ? np.name : `preset ${onPreset.btn} (${onPreset.name})`}` : await playingFromFor(env, p),
               onPreset: !!onPreset, ...(np?.endless && !onPreset.autoplay ? { endless: true } : {}) } : null,
             playable: playableKeys(env, boxes, recs), endlessKeys,
+            keyLines: { ...(await requestLinesP), ...laneLine },
             rooms: parseRoomDevices(env), others: otherRooms(env).filter((n) => !shownSpeakers.some((sp) => sp.name === n)),
             loaded: !houseKeys,
             tflash: tp ? { code: tp.code, verb: tp.verb, on: tp.box.name } : null,
@@ -2400,6 +2408,10 @@ export async function handleRequest(request, env, ctx) {
               model: backendModel(env), instructions: backendPrompt({ devices, defaultDevice,
                 // A DJ's set filed for the curator (MC-36), where asks are on.
                 asks: askDjOn(env),
+                // Play now (MC-47 stage 4), where it is not off.
+                playNow: playNowMode(env) !== "off",
+                // Stage 5: a DJ with words and no length plays now.
+                playNowOn: playNowMode(env) === "on",
                 replay: env.PROGRAM_REPLAY_PLAYLIST || "replay",
                 // The live guests (MC-18 stage 3): none while every guest is
                 // dark, and then the prompt is exactly what it was.
@@ -2700,14 +2712,14 @@ export async function handleRequest(request, env, ctx) {
         const words = String(q.get("q") ?? "").replace(/\s+/g, " ").trim().slice(0, 300);
         const kv = programsKV(env);
         let said;
-        const x = words ? tvIntent(words, roomNames) : null;
+        const x = words ? tvIntent(words, roomNames, { playNow: playNowMode(env) !== "off" }) : null;
         // A DJ'S SCREEN IS OPEN: words that name no DJ and are no command
         // ("acoustic piano blues", "the Cramps in 1979") are for that DJ,
         // with their settings on this TV.
         const ctxRaw = cookieOf(request, TV_DJ_COOKIE);
         const ctxKey = ctxRaw && house(env).djs[ctxRaw] ? house(env).djs[ctxRaw].key ?? ctxRaw : null;
         // Once a minute, as an act below is: a page loaded twice files one set.
-        if (words && ctxKey && (!x || x.body.request.intent.name === "AskIntent")) {
+        if (words && ctxKey && (!x || x.body.request.intent.name === "AskIntent" || x.body.request.intent.name === "PlayNowIntent")) {
           const once = `tvsay:dj:${ctxKey}:${words.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 120)}:${room?.slug ?? ""}`;
           let before = null;
           try { before = await kv.get(once); if (!before) await kv.put(once, "\u2026", { expirationTtl: 60 }); } catch { before = null; }
@@ -2733,7 +2745,9 @@ export async function handleRequest(request, env, ctx) {
           if (before) said = before === "\u2026" ? "Already on it." : `Already done a moment ago: ${before}`;
           else {
             const envTv = room ? { ...env, DEFAULT_DEVICE: room.name } : env;
-            const read = alexaHeard(x.body, envTv, Date.now());
+            let read = alexaHeard(x.body, envTv, Date.now());
+            // Play now's search (MC-47 stage 4), as maple crate's door does it.
+            if (read.kind === "play-now") read = await alexaPlayNow(x.body, envTv, read);
             let acted = null;
             try { acted = await alexaAct(envTv, ctx, read); } catch {
               acted = { say: "Something went wrong on the house's side; nothing more was done." };

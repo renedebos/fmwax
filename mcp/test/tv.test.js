@@ -149,13 +149,13 @@ test("the page: rooms, twelve tiles and the band; every control a button or a li
     for (const n of [1, 2, 6, 10]) {
       assert.match(html, new RegExp(`<form method="post" action="/buttons/${KEY}/wiim/key"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="Pro Plus"><input type="hidden" name="back" value="tv"><button type="submit" class="tile" data-k="${n}" data-f="k:${n}" data-busy="Pressing…"`));
     }
-    assert.match(html, /data-k="1"[^>]*aria-label="Press 1, Requests, on the Pro Plus">[\s\S]*?<span class="tname">Requests<\/span><span class="tsub" data-sub="Sessions">/, "whose set is on the requests preset");
-    assert.match(html, /<span class="tname">Requests<\/span><span class="tsub" data-sub="Tidal">Tidal</);
-    assert.match(html, /<span class="tname">Sessions<\/span><span class="tsub" data-sub="Endless">Endless</);
-    assert.match(html, /<span class="tname">KQED-FM<\/span><span class="tsub" data-sub="TuneIn">TuneIn</);
+    assert.match(html, /data-k="1"[^>]*aria-label="Press 1, Sessions, on the Pro Plus">[\s\S]*?<span class="tname">Sessions<\/span><span class="tsub" data-sub="Spotify">/, "named for whose set is on the requests preset (2026-11-18)");
+    assert.match(html, /<span class="tname">Requests<\/span><span class="tsub" data-sub="Tidal"><span>Tidal</);
+    assert.match(html, /<span class="tname">Sessions<\/span><span class="tsub" data-sub="Endless"><span>Endless</);
+    assert.match(html, /<span class="tname">KQED-FM<\/span><span class="tsub" data-sub="TuneIn"><span>TuneIn</);
     assert.match(html, /<div class="tile dim" data-k="3"><span class="ttop"><span class="tnum">3<\/span><\/span><span class="tbody"><span class="tsub">Nothing saved<\/span>/);
     // Quiet: said, and no control offered.
-    assert.match(html, /<section class="band" aria-label="Now playing" data-tone="off">[\s\S]*?<p class="b1">Nothing is playing on the Pro Plus<\/p>/);
+    assert.match(html, /<section class="band" aria-label="Now playing" data-tone="off">[\s\S]*?<p class="b1 slide"><span>Nothing is playing on the Pro Plus<\/span><\/p>/);
     assert.match(html, /<div class="bctl" hidden>/);
     // The remote cannot leave a text box (measured on the TV): there is none.
     assert.ok(!/<(textarea|select)\b/.test(html) && !/<input(?![^>]*type="hidden")/.test(html), "nothing to type in or open");
@@ -169,14 +169,14 @@ test("the page: rooms, twelve tiles and the band; every control a button or a li
       assert.ok(!new RegExp(`\\bvar\\s+${name}\\b`).test(script), `"${name}" is a function and a variable`);
     }
     // About this song opens for a song only Genius knows (the owner, 2026-11-16).
-    assert.ok(script.includes('if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout(); }'));
+    assert.ok(script.includes('if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout();'));
     // Without the helper's hands: Spotify keys start through Spotify, the rest are the remote's.
     delete e.STATION.endless.hands;
     const off = await (await call(e, `${KEY}/tv`)).text();
     assert.match(off, /data-sig="[0-9a-z]+\.0"/);
     assert.ok(!off.includes("/wiim/key"));
     assert.match(off, new RegExp(`<form method="post" action="/buttons/${KEY}/preset/play"><input type="hidden" name="btn" value="6"><input type="hidden" name="device" value="Pro Plus"><input type="hidden" name="back" value="tv"><button type="submit" class="tile" data-k="6" data-f="k:6" data-busy="Starting…" aria-label="Play Sessions on the Pro Plus">`));
-    assert.match(off, /<div class="tile dim" data-k="2">[\s\S]*?<span class="tsub" data-sub="On the remote">On the remote</);
+    assert.match(off, /<div class="tile dim" data-k="2">[\s\S]*?<span class="tsub" data-sub="On the remote"><span>On the remote</);
     assert.match(off, /<div class="tile dim" data-k="10">/);
     // The key, and GET only.
     assert.equal((await call(e, "wrongkey123456/tv")).status, 404);
@@ -230,7 +230,7 @@ test("the look: /tv/now says one room's band; a made-up room is refused", async 
     // The page's own first paint carries the same band and the same signature.
     const html = await (await call(e, `${KEY}/tv`)).text();
     assert.ok(html.includes(`data-sig="${a.sig}"`), `so the first look does not ask for the page again: ${a.sig} vs ${html.match(/data-sig="([^"]*)"/)?.[1]}`);
-    assert.match(html, /<p class="b1">Just Like Honey<\/p>/);
+    assert.match(html, /<p class="b1 slide"><span>Just Like Honey<\/span><\/p>/);
     assert.equal((await call(e, `${KEY}/tv/now?room=living-room`)).status, 200);
     assert.equal((await call(e, `${KEY}/tv/now?room=cellar`)).status, 400);
     assert.equal((await call(e, `${KEY}/tv/now`)).status, 400);
@@ -254,7 +254,7 @@ test("a tile's press comes back to the TV page, on the tile, with its words when
     assert.equal(hk.headers.get("location"), `/buttons/${KEY}/tv?hk=ok&k=2&kon=pro-plus`);
     assert.deepEqual(asked, [{ cmd: "key", n: 2, speaker: "Pro Plus" }]);
     const after = await (await call(e, hk.headers.get("location").replace("/buttons/", ""))).text();
-    assert.match(after, /<p class="b1">Just Like Honey<\/p>/, "the band says what the key started");
+    assert.match(after, /<p class="b1 slide"><span>Just Like Honey<\/span><\/p>/, "the band says what the key started");
     assert.match(after, /<p class="bsay" role="status" hidden><\/p>/, "and a press that worked says nothing");
     // With the helper gone, the words.
     delete e.STATION.endless.hands;
@@ -1150,4 +1150,11 @@ test("an album's article says so in its first sentence; a song's article that na
   assert.equal(cleanAlbum("A.M. (2017 Remaster)"), "A.M.");
   assert.equal(cleanAlbum("Superfly - Deluxe 25th Anniversary Edition"), "Superfly");
   assert.equal(cleanAlbum("Black Rhythm Revolution!"), "Black Rhythm Revolution!");
+});
+
+test("About this song stays open when the song changes, and goes back ten minutes after the remote was last used (2026-11-18)", async () => {
+  const html = renderTv({ base: "/buttons/k" });
+  assert.match(html, /ABOUT_HOLD = 10 \* 60000/);
+  assert.match(html, /view === "about" && !has && aboutKey === song\.key/);
+  assert.match(html, /aboutTouch = Date\.now\(\);\n\s+var mb = /);
 });

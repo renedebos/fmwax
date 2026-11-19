@@ -377,6 +377,43 @@ export async function ownPresetRows(env, endlessKeys = {}) {
   if (cache.dirty) await writeTiles(env, cache.map).catch(() => {});
   return rows;
 }
+// WHAT THE REQUESTS AND GUEST DJ KEYS HOLD, ON THE SPEAKERS GRID (the owner,
+// 2026-11-18: key 3 said "Guest DJ" over Deep Dive on Victoria Williams, and
+// key 2 a name the WiiM saved, cut off). Each key is named for the DJ on it
+// now, and its small line says what: a request set's title or its words, the
+// guest DJ's words or the program it started from. The speaker's own saved
+// name is frozen at its save, so it never could. { [btn]: { name, sub,
+// source } }; a key with nothing known is left out and keeps the saved name.
+const KEY_SOURCE_WORD = { spotify: "Spotify", tidal: "Tidal" };
+export async function requestKeyLines(env) {
+  let guests = [];
+  try { guests = Object.values(house(env).guest ?? {}).filter((g) => g?.live && g.btn); } catch { guests = []; }
+  const kv = programsKV(env);
+  const json = (k) => kv.get(k, { type: "json" }).catch(() => null);
+  const rows = await Promise.all(guests.map(async (g) => {
+    const [on, slug, ask] = await Promise.all([json(`on:${g.playlist}`), kv.get(`current:${g.playlist}`).catch(() => null), json(`ask:${g.playlist}`)]);
+    if (!on || typeof on !== "object") return null;
+    const dj = on.dj ? findDj(env, on.dj) : null;
+    const rec = slug ? await json(`program:${slug}`) : null;
+    // The words, by Loaded's rule: a request's matched by its id, or Talk's.
+    const asked = !rec?.title && ask?.text && (on.ref === `request ${ask.requestId}` ||
+      (on.ref === "talk" && !ask.requestId)) ? String(ask.text) : null;
+    const sub = rec?.title ?? asked ?? null;
+    if (!dj && !sub) return null;
+    return [g.btn, { name: dj?.name ?? "Requests", sub: sub ?? KEY_SOURCE_WORD[g.catalog] ?? "", source: KEY_SOURCE_WORD[g.catalog] ?? null }];
+  }));
+  return Object.fromEntries(rows.filter(Boolean));
+}
+// The guest DJ's key, from the endless state the caller already read.
+export function laneKeyLine(env, cfg, state) {
+  const lane = cfg?.mode === "live" ? (cfg.presets ?? []).find((p) => p.lane) : null;
+  if (!lane) return {};
+  const l = state?.lane ?? null;
+  const dj = l?.dj ? findDj(env, l.dj) : null;
+  if (!dj) return { [lane.button]: { name: "Guest DJ", sub: "Nobody yet", source: "Spotify" } };
+  const sub = l.ready === false ? "Getting ready" : l.words || l.program?.title || "Endless";
+  return { [lane.button]: { name: dj.name, sub, source: "Spotify" } };
+}
 // THE HOUSE RULES, EACH HOUSE ITS OWN (the owner, 2026-10-18: "role on every
 // key", from https://claude.ai/artifact/SYPeHudMsPjp4GvZdbquVM). What the
 // rules page fills in from the house's settings: every preset 1 to 12 with
@@ -499,6 +536,8 @@ export async function rulesFacts(env) {
       autoasks: requests.length > 0 && askDjOn(env),
       // House radio, the private Alexa skill, acts (MC-38 stage 3).
       alexa: env.ALEXA_ACTS === "on",
+      // Play now (MC-47): "play …" plays at once, with a guest DJ to carry it on.
+      playnow: env.PLAY_NOW === "on" && !!lane && !waits,
     },
     blanks: {
       "default speaker": fallbackDevice(env) || "speaker chosen at setup",
@@ -738,10 +777,15 @@ export function howToPlay(env, dj, endlessBtn = null) {
     : `This house plays no DJ endless, so "Play ${dj.name}" is a set, as below.`;
   const lands = waits && endlessBtn != null && kept
     ? ` In this house their set lands on their own preset, ${endlessBtn}, whatever it is aimed at: the answer says so, and gives the playlist to play.` : "";
+  // PLAY NOW, STAGE 5 (MC-47): with the house's play now on, only a length
+  // or "a set" is a set; other words with no length play now.
+  const now = env?.PLAY_NOW === "on" && (endless || ownOnly);
+  const what = now ? "a length or \"a set\"; other words with no length are play_endless with words, and play now"
+    : "a length, a mood, a subject";
   const set = kept
-    ? `A SET asked of them (a length, a mood, a subject) is replace_playlist onto ${where} ` +
+    ? `A SET asked of them (${what}) is replace_playlist onto ${where} ` +
       "with dj and ask, and play: true when they asked to hear it now (\"play me…\"): never play_uris, so the set can be kept and steered."
-    : "A SET asked of them (a length, a mood, a subject) is play_uris: this house has no requests preset to keep it on.";
+    : `A SET asked of them (${what}) is play_uris: this house has no requests preset to keep it on.`;
   return `${play}${told} ${set}${lands}` +
     ((endless || ownOnly) && !waits ? " A direction while they play endless (\"more upbeat\") is steer_endless, never a rewrite." : "");
 }

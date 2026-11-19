@@ -249,6 +249,13 @@ PLAYER_REUSE = "off"
 ALEXA_ACTS = "on"
 
 #{{end}}
+#{{if playNow}}
+# Play now (MC-47, house.json `playNow`): "dry" reads and searches a "play …"
+# said to the Alexa skill and says what it would play, starting nothing; "on"
+# plays it (stage 3). Absent, play now is off.
+PLAY_NOW = {{playNow}}
+
+#{{end}}
 #{{if rulesHistory}}
 # The house rules page shows this house's own history (house.json
 # `rules.history`, 2026-10-18): the date beside each rule that changed, and

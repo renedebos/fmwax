@@ -141,6 +141,23 @@ export function spotifyCatalog(call) {
       return res.tracks?.items ?? [];
     },
 
+    // ARTISTS, ALBUMS AND TRACKS IN ONE CALL (MC-47, play now; playnow.js).
+    // Measured 2026-11-18 under Development Mode (tasks/mc47-play-now.md,
+    // stage 0): 200 every time, ten of each, a median of 0.8 s. An artist
+    // carries only its name, id and pictures (no popularity, no genres), a
+    // track no popularity, so what kind of ask it was is read from how the
+    // three lists agree, never from fame.
+    async searchAll(query, limit = 10) {
+      const res = await call("GET", "/search", {
+        params: { q: query, type: "artist,album,track", limit },
+      });
+      return {
+        artists: (res.artists?.items ?? []).filter(Boolean),
+        albums: (res.albums?.items ?? []).filter(Boolean),
+        tracks: (res.tracks?.items ?? []).filter(Boolean),
+      };
+    },
+
     async byIsrc(isrc) {
       const res = await call("GET", "/search", {
         params: { q: `isrc:${isrc}`, type: "track", limit: 10 },

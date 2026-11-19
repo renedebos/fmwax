@@ -26,7 +26,8 @@ this page to every house, so a few marks make it fit the one reading it:
   reported), `lastfm` (a Last.fm key, the `LASTFM_KEY` secret), `genius` (a Genius token, the `GENIUS_TOKEN` secret), `chatgpt`
   (ChatGPT is the curator, chosen on the setup page), `talkasks` (Talk
   hands a DJ's set to the curator: Talk, asks and a curator), `alexa`
-  (maple crate, the private Alexa skill, acts: house.json `alexa.acts`) and
+  (maple crate, the private Alexa skill, acts: house.json `alexa.acts`),
+  `playnow` ("play …" plays at once: house.json `playNow` "on") and
   `history` (house.json `rules.history`: this house keeps its own history).
 - `{default speaker}`, `{requests presets}`, `{guest preset}`, `{house
   presets}`, `{endless presets}`, `{archive preset}`, `{archive asks}`,
@@ -47,6 +48,7 @@ this page to every house, so a few marks make it fit the one reading it:
 - {if endless} **Why did the music stop?** An endless set plays out after 4 hours of top-ups, or once the day's {daily runs} endless runs are used up. Spotify can also refuse for a while; the pages say how long.
 - {if endless} **Why did I hear that song again?** An endless DJ skips the last 150 songs they played, and anything the house played in the last 3 hours. A set you ask for doesn't look back. And another recording of a song (a live take, a remaster) counts as a new song.
 - **Why does the WiiM app show an old name?** A preset keeps the name it had when it was saved. Renaming it over the network would unhook it. To update the name, save the preset again: play it, then hold the preset.
+- {if requests} **What's on Requests and the guest DJ's preset?** The keys on the Speakers tab and the TV say it, not the speaker's saved name (since 2026-11-18): the DJ on each now, and under it the set's title or the words asked. A line too long for its key slides along once and then rests; the playing key's keeps sliding, and so does the one the TV's remote is on.
 - **Can I undo a set?** Yes, for 90 days: every playlist is copied before it's rewritten. Ask Claude or ChatGPT to put the old one back.
 - {if tidal} **What can't it do?** Move Tidal between speakers, or make a start quieter: your amp sets the volume, so "mute" pauses instead.
 - {if no tidal} **What can't it do?** Make a start quieter: your amp sets the volume, so "mute" pauses instead.
@@ -77,11 +79,27 @@ Every page names the same speaker: the bar, the menu, every tab and every "Plays
 
 The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can make a start quieter. So **"mute", or volume 0, pauses** instead, whoever asks, and "resume" brings it back (since 2026-10-16).
 
+## Play something now {if playnow}
+
+> "Play the Beatles on the Ultra" plays in a few seconds, and a DJ carries on.
+
+**"Play" means now** (since 2026-11-18). Say "play" and what you'd like, with no DJ named and no length: an artist, a song, an album or a genre. It works the same by maple crate ("Alexa, ask maple crate to play the Beatles on the Ultra"), in Talk, in the Claude app or ChatGPT, and by the TV's voice.
+
+- **An artist, a song or a genre** starts at once on the guest DJ's preset ({guest preset}), with a few songs the house found for it, and the DJ who fits carries on from there, endless: Deep Dive for an artist or a song, Genre for a genre. Their own songs come in after the song that's playing when they're ready, usually within a minute or two. Whoever was the guest DJ is replaced, at once. [mcp/playnow.js, mcp/playnow-start.js]
+- **An album** ("play Abbey Road") plays as itself, in order, on no preset. Nobody follows it.
+- **A style a house DJ owns** ("play funk from the seventies", "play some Stax") starts that DJ's own preset, and the songs turn that way after the first one.
+- **A song that's also an album** ("Jolene", "Pet Sounds"): the house asks "the album, or the song?". Maple crate keeps listening for the answer. Elsewhere, say "the album …" or "the song …" first.
+- {if helper} **On a WiiM the key is pressed** through the home helper, so it starts cleanly and lossless. With the helper off, Spotify starts it.
+- **A DJ named with words and no length plays now too:** "Hank, some 70s soul" starts Hank's preset and turns it toward 70s soul; "Deep Dive, Prince" puts Deep Dive on the guest DJ's preset with Prince. **A new set is made only with a length or "a set"**: "Hank, an hour of 70s soul", "Hank, a set of 70s soul", or when you ask to keep it. A DJ's name alone ("Hank") still starts their preset as it is. The Ask form on a DJ's page always makes a set.
+- **It costs one of the day's {daily runs} DJ runs** when a DJ follows. Ask for something new before the DJ has started on the last ask, and that last one isn't counted.
+- **Not at once:** classical, the charts, "something like …", several artists together and a mood alone are said, not played: ask a DJ for those. Maple crate now and then loses a "play …" to Alexa itself (YouTube, or "I can't help with that"); saying it again works.
+
 ## Asking a DJ for a set {if requests}
 
 > It goes on {requests presets} and replaces what was there.
 
 - **Where it goes:** a set you ask for (a length, a mood, a subject) goes on **{requests presets}**, in place of the set that was there.
+- {if playnow} **By voice or in the chat, say a length or "a set"** to get one made (since 2026-11-18): "Sessions, an hour of acoustic grunge". A DJ with other words and no length plays now instead, as "Play something now" says.
 - {if tidal} **Which service:** the **On: Spotify | Tidal** switch on the DJ's Ask form. It starts on Spotify, and each phone remembers its last choice. Typing "on Tidal" in the box doesn't switch it: words there are taste. (By voice or in the Claude app, just say "on Tidal".)
 - {if waits} **A DJ with a preset of their own:** their set lands on their own preset ({house presets}) instead, and Requests stays as it was. That holds until a curator is set up.
 - If there's nowhere to put it (no Requests preset for that service), the ask is refused before anything is written.
@@ -262,6 +280,7 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 
 **Maple crate is a private Alexa skill on this house's Echos** (since 2026-11-07). It was called house radio until 2026-11-08, when Alexa began taking "open house radio" for its own radio, then wax room until Alexa+ took "room" for one of the house's rooms (an announcement, Drop In), then wax works until it answered with a film. The name has no music, room, device or brand word in it, and is no title. Start each sentence with "Alexa, ask maple crate for …" or "…to …": without "for" or "to" after the name, Alexa never passes the sentence on (the owner's tries, 2026-11-08). Say it a little slowly: a sentence said fast can miss the skill altogether.
 
+- {if playnow} **Play something now:** "…to play the Beatles on the Ultra", "…to play Abbey Road", "…to play some 80s hip hop", as "Play something now" says. "…for Sessions, acoustic grunge" (a DJ with words and no length) plays Sessions' preset now, steered that way (since 2026-11-18).
 - **A set from a DJ:** "…for Sessions, acoustic grunge, on the Ultra, for two hours". It's asked the way a DJ's Ask form asks, lands on {requests presets}, and starts by itself on the speaker you named, as Talk's does: if it lands within 25 minutes and nothing else has started since. "No …" or "without …" says what to leave out ("no Eagles"). A room may come bare too: "…for Sessions, acoustic piano, living room" (since 2026-11-08). No speaker said: the {default speaker}. No length: an hour.
 - **No DJ named** ("…for something mellow for dinner"): Alexa asks "Which DJ?". Say a name and nothing else; anything else lets the ask go.
 - **A DJ put on:** "…to put on Hank", "…to play Vibe on the Ultra", or a DJ's name alone ("…for Hank"). They start on their own preset, or on the guest DJ's ({guest preset}) if they have none. A length said with only a name is dropped. If another DJ is on the guest preset, Alexa says who: ask again with "now" or "after this song".

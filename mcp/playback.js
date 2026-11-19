@@ -352,6 +352,27 @@ export async function startUrisOnDevice(env, uris, deviceName, budget, { positio
   return result;
 }
 
+// AN ALBUM AS ITSELF (MC-47 stage 3, play now): "play Abbey Road" starts the
+// album's own context, in order, on no preset and no playlist of the
+// house's. Shuffle and repeat off as for a playlist; the start is read back.
+// → "ok" (playing that album there), "sent" (taken, the read-back failed),
+// "stuck" (taken, but something else or nothing plays there). Throws what
+// playOnDevice throws (a speaker asleep: sleptThrough in endless.js).
+export async function startAlbumOnDevice(env, album, deviceName, budget) {
+  env = withBudget(env, budget);
+  const contextUri = String(album?.uri ?? "");
+  if (!/^spotify:album:[A-Za-z0-9]+$/.test(contextUri)) throw new Error("not a Spotify album");
+  const { id: deviceId } = await resolveDevice(env, deviceName);
+  for (const [path, state] of [["/me/player/shuffle", "false"], ["/me/player/repeat", "off"]]) {
+    try { await spotify(env, "PUT", path, { params: { state, device_id: deviceId } }); } catch { /* read back below */ }
+  }
+  await playOnDevice(env, deviceId, deviceName, { context_uri: contextUri, offset: { position: 0 }, position_ms: 0 });
+  await new Promise((r) => setTimeout(r, env.__staleWaitsMs ? 0 : 1200));
+  let st;
+  try { st = await playerState(env); } catch { return "sent"; }
+  return startedContext(st, deviceId, contextUri) ? "ok" : "stuck";
+}
+
 // Start a saved playlist on a named device and verify it actually took —
 // shared by the play_playlist tool and the buttons page's POST, so the page
 // cannot drift into a less careful version of the same action. Returns the

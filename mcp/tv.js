@@ -459,6 +459,13 @@ div.tile{cursor:default}
 .tbody{display:flex;flex-direction:column;gap:.1875rem;min-width:0}
 .tname{font-size:1.0625rem;font-weight:700;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .tsub{font-size:.875rem;line-height:1.25;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* A key's small line too long for it (2026-11-18): slides along and back
+   once when shown, then rests with its "…"; keeps sliding on the key that
+   is playing and on the one the remote is on. */
+.tsub.run{text-overflow:clip}
+.tsub.run>span{display:inline-block;animation:tvslide var(--dur,6s) ease-in-out 2 alternate}
+.tile.lit .tsub.run>span,.tile:focus .tsub.run>span{animation-iteration-count:infinite}
+@media (prefers-reduced-motion:reduce){.tsub.run>span{animation:none}}
 .tile.busy{border-color:var(--focus)}.tile.busy .tsub{color:var(--focus)}.tile.busy:focus .tsub{color:var(--on-focus)}
 .gnote{grid-column:1 / -1;align-self:center;margin:0;font-size:1.1875rem;line-height:1.4;color:var(--ink-2);max-width:44rem}
 .gnote.side{font-size:.9375rem;color:var(--ink-3);padding:0 .5rem}
@@ -593,9 +600,9 @@ function bandHtml(b, say, tuneHref) {
   <section class="band" aria-label="Now playing" data-tone="${esc(b.tone)}">
     <button type="button" class="sleeve" data-f="sleeve" data-open="dis" data-note="${esc(I_NOTE)}" aria-label="Show the cover large"${b.tone === "off" ? " disabled" : ""}>${b.art ? `<img src="${esc(b.art)}" alt="">` : I_NOTE}</button>
     <div class="btext">
-      <p class="b1">${esc(b.title)}</p>
-      <p class="b2"${b.line2 ? "" : " hidden"}>${esc(b.line2)}</p>
-      <p class="b3"${b.line3 ? "" : " hidden"}>${esc(b.line3)}</p>
+      <p class="b1 slide"><span>${esc(b.title)}</span></p>
+      <p class="b2 slide"${b.line2 ? "" : " hidden"}><span>${esc(b.line2)}</span></p>
+      <p class="b3 slide"${b.line3 ? "" : " hidden"}><span>${esc(b.line3)}</span></p>
       <div class="bprog"${say || !(b.pos || b.quality) ? " hidden" : ""}>
         <span class="bp0"${b.pos ? "" : " hidden"}>${b.pos ? mmss(at) : ""}</span>
         <span class="bline"${b.pos ? "" : " hidden"}><i style="width:${b.pos ? (100 * at / b.pos.of).toFixed(1) : 0}%"></i></span>
@@ -623,7 +630,7 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
       <div class="dtop"><p class="dfrom slide"><span></span></p><div class="dtr"><span class="dclock" hidden></span><span class="dwm" aria-hidden="true">fmwax</span></div></div>
       <div class="dmid">
         <div class="dcover" data-note="${esc(I_NOTE)}">${I_NOTE}</div>
-        <div class="dtext"><h1 class="d1"></h1><p class="d2"></p><p class="d3"></p><span class="dgrow"></span>
+        <div class="dtext"><h1 class="d1"></h1><p class="d2 slide"><span></span></p><p class="d3 slide"><span></span></p><span class="dgrow"></span>
           <div class="dnext" hidden><p class="dnl">Up next</p><p class="dn slide"><span><b></b><i></i></span></p><p class="dn slide"><span><b></b><i></i></span></p><p class="dn slide"><span><b></b><i></i></span></p></div>
         </div>
       </div>
@@ -684,7 +691,7 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
 // `canTune`: the house keeps dials; `tz` its zone, for the display's clock;
 // `shelf` and `tune` what a press on the Shelf or the dials came to.
 export function renderTv({ base, rooms = [], room = null, now = null, readings = {}, readAt = 0, endlessKeys = {},
-  playable = {}, fills = [], lan = null, ownKeys = null, reqDj = {}, hflash = null, flash = null,
+  playable = {}, fills = [], lan = null, ownKeys = null, reqDj = {}, keyLines = {}, hflash = null, flash = null,
   canTune = false, tz = null, shelf = null, tune = null, voice = null, version = null, clock = Date.now() }) {
   const answer = tvAnswer(now ?? { state: "unknown" }, room ?? { name: "" }, { readAt, readSig: tvReadSig(readings), now: clock, canTune, tz });
   const say = tvFlashWords({ hflash, flash, shelf, tune, voice });
@@ -710,7 +717,7 @@ export function renderTv({ base, rooms = [], room = null, now = null, readings =
   // THE GRID. A tile's corner is blank at rest (the owner, 2026-11-15); the
   // one that plays says "Playing" there.
   const tileInner = (n, name, sub) => `<span class="ttop"><span class="tnum">${n}</span><span class="tplay">${I_LEVELS}Playing</span></span>` +
-    `<span class="tbody"><span class="tname">${esc(name)}</span><span class="tsub" data-sub="${esc(sub)}">${esc(sub)}</span></span>`;
+    `<span class="tbody"><span class="tname">${esc(name)}</span><span class="tsub" data-sub="${esc(sub)}"><span>${esc(sub)}</span></span></span>`;
   const litCls = (n) => (answer.lit === n ? " lit" : "");
   const form = (action, n, busy, label, inner) => `
     <form method="post" action="${esc(base)}${action}"><input type="hidden" name="btn" value="${n}"><input type="hidden" name="device" value="${esc(room.name)}"><input type="hidden" name="back" value="tv">` +
@@ -745,9 +752,14 @@ export function renderTv({ base, rooms = [], room = null, now = null, readings =
         const ek = spotify ? endlessKeys[n] ?? null : null;
         const req = fills.includes(n);
         const src = srcWord(p.source);
-        const name = ek ? ek.name : req ? "Requests" : p.name;
+        // A REQUESTS OR GUEST DJ KEY (2026-11-18), as the phone's grid says
+        // it: the DJ on it now, and the set's title or the words asked
+        // (house.js requestKeyLines, laneKeyLine); only over a key saved on
+        // the same service.
+        const kl = !ek && keyLines[n] && (!keyLines[n].source || p.source === keyLines[n].source) ? keyLines[n] : null;
+        const name = ek ? ek.name : kl ? kl.name : req ? "Requests" : p.name;
         // Whose set is on a requests preset; its service only when that is not Spotify.
-        const sub = ek ? "Endless" : req ? [reqDj[n], spotify && reqDj[n] ? null : src].filter(Boolean).join(" · ") : src;
+        const sub = ek ? "Endless" : kl ? kl.sub : req ? [reqDj[n], spotify && reqDj[n] ? null : src].filter(Boolean).join(" · ") : src;
         if (lan?.hands) {
           tiles.push(form("/wiim/key", n, "Pressing…", `Press ${n}, ${name}, on the ${room.name}`, tileInner(n, name, sub)));
         } else if (spotify && plays.has(n)) {
@@ -824,6 +836,11 @@ const TV_SCRIPT = `<script>
   function songId(b) { return b ? ((b.song && b.song.uri) || b.title || "") : ""; }
   var c0 = main.getAttribute("data-clock"), clock = c0 ? { s: Number(c0), got: loadedAt } : null;
   var view = "ctl", backTo = "ctl", lastCtl = null, wantDis = false, offAt = 0, GAP = 45000, song = { key: "", next: [], about: null };
+  /* ABOUT THIS SONG STAYS OPEN (the owner, 2026-11-18: it went back to the
+     song page when the song changed, before the article was read). It closes
+     only with Back, or ten minutes after the remote was last used. */
+  var aboutKey = "", aboutTouch = 0, ABOUT_HOLD = 10 * 60000;
+  setInterval(function () { if (view === "about" && Date.now() - aboutTouch > ABOUT_HOLD) open("back"); }, 30000);
   var root = document.documentElement;
   function q(s) { return main.querySelector(s); }
   function all(s) { return Array.prototype.slice.call(main.querySelectorAll(s)); }
@@ -892,7 +909,31 @@ const TV_SCRIPT = `<script>
     if (over > 6) { el.style.setProperty("--shift", "-" + over + "px"); el.style.setProperty("--dur", Math.max(8, Math.round(over / 24)) + "s"); el.classList.add("run"); }
     else el.classList.remove("run");
   }
-  function slides() { slide(q(".dfrom")); all(".dn").forEach(slide); }
+  /* A line too long for the screen slides along and back, slowly: the song,
+     artist and album too (the owner, 2026-11-18: a title cut off at the edge). */
+  function slides() { slide(q(".dfrom")); all(".dn,.b1,.b2,.b3,.d2,.d3").forEach(slide); }
+  /* A key's small line: once, then at rest (CSS keeps the playing key's and
+     the focused key's going). */
+  function tslide(el) {
+    if (!el || !el.firstElementChild || el.offsetParent === null) return;
+    el.classList.remove("run");
+    var over = el.scrollWidth - el.clientWidth;
+    if (over > 4) {
+      el.style.setProperty("--shift", "-" + (over + 2) + "px");
+      el.style.setProperty("--dur", Math.max(3, Math.round(over / 24)) + "s");
+      void el.offsetWidth; el.classList.add("run");
+    }
+  }
+  function tslides() { all(".tile .tsub").forEach(tslide); }
+  main.addEventListener("animationend", function (e) {
+    var s = e.target && e.target.parentNode;
+    if (s && s.classList && s.classList.contains("tsub")) s.classList.remove("run");
+  });
+  main.addEventListener("focusin", function (e) {
+    var t = e.target && e.target.closest ? e.target.closest(".tile") : null;
+    if (t) tslide(t.querySelector(".tsub"));
+  });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(tslides); else tslides();
   /* WHAT COMES NEXT, AND THE DJ'S WORDS: asked once a song. */
   function drawSong() {
     var b = band || {};
@@ -904,7 +945,8 @@ const TV_SCRIPT = `<script>
     var has = !!(song.about || song.facts || song.genius);
     show(q(".babout"), has); show(q(".dabout"), has);
     show(q(".bicons"), !!(b.move || b.tune || has));
-    if (view === "about" && !has) open("back");
+    /* Not for the next song: the article open is the last song's, and stays. */
+    if (view === "about" && !has && aboutKey === song.key) open("back");
     if (view === "move" && !b.move) open("ctl");
     /* The music is over: the buttons come back, and the display with the
        next music unless the remote is used meanwhile. */
@@ -942,8 +984,8 @@ const TV_SCRIPT = `<script>
   function draw() {
     var b = band || { tone: "off" }, on = b.tone !== "off";
     main.setAttribute("data-tone", b.tone); q(".band").setAttribute("data-tone", b.tone);
-    set(q(".b1"), b.title || ""); set(q(".b2"), b.line2 || ""); show(q(".b2"), !!b.line2);
-    set(q(".b3"), b.line3 || ""); show(q(".b3"), !!b.line3);
+    set(q(".b1 span"), b.title || ""); set(q(".b2 span"), b.line2 || ""); show(q(".b2"), !!b.line2);
+    set(q(".b3 span"), b.line3 || ""); show(q(".b3"), !!b.line3);
     pic(q(".sleeve"), b.art); pic(q(".dcover"), b.art); pic(q(".dbg"), b.art); pic(q(".acover"), b.art);
     var c = b.ctl || null;
     all("[data-t=main]").forEach(function (m) {
@@ -968,12 +1010,12 @@ const TV_SCRIPT = `<script>
     var from = b.line3 || "", lead = roomName + " \\u00b7 ";
     if (roomName && from.indexOf(lead) === 0) from = from.slice(lead.length);
     set(q(".dfrom span"), from); set(q(".d1"), b.title || "");
-    set(q(".d2"), b.artist || ""); show(q(".d2"), !!b.artist);
-    set(q(".d3"), b.album || ""); show(q(".d3"), !!b.album);
+    set(q(".d2 span"), b.artist || ""); show(q(".d2"), !!b.artist);
+    set(q(".d3 span"), b.album || ""); show(q(".d3"), !!b.album);
     /* The room, and the stream's quality on a line of its own under it (the
        owner, 2026-11-16: on Tidal it was cut off beside the room). */
     set(q(".dq1"), roomName); set(q(".dq2"), b.quality || ""); show(q(".dq2"), !!b.quality);
-    songLook(); drawSong(); progress();
+    songLook(); drawSong(); progress(); slides();
   }
   function fillAbout() {
     var a = song.about, b = band || {}, f = song.facts;
@@ -1101,7 +1143,7 @@ const TV_SCRIPT = `<script>
     /* Opens for whatever knows the song: the DJ's words, the open databases,
        or Genius alone (2026-11-16, the owner: the i did nothing for a song
        only Genius knew). */
-    if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout(); }
+    if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout(); aboutKey = song.key; aboutTouch = Date.now(); }
     if (v === "move") { if (!band || !band.move) return; fillMove(); }
     if (view === "ctl") { var a = document.activeElement; lastCtl = a && a !== document.body && main.contains(a) ? a : null; }
     backTo = v === "about" || v === "move" || v === "rooms" || v === "voice" ? view : "ctl";
@@ -1170,7 +1212,9 @@ const TV_SCRIPT = `<script>
     anchor(b, Date.now()); band = b;
     draw();
     all(".tile[data-k]").forEach(function (t) {
+      var was = t.classList.contains("lit");
       t.classList.toggle("lit", a.lit != null && Number(t.getAttribute("data-k")) === Number(a.lit));
+      if (!was && t.classList.contains("lit")) tslide(t.querySelector(".tsub"));
     });
     all(".room[data-room]").forEach(function (r) {
       r.classList.toggle("on", !!(a.rooms && a.rooms[r.getAttribute("data-room")]));
@@ -1339,6 +1383,7 @@ const TV_SCRIPT = `<script>
     });
   });
   document.addEventListener("keydown", function (ev) {
+    aboutTouch = Date.now();
     var mb = first(all("[data-t=main]")), sb = first(all("[data-t=skip]"));
     if (ev.key === "MediaPlayPause" || ev.key === "MediaPlay" || ev.key === "MediaPause") { if (mb) send(mb); return; }
     if (ev.key === "MediaTrackNext") { if (sb) send(sb); return; }
