@@ -33,6 +33,12 @@ import { dialsOf } from "./tuning.js";
 
 const norm = (s) => String(s ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 export const tvSlug = (n) => String(n || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "speaker";
+// THE FMWAX TV APP says itself in its user agent ("fmwaxTV/1.6"). Talk on the
+// TV is the app's alone (2026-11-19, before the app's download): a TV's
+// browser gives a page no microphone, and the Talk screen opens its line as
+// it opens, so in a browser it would spend minutes it can never use. A way
+// to choose a page, never a lock: anyone with the house's key has the house.
+export const inTvApp = (ua) => /(^|\s)fmwaxTV\/[0-9]/.test(String(ua ?? ""));
 
 // ONE ROOM'S SHARE OF THE ANSWER: the now bar's rule (its script's `view`),
 // for the room this screen shows instead of the phone's pick. Spotify playing
@@ -127,6 +133,10 @@ export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
       band.title = v.track || stillWord;
       band.line2 = v.artists || "";
       band.line3 = `${stillWord} · ${w.two}`;
+      // A SONG THAT STOPPED OR PAUSED is still shown (the owner, 2026-11-19:
+      // "I miss the now playing icon"): the note and the bar's cover open its
+      // page, which says it stopped.
+      if (v.track) band.still = true;
       if (spot && v.hands && v.preset?.btn) band.ctl = { do: "hkey", device: who, btn: Number(v.preset.btn), label: `Play preset ${v.preset.btn} on the ${who}` };
       else if (!spot && v.hands) band.ctl = { do: "hplay", device: who, label: `Play the ${who}` };
       if (band.ctl) band.tone = "held";
@@ -134,6 +144,7 @@ export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
   } else if (st === "quiet" && v.paused) {
     const p = v.paused;
     band.title = p.track || "Paused";
+    if (p.track) band.still = true;
     band.line2 = [p.artists, p.album].filter(Boolean).join(" · ");
     band.artist = String(p.artists || ""); band.album = String(p.album || "");
     band.line3 = `Paused · ${w.two}`;
@@ -427,7 +438,7 @@ main.tv[data-view=ctl] .vctl,main.tv[data-view=move] .vmove,main.tv[data-view=ro
 main.tv[data-view=dis] .vdis{display:block}
 .vctl{padding:1.125rem 1.75rem 1.25rem;flex-direction:column;gap:.875rem}
 .rooms{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .625rem;flex:0 0 auto}
-.wm{font-size:1.1875rem;font-weight:800;letter-spacing:.01em;color:var(--ink-2);margin-right:.375rem}
+.wm{font-size:1.1875rem;font-weight:800;letter-spacing:.01em;color:var(--ink-2);margin-right:.375rem;padding:.25rem .625rem;margin-left:-.625rem;border-radius:999px;text-decoration:none}
 .room{box-sizing:border-box;display:inline-flex;align-items:center;gap:.4rem;height:3rem;padding:0 1.25rem;border-radius:999px;border:.125rem solid var(--rule);background:transparent;color:var(--ink);font:inherit;font-size:1.0625rem;font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer}
 .room.pick{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep);font-weight:700}
 .room svg{display:none}.room.on svg{display:block}.room svg.chev{display:block;width:1rem;height:1rem;margin-left:.125rem}
@@ -438,7 +449,7 @@ main.tv[data-view=dis] .vdis{display:block}
 .vcard .vhead h1{font-size:1.625rem}
 .vcard .vmic{width:3rem;height:3rem;border-radius:50%;background:var(--q-deep);color:var(--q-on-deep);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .vcard .vmic svg{width:1.5rem;height:1.5rem}
-.vstep{margin:0;font-size:1.25rem;line-height:1.4}
+.vstep{margin:0;font-size:1.25rem;line-height:1.4}.vapp,.inapp .vbro{display:none}.inapp .vapp{display:block}
 .vsays{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem .875rem}
 .vsays li{font-size:1.125rem;font-weight:700;padding:.5rem .875rem;border-radius:.75rem;background:var(--ground);color:var(--ink)}
 .vsays li span{display:block;font-size:.875rem;font-weight:500;color:var(--ink-3);margin-top:.125rem}
@@ -598,7 +609,7 @@ function bandHtml(b, say, tuneHref) {
   const at = b.pos ? Math.max(0, Math.min(b.pos.of, b.pos.ms + b.pos.age)) : 0;
   return `
   <section class="band" aria-label="Now playing" data-tone="${esc(b.tone)}">
-    <button type="button" class="sleeve" data-f="sleeve" data-open="dis" data-note="${esc(I_NOTE)}" aria-label="Show the cover large"${b.tone === "off" ? " disabled" : ""}>${b.art ? `<img src="${esc(b.art)}" alt="">` : I_NOTE}</button>
+    <button type="button" class="sleeve" data-f="sleeve" data-open="dis" data-note="${esc(I_NOTE)}" aria-label="Show the cover large"${b.tone === "off" && !b.still ? " disabled" : ""}>${b.art ? `<img src="${esc(b.art)}" alt="">` : I_NOTE}</button>
     <div class="btext">
       <p class="b1 slide"><span>${esc(b.title)}</span></p>
       <p class="b2 slide"${b.line2 ? "" : " hidden"}><span>${esc(b.line2)}</span></p>
@@ -658,7 +669,8 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
   <div class="view vvoice" aria-label="Say it to the TV">
     <div class="vcard">
       <div class="vhead"><span class="vmic">${I_MIC_BTN}</span><h1>Say it to the TV</h1><button type="button" class="pill vclose" data-open="back">Got it</button></div>
-      <p class="vstep">Press <b>Guide</b> on the remote (the key TV Bro's voice search is on). When TV Bro listens, say:</p>
+      <p class="vstep vapp">Press <b>Guide</b> on the remote. When <b>Listening…</b> shows at the bottom, say:</p>
+      <p class="vstep vbro">Press <b>Guide</b> on the remote (the key TV Bro's voice search is on). When TV Bro listens, say:</p>
       <ul class="vsays">
         <li>What's playing<span>the song, on the screen</span></li>
         <li>Skip<span>also: pause, play, go back</span></li>
@@ -690,9 +702,11 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
 // is on each requests preset, by number.
 // `canTune`: the house keeps dials; `tz` its zone, for the display's clock;
 // `shelf` and `tune` what a press on the Shelf or the dials came to.
+// `talk`: the microphone opens Talk; the route gives it only to the fmwax TV
+// app (inTvApp), since a TV's browser gives a page no microphone.
 export function renderTv({ base, rooms = [], room = null, now = null, readings = {}, readAt = 0, endlessKeys = {},
   playable = {}, fills = [], lan = null, ownKeys = null, reqDj = {}, keyLines = {}, hflash = null, flash = null,
-  canTune = false, tz = null, shelf = null, tune = null, voice = null, version = null, clock = Date.now() }) {
+  canTune = false, tz = null, shelf = null, tune = null, voice = null, version = null, talk = false, clock = Date.now() }) {
   const answer = tvAnswer(now ?? { state: "unknown" }, room ?? { name: "" }, { readAt, readSig: tvReadSig(readings), now: clock, canTune, tz });
   const say = tvFlashWords({ hflash, flash, shelf, tune, voice });
   const band = answer.band;
@@ -700,18 +714,22 @@ export function renderTv({ base, rooms = [], room = null, now = null, readings =
   // THE ROOM: one button with the room shown (the owner, 2026-11-16: "make
   // the home screen a little less busy... only show the current active
   // speaker"); it opens the rooms as tiles, the ones with music marked. Then
-  // Now Playing (the display), the Shelf, and the way back to the app.
+  // Now Playing (the display), the Shelf. (The App link left 2026-11-19,
+  // MC-48: the owner, "Yes remove app"; Talk was what it was still for.)
   const roomsRow = `
-  <nav class="rooms" aria-label="Room"><span class="wm" aria-hidden="true">fmwax</span>` +
+  <nav class="rooms" aria-label="Room"><a class="wm" data-f="fmwax" href="${esc(base)}/tv/about${esc(rq)}" aria-label="About fmwax">fmwax</a>` +
     (room ? `<button type="button" class="room pick${answer.rooms[room.slug] ? " on" : ""}" data-f="rooms" data-open="rooms" data-room="${esc(room.slug)}" aria-label="${esc(room.name)}: choose another room">${I_LEVELS}${esc(room.name)}${I_CHEV}</button>` : "") +
     `<span class="gap"></span>` +
     // Now Playing as a note (the owner, 2026-11-16: "a musical note symbol to save space").
     // Voice, as a microphone (the owner, 2026-11-16): a page can't open TV
     // Bro's voice search (only TV Bro's own start page may), so it says how.
-    `<button type="button" class="room mic" data-f="mic" data-open="voice" aria-label="Voice: how to say it">${I_MIC_BTN}</button>` +
-    `<button type="button" class="room now" data-f="now" data-open="dis" aria-label="Now playing"${band.tone === "off" ? " hidden" : ""}>${I_NOTE_BTN}</button>` +
+    // Where the house has Talk, the microphone opens Talk made for the TV
+    // (MC-48, the owner 2026-11-19: "Keep mic icon"); else the voice help.
+    (talk ? `<a class="room mic" data-f="mic" href="${esc(base)}/tv/talk${esc(rq)}" aria-label="Talk">${I_MIC_BTN}</a>`
+      : `<button type="button" class="room mic" data-f="mic" data-open="voice" aria-label="Voice: how to say it">${I_MIC_BTN}</button>`) +
+    `<button type="button" class="room now" data-f="now" data-open="dis" aria-label="Now playing"${band.tone === "off" && !band.still ? " hidden" : ""}>${I_NOTE_BTN}</button>` +
     `<a class="room djs" data-f="djs" href="${esc(base)}/tv/djs${esc(rq)}">DJs</a>` +
-    `<a class="room shelf" data-f="shelf" href="${esc(base)}/tv/shelf${esc(rq)}">Shelf</a><a class="room app" data-f="app" href="${esc(base)}/wiim">App</a>
+    `<a class="room shelf" data-f="shelf" href="${esc(base)}/tv/shelf${esc(rq)}">Shelf</a>
   </nav>`;
 
   // THE GRID. A tile's corner is blank at rest (the owner, 2026-11-15); the
@@ -827,6 +845,8 @@ ${TV_SCRIPT}
 const TV_SCRIPT = `<script>
 (function () {
   var main = document.querySelector("main.tv"); if (!main) return;
+  // In the fmwax TV app (tools/tv/shell, 2026-11-18) Guide listens in the app itself; in TV Bro it is TV Bro's voice search.
+  if (navigator.userAgent.indexOf("fmwaxTV/") >= 0) document.documentElement.classList.add("inapp");
   var base = main.getAttribute("data-base") || "", room = main.getAttribute("data-room") || "", roomName = main.getAttribute("data-room-name") || "";
   var build = main.getAttribute("data-build") || "", sig = main.getAttribute("data-sig") || "", cheap = main.hasAttribute("data-cheap"), rest = main.hasAttribute("data-rest");
   var EVERY = 30000, CHEAP = 10000, IDLE = 600000, REST = 300000, LONG = 3600000, SLOW = 900000, SHOW = 60000;
@@ -950,9 +970,11 @@ const TV_SCRIPT = `<script>
     if (view === "move" && !b.move) open("ctl");
     /* The music is over: the buttons come back, and the display with the
        next music unless the remote is used meanwhile. */
-    if (view === "dis" && b.tone === "off") { open("ctl"); wantDis = true; }
+    if (view === "dis" && !look(b)) { open("ctl"); wantDis = true; }
     slides(); mend();
   }
+  /* A song to show: one playing, or one that stopped or paused (band.still). */
+  function look(b) { return !!b && (b.tone !== "off" || !!b.still); }
   function songLook() {
     /* Paused: the song is still the one it was, with its words (the owner,
        2026-11-15: About this song went away on a pause). */
@@ -982,7 +1004,7 @@ const TV_SCRIPT = `<script>
   }
   /* The band and the display, from the one answer. */
   function draw() {
-    var b = band || { tone: "off" }, on = b.tone !== "off";
+    var b = band || { tone: "off" };
     main.setAttribute("data-tone", b.tone); q(".band").setAttribute("data-tone", b.tone);
     set(q(".b1 span"), b.title || ""); set(q(".b2 span"), b.line2 || ""); show(q(".b2"), !!b.line2);
     set(q(".b3 span"), b.line3 || ""); show(q(".b3"), !!b.line3);
@@ -1000,7 +1022,7 @@ const TV_SCRIPT = `<script>
       s.setAttribute("data-do", b.skipH ? (nx ? "hnext" : "hprev") : (nx ? "next" : "prev"));
     });
     show(q(".bctl"), !!(c || b.skip));
-    q(".sleeve").disabled = !on; show(q(".room.now"), on);
+    q(".sleeve").disabled = !look(b); show(q(".room.now"), look(b));
     show(q(".bmove"), !!b.move); show(q(".dmove"), !!b.move);
     all(".btune,.dtune").forEach(function (tn) {
       show(tn, !!b.tune);
@@ -1139,7 +1161,7 @@ const TV_SCRIPT = `<script>
   function open(v) {
     if (v === "back") v = backTo;
     if (v === view) return;
-    if (v === "dis" && (!band || band.tone === "off")) return;
+    if (v === "dis" && !look(band)) return;
     /* Opens for whatever knows the song: the DJ's words, the open databases,
        or Genius alone (2026-11-16, the owner: the i did nothing for a song
        only Genius knew). */
@@ -1227,12 +1249,21 @@ const TV_SCRIPT = `<script>
        the display left by itself: its cover, as soon as it plays. */
     if (wantDis && b.tone === "live" && view === "ctl" && sayEl.hidden) { wantDis = false; open("dis"); }
   }
+  /* BACK IN THE FMWAX TV APP (the owner, 2026-11-19: "the back arrow from
+     the room page ... doesn't go back"): the app asks here first; a view
+     open (the rooms, Move, About, the voice help, the song page) closes as
+     Escape closes it, and only on the buttons does Back leave the page. */
+  window.fmwaxBack = function () {
+    if (view === "ctl") return false;
+    touched = Date.now(); open(view === "dis" ? "ctl" : "back");
+    return true;
+  };
   /* THE DISPLAY BY ITSELF, the house's clock, the night's dim, the shift. */
   var DRIFT = [[0, 0], [.25, .125], [0, .25], [-.25, .125]];
   function auto() {
     var idle = Date.now() - touched, tone = band ? band.tone : "off";
     if (view === "ctl" && tone === "live" && idle >= SHOW && sayEl.hidden) open("dis");
-    else if (view === "dis" && tone === "off") open("ctl");
+    else if (view === "dis" && !look(band)) open("ctl");
     var s = clock ? (clock.s + (Date.now() - clock.got) / 1000) % 86400 : null, ck = q(".dclock");
     show(ck, s !== null);
     if (s !== null) { var h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60; set(ck, (h % 12 || 12) + ":" + ("0" + m).slice(-2)); }
@@ -1387,7 +1418,7 @@ const TV_SCRIPT = `<script>
     var mb = first(all("[data-t=main]")), sb = first(all("[data-t=skip]"));
     if (ev.key === "MediaPlayPause" || ev.key === "MediaPlay" || ev.key === "MediaPause") { if (mb) send(mb); return; }
     if (ev.key === "MediaTrackNext") { if (sb) send(sb); return; }
-    if (ev.key === "Escape" && view !== "ctl") { open(view === "dis" ? "ctl" : "back"); return; }
+    if (ev.key === "Escape" && view !== "ctl") { touched = Date.now(); open(view === "dis" ? "ctl" : "back"); return; }
     var dir = TV_DIRS[ev.key]; if (!dir || ev.altKey || ev.ctrlKey || ev.metaKey) return;
     /* About this song: up and down scroll it (Page up and Page down turn it). */
     if (view === "about" && (dir === "up" || dir === "down")) {

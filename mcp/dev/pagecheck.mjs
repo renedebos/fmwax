@@ -90,6 +90,10 @@ const PAGES = [
   // The DJs on the TV (tvdj.js): the list, a writer's screen and a guest's.
   ["the TV's DJs", `${ROOM}/tv/djs?room=pro-plus`], ["the TV, the Librarian", `${ROOM}/tv/dj/the-librarian?room=pro-plus`],
   ["the TV, Genre", `${ROOM}/tv/dj/genre?room=pro-plus`],
+  // Talk on the TV is the fmwax TV app's alone (2026-11-19): a browser is
+  // sent back to the TV page, so these go as the app, by its user agent.
+  ["the TV page, in the app", `${ROOM}/tv`, "app"], ["the TV, Talk", `${ROOM}/tv/talk?room=pro-plus`, "app"],
+  ["the TV, About", `${ROOM}/tv/about?room=pro-plus`, "app"],
   // The archive's page only in a house with an archive preset (the owner's
   // switched off 2026-11-05, Sessions on 6): anywhere else it is a 404.
   ...(houseButtons(env).some((b) => b.archive) ? [["the archive", `${ROOM}/archive`]] : []),
@@ -131,10 +135,13 @@ const SAMPLES = {
 };
 
 let failed = 0;
-for (const [name, path] of PAGES) {
+const APP_UA = "Mozilla/5.0 (Linux; Android 12; BRAVIA) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36 fmwaxTV/1.6";
+for (const [name, path, as] of PAGES) {
   errors = [];
+  await page.setExtraHTTPHeaders(as === "app" ? { "user-agent": APP_UA } : {});
   const res = await page.goto(BASE + path, { waitUntil: "load" });
   if (!res || res.status() !== 200) errors.push(`answered ${res ? res.status() : "nothing"}`);
+  else if (new URL(page.url()).pathname !== new URL(BASE + path).pathname) errors.push(`sent on to ${new URL(page.url()).pathname}`);
   await page.waitForFunction(() => {
     const one = document.querySelector("[data-nowbar] .nb1");
     return !one || one.textContent !== "Reading what is playing…";

@@ -19,7 +19,7 @@ You install Level 1 first, in about an hour. Everything after it is added later 
 | **Level 3 · Endless** | Your DJ presets add songs by themselves for as long as you listen. A guest DJ preset for any DJ. Ask from the DJ pages in your house's app. | A paid plan: Claude Pro or ChatGPT Plus (or higher). | 30 to 45 minutes |
 | **Extra · Home helper** | A small program on a computer at home. While it runs, your house sees what is saved on each WiiM preset, and can press them for you. | A computer at home (Mac, Windows or Linux). It helps whenever that computer is on; it need not stay on. | 15 minutes |
 | **Extra · Talk** | Ask by voice in your house's app: a DJ, a preset, "more like this". | Your own OpenAI API key, paid by the minute (about 5 cents). Not part of ChatGPT Plus. | 10 to 15 minutes |
-| **Extra · On your TV** | Your house as one screen on the TV, worked with its remote: presets, what's playing, the DJs, the Shelf, and About this song. Ask by voice too. | A Google TV or Android TV with the free TV Bro browser. Nothing to install on the house. | 15 minutes |
+| **Extra · On your TV** | Your house as one screen on the TV, worked with its remote: presets, what's playing, the DJs, the Shelf, and About this song. Ask by voice too. | A Google TV or Android TV, with the fmwax TV app (a download) or the free TV Bro browser. Nothing to install on the house. | 15 minutes |
 
 The extras can be added at any level.
 

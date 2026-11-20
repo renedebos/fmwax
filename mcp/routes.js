@@ -80,8 +80,8 @@ import { TUNING_SETTING, dialsOf, tuneDials, tuningFromForm, tuningOf, tuningSum
 import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
 import { aboutStop, aboutView, askLink, assistantOf } from "./about.js";
 import { LISTEN_CALLS, dropListen, listenId, listenable, makeListen, removeListen } from "./listen.js";
-import { renderTv, tvAnswer, tvFlashWords, tvReadSig, tvSong } from "./tv.js";
-import { renderTvDj, renderTvDjs, renderTvNotes, renderTvShelf, renderTvTune } from "./tvpages.js";
+import { inTvApp, renderTv, tvAnswer, tvFlashWords, tvReadSig, tvSong } from "./tv.js";
+import { renderTvAbout, renderTvDj, renderTvDjs, renderTvNotes, renderTvShelf, renderTvTalk, renderTvTune } from "./tvpages.js";
 import { songFacts, wikiMore } from "./musicbrainz.js";
 import { geniusForTv, geniusSong } from "./genius.js";
 import { TV_NOT_CAUGHT, tvIntent, tvLine } from "./tvsay.js";
@@ -2096,7 +2096,7 @@ export async function handleRequest(request, env, ctx) {
             // The TV's home names no DJ for what is said next (tvdj.js).
             const version = await verP;
             const tvRes = roomPage(renderTv({
-              canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null, version,
+              canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null, version, talk: talkOn(env) && inTvApp(request.headers.get("user-agent")),
               shelf: sp ? { code: sp, on: room?.name ?? "" } : null, tune: tn, voice,
               base, rooms, room, now: barNow, lan: barNow.lan ?? null, endlessKeys, ownKeys: ownRows, reqDj,
               keyLines: { ...(await requestLinesP), ...laneLine },
@@ -2604,7 +2604,7 @@ export async function handleRequest(request, env, ctx) {
     //   …/tv/djs     every DJ, in three groups (tvdj.js, tvpages.js)
     //   …/tv/dj/<dj> one DJ's screen; a POST is a press on it
     //   …/tv/face/<dj>.jpg  a DJ's sleeve (art/covers, the COVERS binding)
-    const tvMore = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/tv\/(song|shelf|say|djs|tune\/([a-z0-9-]{1,40})|notes\/([a-z0-9-]{1,64})|dj\/([a-z0-9-]{1,40})|face\/([a-z0-9-]{1,40})\.jpg)$/);
+    const tvMore = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/tv\/(song|shelf|say|djs|talk|about|tune\/([a-z0-9-]{1,40})|notes\/([a-z0-9-]{1,64})|dj\/([a-z0-9-]{1,40})|face\/([a-z0-9-]{1,40})\.jpg)$/);
     if (tvMore) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(tvMore[1], key)) return notFound();
@@ -2675,6 +2675,54 @@ export async function handleRequest(request, env, ctx) {
       // answer shows on the TV page. The DJ's screen names the DJ for what is
       // said to TV Bro's voice search while it is open (a cookie the other
       // screens clear).
+      // ABOUT FMWAX (the owner, 2026-11-19): the house's version and what is
+      // connected, from its own records (no Spotify call), and the remote's keys.
+      if (tvMore[2] === "about") {
+        const now = Date.now();
+        const tz = env.HOUSE_TZ || "America/Los_Angeles";
+        const clock = (ms) => { try { return new Date(ms).toLocaleTimeString("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }); } catch { return ""; } };
+        const cfg = parseEndless(env);
+        const [version, hv, crate, until, state, talkDay] = await Promise.all([
+          versionLine(env, now).catch(() => null), helperView(env, now).catch(() => ({})), alexaBox(env, now).catch(() => null),
+          throttledUntil(env).catch(() => null), cfg?.mode === "live" ? endlessLoad(env).catch(() => null) : null,
+          talkOn(env) ? station(env, "voice-day", { day: houseDay(env), cap_minutes: talkMinutes(env) }).catch(() => null) : null]);
+        const rows = [];
+        rows.push(hv?.helper === "on" ? { label: "Home helper", state: "On", tone: "on", more: hv.lan?.hands ? "hears and presses the WiiMs" : "hears the WiiMs" }
+          : hv?.helper === "off" ? { label: "Home helper", state: "Off", tone: "off", more: hv.helperHeard ? `last heard ${hv.helperHeard.replace(/^at /, "at ")}` : "" }
+          : { label: "Home helper", state: "Not set up" });
+        rows.push(until ? { label: "Spotify", state: "Resting", tone: "off", more: `too many calls; back in about ${Math.max(1, Math.ceil((until - now) / 60000))} min` }
+          : { label: "Spotify", state: "Fine", tone: "on" });
+        if (catalogAvailable(env, "tidal")) rows.push({ label: "Tidal", state: "On", tone: "on", more: "starts on a WiiM through the helper" });
+        if (crate) {
+          const last = crate.heard?.[0];
+          rows.push({ label: crate.invocation ? crate.invocation.charAt(0).toUpperCase() + crate.invocation.slice(1) : "Alexa skill",
+            state: crate.acts ? "On" : "Dry run", tone: crate.acts ? "on" : "off", more: last?.at ? `last heard ${clock(last.at)}` : "nothing heard yet" });
+        } else rows.push({ label: "Alexa skill", state: "Not set up" });
+        rows.push(talkOn(env) ? { label: "Talk", state: `${talkDay?.used ?? 0} of ${talkMinutes(env)} min`, more: "used today" } : { label: "Talk", state: "Not set up" });
+        if (cfg?.mode === "live") {
+          const runs = state && state.day === houseDay(env) ? Number(state.runs) || 0 : 0;
+          rows.push({ label: "DJ runs", state: `${Math.max(0, cfg.dailyRuns - runs)} of ${cfg.dailyRuns}`, more: "left today" });
+        }
+        const res = roomPage(renderTvAbout({ base, room, version, rows, talk: talkOn(env) && inTvApp(request.headers.get("user-agent")) }));
+        res.headers.append("set-cookie", tvDjClear);
+        return res;
+      }
+      // TALK ON THE TV (MC-48): the phone's Talk, made for a TV; the TV
+      // page's room, the day's minutes. A house without Talk has none, and
+      // a TV's browser is sent back too (inTvApp: it gives a page no
+      // microphone, and the screen would open a line it can't use).
+      if (tvMore[2] === "talk") {
+        if (!talkOn(env) || !inTvApp(request.headers.get("user-agent"))) return new Response(null, { status: 303, headers: { location: `${base}/tv${room ? `?room=${room.slug}` : ""}`, "cache-control": "no-store" } });
+        let used = 0, usedSec = 0;
+        try {
+          const d = await station(env, "voice-day", { day: houseDay(env), cap_minutes: talkMinutes(env) });
+          used = d.used ?? 0; usedSec = d.used_sec ?? 0;
+        } catch { used = 0; usedSec = 0; }
+        const res = roomPage(renderTvTalk({ base, room, devices: roomNames, used, usedSec, cap: talkMinutes(env),
+          idleMs: IDLE_CLOSE_MS, beatMs: BEAT_MS, rateCents: VOICE_CENTS_PER_MINUTE }));
+        res.headers.append("set-cookie", tvDjClear);
+        return res;
+      }
       if (tvMore[2] === "djs") {
         const res = roomPage(renderTvDjs({ base, room, groups: await tvDjList(env) }));
         res.headers.append("set-cookie", tvDjClear);

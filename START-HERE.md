@@ -17,7 +17,7 @@ You install Level 1 first, in about an hour. Everything after it is added later 
 | **Level 3 · Endless** | Your DJ presets add songs by themselves for as long as you listen. A guest DJ preset for any DJ. Ask from the DJ pages in your house's app. | A paid plan: Claude Pro or ChatGPT Plus (or higher). | 30 to 45 minutes |
 | **Extra · Home helper** | A small program on a computer at home. While it runs, your house sees what is saved on each WiiM preset, and can press them for you. | A computer at home (Mac, Windows or Linux). It helps whenever that computer is on; it need not stay on. | 15 minutes |
 | **Extra · Talk** | Ask by voice in your house's app: a DJ, a preset, "more like this". | Your own OpenAI API key, paid by the minute (about 5 cents). Not part of ChatGPT Plus. | 10 to 15 minutes |
-| **Extra · On your TV** | Your house as one screen on the TV, worked with its remote: presets, what's playing, the DJs, the Shelf, and About this song. Ask by voice too. | A Google TV or Android TV with the free TV Bro browser. Nothing to install on the house. | 15 minutes |
+| **Extra · On your TV** | Your house as one screen on the TV, worked with its remote: presets, what's playing, the DJs, the Shelf, and About this song. Ask by voice too. | A Google TV or Android TV, with the fmwax TV app (a download) or the free TV Bro browser. Nothing to install on the house. | 15 minutes |
 
 The extras can be added at any level.
 
@@ -205,7 +205,7 @@ On the setup page, click **Download a backup**. It's a small file with your hous
 - **[Endless DJs](docs/install/endless.md)** (Level 3): your DJ presets add songs by themselves for as long as you listen, and a guest DJ preset for any DJ. About 30 to 45 minutes to set up; it needs a paid Claude or ChatGPT plan.
 - **[The home helper](docs/install/home-helper.md)** (an extra, at any level): a small program on a computer at home, so your house can see and press the WiiM's presets.
 - **[Talk](docs/install/talk.md)** (an extra, at any level): ask by voice in your house's app. It needs your own OpenAI API key, paid by the minute.
-- **[On your TV](docs/install/tv.md)** (an extra, at any level): your house as one screen on a Google TV, worked with the TV's remote, and voice from it too. About 15 minutes, all of it on the TV.
+- **[On your TV](docs/install/tv.md)** (an extra, at any level): your house as one screen on a Google TV, worked with the TV's remote, voice from it too, and Talk in the fmwax TV app (a download). About 15 minutes, all of it on the TV.
 - **[Updates](docs/install/updates.md):** how to get a newer version, and which version you have.
 - **[What your house keeps, and who sees it](docs/install/privacy.md).**
 - **[Remove your house](docs/install/remove.md):** how to take it all away again, step by step.

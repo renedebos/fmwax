@@ -48,6 +48,14 @@ Only if you use it. The helper is a separate program on a computer at home, and 
 
 - **16 November 2026:** it reads the WiiMs every 3 seconds (it was every 10), so the app and the [TV page](tv.md) follow a new song sooner. For music that isn't Spotify it also passes on the album, the cover and where in the song it is, and it can skip and go back.
 
+## The fmwax TV app is updated separately
+
+Only if you use it. Updating your house does not touch the app on your TV. Download it again the same way ([On your TV](tv.md#the-fmwax-tv-app), steps 2 to 4): it installs over the old one and keeps the address. **About fmwax** on the TV (the fmwax word at the top left) shows which version is on it. An older app keeps working with a newer house.
+
+**When the app last changed:**
+
+- **19 November 2026, version 1.6:** the first download.
+
 ## After some updates: connect Claude or ChatGPT again
 
 The Claude app remembers the list of your house's tools from when you added it, and doesn't fetch a new one by itself. So when an update changes what your house can do, the update's note says **re-add the connector**. Then:

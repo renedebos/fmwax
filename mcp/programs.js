@@ -7766,7 +7766,7 @@ function tvSays(tv) {
   ]) + `
   <section class="ucard rcard" aria-labelledby="say-tv-not">
     <h2 id="say-tv-not">On the TV: not understood</h2>
-    <p class="rsub">The volume (the house doesn't change it), a number on its own, and “put on” with words after a DJ's name. If TV Bro says it can't recognize the words, restarting the TV has helped.</p>
+    <p class="rsub">The volume (the house doesn't change it), a number on its own, and “put on” with words after a DJ's name. If the TV keeps not catching the words (“Didn't catch that”, or TV Bro's “can't recognize”), restarting the TV has helped.</p>
   </section>`;
 }
 export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false, tv = null }) {
@@ -7818,9 +7818,11 @@ export function renderSay({ base, talk = false, alexa = null, examples = null, l
   const tvCard = tv ? `
   <section class="ucard rcard" aria-labelledby="say-tv">
     <h2 id="say-tv">On the TV</h2>${tv.page ? `
-    <p><b>The TV page</b> is this house as one screen for a TV's remote. Open it in TV Bro on the TV (paste it with the keyboard of the Google TV app on this phone) and bookmark it:</p>
+    <p><b>The TV page</b> is this house as one screen for a TV's remote. Open it in the <b>fmwax TV app</b>, which asks for this address once, or in a TV browser such as TV Bro, and bookmark it there. Paste it with the keyboard of the Google TV app on this phone:</p>
     <code class="setval">${esc(tv.page)}</code><button class="setcopy" type="button" data-copy="${esc(tv.page)}" hidden>Copy</button>` : ""}
-    <p><b>TV Bro's own voice search</b> can send what you say to the house, which does it as the Echos would, in the room the TV page shows unless you name another. The remote's microphone button belongs to the TV's own search, so the voice search goes on another key.</p>
+    <p><b>In the fmwax TV app</b> voice needs no setting up: press <b>Guide</b> on the remote, and when <b>Listening…</b> shows at the bottom, say it: “Sessions, acoustic piano”, “Hank”, “preset 7”, “pause”, “skip”, “more like this”, “what's playing”. It does it as the Echos would, in the room the TV page shows unless you name another.${talk ? " Talk on the TV is the app's too, from the TV page's microphone." : ""}</p>
+    <p class="rsub">To put the app on a TV: <a href="https://github.com/renedebos/fmwax/blob/main/docs/install/tv.md">On your TV</a>, in the install guide. It is a download, for Google TV and Android TV.</p>
+    <p><b>In TV Bro instead</b>, its own voice search can send what you say to the house, which does it as the Echos would, in the room the TV page shows unless you name another. The remote's microphone button belongs to the TV's own search, so the voice search goes on another key.</p>
     <ol class="tvsteps">
       <li>Copy this address, on this phone:</li>
     </ol>
@@ -8943,6 +8945,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     <span class="ghost" aria-hidden="true">“</span>
     <div class="djwords">
       <p class="vsum">Hold the button, say what you want, let go. The desk answers out loud and does the rest.</p>
+      <p class="vsum tvsound" hidden>On this TV the music goes quiet while you talk, and comes back when you hang up.</p>
     </div>
     <div class="holdrow">
       <button class="hold" id="hold" type="button" aria-pressed="false">Hold to talk</button>
@@ -8963,7 +8966,19 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   <audio id="voice" autoplay playsinline></audio>
   ${tabBar({ base, active: "talk", owed, talk, loaded })}
 </main>
-<script>
+${talkScript()}
+${PICK_SELECT}
+</body>
+</html>
+`;
+}
+
+// TALK'S OWN SCRIPT, shared by the phone's Talk page and the TV's (MC-48,
+// tvpages.js renderTvTalk): the line, the minutes, the hang-up rules and the
+// receiver's switch are one code. It reads, by id: hold, hangup, tstate,
+// meter, minutes, talkdev, tspk, voice, you, desk; and main.talk, .tvsound.
+export function talkScript() {
+  return `<script>
 (function () {
   var main = document.querySelector("main.talk");
   var base = main.getAttribute("data-base");
@@ -8973,6 +8988,13 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   var meter = document.getElementById("meter");
   var hangup = document.getElementById("hangup");
   var hold = document.getElementById("hold");
+  // TALK ON THE TV (2026-11-19, the owner chose it): in the fmwax TV app
+  // (tools/tv/shell) Talk's voice is the TV's sound, which the room's
+  // receiver only plays on its TV input. The app switches the receiver there
+  // while a line is open and back when it closes (only if nobody changed it
+  // meanwhile). Nothing happens in a browser: there is no fmwaxTV there.
+  function soundTo(on) { try { if (window.fmwaxTV && window.fmwaxTV.talk) window.fmwaxTV.talk(!!on); } catch (e) {} }
+  try { if (window.fmwaxTV && window.fmwaxTV.sound && window.fmwaxTV.sound()) { var tvs = document.querySelector(".tvsound"); if (tvs) tvs.hidden = false; } } catch (e) {}
   var state = document.getElementById("tstate");
   var you = document.getElementById("you");
   var desk = document.getElementById("desk");
@@ -9015,7 +9037,19 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   var finishing = 0, FINISH_MS = 30000, askLine = null;
   var FINISH_WORDS = "Finishing what you asked, then hanging up…";
 
-  function say(t) { state.textContent = finishing && live ? FINISH_WORDS : t; }
+  function say(t) { state.textContent = finishing && live ? FINISH_WORDS : t; phaseOf(t); }
+  // THE PHASE, for a screen that shows it on the button (MC-48, the owner
+  // 2026-11-19: "make the page show clearly when the mic is active"): read
+  // from the caption, so every place that speaks sets it. "opening" means
+  // don't speak yet; "listening" only once the line said it unmuted.
+  function phaseOf(t) {
+    var p = /^(Asking for the microphone|Opening the line|Connecting)/.test(t) || t === "\u2026" ? "opening"
+      : /^Listening/.test(t) ? "listening"
+      : /^(Thinking|Working)/.test(t) ? "thinking"
+      : /speaking/i.test(t) ? "speaking"
+      : live ? "ready" : "rest";
+    if (main.setAttribute) main.setAttribute("data-phase", p);
+  }
   function idleWords() { return pressed ? "Listening." : (talked ? "Thinking…" : "Hold the button and speak."); }
   // Every event carries an id, and the ones that matter are acknowledged
   // by it (session.input_audio.muted / unmuted, session.instructions.appended).
@@ -9099,6 +9133,24 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   // The line: the microphone on the first press (the gesture the browser
   // wants), one peer connection, one data channel, the offer to our own
   // session door, the answer back. Nothing here is a secret.
+  var lvlCtx = null;
+  function levels(stream) {
+    if (main.getAttribute("data-level") !== "1" || !window.AudioContext || !window.requestAnimationFrame) return;
+    try {
+      lvlCtx = new AudioContext();
+      var an = lvlCtx.createAnalyser(); an.fftSize = 512;
+      lvlCtx.createMediaStreamSource(stream).connect(an);
+      var buf = new Float32Array(an.fftSize), ctx = lvlCtx;
+      (function tick() {
+        if (lvlCtx !== ctx) return;
+        an.getFloatTimeDomainData(buf);
+        var sum = 0; for (var i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+        var v = pressed ? Math.min(1, Math.sqrt(Math.sqrt(sum / buf.length)) * 3) : 0;
+        hold.style.setProperty("--lvl", v.toFixed(2));
+        window.requestAnimationFrame(tick);
+      })();
+    } catch (e) { lvlCtx = null; }
+  }
   async function open() {
     if (pc || opening) return;
     opening = true;
@@ -9106,6 +9158,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     try { mic = await navigator.mediaDevices.getUserMedia({ audio: true }); }
     catch (e) { say("The microphone was refused. Allow it for this site and try again."); opening = false; return; }
     micOn(pressed);
+    levels(mic);
     // A line that never opens is closed, not left hanging: the clock runs
     // from here, over the offer, the desk, the answer and the connection.
     startTimer = setTimeout(function () {
@@ -9170,6 +9223,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     if (/^(session\.(input|output)_transcript|response)/.test(t)) lastHeard = Date.now();
     if (t === "session.started") {
       live = true; startedAt = Date.now(); clearTimeout(startTimer); lastHeard = Date.now(); leaving = false;
+      soundTo(true);
       if (pressed) unmute(); else send({ type: "session.input_audio.mute" });
       tellSpeaker();
       hangup.hidden = false;
@@ -9308,6 +9362,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     if (e) e.preventDefault();
     if (pressed) return;
     pressed = true; lastHeard = Date.now(); leaving = false;
+    if (lvlCtx && lvlCtx.state === "suspended") { try { lvlCtx.resume(); } catch (x) {} }
     if (finishing) { finishing = 0; hangup.textContent = "Hang up"; }
     hold.classList.add("down"); hold.setAttribute("aria-pressed", "true");
     if (e && e.pointerId != null && hold.setPointerCapture) { try { hold.setPointerCapture(e.pointerId); } catch (x) {} }
@@ -9332,6 +9387,19 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
   hold.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   hold.addEventListener("keydown", function (e) { if ((e.key === " " || e.key === "Enter") && !e.repeat) press(e); });
   hold.addEventListener("keyup", function (e) { if (e.key === " " || e.key === "Enter") release(e); });
+  // GUIDE HELD TO TALK (MC-48, 2026-11-19): the fmwax TV app hands the
+  // remote's Guide key here, down and up (measured: one down, one up, the
+  // repeats between them dropped by the app), on a page that says it takes it.
+  window.fmwaxGuide = function (down) { if (down) press(); else release(); };
+  // OPENED WITH THE SCREEN (MC-48, measured 2026-11-19 on the Bravia: press
+  // to "Listening" 2.1 s on a new line, 1.3 s of it the house asking OpenAI
+  // for one; 0.05 s on an open line). A TV opens its Talk screen to talk, so
+  // the line opens muted at once; unused, it hangs up after the quiet time.
+  if (main.getAttribute("data-preopen") === "1") open();
+  // A press whose key-up lands elsewhere (OK held, then an arrow moves the
+  // focus) is let go when the button loses the focus: never a microphone left on.
+  hold.addEventListener("blur", function () { release(); });
+  try { if (window.fmwaxTV && window.fmwaxTV.talkKeys) window.fmwaxTV.talkKeys(true); } catch (e) {}
   dev.addEventListener("change", function () { if (live) tellSpeaker(); });
 
   // "Done" goes to the ledger AT ONCE (it is idempotent), then OpenAI is
@@ -9386,6 +9454,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     teardown(); say(msg);
   }
   function teardown() {
+    soundTo(false);
     live = false; closing = false; pressed = false; talked = false; pendingUnmute = null; pendingMute = null;
     finishing = 0; askLine = null; hangup.textContent = "Hang up";
     clearTimeout(idleTimer); clearTimeout(startTimer); clearInterval(beatTimer); clearTimeout(ackTimer); clearInterval(meterTimer);
@@ -9394,6 +9463,8 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     hangup.hidden = true;
     micOn(false);
     if (mic) mic.getTracks().forEach(function (t) { t.stop(); });
+    if (lvlCtx) { try { lvlCtx.close(); } catch (e) {} lvlCtx = null; }
+    if (hold.style && hold.style.setProperty) hold.style.setProperty("--lvl", "0");
     if (dc) { dc.onclose = null; dc.onmessage = null; }
     if (pc) { pc.onconnectionstatechange = null; try { pc.close(); } catch (e) {} }
     pc = null; dc = null; mic = null; cap = null; startedAt = 0; doneSent = false;
@@ -9418,13 +9489,12 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     if (document.hidden) { release(); if (live) { leaving = true; if (!busy()) close("away"); } return; }
     leaving = false;
     if (live && inflight.deadline && Date.now() > inflight.deadline) close("quiet");
+    // Back on the screen with the line still open (the TV app put the
+    // receiver back when it left the screen, 2026-11-19): TV again.
+    if (live && !closing) soundTo(true);
   });
 })();
-</script>
-${PICK_SELECT}
-</body>
-</html>
-`;
+</script>`;
 }
 
 // The endless block of a DJ page: what the preset is doing in one line, the

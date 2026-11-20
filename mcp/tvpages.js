@@ -20,7 +20,7 @@
 // page was never seen, so a slider that needs the arrows themselves was not
 // built). The cursor can also press anywhere on the track. Apply is the Tune
 // route's own POST (/<dj>/tune, tuning.js reads it), back to the TV page.
-import { esc, SHAPE_LABELS } from "./programs.js";
+import { esc, SHAPE_LABELS, spkWords, talkScript } from "./programs.js";
 import { TV_ARROWS_JS, TV_BASE_CSS, TV_I_BACK } from "./tv.js";
 
 const HEAD = (title, css) => `<!doctype html>
@@ -693,4 +693,152 @@ ${script}
 </body>
 </html>
 `;
+}
+
+// TALK ON THE TV (MC-48, the owner 2026-11-19; the canvas "Talk on the TV"):
+// the phone's Talk, made for a TV and its remote. The line, the minutes, the
+// hang-up rules and the receiver's switch are the phone's own script
+// (programs.js talkScript); only the markup is the TV's. In the fmwax TV app
+// Guide held is the hold (the app hands Guide to window.fmwaxGuide); OK held
+// on the button works anywhere. No speaker picker: the TV page's room, or
+// another said by voice.
+const TALK_TV_CSS = `
+main.tvd.talk{box-sizing:border-box;height:100vh;display:flex;flex-direction:column;gap:1.125rem;padding:1.75rem 2.5rem 1.25rem}
+.dhead{display:flex;align-items:center;gap:1rem}
+.dhead h1{margin:0;font-size:2.125rem;font-weight:800;letter-spacing:-.03rem}
+.dhead .gap{flex:1}
+.tnote{margin:0;font-size:1.0625rem;color:var(--ink-2)}.tnote b{color:var(--ink)}
+.tbody{flex:1;min-height:0;display:flex;align-items:center;gap:3rem}
+.hold{flex:none;box-sizing:border-box;width:16.25rem;height:16.25rem;border-radius:50%;border:.375rem solid var(--rule);background:var(--raised);color:var(--ink);font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.625rem;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .08s linear}
+.hold svg{width:3.5rem;height:3.5rem;color:var(--focus)}
+.hold .hk{font-size:1.5rem;font-weight:800;text-align:center}.hold .hs{font-size:1rem;color:var(--ink-2);text-align:center;max-width:12rem}
+/* THE BUTTON SAYS THE PHASE (MC-48): the remote's focus is its amber edge,
+   never its fill, so the fill can say what the line does. */
+main.talk .hold:focus{background:var(--raised)!important;border-color:var(--focus)!important;color:#E9E8E3!important}
+main.talk .hold:focus .hs{color:#A9AAB2}
+main.talk[data-phase=opening] .hold{border-style:dashed}
+main.talk[data-phase=opening] .hold svg{color:#9A9CA4}
+main.talk[data-phase=listening] .hold{background:var(--focus)!important;border-color:var(--focus)!important;color:var(--on-focus)!important;box-shadow:0 0 0 calc(.5rem + var(--lvl,0) * 2.5rem) rgba(242,182,58,.3)}
+main.talk[data-phase=listening] .hold svg{color:var(--on-focus)}main.talk[data-phase=listening] .hold .hs{color:#3A2E0E}
+main.talk[data-phase=thinking] .hold,main.talk[data-phase=speaking] .hold{background:#3B5378!important;color:#EDF1F7!important}
+main.talk[data-phase=thinking] .hold svg,main.talk[data-phase=speaking] .hold svg,main.talk[data-phase=thinking] .hold .hs,main.talk[data-phase=speaking] .hold .hs{color:#AFC2E0}
+.twords{display:flex;flex-direction:column;gap:.875rem;min-width:0;flex:1}
+.tstate{margin:0;font-size:1.875rem;font-weight:700;line-height:1.2}
+.tsum{margin:0;font-size:1.1875rem;line-height:1.45;color:var(--ink-2)}
+.vsum.tvsound{margin:0;padding:.75rem 1rem;border-radius:.75rem;background:var(--raised);font-size:1.0625rem;line-height:1.4;color:var(--q-ink)}
+.exchange{margin:0;display:grid;grid-template-columns:5.625rem minmax(0,1fr);column-gap:1.125rem;row-gap:.75rem;align-items:baseline}
+.exchange dt{font-size:.9375rem;font-weight:700;letter-spacing:.125rem;color:var(--ink-2);text-transform:uppercase}
+.exchange dd{margin:0;font-size:1.5rem;font-weight:700;line-height:1.3;overflow-wrap:anywhere}
+.exchange dd#desk{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:1.625rem;line-height:1.4}
+.exchange:not(:has(dd:not(:empty))){display:none}
+.tfoot{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem 1.25rem;border-top:.125rem solid var(--rule);padding-top:.875rem;font-size:1rem;color:var(--ink-2)}
+.tfoot p{margin:0}.tfoot .meter{color:var(--ink)}.tfoot .gap{flex:1}`;
+export function renderTvTalk({ base, room = null, devices = [], used = 0, usedSec = 0, cap = 60, idleMs = 30000, beatMs = 30000, rateCents = 5 }) {
+  const q = room ? `?room=${encodeURIComponent(room.slug)}` : "";
+  const here = room?.name ?? devices[0] ?? "";
+  const dollars = (sec) => `$${(Math.max(0, Number(sec) || 0) / 60 * (Number(rateCents) || 5) / 100).toFixed(2)}`;
+  const chooser = devices.map((d) => `<option${d === here ? " selected" : ""}>${esc(d)}</option>`).join("");
+  const mic = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="2"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>`;
+  const head = HEAD("Talk, on the TV", TALK_TV_CSS)
+    .replace("family=Archivo:wght@400;600;700;800", "family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400");
+  return `${head}
+<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="${esc(base)}" data-idle="${Number(idleMs) || 30000}" data-beat="${Number(beatMs) || 30000}" data-rate="${Number(rateCents) || 5}">
+  <header class="dhead"><a class="pill" data-f="back" href="${esc(base)}/tv${esc(q)}">${TV_I_BACK}Home</a><h1>Talk</h1><span class="gap"></span>` +
+    `<p class="tnote"><span id="tspk">${spkWords(here)}</span> unless you say otherwise</p>` +
+    `<select id="talkdev" name="device" hidden aria-label="Speaker to play on">${chooser}</select>` +
+    `<button class="pill hangup" id="hangup" type="button" hidden>Hang up</button></header>
+  <div class="tbody">
+    <button class="hold" id="hold" type="button" aria-pressed="false" data-home>${mic}<span class="hk">Hold OK</span><span class="hs">and speak</span></button>
+    <div class="twords">
+      <p class="tstate" id="tstate" aria-live="polite">Hold the button and speak.</p>
+      <p class="tsum">Say what you want, let go. The desk answers out loud and does the rest: a DJ and what you'd like, what's playing, a song's story, steering, keeping a set.</p>
+      <p class="vsum tvsound" hidden>The music goes quiet while Talk is open, and comes back when you hang up.</p>
+      <dl class="exchange lastex" id="exchange" aria-live="polite"><dt>You</dt><dd id="you"></dd><dt>Desk</dt><dd id="desk"></dd></dl>
+    </div>
+  </div>
+  <footer class="tfoot"><p id="minutes">${Number(used) || 0} of ${cap} minutes today · about ${dollars(usedSec)}</p>` +
+    `<p class="meter" id="meter" hidden></p><span class="gap"></span><p class="thelp">Quick commands without Talk: press Guide on any other screen</p></footer>
+  <audio id="voice" autoplay playsinline></audio>
+</main>
+${DJ_SCRIPT(`
+  /* The button says the phase (MC-48); the key is Guide in the fmwax TV app,
+     OK elsewhere. */
+  var app = false; try { app = !!window.fmwaxTV; } catch (e) {}
+  var key = app ? "Guide" : "OK", hk = main.querySelector(".hold .hk"), hs = main.querySelector(".hold .hs");
+  var WORDS = { rest: ["Hold " + key, app ? "or hold OK here" : "and speak"], ready: ["Hold " + key, "and speak"],
+    opening: ["Getting ready\\u2026", "speak when it says Listening"], listening: ["Listening", "let go when you\\u2019re done"],
+    thinking: ["Thinking\\u2026", ""], speaking: ["Speaking", "hold " + key + " to say more"] };
+  function words() { var w = WORDS[main.getAttribute("data-phase")] || WORDS.rest; if (hk) hk.textContent = w[0]; if (hs) { hs.textContent = w[1]; hs.hidden = !w[1]; } }
+  words(); new MutationObserver(words).observe(main, { attributes: true, attributeFilter: ["data-phase"] });`)}
+${talkScript()}
+</body>
+</html>`;
+}
+
+// ABOUT FMWAX (the owner, 2026-11-19: "a dedicated page for the about
+// information ... on the fmwax logo": the version, how far from GitHub, the
+// helper, the Alexa skill, and help). Its own screen (the owner's choice),
+// with the remote's keys. Read from the house's own records only: no Spotify
+// call. What only the TV app knows (its version, the receiver) its script
+// fills in.
+const ABOUT_CSS = `
+main.tvd.about{box-sizing:border-box;height:100vh;display:flex;flex-direction:column;gap:1rem;padding:1.5rem 2.5rem 1.25rem}
+.dhead{display:flex;align-items:center;gap:1rem}
+.dhead h1{margin:0;font-size:2rem;font-weight:800;letter-spacing:-.03rem}
+.acols{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.75rem}
+.acol{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.ablock{border-radius:.875rem;background:var(--raised);padding:.875rem 1.125rem}
+.ablock h2{margin:0 0 .5rem;font-size:.8125rem;font-weight:700;letter-spacing:.125rem;text-transform:uppercase;color:var(--ink-2)}
+.ablock p{margin:0;font-size:1rem;line-height:1.4}
+.ablock p+p{margin-top:.375rem}
+.arows{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:1rem;row-gap:.4375rem;align-items:baseline}
+.arows dt{font-size:.9375rem;font-weight:700;color:var(--ink);white-space:nowrap}
+.arows dd{margin:0;font-size:.9375rem;line-height:1.35;color:var(--ink-2)}
+.arows dd b{color:var(--ink);font-weight:600}
+.arows .on{color:#8FD19E}.arows .off{color:#F2B63A}
+.arows .k{display:inline-block;min-width:4.5rem;padding:.0625rem .5rem;border:.0625rem solid var(--rule);border-radius:.375rem;font-weight:700;color:var(--ink);text-align:center}`;
+export function renderTvAbout({ base, room = null, version = null, rows = [], talk = false }) {
+  const q = room ? `?room=${encodeURIComponent(room.slug)}` : "";
+  const ver = String(version ?? "").split(/(?<=\.)\s+/).filter(Boolean);
+  const row = (r) => `<dt>${esc(r.label)}</dt><dd>${r.tone ? `<span class="${r.tone === "on" ? "on" : "off"}">${esc(r.state)}</span>` : `<b>${esc(r.state)}</b>`}${r.more ? ` · ${esc(r.more)}` : ""}</dd>`;
+  const key = (k, what, cls = "") => `<dt${cls ? ` class="${cls}"` : ""}><span class="k">${esc(k)}</span></dt><dd${cls ? ` class="${cls}"` : ""}>${esc(what)}</dd>`;
+  return `${HEAD("About fmwax, on the TV", ABOUT_CSS)}
+<main class="tvd about">
+  <header class="dhead"><a class="pill" data-f="back" href="${esc(base)}/tv${esc(q)}" data-home>${TV_I_BACK}Home</a><h1>About fmwax</h1></header>
+  <div class="acols">
+    <div class="acol">
+      <section class="ablock" aria-label="This house"><h2>This house</h2>${ver.length ? ver.map((l) => `<p>${esc(l)}</p>`).join("") : "<p>This house doesn't know its own version.</p>"}
+        <p class="tvapp" hidden></p></section>
+      <section class="ablock" aria-label="What's connected"><h2>What's connected</h2>
+        <dl class="arows">${rows.map(row).join("")}<dt class="rcv" hidden>Receiver</dt><dd class="rcv" hidden></dd></dl></section>
+    </div>
+    <div class="acol">
+      <section class="ablock" aria-label="The remote"><h2>The remote</h2>
+        <dl class="arows">${[
+          key("OK", "Press what's selected" + (talk ? "; held on Talk's button, talk" : "")),
+          key("Guide", "A quick command: say “skip”, “Hank, Daptone”, “what's playing”", "app"),
+          talk ? key("Guide held", "On Talk: talk while you hold it. Elsewhere, about a second: open Talk", "app") : "",
+          key("Back", "Close what's open, then the page before"),
+          key("Back held", "The TV page's address (to set it again)", "app"),
+          key("fmwax", "Your remote's fmwax button, if you set one up: fmwax and the receiver's input", "app"),
+        ].join("")}</dl></section>
+      <section class="ablock" aria-label="Help"><h2>More help</h2>
+        <p>On the phone, at the foot of the Speakers tab: <b>Voice on the TV</b> (what to say), <b>House rules</b> (how everything behaves), and <b>Use</b>.</p></section>
+    </div>
+  </div>
+</main>
+${DJ_SCRIPT(`
+  /* What only the fmwax TV app knows: its version and the receiver it
+     switches for Talk. In a browser the app's keys are left out. */
+  var m = /fmwaxTV\\/([0-9][0-9A-Za-z.]*)/.exec(navigator.userAgent), app = false;
+  try { app = !!window.fmwaxTV; } catch (e) {}
+  var ta = main.querySelector(".tvapp");
+  if (ta) { ta.textContent = app ? "On this TV: the fmwax TV app" + (m && m[1].indexOf(".") > 0 ? " " + m[1] : "") + "." : "On this TV: a browser, not the fmwax TV app."; ta.hidden = false; }
+  if (!app) Array.prototype.forEach.call(main.querySelectorAll(".app"), function (el) { el.hidden = true; });
+  var rc = false; try { rc = app && window.fmwaxTV.sound && window.fmwaxTV.sound(); } catch (e) {}
+  if (app) Array.prototype.forEach.call(main.querySelectorAll(".rcv"), function (el) {
+    el.hidden = false; if (el.tagName === "DD") el.innerHTML = rc ? '<span class="on">Set</span> · goes to the TV’s sound while Talk is open' : '<span class="off">Not set</span> · Talk is heard only if the TV’s sound is';
+  });`)}
+</body>
+</html>`;
 }

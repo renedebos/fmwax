@@ -143,7 +143,7 @@ test("the page: rooms, twelve tiles and the band; every control a button or a li
     assert.deepEqual([...vr.matchAll(/<a class="mroom rroom( here)?" data-f="r:([a-z-]+)" data-room="[a-z-]+" href="\/buttons\/[a-f]+\/tv\?room=([a-z-]+)">/g)].map((m) => `${m[2]}${m[1] ? "*" : ""}`),
       ["pro-plus*", "ultra", "living-room"], "every room, the one shown marked");
     assert.ok(vr.includes('<span class="mst">Showing</span>'));
-    assert.ok(html.includes(`<a class="room app" data-f="app" href="/buttons/${KEY}/wiim">App</a>`), "and a way back to the app");
+    assert.ok(!html.includes('class="room app"'), "no App link (MC-48, the owner 2026-11-19)");
     // Twelve places. With the helper's hands every saved key is its press, Tidal and the radio too.
     assert.equal((html.match(/ data-k="\d+"/g) ?? []).length, 12);
     for (const n of [1, 2, 6, 10]) {
@@ -398,7 +398,7 @@ test("the page's other views: the display, Move and About this song are drawn in
     await reading(e);
     const html = await (await call(e, `${KEY}/tv`)).text();
     assert.match(html, / data-view="ctl" data-tone="off" data-room-name="Pro Plus" data-clock="\d+">/);
-    assert.ok(html.includes('<span class="wm" aria-hidden="true">fmwax</span>'), "the word, once");
+    assert.ok(html.includes('<a class="wm" data-f="fmwax" href="/buttons/${KEY}/tv/about?room=pro-plus" aria-label="About fmwax">fmwax</a>') || /<a class="wm" data-f="fmwax" href="[^"]*\/tv\/about[^"]*" aria-label="About fmwax">fmwax<\/a>/.test(html), "the word, once, and it opens About fmwax");
     assert.ok(!html.includes("tmark") && !/class="ttop"><span class="tnum">1<\/span><svg/.test(html), "no initials and no glyph in a tile's corner");
     assert.ok(html.includes('<span class="ttop"><span class="tnum">1</span><span class="tplay">'), "only Playing may show there");
     assert.match(html, /a:focus,button:focus\{outline:0;background:var\(--focus\)!important;/, "filled amber, not a ring");
@@ -819,6 +819,8 @@ test("What to say has the TV's card in every house: the address to copy, with TV
     const html = await r.text();
     assert.ok(html.includes(`<code class="setval">https://x.test/buttons/${KEY}/tv/say?q=[query]</code><button class="setcopy" type="button" data-copy="https://x.test/buttons/${KEY}/tv/say?q=[query]" hidden>Copy</button>`));
     assert.match(html, /<h2 id="say-tv">On the TV<\/h2>/);
+    assert.match(html, /<b>In the fmwax TV app<\/b> voice needs no setting up: press <b>Guide<\/b>/);
+    assert.match(html, /<b>In TV Bro instead<\/b>/);
     assert.ok(html.includes(`<code class="setval">https://x.test/buttons/${KEY}/tv</code><button class="setcopy" type="button" data-copy="https://x.test/buttons/${KEY}/tv" hidden>Copy</button>`), "the TV page's own address, to copy");
     // The list of what to say on the TV (the owner, 2026-11-16), every sentence one the house understands.
     const { tvIntent } = await import("../tvsay.js");
@@ -976,6 +978,9 @@ test("the microphone on the TV's top row says how to speak to the TV (a page can
   assert.ok(html.includes('<button type="button" class="room mic" data-f="mic" data-open="voice" aria-label="Voice: how to say it">'));
   assert.match(html, /<div class="view vvoice" aria-label="Say it to the TV">[\s\S]*?<button type="button" class="pill vclose" data-open="back">Got it<\/button>/);
   assert.match(html, /Press <b>Guide<\/b> on the remote/);
+  assert.match(html, /<p class="vstep vapp">Press <b>Guide<\/b> on the remote\. When <b>Listening…<\/b> shows/, "the fmwax TV app's own way (2026-11-18)");
+  assert.match(html, /<p class="vstep vbro">[^<]*<b>Guide<\/b>[^<]*TV Bro's voice search/, "TV Bro's way, shown in TV Bro");
+  assert.ok(html.includes('navigator.userAgent.indexOf("fmwaxTV/") >= 0'), "the app is told apart by its user agent");
   assert.match(html, /<li>Move the music to the Ultra<span>/, "another of the house's rooms");
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
   assert.ok(script.includes('view === "voice" ? q(".vclose")'), "Got it is in hand");
@@ -1157,4 +1162,110 @@ test("About this song stays open when the song changes, and goes back ten minute
   assert.match(html, /ABOUT_HOLD = 10 \* 60000/);
   assert.match(html, /view === "about" && !has && aboutKey === song\.key/);
   assert.match(html, /aboutTouch = Date\.now\(\);\n\s+var mb = /);
+});
+
+// TALK ON THE TV (MC-48, the owner 2026-11-19): where the house has Talk the
+// microphone opens Talk made for the TV; elsewhere it is the voice help.
+test("the microphone opens Talk on the TV where the house has Talk, the voice help where not; no App link", () => {
+  const ULTRA = { name: "Ultra", slug: "ultra", wiim: true };
+  const withTalk = renderTv({ base: "/b/k", rooms: [PRO, ULTRA], room: PRO, now: null, readings: {}, talk: true });
+  assert.ok(withTalk.includes('<a class="room mic" data-f="mic" href="/b/k/tv/talk?room=pro-plus" aria-label="Talk">'));
+  const without = renderTv({ base: "/b/k", rooms: [PRO, ULTRA], room: PRO, now: null, readings: {} });
+  assert.ok(without.includes('<button type="button" class="room mic" data-f="mic" data-open="voice" aria-label="Voice: how to say it">'));
+  for (const h of [withTalk, without]) assert.ok(!h.includes('class="room app"'));
+});
+
+// TALK ON THE TV IS THE APP'S (2026-11-19, before the app's download): a
+// TV's browser gives a page no microphone, and the Talk screen opens its line
+// as it opens, so a browser keeps the voice help and is sent back from Talk.
+test("Talk on the TV only in the fmwax TV app: the microphone, the Talk screen and About's keys, by the app's user agent", async () => {
+  const { inTvApp } = await import("../tv.js");
+  assert.equal(inTvApp("Mozilla/5.0 (Linux; Android 12) Chrome/120.0 fmwaxTV/1.6"), true);
+  assert.equal(inTvApp("Mozilla/5.0 (Linux; Android 12) TV Bro/2.0"), false);
+  assert.equal(inTvApp("Mozilla/5.0 notfmwaxTV/1.6"), false);
+  assert.equal(inTvApp(null), false);
+  const e = Object.assign(env(), { OPENAI_API_KEY: "sk-test" });
+  const f = installFetch();
+  try {
+    const APP = { headers: { "user-agent": "Mozilla/5.0 (Linux; Android 12) Chrome/120.0 Safari/537.36 fmwaxTV/1.6" } };
+    const BRO = { headers: { "user-agent": "Mozilla/5.0 (Linux; Android 12) Chrome/120.0 Safari/537.36 TV Bro" } };
+    const inApp = await (await call(e, `${KEY}/tv?room=pro-plus`, APP)).text();
+    assert.ok(inApp.includes(`<a class="room mic" data-f="mic" href="/buttons/${KEY}/tv/talk?room=pro-plus" aria-label="Talk">`), "the app: the microphone opens Talk");
+    const inBro = await (await call(e, `${KEY}/tv?room=pro-plus`, BRO)).text();
+    assert.ok(inBro.includes('<button type="button" class="room mic" data-f="mic" data-open="voice" aria-label="Voice: how to say it">'), "a browser: the voice help");
+    assert.ok(!inBro.includes("/tv/talk"), "and no way to Talk");
+    const talkApp = await call(e, `${KEY}/tv/talk?room=pro-plus`, APP);
+    assert.equal(talkApp.status, 200);
+    assert.ok((await talkApp.text()).includes('data-preopen="1"'));
+    const talkBro = await call(e, `${KEY}/tv/talk?room=pro-plus`, { ...BRO, redirect: "manual" });
+    assert.equal(talkBro.status, 303, "a browser is sent back");
+    assert.equal(talkBro.headers.get("location"), `/buttons/${KEY}/tv?room=pro-plus`);
+    const aboutApp = await (await call(e, `${KEY}/tv/about?room=pro-plus`, APP)).text();
+    const aboutBro = await (await call(e, `${KEY}/tv/about?room=pro-plus`, BRO)).text();
+    assert.ok(aboutApp.includes("held on Talk") && aboutApp.includes('<span class="k">Guide held</span>'));
+    assert.ok(!aboutBro.includes("held on Talk") && !aboutBro.includes('<span class="k">Guide held</span>'), "a browser is told of no Talk keys");
+  } finally { f.restore(); }
+});
+
+test("Talk on the TV carries every element Talk's script reads, the TV's room, and the script with Guide's hold", async () => {
+  const { renderTvTalk } = await import("../tvpages.js");
+  const html = renderTvTalk({ base: "/b/k", room: PRO, devices: ["Pro Plus", "Ultra"], used: 3, usedSec: 180, cap: 60 });
+  for (const id of ["hold", "hangup", "tstate", "meter", "minutes", "talkdev", "tspk", "voice", "you", "desk"]) {
+    assert.ok(html.includes(`id="${id}"`), `#${id}`);
+  }
+  assert.match(html, /<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="\/b\/k" data-idle="30000" data-beat="30000" data-rate="5">/, "the TV opens the line with the screen and shows the voice level");
+  assert.match(html, /<p class="vsum tvsound" hidden>The music goes quiet while Talk is open, and comes back when you hang up\.<\/p>/);
+  assert.match(html, /<option selected>Pro Plus<\/option><option>Ultra<\/option>/, "the TV page's room");
+  assert.ok(html.includes('href="/b/k/tv?room=pro-plus">'), "Home goes back to the TV page's room");
+  assert.ok(html.includes("3 of 60 minutes today · about $0.15"));
+  assert.ok(html.includes("Quick commands without Talk: press Guide on any other screen"));
+  assert.ok(html.includes("window.fmwaxGuide = function (down)"));
+  const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  assert.equal(scripts.length, 2);
+  for (const sc of scripts) assert.doesNotThrow(() => new vm.Script(sc));
+});
+
+// A SONG THAT STOPPED IS STILL SHOWN (the owner, 2026-11-19: "I miss the now
+// playing icon ... I can't scroll down to the song bar"): the note stays and
+// the bar's cover can be reached; with no song at all, both rest as before.
+test("a stopped or paused song keeps the note and a cover the remote can reach; nothing at all does not", () => {
+  const stopped = { state: "quiet", lan: { hands: true, at: 1, speakers: { "Pro Plus": { state: "stop", source: "Spotify", track: "Good Old Music", artists: "Funkadelic" } } } };
+  const b = tvBand(stopped, PRO, 3_000);
+  assert.equal(b.tone, "off");
+  assert.equal(b.still, true);
+  assert.equal(b.line3, "Stopped · Pro Plus · Spotify");
+  const html = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: stopped, readings: {} });
+  assert.ok(!/class="room now"[^>]*hidden/.test(html), "the note stays");
+  assert.ok(!/class="sleeve"[^>]*disabled/.test(html), "the bar's cover can be reached");
+  const none = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: { state: "quiet" }, readings: {} });
+  assert.ok(/class="room now"[^>]*hidden/.test(none) && /class="sleeve"[^>]*disabled/.test(none), "nothing to show: as before");
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.ok(script.includes("function look(b) { return !!b && (b.tone !== \"off\" || !!b.still); }"));
+  assert.doesNotThrow(() => new vm.Script(script));
+});
+
+// BACK IN THE FMWAX TV APP (the owner, 2026-11-19): the app asks the page
+// first; an open view closes, and only the buttons let Back leave the page.
+test("the TV page answers the app's Back: an open view closes, the buttons say no", () => {
+  const html = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: { state: "quiet" }, readings: {} });
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.ok(script.includes('window.fmwaxBack = function () {\n    if (view === "ctl") return false;'));
+  assert.ok(script.includes('open(view === "dis" ? "ctl" : "back");\n    return true;'));
+});
+
+// ABOUT FMWAX (the owner, 2026-11-19): its own screen from the logo.
+test("About fmwax: the version, what is connected, the remote's keys, more help; the app's facts filled by its script", async () => {
+  const { renderTvAbout } = await import("../tvpages.js");
+  const html = renderTvAbout({ base: "/b/k", room: PRO, talk: true,
+    version: "This house runs the version of 19 November 2026 (code 2d94c93). GitHub has the version of 18 November 2026 (code 11111b1), 40 changes behind.",
+    rows: [{ label: "Home helper", state: "On", tone: "on", more: "hears and presses the WiiMs" }, { label: "Talk", state: "3 of 60 min", more: "used today" }] });
+  assert.ok(html.includes("<p>This house runs the version of 19 November 2026 (code 2d94c93).</p><p>GitHub has the version of 18 November 2026 (code 11111b1), 40 changes behind.</p>"));
+  assert.ok(html.includes('<dt>Home helper</dt><dd><span class="on">On</span> · hears and presses the WiiMs</dd>'));
+  assert.ok(html.includes('<dt>Talk</dt><dd><b>3 of 60 min</b> · used today</dd>'));
+  assert.ok(html.includes('<span class="k">Guide held</span>'), "the remote's keys");
+  assert.ok(html.includes('href="/b/k/tv?room=pro-plus" data-home>'), "Home, in hand");
+  assert.ok(html.includes("Voice on the TV") && html.includes("House rules"));
+  const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+  assert.ok(script.includes("fmwaxTV\\/([0-9]"), "the app's version from its user agent");
+  assert.doesNotThrow(() => new vm.Script(script));
 });
