@@ -1732,6 +1732,12 @@ html.sheetlock,html.sheetlock body{overflow:hidden}
 .nbpanel .nbtb{appearance:none;-webkit-appearance:none;width:48px;height:48px;border-radius:50%;border:0;background:transparent;
   display:flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer;touch-action:manipulation;padding:0}
 .nbpanel .nbtb:disabled{opacity:.3;cursor:default}
+.nbpanel .nbvol{display:flex;justify-content:center;align-items:center;gap:14px;padding:0 18px 12px}
+.nbpanel .nbvol[hidden]{display:none}
+.nbpanel .nbvb{appearance:none;-webkit-appearance:none;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--rule);background:transparent;
+  display:flex;align-items:center;justify-content:center;color:var(--ink);cursor:pointer;touch-action:manipulation;padding:0}
+.nbpanel .nbvb:disabled{opacity:.35;cursor:default}
+.nbpanel .nbvl{margin:0;min-width:9.5em;text-align:center;font-family:"Archivo",sans-serif;font-size:var(--fs-14);font-weight:600;color:var(--ink-2)}
 .nbpanel .nbmain{width:60px;height:60px;background:var(--q-deep);color:var(--q-on-deep)}
 .nbpanel .nbmain .nbplay{display:none}
 .nbpanel .nbmain.again .nbplay{display:block}.nbpanel .nbmain.again .nbpause{display:none}
@@ -3784,6 +3790,8 @@ const NB_NEXT = `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="tr
 // green disc with black waves, Tidal's four black diamonds.
 const NB_SPOTIFY = `<svg width="30" height="30" viewBox="0 0 24 24" role="img" aria-label="Spotify"><circle cx="12" cy="12" r="11" fill="#1ED760"></circle><path d="M6.5 9.3c3.8-1.1 7.9-.8 11.2 1M7.2 12.4c3.1-.9 6.4-.6 9.2.9M7.8 15.3c2.5-.7 5-.5 7.2.7" fill="none" stroke="#000" stroke-width="1.7" stroke-linecap="round"></path></svg>`;
 const NB_TIDAL = `<svg width="30" height="30" viewBox="0 0 24 24" role="img" aria-label="Tidal"><path d="M6 5l3.4 3.4L6 11.8 2.6 8.4zM12 5l3.4 3.4-3.4 3.4-3.4-3.4zM18 5l3.4 3.4-3.4 3.4-3.4-3.4zM12 11.8l3.4 3.4-3.4 3.4-3.4-3.4z" fill="#000"></path></svg>`;
+const NB_MINUS = `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"></path></svg>`;
+const NB_PLUS = `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"></path></svg>`;
 const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="nbscrim" data-close></div>` +
   `<div class="nbpanel" role="dialog" aria-modal="true" aria-labelledby="nbs1" tabindex="-1"><div class="nbgrip" aria-hidden="true"></div>` +
   `<div class="nbhead"><span class="nbcv" aria-hidden="true">${NB_NOTE}</span><div class="nbhw"><p class="nbs1" id="nbs1"></p><p class="nbal" hidden></p><p class="nbs2"></p><p class="nbq" hidden></p></div></div>` +
@@ -3791,6 +3799,10 @@ const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="
   `<div class="nbtrans"><button type="button" class="nbtb nbprev" data-skip="prev" aria-label="Previous song" disabled>${NB_PREV}</button>` +
   `<button type="button" class="nbtb nbmain" aria-label="Pause" disabled>${NB_PAUSE}${NB_PLAY}</button>` +
   `<button type="button" class="nbtb nbnext" data-skip="next" aria-label="Next song" disabled>${NB_NEXT}</button></div>` +
+  // VOLUME (2026-11-19, the owner's − and +): the speaker's own, or the
+  // receiver's behind it, a step a tap.
+  `<div class="nbvol" hidden><button type="button" class="nbvb" data-vol="down" aria-label="Quieter">${NB_MINUS}</button>` +
+  `<p class="nbvl" aria-live="polite"></p><button type="button" class="nbvb" data-vol="up" aria-label="Louder">${NB_PLUS}</button></div>` +
   `<div class="nbrow" hidden><button type="button" class="nbspk" aria-expanded="false" aria-controls="nbpick">${icon("speaker", 18)}<span class="nbspkn"></span><span class="nbspkc">${icon("chevronDown", 16)}</span></button>` +
   // ABOUT THIS SONG (MC-43, design C): one chip; its view opens in the panel.
   `<span class="nbouts"><button type="button" class="nbabout" data-about hidden>${NB_ABOUT}About this song</button>` +
@@ -4485,6 +4497,7 @@ ${SHEET_JS}(function () {
     sheet.querySelector(".nbrow").hidden = !names.length && !lst && !showT;
     spk.hidden = !names.length; spk.disabled = names.length < 2;
     sheet.querySelector(".nbspkn").textContent = cur || "Choose a speaker";
+    volFill(cur);
     var openNow = pickOpen && names.length > 1;
     sheet.querySelector(".nbpick").hidden = !openNow;
     spk.setAttribute("aria-expanded", openNow ? "true" : "false");
@@ -4524,6 +4537,56 @@ ${SHEET_JS}(function () {
       });
       box.appendChild(m);
     }
+  }
+  /* VOLUME (2026-11-19): − and + for the speaker the panel speaks for. A
+     WiiM's own level or the receiver's behind it while the home helper is
+     on; an Echo's by Spotify while it plays there. A WiiM locked at full
+     volume with no receiver named says where its volume is. */
+  var volFor = "";
+  function volOf(name) {
+    var sp = last && last.lan && last.lan.speakers ? last.lan.speakers[name] : null, v = sp && sp.vol ? sp.vol : null;
+    var hands = !!(last && last.lan && last.lan.hands);
+    if (v && v.by === "wiim" && hands) return { words: "Volume " + v.level, can: true, low: v.level <= 0, high: v.level >= (v.max || 100) };
+    if (v && v.by === "denon" && hands) return v.on && typeof v.db === "number" ? { words: "Denon " + (v.db + 80).toFixed(v.db % 1 ? 1 : 0), can: true, low: v.db <= -80 }
+      : { words: "The Denon is off", can: false };
+    if (v && v.by === "fixed") return { words: "Volume is on your amplifier", can: false };
+    if (last && last.state === "playing" && last.device === name && typeof last.devVol === "number") return { words: "Volume " + last.devVol, can: true, low: last.devVol <= 0, high: last.devVol >= 100 };
+    return null;
+  }
+  function volFill(name) {
+    var row = sheet.querySelector(".nbvol"), v = volOf(name);
+    volFor = name;
+    row.hidden = !v || !name;
+    if (!v) return;
+    sheet.querySelector(".nbvl").textContent = v.words;
+    Array.prototype.forEach.call(row.querySelectorAll("[data-vol]"), function (b) {
+      b.hidden = !v.can;
+      if (!b.getAttribute("data-busy")) b.disabled = !v.can || (b.getAttribute("data-vol") === "down" ? !!v.low : !!v.high);
+    });
+  }
+  var SAY_VOL = { fixed: "That speaker's volume is set on your amplifier",
+    off: "The receiver is off or not answering, so its volume wasn't changed",
+    "helper-off": "The home helper is off, so the volume can't be changed from here",
+    timeout: "The speaker didn't answer in time — it may still have changed",
+    unreachable: "The speaker didn't answer — try again", gone: "Spotify isn't playing there any more",
+    throttled: "Spotify's quota — the volume wasn't changed", failed: "That didn't reach the speaker — try again" };
+  function vol(e) {
+    var b = e.currentTarget, name = volFor; if (!name || b.disabled) return;
+    var both = sheet.querySelectorAll("[data-vol]");
+    Array.prototype.forEach.call(both, function (x) { x.disabled = true; x.setAttribute("data-busy", "1"); });
+    var body = new URLSearchParams(); body.set("do", "vol"); body.set("dir", b.getAttribute("data-vol")); body.set("device", name);
+    function done() { Array.prototype.forEach.call(both, function (x) { x.removeAttribute("data-busy"); }); volFill(name); }
+    fetch(bar.getAttribute("data-base") + "/wiim/transport", { method: "POST", body: body, cache: "no-store",
+      headers: { accept: "application/json" } })
+      .then(function (r) { return r.json().catch(function () { return { code: "failed" }; }); })
+      .then(function (a) {
+        if (a && a.ok && a.vol) {
+          var v = a.vol, sp = last && last.lan && last.lan.speakers ? last.lan.speakers[name] : null;
+          if (sp && v.by !== "spotify") sp.vol = v; else if (last && v.by === "spotify") last.devVol = v.level;
+        } else if (!(a && a.ok)) say2(SAY_VOL[a && a.code] || SAY_VOL.failed);
+        done();
+      })
+      .catch(function () { say2("The volume didn't reach the house — try again"); done(); });
   }
   /* SKIP (design A): Spotify's next and previous, for the speaker the
      panel names; the route reads the player fresh and skips nothing
@@ -4703,6 +4766,7 @@ ${SHEET_JS}(function () {
     if (wiredPanel || !sheet) return; wiredPanel = true;
     var cv = sheet.querySelector(".nbcv"); cv.setAttribute("data-note", cv.innerHTML);
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-skip]"), function (b) { b.addEventListener("click", skip); });
+    Array.prototype.forEach.call(sheet.querySelectorAll("[data-vol]"), function (b) { b.addEventListener("click", vol); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-steer]"), function (b) { b.addEventListener("click", steer); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-tune]"), function (b) { b.addEventListener("click", tuneOpen); });
     sheet.querySelector("[data-about]").addEventListener("click", aboutOpen);
@@ -9079,6 +9143,20 @@ export function talkScript() {
   // meanwhile). Nothing happens in a browser: there is no fmwaxTV there.
   function soundTo(on) { try { if (window.fmwaxTV && window.fmwaxTV.talk) window.fmwaxTV.talk(!!on); } catch (e) {} }
   try { if (window.fmwaxTV && window.fmwaxTV.sound && window.fmwaxTV.sound()) { var tvs = document.querySelector(".tvsound"); if (tvs) tvs.hidden = false; } } catch (e) {}
+  // MUSIC STARTED IN THIS ROOM HANGS UP AFTER THE ANSWER (the owner,
+  // 2026-11-19: "the Ubiquity label on Hank, right away" from the TV played
+  // within a minute, and was heard only when the line closed 30 seconds
+  // after the desk's last word: the receiver was on the TV for Talk). In the
+  // TV app with a receiver, once Talk has started or turned the music on the
+  // TV's own room, the line hangs up as soon as the desk has finished
+  // answering, and the receiver goes back to the music. Another room's music
+  // changes nothing; a browser and the phone have no receiver to give back.
+  var tvRoom = main.getAttribute("data-room") || "", musicHere = false, musicTimer = null;
+  function heardHere(name) {
+    var tv = false;
+    try { tv = !!(window.fmwaxTV && window.fmwaxTV.sound && window.fmwaxTV.sound()); } catch (e) {}
+    if (tv && tvRoom && String(name || "").toLowerCase() === tvRoom.toLowerCase()) musicHere = true;
+  }
   var state = document.getElementById("tstate");
   var you = document.getElementById("you");
   var desk = document.getElementById("desk");
@@ -9187,6 +9265,16 @@ export function talkScript() {
   }
   function idle() {
     clearTimeout(idleTimer); idleTimer = null; inflight.deadline = 0;
+    if (live && musicHere && inflight.finished && !pressed && !busy() && !Object.keys(pendingOutputs).length) {
+      /* A beat for the desk's last words to finish playing; armed once, as
+         the watchdogs look again every second. */
+      if (!musicTimer) musicTimer = setTimeout(function () {
+        musicTimer = null;
+        if (live && musicHere && inflight.finished && !pressed && !busy() && !Object.keys(pendingOutputs).length) close("hangup");
+      }, 2500);
+      return;
+    }
+    clearTimeout(musicTimer); musicTimer = null;
     if (live && finishing && ((!busy() && !Object.keys(pendingOutputs).length) || Date.now() > finishing)) { close("hangup"); return; }
     if (live && leaving && !pressed && !busy()) { close("away"); return; }
     if (!live || pressed || !inflight.finished || busy()) return;
@@ -9385,6 +9473,7 @@ export function talkScript() {
         body: JSON.stringify({ name: item.name, arguments: item.arguments }) });
       var out = null; try { out = await res.json(); } catch (e) {}
       if (res.status === 401) { ended((out && out.error) || "This session is over."); return; }
+      if (out && out.started) heardHere(out.started);
       /* A start by voice stamps its speaker (2026-10-10): the line follows. */
       document.dispatchEvent(new CustomEvent("house:pick"));
       output = out && out.output != null ? out.output
@@ -9490,7 +9579,7 @@ export function talkScript() {
   // asked to close; the page does not wait on either to say it is over.
   function close(why) {
     if (!pc || closing) return;
-    closing = true; finishing = 0;
+    closing = true; finishing = 0; musicHere = false; clearTimeout(musicTimer);
     var words = why === "quiet" ? "Hung up after " + Math.round(IDLE_MS / 1000) + " quiet seconds."
       : why === "away" ? "Hung up when you left the page." : (askLine ? askLine + " Hung up." : "Hung up.");
     say("Closing…");

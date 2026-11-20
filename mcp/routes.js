@@ -61,7 +61,7 @@ import {
   catalogAvailable, driftOf, fallbackDevice, keepReading, parseM3uEntries, parseRoomDevices, parseSpeakers,
   readReadings, readTiles, readingWords, readingsShown, roomRoster, speakerSlug, tileFor, wiimNames,
   writeTiles,
-  foldName, homeAddress,
+  foldName, homeAddress, parseReceivers,
 } from "./room.js";
 import {
   PLAYER_DEADLINE_MS, PLAYER_PENDING, WALL_PLAYER_WAIT_MS, catalogFor,
@@ -281,7 +281,9 @@ export async function handleRequest(request, env, ctx) {
       const learns = setupOpen(env);
       if (request.method === "GET") {
         return Response.json({ ok: true, names: wiimNames(env), learns,
-          speakers: Object.fromEntries(parseSpeakers(env).map((b) => [b.name, b.ip])) }, { headers: { "cache-control": "no-store" } });
+          speakers: Object.fromEntries(parseSpeakers(env).map((b) => [b.name, b.ip])),
+          // And the receiver behind a WiiM, for its volume (2026-11-19).
+          receivers: parseReceivers(env) }, { headers: { "cache-control": "no-store" } });
       }
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       if (!learns) return Response.json({ ok: false, code: "from-file" }, { status: 409 });
@@ -1837,7 +1839,7 @@ export async function handleRequest(request, env, ctx) {
         // have taken the room away from Tidal and called that un-pausing.
         // "again" is a fresh start of the set the bar's pause wrote down —
         // what tapping that key does — and only from the bar's script.
-        if (verb !== "pause" && !((verb === "again" || verb === "move" || verb === "next" || verb === "prev" || verb === "hpause" || verb === "hplay" || verb === "hnext" || verb === "hprev" || verb === "hmove" || verb === "hkey") && json)) return refuse(400, "verb", "The form must say pause.");
+        if (verb !== "pause" && !((verb === "again" || verb === "move" || verb === "next" || verb === "prev" || verb === "hpause" || verb === "hplay" || verb === "hnext" || verb === "hprev" || verb === "hmove" || verb === "hkey" || verb === "vol") && json)) return refuse(400, "verb", "The form must say pause.");
         const boxes = parseSpeakers(env);
         const wanted = String(form?.get("device") ?? "").trim();
         // A WiiM, or since 2026-09-23 any other speaker the play form may
@@ -1890,6 +1892,39 @@ export async function handleRequest(request, env, ctx) {
           }
           return new Response(JSON.stringify({ ok: hcode === "ok", code: hcode }), { status: 200, headers: {
             "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+        }
+        // VOLUME, A STEP AT A TIME (the owner, 2026-11-19: − and + on the
+        // now bar's panel). A WiiM's volume, or the receiver's behind it, by
+        // the home helper; another speaker's (an Echo) by Spotify, only while
+        // Spotify plays there. Never a level asked for: a step from where it
+        // is, so no tap can make a room loud at once.
+        if (verb === "vol") {
+          const dir = String(form?.get("dir") ?? "");
+          const answer = (code, vol = null) => new Response(JSON.stringify({ ok: code === "ok", code, ...(vol ? { vol } : {}) }), { status: 200, headers: {
+            "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+          if (dir !== "up" && dir !== "down") return answer("failed");
+          if (boxes.some((sp) => sp.name === box.name)) {
+            let code = "failed", vol = null;
+            try {
+              const out = await station(env, "helper-command", { cmd: "vol", dir, speaker: box.name });
+              code = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable", "fixed", "off"].includes(out?.code) ? out.code
+                : out?.code === "no-answer" ? "timeout" : "failed";
+              const one = out?.reading ? parseHelperReading(env, { speakers: [out.reading] }) : null;
+              if (one) { await station(env, "helper-merge", { speakers: one }); vol = one[box.name]?.vol ?? null; }
+            } catch { code = "failed"; }
+            return answer(code, vol);
+          }
+          if (await throttledUntil(env)) return answer("throttled");
+          const envV = withBudget(env, { remaining: 4 });
+          let st = null;
+          try { st = await playerState(envV); } catch { return answer("failed"); }
+          if (!st?.device || st.is_playing !== true || foldName(st.device.name) !== foldName(box.name)) return answer("gone");
+          if (st.device.supports_volume === false || !Number.isInteger(st.device.volume_percent)) return answer("fixed");
+          const to = Math.min(100, Math.max(0, st.device.volume_percent + (dir === "up" ? 5 : -5)));
+          try {
+            await spotify(envV, "PUT", "/me/player/volume", { params: { volume_percent: to, device_id: st.device.id } });
+          } catch (err) { return answer(err?.status === 429 ? "throttled" : "failed"); }
+          return answer("ok", { by: "spotify", level: to });
         }
         // THE RADIO MOVES (the owner, 2026-10-03). Only Spotify moves between
         // speakers, but a station saved under the same name on the other WiiM
@@ -2579,7 +2614,7 @@ export async function handleRequest(request, env, ctx) {
           const r = await TALK_OWN[parsed.name]({ ...envB, __via: "talk" });
           if (r) {
             console.log(`talk:tool cap=${cap.slice(0, 8)} ${parsed.name} did ${JSON.stringify(r.out.did ?? { keys: r.out.keys?.length ?? 0 }).slice(0, 160)}`);
-            return say(200, { output: JSON.stringify(r.out) }, r.stamp ? { "set-cookie": pickCookie(r.stamp) } : {});
+            return say(200, { output: JSON.stringify(r.out), ...(r.stamp ? { started: r.stamp } : {}) }, r.stamp ? { "set-cookie": pickCookie(r.stamp) } : {});
           }
         } catch (err) {
           console.log(`talk:tool cap=${cap.slice(0, 8)} ${parsed.name} error: ${String(err?.message ?? err).slice(0, 200)}`);
@@ -2604,7 +2639,12 @@ export async function handleRequest(request, env, ctx) {
         // opened on the Ultra, chosen earlier, while Talk had started him on
         // the Master Bedroom). A speaker Talk starts music on is stamped as a
         // tap or a Play is, so every page follows it for the half hour.
-        return say(200, { output: JSON.stringify(out) }, canon && talkStarted(call.name, call.args, out)
+        // And the page is told where music started or was turned at once
+        // (`started`): the TV's Talk hangs up after its answer when that is
+        // the TV's own room (talkScript).
+        const stamped = canon && talkStarted(call.name, call.args, out);
+        const startedOn = stamped ? canon : call.name === "steer_endless" && out?.started_on ? String(out.started_on).slice(0, 60) : null;
+        return say(200, { output: JSON.stringify(out), ...(startedOn ? { started: startedOn } : {}) }, stamped
           ? { "set-cookie": pickCookie(canon) } : {});
       } catch (err) {
         // The tool's own refusal is an answer the desk can say aloud.

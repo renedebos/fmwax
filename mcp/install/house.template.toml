@@ -173,6 +173,13 @@ ROOM_DEVICES = {{devices.roomsJson}}
 WIIM_SPEAKERS = {{devices.speakersJson}}
 
 #{{end}}
+#{{if receivers}}
+# A Denon or Marantz receiver behind a WiiM, by the WiiM's name: the volume
+# buttons set the receiver's volume for that speaker, through the home helper
+# (2026-11-19). An address at home only.
+WIIM_RECEIVERS = {{devices.receiversJson}}
+
+#{{end}}
 # Where a published program is readable. Set explicitly rather than derived from
 # the incoming request: the tool layer never sees one, and an explicit value
 # does not drift if the Worker is later reached on a custom domain. Publishing

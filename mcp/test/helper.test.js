@@ -925,7 +925,8 @@ test("the house's door: the owner's WiiMs from its file and never rewritten; a p
   const owner = env();
   assert.equal((await door(owner, {}, "wrong-secret")).status, 404);
   const said = await (await door(owner)).json();
-  assert.deepEqual(said, { ok: true, learns: false, names: ["Pro Plus", "Ultra"], speakers: { "Pro Plus": "192.168.4.45", Ultra: "192.168.4.69" } });
+  assert.deepEqual(said, { ok: true, learns: false, names: ["Pro Plus", "Ultra"], speakers: { "Pro Plus": "192.168.4.45", Ultra: "192.168.4.69" },
+    receivers: {} }, "and no receiver named (volume, 2026-11-19)");
   assert.equal((await door(owner, { method: "POST", body: JSON.stringify({ speakers: { "Pro Plus": "10.0.0.9" } }) })).status, 409);
   // A house set up on its page: the WiiMs chosen at setup, by name only.
   const e = makeEnv();
@@ -938,7 +939,7 @@ test("the house's door: the owner's WiiMs from its file and never rewritten; a p
   e.WIIM_NAMES = JSON.stringify(["Pro Plus"]);
   await worker.fetch(new Request("https://x.test/setup/claim", { method: "POST", headers: { origin: "https://x.test" },
     body: new URLSearchParams({ key: e.SETUP_KEY }) }), e);
-  assert.deepEqual(await (await door(e)).json(), { ok: true, learns: true, names: ["Pro Plus"], speakers: {} });
+  assert.deepEqual(await (await door(e)).json(), { ok: true, learns: true, names: ["Pro Plus"], speakers: {}, receivers: {} });
   const kept = await door(e, { method: "POST", body: JSON.stringify({ speakers: { "pro plus": "192.168.4.45", "Kitchen Echo": "192.168.4.9", Den: "nope" } }) });
   assert.deepEqual(await kept.json(), { ok: true, speakers: { "Pro Plus": "192.168.4.45" } }, "only a WiiM chosen at setup, by its name there");
   assert.deepEqual((await (await door(e)).json()).speakers, { "Pro Plus": "192.168.4.45" });

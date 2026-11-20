@@ -41,6 +41,10 @@ export function roomPlaying(st) {
     // panel's progress line. No extra call.
     sleeve: sleeveOf(st.item, 600),
     album: st.item.album?.name || null,
+    // The device's own volume, as Spotify keeps it (2026-11-19): an Echo's
+    // volume buttons. A device that says it takes none (an iPhone) has none.
+    ...(st.device && st.device.supports_volume !== false && Number.isInteger(st.device.volume_percent)
+      ? { devVol: st.device.volume_percent } : {}),
     // The recording's code (MC-46's song facts), already in the read.
     ...(/^[A-Z]{2}[A-Z0-9]{3}\d{7}$/.test(String(st.item.external_ids?.isrc ?? "").toUpperCase()) ? { isrc: String(st.item.external_ids.isrc).toUpperCase() } : {}),
     ...(posOf(st) ? { pos: posOf(st) } : {}),
@@ -105,9 +109,28 @@ export function parseHelperReading(env, body) {
       ...(clip(r.album, 200) ? { album: clip(r.album, 200) } : {}),
       ...(/^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(r.art ?? "")) ? { art: String(r.art) } : {}),
       ...(posIn(r.pos) ? { pos: posIn(r.pos) } : {}),
-      ...(/^\d{1,15}$/.test(String(r.trackId ?? "")) ? { trackId: String(r.trackId) } : {}) };
+      ...(/^\d{1,15}$/.test(String(r.trackId ?? "")) ? { trackId: String(r.trackId) } : {}),
+      // Its volume (2026-11-19): the WiiM's own, locked, or the receiver's.
+      ...(volIn(r.vol) ? { vol: volIn(r.vol) } : {}) };
   }
   return Object.keys(out).length ? out : null;
+}
+// A speaker's volume as the helper read it: the WiiM's own level (0-100, and
+// the most it may go to), "fixed" for a WiiM locked at full volume, or a
+// receiver's master volume in decibels and whether it is on.
+export function volIn(v) {
+  if (!v || typeof v !== "object") return null;
+  const int = (x, lo, hi) => (Number.isInteger(x) && x >= lo && x <= hi ? x : null);
+  if (v.by === "fixed") return { by: "fixed" };
+  if (v.by === "wiim") {
+    const level = int(v.level, 0, 100), max = int(v.max, 1, 100) ?? 100;
+    return level == null ? null : { by: "wiim", level, max };
+  }
+  if (v.by === "denon") {
+    const db = Number(v.db);
+    return { by: "denon", on: v.on === true, ...(v.on === true && Number.isFinite(db) && db >= -80 && db <= 18 && Math.round(db * 2) === db * 2 ? { db } : {}) };
+  }
+  return null;
 }
 // A place in a song, in milliseconds, as the speaker read it.
 function posIn(p) {
@@ -510,6 +533,7 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
     // As read, not moved on: two polls on one kept read give one answer
     // (MC-29). The page counts on from `at`.
     ...(p.pos ? { pos: p.pos } : {}), ...(who ? { who } : {}),
+    ...(Number.isInteger(p.devVol) ? { devVol: p.devVol } : {}),
     ...(listLink(p.pid) ? { list: listLink(p.pid) } : {}),
     live: p.device && rooms.includes(p.device) ? p.device : null,
     // What the now bar's pause may name, by the transport route's rules.

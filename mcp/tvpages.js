@@ -742,7 +742,7 @@ export function renderTvTalk({ base, room = null, devices = [], used = 0, usedSe
   const head = HEAD("Talk, on the TV", TALK_TV_CSS)
     .replace("family=Archivo:wght@400;600;700;800", "family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400");
   return `${head}
-<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="${esc(base)}" data-idle="${Number(idleMs) || 30000}" data-beat="${Number(beatMs) || 30000}" data-rate="${Number(rateCents) || 5}">
+<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="${esc(base)}" data-room="${esc(here)}" data-idle="${Number(idleMs) || 30000}" data-beat="${Number(beatMs) || 30000}" data-rate="${Number(rateCents) || 5}">
   <header class="dhead"><a class="pill" data-f="back" href="${esc(base)}/tv${esc(q)}">${TV_I_BACK}Home</a><h1>Talk</h1><span class="gap"></span>` +
     `<p class="tnote"><span id="tspk">${spkWords(here)}</span> unless you say otherwise</p>` +
     `<select id="talkdev" name="device" hidden aria-label="Speaker to play on">${chooser}</select>` +

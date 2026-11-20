@@ -269,3 +269,39 @@ test("on the TV the line opens with the screen, muted, and the phase goes openin
   await phone.settle();
   assert.ok(!phone.calls.some((c) => c.path === "/talk/session"), "the phone opens on the first press, as before");
 });
+
+// MUSIC STARTED IN THIS ROOM HANGS UP AFTER THE ANSWER (the owner,
+// 2026-11-19): on the TV the receiver was on Talk's sound until 30 seconds
+// after the desk's last word, so music asked for "right away" was heard late.
+async function musicCall(startedOn, { tv = true, room = "Pro Plus" } = {}) {
+  const p = page({ window: { addEventListener() {}, ...(tv ? { fmwaxTV: { sound: () => true, talk() {} } } : {}) },
+    data: room ? { "data-room": room } : {} });
+  await p.start();
+  await p.backend("response.created");
+  await p.callFor("play_endless");
+  await p.backend("response.completed");
+  p.tools[0].answer({ output: JSON.stringify({ status: "own-preset" }), ...(startedOn ? { started: startedOn } : {}) });
+  await p.settle();
+  // The backend says it: the continuation's own response.
+  await p.backend("response.created");
+  await p.backend("response.completed");
+  await p.event({ type: "session.output_transcript.delta", delta: "Hank's on." });
+  await p.event({ type: "session.output_transcript.done" });
+  return p;
+}
+test("on the TV, music started in the TV's own room: the line hangs up a moment after the desk's answer", async () => {
+  const p = await musicCall("Pro Plus");
+  await p.advance(1000);
+  assert.equal(p.closed(), false, "the desk's last words play out first");
+  await p.advance(2000);
+  assert.equal(p.closed(), true, "then it hangs up, and the receiver goes back to the music");
+});
+test("music started in another room, on the phone, or nothing started: the line stays for its usual quiet time", async () => {
+  for (const [why, p] of [["another room", await musicCall("Ultra")], ["the phone", await musicCall("Pro Plus", { tv: false })],
+    ["no room on the page", await musicCall("Pro Plus", { room: null })], ["nothing started", await musicCall(null)]]) {
+    await p.advance(5000);
+    assert.equal(p.closed(), false, why);
+    await p.advance(30000);
+    assert.equal(p.closed(), true, `${why}: after the quiet time, as before`);
+  }
+});

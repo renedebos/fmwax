@@ -47,3 +47,39 @@ test("a steer drops a top-up no curator has taken, and gives its run back", asyn
     if (after.day === before.day) assert.equal(after.runs, runs, "one run for the two: the top-up's was given back, the steer's taken");
   } finally { globalThis.fetch = inner; f.restore(); }
 });
+
+// STEERED AGAIN SINCE (the owner, 2026-11-19): play now filed a steer for
+// the curator, Talk then steered with its own songs, and the curator's set
+// landed a minute later over them.
+test("a curator's steer older than the DJ's latest steer is closed without a write; a top-up too", async () => {
+  const e = makeEnv();
+  e.HOUSE_TZ = "America/Los_Angeles";
+  e.ENDLESS = JSON.stringify({ mode: "live", dailyRuns: 12, presets: [{ button: 4, dj: "vibe", playlist: PL, hours: 4, topupMinutes: 20, batchMinutes: 45 }] });
+  e.AUTOFULFILL_ENABLED = "true"; e.REQUEST_ROUTINE_ID = "trig"; e.REQUEST_ROUTINE_TOKEN = "tok";
+  const f = installFetch({ contents: Array.from({ length: 10 }, (_, i) => ({ ...track(`t${i}`), duration_ms: 5 * MIN })) });
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (u, init = {}) => {
+    const url = new URL(String(u));
+    if (url.hostname === "api.anthropic.com") return Response.json({ type: "routine_fire" });
+    if (url.pathname === "/v1/me/player/recently-played") return Response.json({ items: [] });
+    if (url.pathname === "/v1/me/player" && (init.method ?? "GET") === "GET") {
+      return Response.json({ is_playing: true, device: { name: "Pro Plus", id: "d1" }, context: { uri: `spotify:playlist:${PL}` },
+        progress_ms: 10_000, item: { uri: "spotify:track:t2", name: "x", artists: [{ name: "Someone" }] } });
+    }
+    return inner(u, init);
+  };
+  try {
+    await endlessWatch(e, Date.now() - 2 * MIN);
+    const asked = await endlessPageSteer(e, { button: 4, words: "the Ubiquity label", by: "by play now" });
+    assert.equal(asked.status, "asked");
+    const [job] = await endlessJobs(e);
+    // Talk turns the DJ again a moment later, with songs of its own.
+    const { endlessUpdate } = await import("../endless.js");
+    await endlessUpdate(e, (st) => { st.sessions["4"].steer = { words: "Ubiquity, Talk's own", at: Date.now() + 1000 }; return {}; });
+    const before = f.state.contents.map((x) => x.id).join(",");
+    const out = await __test.callTool(e, "extend_endless", { job_id: job.job_id, uris: ["spotify:track:" + "u".repeat(22), "spotify:track:" + "v".repeat(22), "spotify:track:" + "w".repeat(22)] }, { remaining: 40 });
+    assert.equal(out.status, "steered-since");
+    assert.equal(f.state.contents.map((x) => x.id).join(","), before, "nothing written");
+    assert.deepEqual(await endlessJobs(e), [], "the job is closed");
+  } finally { globalThis.fetch = inner; f.restore(); }
+});

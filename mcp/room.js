@@ -359,6 +359,20 @@ export function parseSpeakers(env) {
     .filter(([n, ip]) => typeof n === "string" && n.trim() && typeof ip === "string" && /^[0-9a-zA-Z.:-]{1,64}$/.test(ip))
     .map(([name, ip]) => ({ name: name.trim(), ip, slug: speakerSlug(name) }));
 }
+// THE RECEIVER BEHIND A WIIM (volume, 2026-11-19): by the WiiM's name, a
+// Denon or Marantz at an address at home. The helper sets its volume.
+export function parseReceivers(env) {
+  let raw = env.WIIM_RECEIVERS;
+  try { if (typeof raw === "string") raw = JSON.parse(raw); } catch { raw = null; }
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const names = parseSpeakers(env).map((b) => b.name);
+  const out = {};
+  for (const [n, r] of Object.entries(raw)) {
+    const name = names.find((x) => foldName(x) === foldName(n));
+    if (name && r && r.kind === "denon" && homeAddress(r.ip)) out[name] = { kind: "denon", ip: r.ip };
+  }
+  return out;
+}
 export function speakerSlug(name) {
   return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "speaker";
 }

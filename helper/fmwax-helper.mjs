@@ -42,6 +42,7 @@
 
 import https from "node:https";
 import http from "node:http";
+import net from "node:net";
 import { appendFileSync, existsSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { homedir, networkInterfaces } from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -234,7 +235,7 @@ async function eqOf(name, ip, st, fresh = false, get = wiim) {
 }
 
 // One speaker's getPlayerStatus, in the words the house takes.
-export function readingOf(name, st, presets = null, eq = null) {
+export function readingOf(name, st, presets = null, eq = null, vol = null) {
   if (!st) return { name, state: "unreachable" };
   const mode = Number(st.mode);
   const vendor = String(st.vendor ?? "");
@@ -272,7 +273,111 @@ export function readingOf(name, st, presets = null, eq = null) {
     ...(unhex(st.Artist) ? { artists: unhex(st.Artist) } : {}),
     ...(quality ? { quality } : {}), ...(eq ? { eq } : {}),
     ...(song && known(meta.album) ? { album: known(meta.album).slice(0, 200) } : {}),
-    ...(art ? { art } : {}), ...(pos ? { pos } : {}), ...(trackId ? { trackId } : {}) };
+    ...(art ? { art } : {}), ...(pos ? { pos } : {}), ...(trackId ? { trackId } : {}),
+    ...(vol ? { vol } : {}) };
+}
+
+// VOLUME (the owner, 2026-11-19: "let's do volume"; − and + steps, and the
+// Denon for the Pro Plus). Where a room's loudness is set:
+// - a WiiM with its volume free: the WiiM's own, 0-100, two a tap, never past
+//   the speaker's own maximum (measured on the Ultra: set and read back in
+//   about 0.4 s);
+// - a WiiM locked at full volume (its getStatusEx says volume_control "1":
+//   the Pro Plus at 100 with WiiM Home's padlock, the Ultra "0" at 20; read
+//   as the lock, an inference from those two) into an amplifier: nothing, unless
+//   the house names a receiver behind it;
+// - a Denon or Marantz receiver the house names for that WiiM: its master
+//   volume, one dB a tap, set by its own command on port 23 (MV and the level
+//   plus 80: "MV455" is -34.5 dB) and read from its status page on port 8080
+//   (both measured on the AVR-S760H). Set as a level, never as "up": the TV's
+//   remote moves the same volume, and an "up" sent while it does lands
+//   twice. The receiver's own maximum stays its own.
+export const VOLUME = { wiimStep: 2, receiverStepDb: 1, receiverLowestDb: -80 };
+let RECEIVERS = {}; // speaker name -> { kind: "denon", ip }, from the house
+export function setReceivers(r) { RECEIVERS = r && typeof r === "object" ? r : {}; }
+const LOCKS = {}; // speaker name -> { locked, max, at }
+const LOCK_EVERY_MS = 60_000;
+async function lockOf(name, ip, fresh = false, get = wiim) {
+  const was = LOCKS[name];
+  if (!fresh && was && Date.now() - was.at < LOCK_EVERY_MS) return was;
+  const ex = await get(ip, "getStatusEx", true, 2000);
+  if (!ex) return was ?? null;
+  const max = Number(ex.max_volume);
+  return (LOCKS[name] = { locked: String(ex.volume_control ?? "") === "1", max: Number.isInteger(max) && max > 0 && max <= 100 ? max : 100, at: Date.now() });
+}
+const RECEIVED = {}; // speaker name -> { db, on, at }
+const RECEIVER_EVERY_MS = 15_000;
+export function denonStatus(xml) {
+  const v = (k) => String(xml ?? "").match(new RegExp(`<${k}><value>([^<]*)</value>`))?.[1] ?? null;
+  const db = Number(v("MasterVolume"));
+  const on = /^on$/i.test(String(v("Power") ?? ""));
+  return { on, ...(Number.isFinite(db) && v("MasterVolume") !== "--" ? { db } : {}) };
+}
+async function receiverOf(name, fresh = false, get = fetch) {
+  const r = RECEIVERS[name];
+  if (!r) return null;
+  const was = RECEIVED[name];
+  if (!fresh && was && Date.now() - was.at < RECEIVER_EVERY_MS) return was;
+  let now = null;
+  try {
+    const res = await get(`http://${r.ip}:8080/goform/formMainZone_MainZoneXmlStatusLite.xml`, { signal: AbortSignal.timeout(2500) });
+    now = res.ok ? denonStatus(await res.text()) : null;
+  } catch { now = null; }
+  return (RECEIVED[name] = { ...(now ?? { on: false }), at: Date.now() });
+}
+// A level in the receiver's own words: the decibels plus 80, two digits, a
+// third "5" for a half ("MV455"). Whole and half decibels only.
+export function denonLevel(db) {
+  const abs = Math.round((db + 80) * 2) / 2;
+  if (!(abs >= 0 && abs <= 98)) return null;
+  return `MV${String(Math.floor(abs)).padStart(2, "0")}${abs % 1 ? "5" : ""}`;
+}
+// One line to the receiver: the command, a moment for it to land, closed.
+// Always settles, in under two seconds.
+export function denonSay(ip, cmd, connect = net.connect) {
+  return new Promise((resolve) => {
+    let done = false;
+    const end = (ok) => { if (done) return; done = true; clearTimeout(hard); try { s.destroy(); } catch { /* gone */ } resolve(ok); };
+    const hard = setTimeout(() => end(false), 2000);
+    const s = connect(23, ip);
+    s.on("connect", () => { s.write(`${cmd}\r`); setTimeout(() => end(true), 300); });
+    s.on("error", () => end(false));
+  });
+}
+// What the house is told of a speaker's volume, in a reading.
+async function volOf(name, ip, st) {
+  if (RECEIVERS[name]) {
+    const r = await receiverOf(name);
+    return { by: RECEIVERS[name].kind, on: !!r?.on, ...(r?.on && Number.isFinite(r.db) ? { db: r.db } : {}) };
+  }
+  const lock = await lockOf(name, ip);
+  if (!lock) return null;
+  if (lock.locked) return { by: "fixed" };
+  const level = Number(st?.vol);
+  return Number.isInteger(level) && level >= 0 && level <= 100 ? { by: "wiim", level, max: lock.max } : null;
+}
+// A tap of − or +, done: { code } on a refusal, { vol } when it was set.
+async function stepVolume(name, ip, dir, send = wiim, say = denonSay, look = fetch) {
+  const sign = dir === "up" ? 1 : dir === "down" ? -1 : 0;
+  if (!sign) return { code: "refused" };
+  if (RECEIVERS[name]) {
+    const r = await receiverOf(name, true, look);
+    if (!r?.on || !Number.isFinite(r.db)) return { code: "off" };
+    const db = Math.max(VOLUME.receiverLowestDb, r.db + sign * VOLUME.receiverStepDb);
+    const cmd = denonLevel(db);
+    if (!cmd || !(await say(RECEIVERS[name].ip, cmd))) return { code: "unreachable" };
+    const back = await receiverOf(name, true, look);
+    return { vol: { by: RECEIVERS[name].kind, on: !!back?.on, ...(Number.isFinite(back?.db) ? { db: back.db } : {}) } };
+  }
+  const lock = await lockOf(name, ip, true, send);
+  if (!lock) return { code: "unreachable" };
+  if (lock.locked) return { code: "fixed" };
+  const st = await send(ip, "getPlayerStatus", true);
+  const level = Number(st?.vol);
+  if (!Number.isInteger(level)) return { code: "unreachable" };
+  const to = Math.min(lock.max, Math.max(0, level + sign * VOLUME.wiimStep));
+  if (to !== level && (await send(ip, `setPlayerCmd:vol:${to}`, false)) !== "OK") return { code: "failed" };
+  return { vol: { by: "wiim", level: to, max: lock.max } };
 }
 
 // The only speaker commands this helper sends. A command from the house not
@@ -337,6 +442,13 @@ export async function houseSpeakers(cfg, { get = fetch, log = console.log, match
   } catch { said = null; }
   if (!said) return Object.keys(cfg.fileSpeakers ?? {}).length ? { ...cfg.fileSpeakers } : null;
   cfg.learns = !!said.learns;
+  // The receivers behind the WiiMs (volume, above): a Denon or Marantz at an
+  // address at home, for a speaker of this house.
+  const recv = {};
+  for (const [n, r] of Object.entries(said.receivers ?? {})) {
+    if (r && r.kind === "denon" && homeAddress(r.ip)) recv[n] = { kind: "denon", ip: r.ip };
+  }
+  setReceivers(recv);
   // Only addresses at home (the review, 2026-11-19): what the house says is
   // asked questions and sent commands, so an address anywhere else is left.
   const named = {};
@@ -593,7 +705,8 @@ async function readAll(speakers, cfg = null) {
     const st = STRANGER[name] ? null : await readSpeaker(ip);
     if (cfg) keepTrack(cfg, name, !!st).catch(() => { /* tried again on the next read */ });
     const eq = st ? await eqOf(name, ip, st) : null;
-    return readingOf(name, st, TABLES[name], eq);
+    const vol = st ? await volOf(name, ip, st).catch(() => null) : null;
+    return readingOf(name, st, TABLES[name], eq, vol);
   }));
 }
 
@@ -624,8 +737,16 @@ async function post(cfg, readings) {
 
 // A command from the house: the allow-list, a speaker this house names,
 // then the speaker's own read-back for the answer.
-export async function obey(speakers, m, send = wiim, read = readSpeaker, same = null) {
+export async function obey(speakers, m, send = wiim, read = readSpeaker, same = null, say = denonSay, look = fetch) {
   const ip = speakers[m?.speaker];
+  // VOLUME: a step, by the speaker or the receiver behind it (above).
+  if (m?.cmd === "vol" && ip) {
+    if (same && !(await same(m.speaker))) return { id: m.id, ok: false, code: "unreachable" };
+    const out = await stepVolume(m.speaker, ip, m.dir, send, say, look);
+    if (out.code) return { id: m.id, ok: false, code: out.code };
+    const st = await read(ip);
+    return { id: m.id, ok: true, reading: readingOf(m.speaker, st, TABLES[m.speaker], EQS[m.speaker]?.eq ?? null, out.vol) };
+  }
   const cmd = Object.hasOwn(COMMANDS, m?.cmd) ? COMMANDS[m.cmd](m) : null;
   if (!ip || !cmd) return { id: m?.id, ok: false, code: "refused" };
   // Another WiiM at that address (2026-11-11): nothing is sent to it. To the

@@ -49,7 +49,7 @@ const jsonInToml = (v) => toml(JSON.stringify(v));
 // first, on the raw value, or a missing answer would render as the word
 // "undefined" in quotes instead of failing.
 const PREFORMATTED = new Set([
-  "routes", "buttons", "devices.roomsJson", "devices.speakersJson", "aliasesJson",
+  "routes", "buttons", "devices.roomsJson", "devices.speakersJson", "devices.receiversJson", "aliasesJson",
   "crons", "endless.json",
 ]);
 
@@ -157,6 +157,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       routes: routes.length > 0,
       devices: Boolean(devices),
       speakers: Boolean(devices?.speakers && Object.keys(devices.speakers).length),
+      receivers: Boolean(devices?.receivers && Object.keys(devices.receivers).length),
       tidal: Boolean(house.tidal?.country),
       timezone: Boolean(house.site?.timezone),
       // The archive's site and INDEX are named only where there is an archive
@@ -210,6 +211,7 @@ export function viewOf(house, { at = "mcp" } = {}) {
       "devices.default": devices?.default ?? "",
       "devices.roomsJson": jsonInToml(devices?.rooms ?? []),
       "devices.speakersJson": jsonInToml(devices?.speakers ?? {}),
+      "devices.receiversJson": jsonInToml(devices?.receivers ?? {}),
       "tidal.country": house.tidal?.country ?? "",
       "archive.siteUrl": house.archive?.siteUrl ?? "",
       "archive.mediaUrl": house.archive?.mediaUrl ?? "",

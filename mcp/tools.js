@@ -705,6 +705,20 @@ export async function callTool(env, name, args, budget) {
       let result = null;
       let resetSession = false;
       try {
+        // STEERED AGAIN SINCE (the owner, 2026-11-19: "the Ubiquity label on
+        // Hank, right away" by Talk on the TV was done twice. Play now filed a
+        // steer for the curator, Talk then steered with its own seven songs
+        // and played them, and the curator's ten landed a minute later in
+        // their place: two of the day's runs, and Talk's choice gone). A steer
+        // or a top-up asked before the DJ's latest steer is not written over
+        // it: the newer turn stands. Read now, under the lane's lease where
+        // there is one, not from the claim's copy, which is older.
+        if (kind === "steer" || kind === "topup") {
+          const latest = Number((await endlessLoad(env).catch(() => null))?.sessions?.[bkey]?.steer?.at) || 0;
+          if (latest > (Number(job.at) || 0)) {
+            return closeJob("steered-since", `${djName} was steered again after this was asked, and that newer turn stands.`);
+          }
+        }
         if (kind === "steer") {
           if (!onIt) return closeJob("not-playing", `${djName} is not playing any more, so there is nothing to steer.`);
           const out = await steerWrite(env, p, pl, keep, { now: job.when === "now", budget, fromIdx: state.sessions?.[bkey]?.idx ?? 0, lockHeld: !!lockId });

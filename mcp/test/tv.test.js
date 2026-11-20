@@ -1213,7 +1213,7 @@ test("Talk on the TV carries every element Talk's script reads, the TV's room, a
   for (const id of ["hold", "hangup", "tstate", "meter", "minutes", "talkdev", "tspk", "voice", "you", "desk"]) {
     assert.ok(html.includes(`id="${id}"`), `#${id}`);
   }
-  assert.match(html, /<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="\/b\/k" data-idle="30000" data-beat="30000" data-rate="5">/, "the TV opens the line with the screen and shows the voice level");
+  assert.match(html, /<main class="tvd talk" data-phase="rest" data-preopen="1" data-level="1" data-base="\/b\/k" data-room="Pro Plus" data-idle="30000" data-beat="30000" data-rate="5">/, "the TV opens the line with the screen and shows the voice level");
   assert.match(html, /<p class="vsum tvsound" hidden>The music goes quiet while Talk is open, and comes back when you hang up\.<\/p>/);
   assert.match(html, /<option selected>Pro Plus<\/option><option>Ultra<\/option>/, "the TV page's room");
   assert.ok(html.includes('href="/b/k/tv?room=pro-plus">'), "Home goes back to the TV page's room");
