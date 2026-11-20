@@ -227,3 +227,24 @@ test("remembering survives KV being unavailable", async () => {
     assert.equal(out.id, HEX);
   } finally { f.restore(); }
 });
+
+// THE WRONG ROOM (the review, 2026-11-19): "Kitchen" asleep, "Kitchen 2"
+// awake, and a start for the first played on the second and said it worked.
+test("a house speaker that is not there is never matched by part of another's name", async () => {
+  const env = { ...makeEnv(), ROOM_DEVICES: JSON.stringify(["Pro Plus", "Kitchen", "Kitchen 2"]) };
+  const f = devices([{ id: "id-kitchen2", name: "Kitchen 2" }, { id: "id-pro", name: "Pro Plus" }]);
+  try {
+    await assert.rejects(() => resolveDevice(env, "Kitchen"), (e) => e.noSuchDevice === true);
+    assert.equal(await env.PROGRAMS.get("device:kitchen"), null, "and nothing is remembered under the asked name");
+    assert.equal((await resolveDevice(env, "kitchen 2")).id, "id-kitchen2", "its own name still finds it");
+    assert.equal((await resolveDevice(env, "pro")).id, "id-pro", "a part that can mean one speaker still does");
+    await assert.rejects(() => resolveDevice(env, "kitch"), (e) => e.noSuchDevice === true, "a part two speakers share means neither");
+  } finally { f.restore(); }
+});
+
+test("an id once remembered for the wrong speaker is not used when it carries another house speaker's name", async () => {
+  const env = { ...makeEnv(), ROOM_DEVICES: JSON.stringify(["Kitchen", "Kitchen 2"]) };
+  await env.PROGRAMS.put("device:kitchen", "id-kitchen2");
+  const f = devices([{ id: "id-kitchen2", name: "Kitchen 2" }]);
+  try { await assert.rejects(() => resolveDevice(env, "Kitchen"), (e) => e.noSuchDevice === true); } finally { f.restore(); }
+});

@@ -10,6 +10,7 @@ import { station, stationStub } from "./station.js";
 import { timed } from "./timing.js";
 import { destinationFor, guestAlias, guestPhrase, house } from "./house.js";
 import { endWaiting, pageWaits } from "./settings.js";
+import { parseRoomDevices } from "./room.js";
 
 export const SPOTIFY_API = "https://api.spotify.com/v1";
 export const SPOTIFY_TOKEN = "https://accounts.spotify.com/api/token";
@@ -793,9 +794,22 @@ export async function resolveDevice(env, name) {
   const { devices = [] } = await spotify(env, "GET", "/me/player/devices");
   if (!name) return { id: null, warning: null };
   const needle = name.toLowerCase();
+  // PART OF A NAME, ONLY WHEN IT CAN MEAN ONE THING (the review, 2026-11-19).
+  // "the kitchen" for "Kitchen Echo" is what the part match is for. But a
+  // house with "Kitchen" and "Kitchen 2": with the first asleep, a start for
+  // it matched the second by its part, played there, was checked against the
+  // speaker it had found and so was reported as right, and remembered the
+  // wrong speaker under the asked name. So a part counts only when exactly
+  // one speaker has it, and never for a name that is one of the house's own
+  // speakers in full: that one is simply not there, the "asleep" answer.
+  const rooms = parseRoomDevices(env).map((r) => r.toLowerCase());
+  // "One speaker" counts the house's own names too: a part of two of them
+  // means neither, though only one is awake to be seen.
+  const named = new Set([...rooms, ...devices.map((d) => d.name.toLowerCase())].filter((n) => n.includes(needle)));
+  const parts = rooms.includes(needle) || named.size !== 1 ? [] : devices.filter((d) => d.name.toLowerCase().includes(needle));
   const byName =
     devices.find((d) => d.name.toLowerCase() === needle) ??
-    devices.find((d) => d.name.toLowerCase().includes(needle));
+    (parts.length === 1 ? parts[0] : undefined);
 
   if (byName) {
     await rememberDevice(env, needle, byName.id, byName.name);
@@ -803,7 +817,11 @@ export async function resolveDevice(env, name) {
   }
 
   const known = await recallDevice(env, needle);
-  const stillThere = known && devices.find((d) => d.id === known);
+  const found = known && devices.find((d) => d.id === known);
+  // A remembered id that now carries ANOTHER of the house's speakers' names
+  // was remembered wrongly (the part match above, before it was narrowed):
+  // it is that other speaker, not this one without its name.
+  const stillThere = found && found.name.toLowerCase() !== needle && rooms.includes(found.name.toLowerCase()) ? null : found;
   if (stillThere) {
     // A device stuck publishing its own id never resolves by name again, so
     // the healthy path above will never run for it — and if the fault began

@@ -311,9 +311,9 @@ PROGRAM_REPLAY_PLAYLIST = "replay"
 
 # The library page lists every program, so an unguessable slug per program is no
 # longer enough on its own — the index is the list of everything. This key is
-# the whole of what guards /notes/<key>. Weaker than MCP_SECRET on purpose: it
-# reaches reading only, and losing it exposes what has been published rather
-# than the streaming account.
+# the whole of what guards /notes/<key> and /buttons/<key>: the house's key.
+# It opens every page of the house's app, plays on its speakers and uses
+# Talk, so it is as much a secret as MCP_SECRET, and no tool hands it out.
 #
 # It is NOT here and not in this repo. It was a [vars] literal until
 # 2026-08-30, which put it in every commit of a tracked file — a fair trade

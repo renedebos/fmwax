@@ -26,6 +26,7 @@ import {
   listSnapshots, replacePlaylistSafely, snapKey, snapshotPlaylist, undoToSnapshot,
 } from "./playlists.js";
 import { parseRoomDevices } from "./room.js";
+import { ringFailedAgain } from "./asks.js";
 import { handleRequest } from "./routes.js";
 import {
   THROTTLE_KEY, cachedAccess, deviceDisplayName, flushKvTally, flushSpotifyTally,
@@ -121,6 +122,8 @@ export default {
       // not be that caller.
       if (await houseClaimed(env)) env = await withSettings(env, null);
       await endlessWatch(env, at);
+      // And a doorbell that failed is rung again (asks.js).
+      await ringFailedAgain(env);
     } finally {
       await Promise.all([flushKvTally(env), flushSpotifyTally(env)]);
     }

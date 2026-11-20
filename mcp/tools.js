@@ -2949,18 +2949,17 @@ export async function callTool(env, name, args, budget) {
       return {
         programs: rows.slice(0, limit),
         total: rows.length,
-        // One page listing all of them, for bookmarking. Called Program Notes,
-        // never "the library" — one of the DJs on it is the Librarian. Hand it
-        // over when the user wants the shelf rather than an answer, but note
-        // what it is:
-        // whoever has this link can see every program, where a single program
-        // link shows only that one.
-        ...(env.PROGRAM_LIBRARY_KEY
-          ? { program_notes_page: `${programBaseUrl(env)}/notes/${env.PROGRAM_LIBRARY_KEY}` }
-          : {}),
+        // NO LINK TO THE SHELF (the review, 2026-11-19). This answer used
+        // to carry the Shelf's address, "to hand over when the user wants
+        // the shelf": but that address holds the house's key, which opens
+        // every page, plays on every speaker and spends Talk's minutes, and
+        // an answer to a tool is kept in chat histories and may be passed
+        // on as a harmless reading link. Each program's own link shows that
+        // program and nothing else; the Shelf is a tab in the house's app.
         note: rows.length
           ? "Newest first. Pass an id to read one in full. A program published " +
-            "in the last minute may not be listed yet."
+            "in the last minute may not be listed yet. To send someone a program, give its own url; " +
+            "all of them together are the Shelf tab in the house's app, which has no link to hand out."
           : "None yet.",
       };
     }

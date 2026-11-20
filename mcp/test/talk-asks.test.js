@@ -403,3 +403,58 @@ test("a Talk log line names the DJ and the speaker, never the listener's words",
   assert.match(line, /"uris":"\[2\]"/);
   assert.ok(logArgs(null) === "{}" && logArgs({ a: "x".repeat(5000) }).length <= 160);
 });
+
+// THE SECOND RING (the review, 2026-11-19): a doorbell that failed once was
+// never rung again by the house, so a "Play when ready" set came with the
+// curator's hourly run, too late to start by itself.
+test("a doorbell that failed is rung again by the schedule: twice at most, never after it got through, never for a ring that worked", async () => {
+  const e = env(), l = line();
+  const inner = globalThis.fetch;
+  let down = true;
+  globalThis.fetch = async (url, init = {}) => {
+    if (down && new URL(String(url)).hostname === "api.anthropic.com") {
+      l.rung.push("failed");
+      return Response.json({ error: { type: "overloaded_error", message: "busy" } }, { status: 503 });
+    }
+    return inner(url, init);
+  };
+  try {
+    const cap = await open(e);
+    const { body } = await ask(e, cap, { dj: "Hank", words: "deep funk for cooking", minutes: 60, device: "pro plus" });
+    assert.equal(said(body).status, "sent", JSON.stringify(said(body)));
+    const [row] = rows(e);
+    assert.equal((await record(e, row.id)).dispatch, "failed");
+    assert.deepEqual(l.rung, ["failed"]);
+
+    await worker.scheduled({ scheduledTime: Date.now() }, e);
+    assert.deepEqual(l.rung, ["failed", "failed"], "the schedule rings once more, and that fails too");
+    down = false;
+    await worker.scheduled({ scheduledTime: Date.now() }, e);
+    assert.equal(l.rung.length, 3);
+    assert.deepEqual(JSON.parse(l.rung[2]), { text: `request ${row.id} (again)` }, "the second try gets through");
+    await worker.scheduled({ scheduledTime: Date.now() }, e);
+    await worker.scheduled({ scheduledTime: Date.now() }, e);
+    assert.equal(l.rung.length, 3, "and it is not rung after that");
+    assert.equal((await record(e, row.id)).dispatch, "failed", "the ask's record is left as it was");
+  } finally { globalThis.fetch = inner; l.restore(); }
+});
+
+test("an ask whose first ring worked is not rung by the schedule, and two failed tries are the end of it", async () => {
+  const e = env(), l = line();
+  try {
+    const cap = await open(e);
+    await ask(e, cap, { dj: "Hank", words: "deep funk for cooking", minutes: 60, device: "pro plus" });
+    await worker.scheduled({ scheduledTime: Date.now() }, e);
+    assert.equal(l.rung.length, 1, "one ring, the first");
+  } finally { l.restore(); }
+  const e2 = env(), l2 = line();
+  const inner = globalThis.fetch;
+  globalThis.fetch = async (url, init = {}) => (new URL(String(url)).hostname === "api.anthropic.com"
+    ? (l2.rung.push("failed"), new Response("no", { status: 503 })) : inner(url, init));
+  try {
+    const cap = await open(e2);
+    await ask(e2, cap, { dj: "Hank", words: "deep funk for cooking", minutes: 60, device: "pro plus" });
+    for (let i = 0; i < 4; i++) await worker.scheduled({ scheduledTime: Date.now() }, e2);
+    assert.equal(l2.rung.length, 3, "the first and two more");
+  } finally { globalThis.fetch = inner; l2.restore(); }
+});

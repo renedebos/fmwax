@@ -166,6 +166,41 @@ export async function fileAsk(env, ctx, { slug, mood, length, avoid, keep = fals
   return { ok: true, code: "sent", id, btn, catalog: archiveAsk ? null : bound?.pl?.catalog ?? null };
 }
 
+// THE SECOND RING (the review, 2026-11-19). An ask rang the curator once; a
+// ring that failed was flagged on the record and nothing in the house read
+// the flag. The set then came with the curator's own hourly run, after the
+// 25 minutes a "Play when ready" ask may start in, so it never started by
+// itself (the doorbell failed for hours on 2026-11-17). The house's
+// ten-minute schedule now rings again for an ask still waiting whose ring
+// failed: twice at most, so inside those 25 minutes, and never for an ask
+// already picked up. The count is its own short-lived note, stamped before
+// the ring: the ask's record is not written here, so a set that lands
+// meanwhile is never put back to waiting by a stale copy.
+const RERING_MAX = 2;
+export async function ringFailedAgain(env) {
+  if (env.AUTOFULFILL_ENABLED !== "true") return [];
+  const rung = [];
+  try {
+    const led = await station(env, "list", { states: ["pending"] });
+    const kv = programsKV(env);
+    for (const row of (led?.rows ?? []).slice(0, 10)) {
+      const rec = await getRequestRecord(env, row.id);
+      if (rec?.dispatch !== "failed") continue;
+      const key = `ring-again:${row.id}`;
+      const said = await kv.get(key);
+      if (said === "ok") continue;
+      const n = Number(said) || 0;
+      if (n >= RERING_MAX) continue;
+      await kv.put(key, String(n + 1), { expirationTtl: 86400 });
+      const note = {};
+      const ok = await emitRequestEvent(env, row.id, `.c${n + 1}`, note).catch(() => false);
+      if (ok) { await kv.put(key, "ok", { expirationTtl: 86400 }); rung.push(row.id); }
+      else console.log(`doorbell-failed again ${row.id} (${note.why ?? "no reason given"})`);
+    }
+  } catch { /* the curator's own hourly run is the backstop, as before */ }
+  return rung;
+}
+
 // The length said aloud, onto the form's four: the nearest, a tie going up
 // (45 is an hour), an hour when nothing usable was said (MC-36's default 4).
 export function askMinutes(said) {

@@ -496,8 +496,8 @@ test("the notes page lists programs newest first and links each one", async () =
     await callTool(e, "make_librarian_program",
       program({ title: "A Later Thesis" }), { remaining: 40 });
     const list = await callTool(e, "list_programs", {}, { remaining: 40 });
-    assert.equal(list.program_notes_page,
-      "https://example.test/notes/abcdefabcdefabcdefabcdef");
+    assert.ok(!JSON.stringify(list).includes("abcdefabcdefabcdefabcdef"),
+      "the house's key is in no answer to a tool (the review, 2026-11-19)");
     const html = renderLibrary(list.programs);
     assert.equal((html.match(/<li class="card/g) ?? []).length, 2, "a cover card each (the grid, 2026-09-23)");
     assert.ok(html.indexOf("A Later Thesis") < html.indexOf("From the Orchestra"),

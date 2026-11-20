@@ -68,24 +68,46 @@ const MISSES_BEFORE_SEARCH = 3;
 const SEARCH_AT_MOST_MS = 5 * 60_000;
 const KNOWN_FILE = join(homedir(), ".config/fmwax-helper/speakers.json");
 const PRESETS_AT_LEAST_MS = 60 * 60_000;
+const STUCK_MS = 3 * 60_000;
 const PLAYQUEUE_NS = "urn:schemas-wiimu-com:service:PlayQueue:1";
 const READ_ENVELOPE = `<?xml version="1.0" encoding="utf-8"?>` +
   `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" ` +
   `s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body>` +
   `<u:GetKeyMapping xmlns:u="${PLAYQUEUE_NS}"></u:GetKeyMapping>` +
   `</s:Body></s:Envelope>`;
-function keyMapping(ip) {
+// ONE ANSWER, ALWAYS (the review, 2026-11-19). A WiiM that sent the start of
+// an answer and then went quiet, or dropped the connection mid-answer, left
+// its caller waiting for ever: the request's timeout closes the socket, and
+// Node then ends the response with "aborted" and "close", never "end" and
+// never an error. A press waiting on it got no reply (the house said
+// "timeout", this journal said nothing), and the main loop waiting on a
+// reading stopped reading for good. So every request settles once: on its
+// end, on anything that ends it early, or on a hard clock a second after
+// its own timeout. `start(onResponse)` makes the request; `read(res, body)`
+// turns a whole answer into the value.
+export function ask(start, timeout, read) {
   return new Promise((resolve) => {
-    const req = http.request({ host: ip, port: 49152, path: "/upnp/control/PlayQueue1", method: "POST", timeout: 6000,
-      headers: { "content-type": "text/xml", soapaction: `"${PLAYQUEUE_NS}#GetKeyMapping"` } }, (res) => {
+    let done = false, req = null;
+    const hard = setTimeout(() => fail(), timeout + 1000);
+    const end = (v) => { if (done) return; done = true; clearTimeout(hard); resolve(v); };
+    const fail = () => { if (done) return; end(null); try { req?.destroy(); } catch { /* gone already */ } };
+    req = start((res) => {
       let body = "";
       res.on("data", (c) => { body += c; });
-      res.on("end", () => resolve(res.statusCode === 200 && body.includes("KeyList") ? body : null));
+      res.on("end", () => { let v = null; try { v = read(res, body); } catch { v = null; } end(v); });
+      res.on("aborted", fail); res.on("error", fail); res.on("close", fail);
     });
-    req.on("timeout", () => req.destroy());
-    req.on("error", () => resolve(null));
-    req.end(READ_ENVELOPE);
+    req.on("timeout", fail);
+    req.on("error", fail);
   });
+}
+function keyMapping(ip) {
+  return ask((on) => {
+    const req = http.request({ host: ip, port: 49152, path: "/upnp/control/PlayQueue1", method: "POST", timeout: 6000,
+      headers: { "content-type": "text/xml", soapaction: `"${PLAYQUEUE_NS}#GetKeyMapping"` } }, on);
+    req.end(READ_ENVELOPE);
+    return req;
+  }, 6000, (res, body) => (res.statusCode === 200 && body.includes("KeyList") ? body : null));
 }
 const slugOf = (n) => String(n).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40) || "speaker";
 async function presetsLoop(cfg) {
@@ -266,19 +288,8 @@ function status(ip) { return wiim(ip, "getPlayerStatus", true); }
 // The read that names a WiiM and gives its fixed id; null from anything else.
 export function statusEx(ip, timeout = 1500) { return wiim(ip, "getStatusEx", true, timeout); }
 function wiim(ip, command, json, timeout = 4000) {
-  return new Promise((resolve) => {
-    const req = https.get({ host: ip, path: `/httpapi.asp?command=${command}`,
-      rejectUnauthorized: false, timeout }, (res) => {
-      let body = "";
-      res.on("data", (c) => { body += c; });
-      res.on("end", () => {
-        if (!json) { resolve(body.trim() || null); return; }
-        try { resolve(JSON.parse(body)); } catch { resolve(null); }
-      });
-    });
-    req.on("timeout", () => req.destroy());
-    req.on("error", () => resolve(null));
-  });
+  return ask((on) => https.get({ host: ip, path: `/httpapi.asp?command=${command}`, rejectUnauthorized: false, timeout }, on),
+    timeout, (res, body) => (json ? JSON.parse(body) : body.trim() || null));
 }
 
 function settings() {
@@ -637,6 +648,9 @@ export function line(cfg, WS = WebSocket, get = fetch) {
         if (remover) setTimeout(() => leave(remover).catch((e) => console.error(new Date().toISOString(), "remove failed:", String(e?.message ?? e))), 500);
         return;
       }
+      // Said on arrival (the review, 2026-11-19): a press the house timed
+      // out on left no line here, so nobody could tell which end lost it.
+      console.log(new Date().toISOString(), "got", m?.cmd, m?.speaker);
       const reply = await obey(cfg.speakers, m, undefined, undefined, (name) => beforeCommand(cfg, name)).catch(() => ({ id: m?.id, ok: false, code: "failed" }));
       try { ws.send(JSON.stringify(reply)); } catch { /* the line went; the house times out */ }
       console.log(new Date().toISOString(), m?.cmd, m?.speaker, reply.ok ? "ok" : reply.code);
@@ -739,9 +753,20 @@ async function main() {
   line(cfg);
   presetsLoop(cfg);
   let sent = "", sentAt = 0;
+  // READING OR GONE (the review, 2026-11-19): a helper that has not finished
+  // a round of readings for three minutes is stuck in a way nothing here
+  // foresaw, while its process lives and its line stays open, so the house
+  // can't tell. It leaves, and the service starts it again.
+  let readAt = Date.now();
+  setInterval(() => {
+    if (LEAVING || Date.now() - readAt < STUCK_MS) return;
+    console.error(new Date().toISOString(), "no reading finished for three minutes: leaving, to be started again");
+    process.exit(1);
+  }, 30_000).unref();
   for (;;) {
     try {
       const readings = await readAll(cfg.speakers, cfg);
+      readAt = Date.now();
       // A song's place moves at every read: it rides along, but only a change
       // in anything else (or a minute) sends the readings.
       const said = JSON.stringify(readings, (k, v) => (k === "pos" ? undefined : v));
