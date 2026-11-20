@@ -264,7 +264,10 @@ export async function helperCommand(env, cmd) {
   let code = "failed", heard = null;
   try {
     const out = await station(env, "helper-command", cmd);
-    code = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable"].includes(out?.code) ? out.code : "failed";
+    code = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable"].includes(out?.code) ? out.code
+      // "no-answer" (the helper, since 2026-11-19): sent to the speaker, which
+      // did not answer in time. Like a timeout, it may still have happened.
+      : out?.code === "no-answer" ? "timeout" : "failed";
     // A key can take the speaker off Spotify, and the reading takes seconds
     // to show it (MC-29): the kept answer goes with the press.
     if (out?.ok && cmd.cmd === "key") await forgetPlayer(env);

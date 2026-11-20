@@ -804,7 +804,7 @@ test("…/tv/say does it once, in the TV's room, and the TV page says what was h
     const first = await (await call(e, (await say("skip")).headers.get("location").replace(/^\/buttons\//, ""))).text();
     const firstSaid = first.match(/<p class="bsay" role="status">“skip”: ([^<]*)<\/p>/)[1];
     const second = await (await call(e, (await say("skip")).headers.get("location").replace(/^\/buttons\//, ""))).text();
-    assert.ok(second.includes(`“skip”: Already done a moment ago: ${firstSaid}</p>`), second.match(/<p class="bsay"[^>]*>[^<]*/)?.[0]);
+    assert.ok(second.includes(`“skip”: Said a moment ago, not done twice: ${firstSaid}</p>`), second.match(/<p class="bsay"[^>]*>[^<]*/)?.[0]);
     assert.equal((await call(e, `wrongkey123456/tv/say?q=pause`)).status, 404);
     assert.equal((await call(e, `${KEY}/tv/say?q=pause`, { method: "POST", body: "x" })).status, 405);
   } finally { f.restore(); }
@@ -919,7 +919,7 @@ test("the DJs on the TV: three groups, a DJ's screen with its remembered setting
     // Loaded twice within the minute (TV Bro reloading): filed once.
     const v2 = await call(e, `${KEY}/tv/say?q=${encodeURIComponent("Stax demos, no hits")}`, { headers: { cookie: "tvdj=the-librarian" } });
     const vn2 = JSON.parse(await e.PROGRAMS.get(`tvsaid:${v2.headers.get("location").match(/vs=([a-f0-9]{16})$/)[1]}`));
-    assert.match(vn2.said, /^Already done a moment ago: /);
+    assert.match(vn2.said, /^Said a moment ago, not done twice: /);
     // A command still is one, whatever screen was open.
     const sk = await call(e, `${KEY}/tv/say?q=skip`, { headers: { cookie: "tvdj=the-librarian" } });
     const sn = JSON.parse(await e.PROGRAMS.get(`tvsaid:${sk.headers.get("location").match(/vs=([a-f0-9]{16})$/)[1]}`));

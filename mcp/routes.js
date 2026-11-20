@@ -1859,7 +1859,10 @@ export async function handleRequest(request, env, ctx) {
           else {
             try {
               const out = await station(env, "helper-command", { cmd: { hpause: "pause", hplay: "resume", hnext: "next", hprev: "prev" }[verb], speaker: box.name });
-              hcode = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable"].includes(out?.code) ? out.code : "failed";
+              hcode = out?.ok ? "ok" : ["helper-off", "timeout", "unreachable"].includes(out?.code) ? out.code
+      // "no-answer" (the helper, since 2026-11-19): sent to the speaker, which
+      // did not answer in time. Like a timeout, it may still have happened.
+      : out?.code === "no-answer" ? "timeout" : "failed";
               // Its read-back is the freshest word on that speaker: kept, so the
               // bar's next look says paused or playing at once.
               const one = out?.reading ? parseHelperReading(env, { speakers: [out.reading] }) : null;
@@ -2771,7 +2774,7 @@ export async function handleRequest(request, env, ctx) {
           const once = `tvsay:dj:${ctxKey}:${words.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 120)}:${room?.slug ?? ""}`;
           let before = null;
           try { before = await kv.get(once); if (!before) await kv.put(once, "\u2026", { expirationTtl: 60 }); } catch { before = null; }
-          if (before) return toTv(words, before === "\u2026" ? "Already on it." : `Already done a moment ago: ${before}`);
+          if (before) return toTv(words, before === "\u2026" ? "Already on it." : `Said a moment ago, not done twice: ${before}`);
           const out = await tvDjAct(env, ctx, { key: ctxKey, act: "words", words, set: tvDjSettings(request, ctxKey, env),
             room: room?.name ?? null, rooms: roomNames });
           const line = tvLine(out.said);
@@ -2790,18 +2793,24 @@ export async function handleRequest(request, env, ctx) {
           if (!asks) {
             try { before = await kv.get(once); if (!before) await kv.put(once, "\u2026", { expirationTtl: 60 }); } catch { before = null; }
           }
-          if (before) said = before === "\u2026" ? "Already on it." : `Already done a moment ago: ${before}`;
+          if (before) said = before === "\u2026" ? "Already on it." : `Said a moment ago, not done twice: ${before}`;
           else {
             const envTv = room ? { ...env, DEFAULT_DEVICE: room.name } : env;
             let read = alexaHeard(x.body, envTv, Date.now());
             // Play now's search (MC-47 stage 4), as maple crate's door does it.
             if (read.kind === "play-now") read = await alexaPlayNow(x.body, envTv, read);
             let acted = null;
+            // A try that broke is not kept as done (the review, 2026-11-19:
+            // the same words within the minute were answered "Already done",
+            // with the failure after it): saying it again tries it again.
+            let broke = false;
             try { acted = await alexaAct(envTv, ctx, read); } catch {
               acted = { say: "Something went wrong on the house's side; nothing more was done." };
+              broke = true;
+              if (!asks) { try { await kv.delete(once); } catch { /* it lapses in a minute */ } }
             }
             said = tvLine(acted?.say ?? read.say ?? TV_NOT_CAUGHT);
-            if (!asks) { try { await kv.put(once, said.slice(0, 400), { expirationTtl: 60 }); } catch { /* the placeholder lapses */ } }
+            if (!asks && !broke) { try { await kv.put(once, said.slice(0, 400), { expirationTtl: 60 }); } catch { /* the placeholder lapses */ } }
           }
         }
         const id = crypto.randomUUID().replace(/-/g, "").slice(0, 16);

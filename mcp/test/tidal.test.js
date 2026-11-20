@@ -8,7 +8,11 @@ import assert from "node:assert/strict";
 import { __test } from "../worker.js";
 import { makeEnv, installFetch, installTidalFetch, TPL, TPID, PID, buttons } from "./harness.js";
 
-const { replacePlaylistSafely, snapshotPlaylist, callTool } = __test;
+const { replacePlaylistSafely, snapshotPlaylist, callTool, getAccessToken } = __test;
+// A token in hand before a budget is counted (the review, 2026-11-19: these
+// three passed only after an earlier test had left one in memory; alone, the
+// refresh took a call of the budget). Run inside the test's own fetch.
+const tokenInHand = () => getAccessToken(makeEnv(), "tidal");
 const uris = (...ids) => ids.map((i) => `tidal:track:${i}`);
 const ITEMS = `/playlists/${TPID}/relationships/items`;
 
@@ -63,7 +67,11 @@ test("a 429 is retried once after its Retry-After, and a second one surfaces", a
 });
 
 test("a token Tidal no longer honours is dropped, refreshed once, and the call re-sent", async () => {
+  // Nothing in memory, and in the store a token with hours left that Tidal
+  // refuses: the case that sent the same token again (the review, 2026-11-19).
+  __test.forgetAccessTokens();
   const env = makeEnv();
+  await env.TOKENS.put("tidal", JSON.stringify({ refresh_token: "t", access_token: "stored-and-refused", expires_at: Date.now() + 3 * 3600_000 }));
   env.BUTTONS = buttons({ 2: TPID }, { catalog: "tidal" });
   const stale = { status: 401, body: JSON.stringify({ errors: [{ code: "UNAUTHORIZED", detail: "Invalid token structure" }] }) };
   const f = installTidalFetch({ fail: { "GET /searchResults": [stale] } });
@@ -86,6 +94,9 @@ test("a token Tidal no longer honours is dropped, refreshed once, and the call r
     assert.equal(sent.length, 2, "the 401 was answered by one resend");
     assert.notEqual(sent[0], sent[1], "with a fresh token, not the refused one");
     assert.equal(sent[1], `Bearer tidal-token-${minted}`);
+    assert.equal(sent[0], "Bearer stored-and-refused");
+    assert.equal(minted, 1, "one refresh");
+    assert.equal(JSON.parse(await env.TOKENS.get("tidal")).access_token, "tidal-token-1", "and the store holds the new one");
   } finally {
     globalThis.fetch = inner;
     f.restore();
@@ -206,6 +217,7 @@ test("a clear that is not confirmed is rolled back and reported, not called unch
 test("the first clear is the point of no return: the budget stands down after it", async () => {
   const f = installTidalFetch({ contents: ["10"] });
   try {
+    await tokenInHand();
     // One read and the clear, and not a call more.
     const budget = { remaining: 2 };
     const out = await replacePlaylistSafely(makeEnv(), { pl: TPL, uris: uris("1", "2"), budget });
@@ -218,6 +230,7 @@ test("the first clear is the point of no return: the budget stands down after it
 test("an unconfirmed clear crosses the point of no return too: the rollback is not cut short", async () => {
   const f = installTidalFetch({ contents: ["10"], fail: { [`DELETE ${ITEMS}`]: ["gateway fell over"] } });
   try {
+    await tokenInHand();
     // One read and the clear that got a 502 — the rollback needs three more.
     const budget = { remaining: 2 };
     const out = await replacePlaylistSafely(makeEnv(), { pl: TPL, uris: uris("1"), budget });
@@ -231,6 +244,7 @@ test("an unconfirmed clear crosses the point of no return too: the rollback is n
 test("a budget that runs out BEFORE the clear refuses cleanly, with the playlist intact", async () => {
   const f = installTidalFetch({ contents: ["10"] });
   try {
+    await tokenInHand();
     const budget = { remaining: 1 };
     await assert.rejects(
       () => replacePlaylistSafely(makeEnv(), { pl: TPL, uris: uris("1"), budget }),

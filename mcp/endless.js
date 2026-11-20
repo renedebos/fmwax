@@ -1834,7 +1834,27 @@ export async function endlessStartFresh(env, { button, device }) {
   await endlessLog(env, events);
   return { status: "asked" };
 }
-export async function endlessPageSteer(env, { button, words, leaveWords = false, by = "from the DJ page" }) {
+// A STEER TAKES THE PLACE OF AN OPEN TOP-UP (the review, 2026-11-19). A
+// top-up asked for before the steer is made in the old direction; left open
+// beside the steer it spent a second run of the day, and when its songs
+// landed after the steer's the DJ seemed to drop the steer after a few
+// songs. One no curator has taken is dropped, with its run given back when
+// it is today's; one being written is left (its writer holds it).
+export function dropOpenTopup(env, state, s, now = Date.now()) {
+  const id = typeof s?.pending === "string" ? s.pending : null;
+  const j = id ? state.jobs[id] : null;
+  if (!j || j.done || j.kind !== "topup" || (j.claimed && now - j.claimed < ENDLESS_LEASE_MS)) return false;
+  if (!j.claimed && houseDay(env, Number(j.at) || 0) === state.day && (state.runs ?? 0) > 0) state.runs -= 1;
+  delete state.jobs[id];
+  s.pending = false;
+  return true;
+}
+// `started`: the speaker the caller has just started this preset on (a key
+// pressed through the home helper, which read the speaker back). Spotify's
+// own answer can trail a press by seconds, and asking it then said "not
+// playing" and dropped the words (the review, 2026-11-19): with `started`
+// the steer is filed without asking Spotify, as the guest DJ's is.
+export async function endlessPageSteer(env, { button, words, leaveWords = false, by = "from the DJ page", started = null }) {
   const cfg = parseEndless(env);
   if (!cfg || cfg.mode !== "live" || !env?.STATION) return { status: "off" };
   if (waiting(env)) return { status: "no-curator" };
@@ -1842,9 +1862,10 @@ export async function endlessPageSteer(env, { button, words, leaveWords = false,
   const slot = cfg.presets.find((x) => x.button === button);
   if (!slot) return { status: "off" };
   let pl = null;
-  try { pl = await playerState(env); } catch { return { status: "unknown" }; }
+  try { pl = await playerState(env); } catch { if (!started) return { status: "unknown" }; }
   const onIt = pl?.is_playing === true && String(pl?.context?.uri ?? "") === `spotify:playlist:${slot.playlist}`;
-  if (!onIt) return { status: "not-playing" };
+  if (!onIt && !started) return { status: "not-playing" };
+  if (!onIt) pl = null;
   const text = typeof words === "function" ? words(pl) : words;
   const now = Date.now();
   const events = [];
@@ -1858,8 +1879,9 @@ export async function endlessPageSteer(env, { button, words, leaveWords = false,
       const p = endlessPresets(env, cfg, state).find((x) => x.button === button && !x.program);
       if (!p) return { abort: true, status: "off" };
       if ((state.runs ?? 0) >= cfg.dailyRuns) return { abort: true, status: "day-cap" };
-      const s = state.sessions[String(p.button)] ?? { start: now, misses: 0, topups: 0, device: pl?.device?.name ?? null };
+      const s = state.sessions[String(p.button)] ?? { start: now, misses: 0, topups: 0, device: pl?.device?.name ?? started ?? null };
       s.steer = { words: text, at: now };
+      if (dropOpenTopup(env, state, s, now)) say(p.button, "topup-dropped", "a steer came before any curator took it");
       state.sessions[String(p.button)] = s;
       // CHANGE IT UP LEAVES THE WORDS (the owner, 2026-10-31: pressed on
       // Sessions days after "acoustic grunge" by voice, and heard no change).

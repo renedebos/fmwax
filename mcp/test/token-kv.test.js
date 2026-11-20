@@ -90,3 +90,27 @@ test("a refused refresh reads the store again: another isolate's fresh token is 
     await assert.rejects(getAccessToken(e), /signed this house out/);
   } finally { globalThis.fetch = inner; forgetAccessTokens(); f.restore(); }
 });
+
+// A TOKEN SPOTIFY REFUSED (the review, 2026-11-19): a 401 dropped nothing, so
+// every call for the rest of the token's hour was refused the same way.
+test("a token Spotify answers 401 to is not used again: the next call refreshes, though the store still holds it", async () => {
+  const f = installFetch();
+  const inner = globalThis.fetch;
+  const sent = [];
+  globalThis.fetch = async (url, init = {}) => {
+    const u = new URL(String(url));
+    if (u.hostname === "api.spotify.com" && u.pathname === "/v1/me/player/devices") {
+      sent.push(init.headers.Authorization);
+      if (init.headers.Authorization === "Bearer revoked") return Response.json({ error: { status: 401, message: "The access token expired" } }, { status: 401 });
+    }
+    return inner(url, init);
+  };
+  try {
+    const e = makeEnv();
+    await e.TOKENS.put("spotify", JSON.stringify({ refresh_token: "r1", access_token: "revoked", expires_at: Date.now() + 50 * 60_000 }));
+    forgetAccessTokens();
+    await assert.rejects(() => __test.resolveDevice(e, "Pro Plus"), /401/);
+    await __test.resolveDevice(e, "Pro Plus").catch(() => null);
+    assert.deepEqual(sent, ["Bearer revoked", "Bearer test-token"]);
+  } finally { globalThis.fetch = inner; forgetAccessTokens(); f.restore(); }
+});

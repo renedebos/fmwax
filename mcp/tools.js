@@ -22,6 +22,7 @@ import {
   endlessSlots, parseEndless, playEndless, programStill, sleptThrough, startsOn, steerWrite,
   RESEARCH_STEPS, cleanResearch, folderOut, heardLately, keepResearch, laneSubject, nearbyOf, researchFolders, researchIfArtist,
   waiting, NO_CURATOR, noCuratorWords,
+  dropOpenTopup,
 } from "./endless.js";
 import {
   aliasForPlaylistId, anyLiveGuest, contextLabel, destinationFor, djForPlaylistId, findDj, findSpokenDj,
@@ -1009,6 +1010,7 @@ export async function callTool(env, name, args, budget) {
         const s = st.sessions[bkey] ?? { start: now, misses: 0, topups: 0, device: pl?.device?.name ?? null };
         if (program) s.program = program;
         s.steer = { words, at: now };
+        dropOpenTopup(env, st, s, now);
         if (tracks) { s.tracks = tracks; s.pending = false; }
         if (file) {
           if ((st.runs ?? 0) >= (cfg?.dailyRuns ?? 12)) return { abort: true, status: "day-cap" };

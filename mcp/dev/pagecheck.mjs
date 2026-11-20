@@ -181,10 +181,42 @@ for (const [name, path, as] of PAGES) {
   for (const e of all) log(`       ${String(e).slice(0, 300)}`);
 }
 
+// A PRESS, SENT FROM THE PAGE (the review, 2026-11-19; programs.js
+// SUBMIT_GUARD), in the deploy's bundle: a key on the Speakers tab pressed
+// with the house out of reach says so in place and gives the key back, and
+// pressed with the house there goes on to the page the house names, or says
+// the house's refusal in place.
+{
+  const key = "section.holds:not([hidden]) button.key.play";
+  const press = [];
+  try {
+    await page.goto(`${BASE}${ROOM}/wiim`, { waitUntil: "load" });
+    if (await page.locator(key).count()) {
+      await page.route("**/*", (r) => (r.request().method() === "POST" ? r.abort("internetdisconnected") : r.continue()));
+      await page.locator(key).first().click();
+      await page.waitForFunction(() => [...document.querySelectorAll("[role=alert]")].some((e) => !e.hidden && /could not be reached/.test(e.textContent)), null, { timeout: 5000 })
+        .catch(() => press.push("out of reach: nothing was said in place"));
+      if (!page.url().includes("/wiim")) press.push(`out of reach: the page left for ${page.url()}`);
+      if (await page.locator(key).first().isDisabled()) press.push("out of reach: the key was not given back");
+      await page.unroute("**/*");
+      // The house's answer, either kind: its next page, or its refusal's
+      // own sentence in place (the preview's key 1 no longer matches its
+      // playlist, which is a refusal).
+      await page.locator(key).first().click();
+      await page.waitForFunction(() => /[?&](kp|hk)=/.test(location.search) ||
+        [...document.querySelectorAll("[role=alert]")].some((e) => !e.hidden && e.textContent && !/could not be reached/.test(e.textContent)), null, { timeout: 20000 })
+        .catch(() => press.push("in reach: neither the house's next page nor its refusal was shown"));
+    }
+  } catch (err) { press.push(String(err).slice(0, 200)); }
+  if (press.length) failed += 1;
+  log(`${press.length ? "FAIL" : "ok  "} ${"a press, in the page".padEnd(22)} ${ROOM.replace(KEY, "KEY")}/wiim`);
+  for (const e of press) log(`       ${e}`);
+}
+
 await browser.close();
 server.close();
 if (failed) {
-  error(`pagecheck: ${failed} of ${PAGES.length} pages had a script error in the deploy's bundle. Not deployed.`);
+  error(`pagecheck: ${failed} of ${PAGES.length} pages and one press failed in the deploy's bundle. Not deployed.`);
   quit(1);
 }
 log(`pagecheck: ${PAGES.length} pages, the bar handed ${Object.keys(SAMPLES).length} answers on each, no script error.`);

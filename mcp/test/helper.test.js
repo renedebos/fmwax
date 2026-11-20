@@ -369,6 +369,20 @@ test("the Speakers page: a Tidal key is a helper press while the line is open, a
     assert.match(offPage, /The home helper is not connected, so 2 could not be pressed from here\./);
     assert.equal((await worker.fetch(new Request(`https://x.test/buttons/${KEY}/wiim/key`, { method: "POST",
       body: new URLSearchParams({ btn: "13", device: "Pro Plus" }) }), e)).status, 400);
+    // A FORM SENT FROM THE PAGE (the review, 2026-11-19): the page's own
+    // script marks its post and is handed the next address to go to, where a
+    // browser's own post is redirected as ever; a refusal stays a refusal,
+    // its sentence on the page for the script to show in place.
+    const fromPage = (btn) => worker.fetch(new Request(`https://x.test/buttons/${KEY}/wiim/key`, { method: "POST",
+      headers: { "x-fmwax-page": "1" }, body: new URLSearchParams({ btn, device: "Pro Plus" }) }), e);
+    const inPlace = await fromPage("2");
+    assert.equal(inPlace.status, 200);
+    assert.equal(inPlace.headers.get("location"), null);
+    assert.match(inPlace.headers.get("content-type"), /json/);
+    assert.deepEqual(await inPlace.json(), { to: `/buttons/${KEY}/wiim?hk=helper-off&k=2&kon=pro-plus` });
+    const refused = await fromPage("13");
+    assert.equal(refused.status, 400);
+    assert.match(await refused.text(), /class="wallnote"/);
   } finally { f.restore(); }
 });
 

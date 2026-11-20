@@ -419,7 +419,7 @@ test("the play forms (MC-19 stage 3b): a playable key is a form and nothing else
     assert.equal((ultra.match(/<form method="post"/g) ?? []).length, 3);
     assert.ok(!/class="key[^"]*\blit\b/.test(ultra), "the Ultra is not playing: none of its keys is lit");
     // The double-tap guard is on the page now that it has forms; the glyph is decorative.
-    assert.match(html, /<script[^>]*>\ndocument\.addEventListener\("submit"/, "the guard, with the page's nonce on it");
+    assert.match(html, /<script nonce="[^"]+">\n\/\* A PRESS THAT FAILS IS SAID IN PLACE[\s\S]*?document\.addEventListener\("submit"/, "the guard, with the page's nonce on it");
     assert.match(html, /<span class="kplay" aria-hidden="true">/);
     // THE BLOCK NAMES A KEY'S SET: the Pro Plus plays "was button 5", which its reading holds as 5 (Scratch).
     assert.match(html, /<button type="button" class="sblock on pick" data-speaker="Pro Plus"[\s\S]*?From preset 5 \(Scratch\)<\/span>/);

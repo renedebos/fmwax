@@ -96,7 +96,8 @@ export async function startPlayNow(env, x, { budget = { remaining: 40 }, press =
     const did = { play: x.kind, put: r.status, ...(r.start ? { start: r.start } : {}), ...(r.button ? { button: r.button } : {}) };
     if (r.status !== "own-preset") return { say: `I couldn't start ${who} ${onWords(x.device)}.`, did };
     if (!STARTED.includes(r.start)) return { say: notStarted(r.start, { ...x, kind: "artist", title: who }, r.button), did };
-    const s = await endlessPageSteer(env, { button: r.button, words: x.words, by: "by play now" }).catch(() => ({ status: "failed" }));
+    const s = await endlessPageSteer(env, { button: r.button, words: x.words, by: "by play now",
+      ...(r.start === "pressed" ? { started: x.device } : {}) }).catch(() => ({ status: "failed" }));
     const head = `Starting ${who} ${onWords(x.device)}, on preset ${r.button}, ${owns(who)} own`;
     if (s.status === "asked") return { say: `${head}; the songs turn to ${x.words} after this one.${unconfirmed(r.start)}`, did: { ...did, steer: "asked" } };
     return { say: `${head}. ${s.status === "day-cap" ? `No more DJ runs today, so it can't be steered toward ${x.words}.`

@@ -247,6 +247,18 @@ export const refreshInFlight = {}; // service -> promise
 // testing against the thousand the free tier allows, for a token that lasts
 // an hour. A fresh isolate now takes the stored one while it has a minute
 // left, which costs a KV read, the plentiful kind.
+// A TOKEN THE SERVICE REFUSED (the review, 2026-11-19). A 401 dropped the
+// token from this isolate's memory, and the next call then took the very same
+// token back from KV, where it sits until its stated end: Tidal stayed broken
+// for up to four hours, in every isolate, and a Spotify 401 dropped nothing
+// at all. The refused token is remembered here, and the stored copy of it is
+// passed over for a real refresh.
+export const refusedAccess = {}; // service -> the token last answered with a 401
+export function dropRefused(service, token) {
+  if (!token) return;
+  refusedAccess[service] = token;
+  if (cachedAccess[service]?.token === token) cachedAccess[service] = null;
+}
 export async function getAccessToken(env, service = "spotify") {
   const have = cachedAccess[service];
   if (have && have.expiresAt > Date.now() + 30_000) return have.token;
@@ -254,7 +266,7 @@ export async function getAccessToken(env, service = "spotify") {
     refreshInFlight[service] = (async () => {
       const stored = await loadTokens(env, service);
       const at = Number(stored.expires_at);
-      if (stored.access_token && at > Date.now() + 60_000) {
+      if (stored.access_token && at > Date.now() + 60_000 && stored.access_token !== refusedAccess[service]) {
         cachedAccess[service] = { token: stored.access_token, expiresAt: at };
         return stored.access_token;
       }
@@ -478,10 +490,11 @@ export async function spotify(env, method, path, { params, body, raw, signal } =
   // `raw` sends bytes as they are, with the content type the caller names —
   // the one Spotify endpoint that is not JSON is the cover upload, which
   // takes a bare base64 JPEG under image/jpeg.
+  const token = await getAccessToken(env);
   const r = await subrequest(env, url, {
     method,
     headers: {
-      Authorization: `Bearer ${await getAccessToken(env)}`,
+      Authorization: `Bearer ${token}`,
       ...(body ? { "Content-Type": "application/json" } : {}),
       ...(raw ? { "Content-Type": raw.contentType } : {}),
     },
@@ -518,6 +531,9 @@ export async function spotify(env, method, path, { params, body, raw, signal } =
       (r.status === 429 ? ` (Spotify says retry after ${retryAfter || "an unstated number of"} seconds)` : ""));
     err.status = r.status;
     err.retryAfter = retryAfter;
+    // A token Spotify no longer honours is not used again: the next call
+    // refreshes. This call is not sent twice (its caller's budget is its own).
+    if (r.status === 401) dropRefused("spotify", token);
     if (r.status === 429) {
       await stampThrottle(env, err);
       let reason = null;
@@ -569,11 +585,12 @@ export async function tidal(env, method, path, { params, body } = {}) {
   for (const [k, v] of Object.entries(params ?? {})) {
     if (v !== undefined && v !== null) url.searchParams.set(k, v);
   }
+  let sentWith = null;
   const send = async () => {
     const init = {
       method,
       headers: {
-        Authorization: `Bearer ${await getAccessToken(env, "tidal")}`,
+        Authorization: `Bearer ${sentWith = await getAccessToken(env, "tidal")}`,
         Accept: "application/vnd.api+json",
         ...(body ? { "Content-Type": "application/vnd.api+json" } : {}),
       },
@@ -603,7 +620,7 @@ export async function tidal(env, method, path, { params, body } = {}) {
     // same track twice. The 429's wait goes on the lane, so a caller behind
     // this one waits it out too instead of walking into the same ceiling.
     if (r.status === 401) {
-      cachedAccess.tidal = null;
+      dropRefused("tidal", sentWith);
       r = await send();
     }
     if (r.status === 429) {

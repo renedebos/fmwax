@@ -1719,7 +1719,11 @@ export async function station(env, op, args = {}, { unbudgeted = false } = {}) {
     // are asked once more after a beat. A CLAIM is not: if the first one
     // landed, the second is refused as held, and the caller would give up
     // on a request it in fact holds — so a claim's error stays an error.
-    if (op !== "claim" && /reset|code was updated|durable object/i.test(String(err?.message ?? ""))) {
+    // Nor is a command to the home helper (the review, 2026-11-19): the first
+    // may have gone down the line before the reset; asked again it finds no
+    // line and answers "helper-off", read as "nothing was sent" over a key
+    // that was pressed. Its error stays an error: sent, not known.
+    if (op !== "claim" && op !== "helper-command" && /reset|code was updated|durable object/i.test(String(err?.message ?? ""))) {
       await new Promise((r) => setTimeout(r, 400));
       return (await call()).json();
     }

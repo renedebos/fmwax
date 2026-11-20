@@ -29,7 +29,7 @@ import { parseRoomDevices } from "./room.js";
 import { ringFailedAgain } from "./asks.js";
 import { handleRequest } from "./routes.js";
 import {
-  THROTTLE_KEY, cachedAccess, deviceDisplayName, flushKvTally, flushSpotifyTally,
+  THROTTLE_KEY, cachedAccess, refusedAccess, deviceDisplayName, flushKvTally, flushSpotifyTally,
   getAccessToken, parseAliases, placeOf, reachableDj, resolveDevice, setService,
   stampThrottle, throttledUntil,
 } from "./services.js";
@@ -43,6 +43,22 @@ import { callTool } from "./tools.js";
 import { refireWaiting } from "./writes.js";
 import { SETTINGS_KEEP_MS, houseClaimed, withSettings } from "./settings.js";
 import { stopwatch, withTimings } from "./timing.js";
+
+// A FORM SENT FROM THE PAGE (the review, 2026-11-19; programs.js
+// SUBMIT_GUARD). The house's pages send their own forms, so a press that
+// fails can be said in place. A page's script cannot read where a redirect
+// goes, so for those requests (marked by the page) the "go here next" is
+// handed over as an address, with everything else the answer carried (a
+// cookie for the speaker picked). Any other request gets its redirect as ever.
+function inPage(request, res) {
+  if (request.method !== "POST" || request.headers.get("x-fmwax-page") !== "1" || res.status !== 303) return res;
+  const headers = new Headers(res.headers);
+  const to = headers.get("location");
+  headers.delete("location");
+  headers.set("content-type", "application/json; charset=utf-8");
+  headers.set("cache-control", "no-store");
+  return new Response(JSON.stringify({ to }), { status: 200, headers });
+}
 
 // The request claim ledger's class must be exported from the entry module or
 // the Durable Object binding has nothing to instantiate. The Worker's own use
@@ -58,7 +74,7 @@ export { HouseSettings } from "./settings.js";
 export const __test = {
   getAccessToken,
   // A fresh isolate, for the token tests: nothing cached in memory.
-  forgetAccessTokens: () => { for (const k of Object.keys(cachedAccess)) delete cachedAccess[k]; },
+  forgetAccessTokens: () => { for (const k of Object.keys(cachedAccess)) delete cachedAccess[k]; for (const k of Object.keys(refusedAccess)) delete refusedAccess[k]; },
   pickFor, callTool, snapshotPlaylist, replacePlaylistSafely,
   listSnapshots, snapKey, resolveDevice, pickCover, pickImage,
   undoToSnapshot, deviceDisplayName, house, parseButtons, findDj, parseAliases,
@@ -102,7 +118,7 @@ export default {
       const bare = path === "/health" || /^\/app\.[0-9a-f]{8}\.css$/.test(path);
       if (!bare && await houseClaimed(env)) env = await withSettings(env, ctx, kept ? { keepMs: SETTINGS_KEEP_MS } : undefined);
       watch.lap("settings");
-      return withTimings(await handleRequest(request, env, ctx), watch, path);
+      return withTimings(inPage(request, await handleRequest(request, env, ctx)), watch, path);
     } finally {
       // After the response, never in front of it. A counter that adds latency
       // to a page load has bought the wrong thing.

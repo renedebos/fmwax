@@ -85,7 +85,10 @@ const READ_ENVELOPE = `<?xml version="1.0" encoding="utf-8"?>` +
 // end, on anything that ends it early, or on a hard clock a second after
 // its own timeout. `start(onResponse)` makes the request; `read(res, body)`
 // turns a whole answer into the value.
-export function ask(start, timeout, read) {
+// `seen.reached` is set once the connection to the speaker stood: a request
+// that then ends as nothing was sent and not answered, which is not the same
+// as a speaker that could not be reached at all.
+export function ask(start, timeout, read, seen = null) {
   return new Promise((resolve) => {
     let done = false, req = null;
     const hard = setTimeout(() => fail(), timeout + 1000);
@@ -99,6 +102,10 @@ export function ask(start, timeout, read) {
     });
     req.on("timeout", fail);
     req.on("error", fail);
+    if (seen) req.on("socket", (sock) => {
+      if (!sock.connecting) { seen.reached = true; return; }
+      sock.once(sock.encrypted ? "secureConnect" : "connect", () => { seen.reached = true; });
+    });
   });
 }
 function keyMapping(ip) {
@@ -287,9 +294,9 @@ const SETTLE_MS = { pause: 600, resume: 600, key: 3000, next: 1500, prev: 1500 }
 function status(ip) { return wiim(ip, "getPlayerStatus", true); }
 // The read that names a WiiM and gives its fixed id; null from anything else.
 export function statusEx(ip, timeout = 1500) { return wiim(ip, "getStatusEx", true, timeout); }
-function wiim(ip, command, json, timeout = 4000) {
+function wiim(ip, command, json, timeout = 4000, seen = null) {
   return ask((on) => https.get({ host: ip, path: `/httpapi.asp?command=${command}`, rejectUnauthorized: false, timeout }, on),
-    timeout, (res, body) => (json ? JSON.parse(body) : body.trim() || null));
+    timeout, (res, body) => (json ? JSON.parse(body) : body.trim() || null), seen);
 }
 
 function settings() {
@@ -611,8 +618,14 @@ export async function obey(speakers, m, send = wiim, read = readSpeaker, same = 
   // Another WiiM at that address (2026-11-11): nothing is sent to it. To the
   // house the speaker is out of reach, which it is, at that address.
   if (same && !(await same(m.speaker))) return { id: m.id, ok: false, code: "unreachable" };
-  const said = await send(ip, cmd, false);
-  if (said !== "OK") return { id: m.id, ok: false, code: said == null ? "unreachable" : "failed" };
+  // SENT, NOT ANSWERED, IS NOT "NOT SENT" (the review, 2026-11-19): both were
+  // "unreachable", which the house reads as nothing sent and follows with a
+  // start of its own, so a key that was pressed after all restarted its first
+  // song. A speaker the request reached and that then said nothing is
+  // "no-answer": it may still have happened.
+  const seen = {};
+  const said = await send(ip, cmd, false, undefined, seen);
+  if (said !== "OK") return { id: m.id, ok: false, code: said != null ? "failed" : seen.reached ? "no-answer" : "unreachable" };
   await new Promise((r) => setTimeout(r, SETTLE_MS[m.cmd] ?? 600));
   const st = await read(ip);
   // A key may bring its own EQ: read fresh after one (through the same

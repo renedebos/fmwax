@@ -53,11 +53,16 @@ test("the submit guard disables buttons only AFTER the form has been read", asyn
   const at = html.indexOf('document.addEventListener("submit"');
   assert.ok(at > 0, "the guard is on the page");
   const guard = html.slice(at, html.indexOf("</script>", at));
-  assert.match(guard, /setTimeout\(function \(\) \{[\s\S]*b\.disabled = true[\s\S]*\}, 0\);/,
-    "disabling is deferred behind a zero timer");
-  const outsideTimer = guard.replace(/setTimeout\(function \(\) \{[\s\S]*?\}, 0\);/, "");
-  assert.ok(!outsideTimer.includes("disabled = true"),
-    "and nothing disables a control synchronously in the handler");
+  // A form the browser sends itself: its buttons are disabled behind a zero
+  // timer, after the browser has read them.
+  assert.match(guard, /setTimeout\(function \(\) \{ wait\(f\); \}, 0\);/, "disabling is deferred behind a zero timer");
+  // A form the page sends (the review, 2026-11-19): what is sent is read
+  // first, the pressed button's own name and value with it, and only then
+  // are the buttons disabled.
+  const read = guard.indexOf("new FormData(f)"), sub = guard.indexOf("body.append(sub.name, sub.value)");
+  const disabled = guard.indexOf("wait(f);", sub);
+  assert.ok(read > 0 && sub > read && disabled > sub, "read, the pressed button added, then disabled");
+  assert.equal((guard.match(/wait\(f\)/g) ?? []).length, 2, "and nowhere else");
 });
 
 test("the meter is its own page now", async () => {

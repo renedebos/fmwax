@@ -5213,6 +5213,7 @@ ${liveGuests.length ? `
   </header>
   ${which !== "bench" ? roles.map(([label, r]) => section(label, inRole(r), r)).join("") : ""}${which !== "wall" ? section("Everyone else", everyone, "rest") : ""}
   ${tabBar({ base, active: "djs", owed, talk, loaded })}
+  ${SUBMIT_GUARD}
   <script>
   /* Whose preset is playing: the now bar's answer, as it paints. */
   document.addEventListener("house:now", function (e) {
@@ -5576,28 +5577,111 @@ const WALL_LIVE = `<script>
 // not the thing that makes the write safe. `data-busy` is what the button
 // says while it waits.
 const SUBMIT_GUARD = `<script>
-document.addEventListener("submit", function (ev) {
-  var f = ev.target;
-  if (!f || String(f.method).toLowerCase() !== "post") return;
-  // AFTER the browser has read the form, never before (2026-09-07). The entry
-  // list is built once the submit event has finished dispatching, and a
-  // DISABLED control is left out of it — the pressed button included.
-  // Disabling here synchronously stripped the pressed button's own name and
-  // value from every POST on the site. Only one form ever put a value on a
-  // submit button — the Speakers page's "It says Gatefold" — and there the
-  // right answer arrived as saw="" and was refused as wrong, every time, for
-  // two days; curl and the unit tests never went through this script, so
-  // both kept saying the route was fine. A zero timer runs after the entry
-  // list exists and long before a second tap can land, which is all the
-  // guard is for.
-  setTimeout(function () {
-    f.querySelectorAll('button[type="submit"],button:not([type])').forEach(function (b) {
+/* A PRESS THAT FAILS IS SAID IN PLACE (the review, 2026-11-19). Every Play,
+   key and Ask was a form the browser sent itself: with the phone off the
+   Wi-Fi, or the house in trouble, the page was replaced by the browser's own
+   error page, and the Home Screen app has no Back. A form of the house's
+   pages is now sent from the page: the house answers where to go next (its
+   usual redirect, handed over as an address: worker.js), a refusal's sentence
+   is shown here with the button put back, and no answer at all is said so.
+   Anything this can't send (an old browser, a form of another kind) goes as
+   it always did. */
+(function () {
+  var box = null, hide = null;
+  function say(text) {
+    if (!box) {
+      box = document.createElement("p");
+      box.setAttribute("role", "alert");
+      box.style.cssText = "position:fixed;left:12px;right:12px;bottom:calc(140px + env(safe-area-inset-bottom));z-index:60;margin:0;" +
+        "padding:.8rem 1rem;border-radius:14px;background:#1c2738;color:#f4f5f0;font:600 .9rem/1.4 Archivo,system-ui,sans-serif;" +
+        "box-shadow:0 6px 24px rgba(0,0,0,.28);cursor:pointer";
+      box.addEventListener("click", function () { box.hidden = true; });
+      document.body.appendChild(box);
+    }
+    box.textContent = text; box.hidden = false;
+    clearTimeout(hide); hide = setTimeout(function () { box.hidden = true; }, 20000);
+  }
+  /* A form's buttons, those drawn outside it too (the Shelf's Play discs
+     belong to one form by its id). */
+  function buttons(f) {
+    var all = Array.prototype.slice.call(f.querySelectorAll('button[type="submit"],button:not([type])'));
+    if (f.id) Array.prototype.forEach.call(document.querySelectorAll("button[form]"), function (b) { if (b.form === f && all.indexOf(b) < 0) all.push(b); });
+    return all;
+  }
+  function wait(f) {
+    buttons(f).forEach(function (b) {
+      if (b.__was == null) b.__was = b.innerHTML;
       b.disabled = true;
       var l = b.getAttribute("data-busy");
       if (l) b.textContent = l;
     });
-  }, 0);
-});
+  }
+  function back(f) {
+    f.removeAttribute("data-sending");
+    buttons(f).forEach(function (b) { b.disabled = false; if (b.__was != null) { b.innerHTML = b.__was; b.__was = null; } });
+  }
+  document.addEventListener("submit", function (ev) {
+    var f = ev.target;
+    if (!f || String(f.method).toLowerCase() !== "post") return;
+    if (ev.defaultPrevented) return;
+    var path = ""; try { path = new URL(f.action, location.href).pathname; } catch (e) { path = ""; }
+    var mine = window.fetch && window.FormData && window.URLSearchParams && window.DOMParser && /^\\/(buttons|notes)\\//.test(path) &&
+      !f.target && f.enctype !== "multipart/form-data" && !f.hasAttribute("data-native");
+    if (!mine) {
+      /* AFTER the browser has read the form, never before (2026-09-07): a
+         DISABLED control is left out of what is sent, the pressed button's
+         own name and value included. A zero timer runs after that list
+         exists and long before a second tap can land. */
+      setTimeout(function () { wait(f); }, 0);
+      return;
+    }
+    ev.preventDefault();
+    if (f.getAttribute("data-sending")) return;
+    f.setAttribute("data-sending", "1");
+    var body = new URLSearchParams(new FormData(f)), sub = ev.submitter;
+    if (sub && sub.name) body.append(sub.name, sub.value);
+    if (box) box.hidden = true;
+    wait(f);
+    var ctl = window.AbortController ? new AbortController() : null, late = false;
+    var cut = setTimeout(function () { late = true; if (ctl) ctl.abort(); }, 30000);
+    var how = { method: "POST", body: body, credentials: "same-origin", headers: { "x-fmwax-page": "1" } };
+    if (ctl) how.signal = ctl.signal;
+    fetch(f.action, how)
+      .then(function (r) {
+        clearTimeout(cut);
+        var type = r.headers.get("content-type") || "";
+        if (r.ok && type.indexOf("json") >= 0) {
+          return r.json().then(function (j) {
+            if (!j || !j.to) { location.reload(); return; }
+            var u = new URL(j.to, location.href);
+            if (u.pathname + u.search === location.pathname + location.search) { if (u.hash) location.hash = u.hash; location.reload(); }
+            else location.assign(u.href);
+          });
+        }
+        return r.text().then(function (t) {
+          var said = "";
+          if (type.indexOf("html") >= 0) {
+            var d = new DOMParser().parseFromString(t, "text/html"), w = d.querySelector(".wallnote") || d.querySelector("main") || d.body;
+            said = w ? w.textContent : "";
+          } else if (r.status < 500) said = t;
+          said = String(said || "").replace(/\\s+/g, " ").trim().slice(0, 400);
+          back(f);
+          say(said || "The house could not do that just now (" + r.status + "). Nothing more was done.");
+        });
+      })
+      .catch(function () {
+        clearTimeout(cut);
+        back(f);
+        say(late ? "The house did not answer in time. It may still have happened: look at what is playing before you try again."
+          : "The house could not be reached. Check the phone's connection and try again.");
+      });
+  });
+  /* A page brought back by the browser's Back has its buttons again. */
+  window.addEventListener("pageshow", function (ev) {
+    if (!ev.persisted) return;
+    Array.prototype.forEach.call(document.querySelectorAll("form[data-sending]"), back);
+  });
+})();
 </script>`;
 
 // `backLabel` because a refusal from the shelf that offers the way back to the

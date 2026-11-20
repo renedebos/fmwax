@@ -244,6 +244,15 @@ test("play now, started: an album as itself, a house DJ's own preset steered, a 
   assert.deepEqual(keys, [4]);
   assert.equal(own.did.start, "pressed");
   assert.equal(own.did.steer, "asked");
+  // And when Spotify has not caught up with the press yet (the review,
+  // 2026-11-19): the helper pressed the key and read the speaker back, so the
+  // words are filed all the same. They were dropped as "not playing".
+  const e7 = env();
+  sp.me.ctx = "spotify:playlist:somethingelse0000000000";
+  const lag = await startPlayNow(e7, funk, { press: async () => "ok" });
+  assert.equal(lag.did.start, "pressed");
+  assert.equal(lag.did.steer, "asked", "the steer is filed without waiting for Spotify");
+  assert.match(lag.say, /the songs turn to/);
 });
 
 // Through the Alexa door, the search answered at the network.
