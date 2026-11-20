@@ -74,7 +74,11 @@ const MARKERS = {
     "radio session", "radio sessions", "bbc session", "bbc sessions", "in session", "live in the studio"],
   "soul": ["stax", "motown", "tamla", "tamla motown", "hi records", "fame studios", "muscle shoals", "chess records",
     "philly soul", "philadelphia soul", "southern soul", "northern soul", "memphis soul", "deep soul", "atlantic soul"],
-  "hank": ["daptone", "colemine", "big crown", "soul revival", "revival soul", "new soul", "modern soul", "retro soul",
+  // The labels of the revival are Hank's by name (the owner, 2026-11-19:
+  // "the Ubiquity label" with no DJ named went to Soul, whose years end in
+  // 1979; Ubiquity began in 1990).
+  "hank": ["daptone", "colemine", "big crown", "ubiquity", "ubiquity records", "now again", "truth and soul", "truth soul", "timmion",
+    "penrose", "record kicks", "dunham", "soul revival", "revival soul", "new soul", "modern soul", "retro soul",
     "modern funk", "new funk"],
   "americana": ["americana", "alt country", "alternative country", "no depression", "cosmic country"],
   "pub-rock": ["pub rock"],

@@ -415,3 +415,13 @@ test("stage 5: a house DJ with words is their preset steered; Deep Dive with an 
   assert.equal(vibe.did.put, "making");
   assert.deepEqual(asked, []);
 });
+
+// THE REVIVAL'S LABELS ARE HANK'S (the owner, 2026-11-19: "the Ubiquity
+// label" by Talk, no DJ named, went to Soul, whose years end in 1979).
+test("a revival label said with no DJ is Hank's; Stax stays Soul's", async () => {
+  const { readPlayNow, beforeSearch } = await import("../playnow.js");
+  for (const w of ["Ubiquity Records", "the Ubiquity label", "music from the Ubiquity label", "some Daptone", "Now-Again", "Truth & Soul"]) {
+    assert.equal(beforeSearch(readPlayNow(`play ${w}`, { rooms: [] }))?.dj, "hank", w);
+  }
+  assert.equal(beforeSearch(readPlayNow("play some Stax", { rooms: [] }))?.dj, "soul");
+});

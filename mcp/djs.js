@@ -245,7 +245,7 @@ export const PERSONAS = {
     colour: { field: "#C9962B", ink: "#241A08" },
     name: "Hank",
     aliases: ["hank"],
-    summary: "Post-1990 funk and soul, programmed by label. The 45 is the unit.",
+    summary: "Post-1990 funk and soul, programmed by label: Daptone, Colemine, Ubiquity, Big Crown. The 45 is the unit.",
     brief:
       "PROGRAMS BY the label and the 45. In this scene the label is the " +
       "guarantee — Colemine, Daptone, Big Crown, Ubiquity, Timmion, Penrose, " +
@@ -1112,7 +1112,7 @@ export const WHICH = {
   "deep-dive": { script: "people", by: "one artist", field: "Any artist you name, their own records only", pick: "One artist's whole career, endless: the hits and everything around them", skip: "Many artists for a room, or one album played whole", minutes: 60 },
   "dr-funkenstein": { script: "people", by: "the groove and the players", field: "Deep 60s and 70s funk and soul", pick: "Deep cuts, drummers, the records hip-hop sampled", skip: "Soul classics, or anything that was on the radio", minutes: 45 },
   "soul": { script: "label", by: "the label, South or North", field: "Soul 1959–79: Stax, Hi, FAME, Motown, Chess, Philadelphia", pick: "A label's story, a writing team, the South or the North", skip: "Disco, after 1979, deep cuts for their own sake", minutes: 60 },
-  "hank": { script: "label", by: "the label and the 45", field: "Modern funk and soul revival: Daptone, Colemine and friends", pick: "Current revival soul, new 45s, an hour of one label", skip: "Anything recorded before 1990", minutes: 60 },
+  "hank": { script: "label", by: "the label and the 45", field: "Modern funk and soul revival: Daptone, Colemine, Ubiquity and friends", pick: "Current revival soul, new 45s, an hour of one label", skip: "Anything recorded before 1990", minutes: 60 },
   "pub-rock": { script: "years", by: "the London pub circuit", field: "London pub rock and what its people made later", pick: "Canvey Island, early Stiff, the Brinsley Schwarz family tree", skip: "Punk, new wave, or the American records they covered", minutes: 45 },
   "gatefold": { script: "piece", by: "the album", field: "LP-era albums in any genre", pick: "Album sequencing and the deep sides of classic LPs", skip: "Singles, greatest hits, anything after the CD", minutes: 90 },
   "genre": { script: "idea", by: "the genre you name", field: "Any genre or scene no other DJ owns", pick: "A genre all night: 80s new wave, Delta blues, Krautrock", skip: "Genres a DJ owns, or one artist", minutes: 60 },

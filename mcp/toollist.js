@@ -528,7 +528,7 @@ export const TOOLS = [
       "One Spotify search reads it; an artist, a song or a genre starts at once on the guest DJ's preset (3) with " +
       "the songs it found, and the DJ who fits (Deep Dive for an artist or a song, Genre for a genre) carries it on " +
       "from the next song, endless; an album plays as itself, in order; a style a house DJ owns (funk of the 70s, " +
-      "Stax, acoustic) starts that DJ's own preset, steered toward it. Whoever was the guest DJ is replaced, at once. " +
+      "Stax, acoustic, a revival label like Daptone or Ubiquity) starts that DJ's own preset, steered toward it. Whoever was the guest DJ is replaced, at once. " +
       "A DJ NAMED is play_endless, never this; a LENGTH or \"a set\" is a set asked of a DJ. " +
       "`status` \"unsure\": the search found two things (the album Pet Sounds and the song): ask the person " +
       "`question`, then call again with \"the album …\", \"the song …\" or \"the band …\" before the words. " +
@@ -557,6 +557,9 @@ export const TOOLS = [
       "ONE ARTIST, ENDLESS is Deep Dive with the artist in `words`: \"Michael Jackson, endless\". A GENRE " +
       "no DJ owns is Genre with the genre in `words`: \"80s new wave, endless\". LIVE VERSIONS, a band in " +
       "a small room (sessions, unplugged, Tiny Desk) are Sessions, with a series or years in `words` if said. " +
+      // The owner, 2026-11-19: "the Ubiquity label" went to Soul.
+      "A SOUL OR FUNK LABEL OF THE 1990s ON (Daptone, Colemine, Ubiquity, Big Crown, Now-Again, Timmion) is Hank's, " +
+      "never Soul's: Soul is 1959 to 1979 only (Stax, Motown, Hi, Chess). " +
       // Words for any guest (2026-10-13, with the merges).
       "Any other guest may be given `words` too, optional: Vibe a mood (\"the room\", \"the morning\", " +
       "\"the small hours\"), Soul a half or a label (\"the South (Stax)\", \"the North (Motown)\"). " +
