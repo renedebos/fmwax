@@ -111,6 +111,9 @@ test("two open lines spend two seconds a second: the cap moment comes twice as f
   assert.deepEqual(due(rows, T0 + 30_000 + 19_000), [], "a second before it, neither");
   assert.equal(voiceCapMs(rows), 100_000);
   assert.equal(voiceCapMs([], 45), 2_700_000, "no rows: the caller's number");
+  // The newest line's cap, raised or lowered (the review, 2026-11-19).
+  assert.equal(voiceCapMs([{ created_at: 1, cap_sec: 3600 }, { created_at: 2, cap_sec: 600 }]), 600_000, "lowered mid-day: the open lines follow");
+  assert.equal(voiceCapMs([{ created_at: 1, cap_sec: 600 }, { created_at: 2, cap_sec: 3600 }]), 3_600_000, "raised mid-day");
   // The settled rows count (Codex, MC16-8N2A): fifty-eight minutes done, one line open — hung up two minutes in.
   const settled = { cap: cap(3), day: "d", created_at: T0 - 100 * MIN, last_beat: T0 - 42 * MIN, cap_sec: 3600, settled_at: T0 - 42 * MIN, settled_sec: 58 * 60, session_id: "c", closed_by: "server" };
   const line = { ...rows[0], cap_sec: 3600 };
@@ -178,8 +181,11 @@ test("done hangs up at OpenAI: the outcome decides the row, and a transport fail
 
 test("voiding gives an unopened line back; a bound or settled one cannot be voided", async () => {
   const e = makeEnv();
-  await reserve(e, 1); await reserve(e, 2); await reserve(e, 3);
+  // Two lines at once and no more (2026-11-19): the third opens once the first is given back.
+  await reserve(e, 1); await reserve(e, 2);
+  assert.equal((await reserve(e, 3)).code, "lines");
   assert.deepEqual(await station(e, "voice-void", { cap: cap(1) }), { ok: true });
+  await reserve(e, 3);
   assert.deepEqual(await station(e, "voice-check", { cap: cap(1), now: T0 + 1 }), { ok: true, live: false, day: null }, "gone");
   assert.deepEqual(await station(e, "voice-void", { cap: cap(1) }), { ok: false, code: "unknown-session" });
   assert.deepEqual(await station(e, "voice-bind", { cap: cap(2), session_id: "live_abc" }), { ok: true });
@@ -279,4 +285,15 @@ test("the sideband close is refused without a key and reports an attach that yie
   const ws2 = { accept() {}, send() {}, addEventListener() {}, close() {} };
   const late = await closeLiveSession({ OPENAI_API_KEY: "sk-x" }, "live_3", { fetcher: async () => ({ status: 101, webSocket: ws2 }), timeoutMs: 20 });
   assert.deepEqual(late, { closed: false, seconds: null, reason: "no-closed-event", retry: true });
+});
+
+// TWO LINES AT ONCE, NO MORE (the review, 2026-11-19).
+test("a third Talk line is refused while two are open, and allowed once one has ended", async () => {
+  const { voiceDecide } = await import("../station.js");
+  const day = "2026-09-12", T = Date.parse("2026-09-12T20:00:00Z");
+  const open = (n) => ({ cap: "c".repeat(31) + n, day, created_at: T, last_beat: T, cap_sec: 3600, reserved_min: 0, settled_sec: null, settled_at: null, session_id: null, closed_by: null, close_tries: 0, retry_after: null });
+  const third = { cap: "d".repeat(32), day, cap_minutes: 60 };
+  assert.equal(voiceDecide("voice-reserve", third, [open(1), open(2)], null, T + 5_000).code, "lines");
+  assert.equal(voiceDecide("voice-reserve", third, [open(1), { ...open(2), settled_at: T + 1000, settled_sec: 1 }], null, T + 5_000).ok, true);
+  assert.equal(voiceDecide("voice-reserve", third, [open(1), open(2)], null, T + 10 * 60_000).ok, true, "lines left behind have lapsed");
 });

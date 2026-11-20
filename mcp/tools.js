@@ -766,6 +766,15 @@ export async function callTool(env, name, args, budget) {
             return closeJob("past-the-ceiling", `${djName}'s ${p.hours} hours are up; the set plays out.`);
           }
           await endlessGuard(env, p);
+          // THE LIST AS IT IS NOW (the review, 2026-11-19): whether autoplay
+          // took over, and where the first new song sits, were judged from
+          // the list the ledger held when this began. A list changed since
+          // (a steer that landed meanwhile, a restore, the Spotify app) made
+          // the set restart for nothing, or at the wrong song. Read fresh;
+          // the ledger's copy only when Spotify won't say.
+          let listed = null;
+          try { listed = await endlessTracks(env, p.playlist); } catch { listed = null; }
+          const was = Array.isArray(listed) ? listed : before;
           await catalogFor(env, "spotify").appendItems(p.playlist, keep);
           // IF AUTOPLAY ALREADY TOOK OVER (the list ran out before this landed),
           // the new songs sit after a finished list and would never play. The
@@ -773,8 +782,8 @@ export async function callTool(env, name, args, budget) {
           // playing it — what pressing the key would do, one song on.
           let resumed = null, landedAt = null;
           try {
-            const inList = Array.isArray(before) && before.some((t) => t[0] === pl?.item?.uri);
-            if (onIt && Array.isArray(before) && !inList && pl?.device?.name) {
+            const inList = Array.isArray(was) && was.some((t) => t[0] === pl?.item?.uri);
+            if (onIt && Array.isArray(was) && !inList && pl?.device?.name) {
               await startPlaylistOnDevice(env, { id: p.playlist, name: djName, catalog: "spotify" }, pl.device.name,
                 { remaining: 16 }, { uri: keep[0], positionMs: 0 });
               resumed = pl.device.name;
@@ -788,7 +797,7 @@ export async function callTool(env, name, args, budget) {
                 let now2 = await playerState(envR);
                 if (now2?.item?.uri !== keep[0] && now2?.device?.id) {
                   await spotify(envR, "PUT", "/me/player/play", { params: { device_id: now2.device.id },
-                    body: { context_uri: `spotify:playlist:${p.playlist}`, offset: { position: before.length }, position_ms: 0 } });
+                    body: { context_uri: `spotify:playlist:${p.playlist}`, offset: { position: was.length }, position_ms: 0 } });
                   await new Promise((r) => setTimeout(r, 1500));
                   now2 = await playerState(envR);
                 }
@@ -814,7 +823,11 @@ export async function callTool(env, name, args, budget) {
       // read after a top-up reports the playlist as "edited by hand".
       if (tracks && kind !== "steer") await endlessWrote(env, p.playlist, tracks.map((t) => t[0]));
       try {
-        await endlessUpdate(env, (st) => {
+        // THE SONGS ARE ON THE LIST: the job must close (the review,
+        // 2026-11-19). A ledger too busy to take this left the job open, to
+        // be offered again after its lease and appended a second time. Tried
+        // again, a few seconds apart, before giving up.
+        const landed = (st) => {
           // The lane changed hands since the write (Codex's fix check 7):
           // the job closes, and the new tenancy's session is not touched.
           if (p.lane && (Number(st.lane?.tenancy) || 0) !== (Number(job.tenancy) || 0)) {
@@ -840,7 +853,12 @@ export async function callTool(env, name, args, budget) {
           // A landed job need not be kept: its record is the log line below.
           delete st.jobs[jobId];
           return {};
-        });
+        };
+        for (let i = 0; i < 3; i++) {
+          const saved = await endlessUpdate(env, landed);
+          if (saved?.status !== "busy") break;
+          await new Promise((r) => setTimeout(r, 1500));
+        }
       } catch { /* the watch re-reads the list next session */ }
       const mins = tracks && kind !== "steer" ? Math.round(tracks.slice(-keep.length).reduce((a, t) => a + (t[1] || 0), 0) / 60000) : null;
       await endlessLog(env, logEvents.map((e) => ({ at: Date.now(), btn: p.button, event: e.event,

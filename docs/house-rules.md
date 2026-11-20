@@ -245,6 +245,8 @@ The WiiMs are fixed volume: your amp decides how loud. Nothing the app sends can
 
 **{talk minutes} minutes a day**, counted by the server's clock. The day resets at midnight, {time zone}. [voice.js `CAP_MINUTES`; the house's time zone, `HOUSE_TZ`]
 
+**Two lines at once, no more** (since 2026-11-19): a phone and the TV can each have Talk open. A third is told to wait for one to end; a line left behind ends within a minute or two. If the owner lowers the day's minutes on the setup page, that holds from the next line that opens. And removing Talk there also removes the key the house kept for hanging calls up. [station.js `VOICE_LINES_MAX`, `voiceCapMs`]
+
 **The line hangs up by itself, because it costs money while it's open, even in silence.**
 
 - **When nobody is talking:** 30 seconds after the desk's last word.

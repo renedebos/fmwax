@@ -84,3 +84,17 @@ test("a modern request in a version the door does not speak: 400 and the version
   assert.equal(body.error.code, -32022);
   assert.deepEqual(body.error.data, { supported: ["2026-07-28", "2025-06-18", "2025-03-26", "2024-11-05"], requested: "2027-01-01" });
 });
+
+// BOUNDED, AND EVERY ENTRY A MESSAGE (the review, 2026-11-19).
+test("a malformed batch, an empty one and an oversized body are refused, not thrown", async () => {
+  const e = house();
+  const post = (body) => worker.fetch(new Request(`https://x.test/mcp/${OWNER}`, { method: "POST", headers: { "content-type": "application/json" }, body }), e);
+  for (const bad of ["[null]", "[]", "[1]", "[[]]", "null"]) {
+    const r = await post(bad);
+    assert.equal(r.status, 400, bad);
+    assert.equal((await r.json()).error.code, -32600, bad);
+  }
+  assert.equal((await post(JSON.stringify(Array.from({ length: 51 }, (_, i) => ({ jsonrpc: "2.0", id: i, method: "ping" }))))).status, 400);
+  assert.equal((await post(`{"jsonrpc":"2.0","id":1,"method":"ping","params":{"x":"${"a".repeat(2_000_001)}"}}`)).status, 413);
+  assert.equal((await post("{not json")).status, 400);
+});

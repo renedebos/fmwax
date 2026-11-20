@@ -321,6 +321,12 @@ function settings() {
 // says them; one that knows only their names (set up on its page) is told
 // where they are, once found here. A house that does not answer: the owner's
 // file, when it is this house's.
+export function homeAddress(a) {
+  if (typeof a !== "string" || !/^\d{1,3}(\.\d{1,3}){3}$/.test(a)) return false;
+  const p = a.split(".").map(Number);
+  if (p.some((n) => n > 255)) return false;
+  return p[0] === 10 || (p[0] === 192 && p[1] === 168) || (p[0] === 172 && p[1] >= 16 && p[1] <= 31);
+}
 export async function houseSpeakers(cfg, { get = fetch, log = console.log, match = matchWiims,
   find = (names) => { const plan = searchPlan(names); return findWiims(plan.nets, undefined, { enough: plan.enough }); } } = {}) {
   const auth = { authorization: `Bearer ${cfg.secret}` };
@@ -331,7 +337,14 @@ export async function houseSpeakers(cfg, { get = fetch, log = console.log, match
   } catch { said = null; }
   if (!said) return Object.keys(cfg.fileSpeakers ?? {}).length ? { ...cfg.fileSpeakers } : null;
   cfg.learns = !!said.learns;
-  if (Object.keys(said.speakers ?? {}).length) return said.speakers;
+  // Only addresses at home (the review, 2026-11-19): what the house says is
+  // asked questions and sent commands, so an address anywhere else is left.
+  const named = {};
+  for (const [n, ip] of Object.entries(said.speakers ?? {})) {
+    if (homeAddress(ip)) named[n] = ip;
+    else log(new Date().toISOString(), "the house names", n, "at", String(ip).slice(0, 40), "- not an address at home, left alone");
+  }
+  if (Object.keys(named).length) return named;
   if (!said.learns) return null;
   log(new Date().toISOString(), "finding the WiiMs on this network");
   const { speakers, unmatched, missing } = await match(said.names ?? [], await find(said.names ?? []));

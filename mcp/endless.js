@@ -158,6 +158,9 @@ export async function endlessLoad(env) {
 export async function endlessSave(env, state) {
   const out = await station(env, "endless-put", { doc: state, ifRev: Number(state.rev) || 0 });
   if (out?.ok) { state.rev = out.rev; return true; }
+  // Refused for its size (station.js): said where a log can show it, since
+  // every write will be refused until the state is smaller.
+  if (out?.tooLarge) console.error("endless: the state is too large to save; nothing was written");
   return false;
 }
 // Read, change, write — again from the top if something else wrote first.

@@ -23,7 +23,7 @@ import { endlessLoad, endlessNoStart, endlessPageSteer, endlessPresets, endlessS
 import { findDj, house, presetOnFile } from "./house.js";
 import { helperCommand, helperGot, helperViewOf, onStream, readPauseNote } from "./now.js";
 import { startPlaylistOnDevice } from "./playback.js";
-import { parseSpeakers, readReadings } from "./room.js";
+import { foldName, parseSpeakers, readReadings } from "./room.js";
 import { catalogFor, playerState, playlistItems, programsKV, throttledUntil, withBudget } from "./services.js";
 import { trackRecord } from "./shelf.js";
 import { fingerprintUris, getRequestRecord, putRequestRecord, SETTLED_TTL_MS } from "./station.js";
@@ -39,7 +39,7 @@ export const ACT_DEADLINE_MS = 5000;
 export const alexaActClock = { deadlineMs: ACT_DEADLINE_MS };
 export const alexaActs = (env) => env?.ALEXA_ACTS === "on";
 
-const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+const fold = foldName;
 const nameOf = (key) => ROSTER[key]?.name ?? key;
 const SPOTIFY_LIMITED = "Spotify is limiting the house's requests for a while, so I can't do that now. Try again later.";
 

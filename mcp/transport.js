@@ -12,11 +12,11 @@
 import { endlessAfterSkip, sleptThrough } from "./endless.js";
 import { dropPauseNote, nowAnswer, PAUSE_NOTE_KEY, PAUSE_NOTE_MS, readPauseNote, roomPlaying, shelfQueueFor } from "./now.js";
 import { startPlaylistOnDevice, startUrisOnDevice } from "./playback.js";
-import { readReadings } from "./room.js";
+import { foldName, readReadings } from "./room.js";
 import { playerState, programsKV, resolveDevice, spotify, withBudget } from "./services.js";
 import { moveTo } from "./shelf.js";
 
-const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+const fold = foldName;
 
 // A SPOTIFY PAUSE, WRITTEN DOWN (MC-21): the device Spotify plays on is
 // paused, and what stopped is kept as the bar's pause note, so the bar says
@@ -25,6 +25,13 @@ const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
 // through this. The note is null when only the note could not be kept.
 export async function pauseNoted(env, envB, st, deviceName, boxes) {
   await spotify(envB, "PUT", "/me/player/pause", { params: { device_id: st.device.id } });
+  // THE PAUSE HAS HAPPENED (the review, 2026-11-19): nothing after it may
+  // throw. The readings and the Shelf's queue below are the note's
+  // trimmings; one of them failing answered "Spotify refused the pause, it
+  // plays on" over a room that had gone quiet.
+  try { return await notePause(env, st, deviceName, boxes); } catch { return null; }
+}
+async function notePause(env, st, deviceName, boxes) {
   const p = roomPlaying(st);
   const bar = await nowAnswer(env, null, p, { recs: await readReadings(env, boxes) });
   const shelf = await shelfQueueFor(env, p);

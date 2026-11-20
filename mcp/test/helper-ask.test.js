@@ -78,3 +78,18 @@ test("a command the speaker did not answer is no-answer; one that never reached 
   assert.equal((await obey(sp, m, async () => null)).code, "unreachable");
   assert.equal((await obey(sp, m, async () => "nope")).code, "failed");
 });
+
+// A SPEAKER'S ADDRESS IS ONE AT HOME (the review, 2026-11-19).
+test("only an address at home is a speaker's: at the helper and at the house", async () => {
+  const { homeAddress, houseSpeakers } = await import("../../helper/fmwax-helper.mjs");
+  const room = await import("../room.js");
+  for (const f of [homeAddress, room.homeAddress]) {
+    for (const a of ["192.168.4.45", "10.0.0.7", "172.16.0.1", "172.31.255.254"]) assert.equal(f(a), true, a);
+    for (const a of ["8.8.8.8", "172.32.0.1", "169.254.169.254", "127.0.0.1", "192.168.1.999", "example.com", "", null, "192.168.4.45:80"]) assert.equal(f(a), false, String(a));
+  }
+  const said = { learns: false, speakers: { "Pro Plus": "192.168.4.45", Ultra: "203.0.113.9" } };
+  const lines = [];
+  const got = await houseSpeakers({ url: "https://x.test", secret: "s" }, { get: async () => Response.json(said), log: (...a) => lines.push(a.join(" ")) });
+  assert.deepEqual(got, { "Pro Plus": "192.168.4.45" });
+  assert.match(lines.join("\n"), /Ultra at 203\.0\.113\.9 - not an address at home/);
+});

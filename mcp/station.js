@@ -725,12 +725,16 @@ export const voiceChargeSec = (row, now) => Math.round(voiceChargeMs(row, now) /
 export const voiceUsedSec = (rows, now) => Math.round(voiceUsedMs(rows, now) / 1000);
 export const voiceMinutes = (ms) => Math.ceil(Math.max(0, ms) / 60_000);
 // The day's cap in milliseconds, as the rows recorded it (the Worker passes
-// it on every reserve; the largest wins, so raising the cap mid-day takes
-// effect).
+// it on every reserve). THE NEWEST LINE'S WINS (the review, 2026-11-19): it
+// was the largest, so raising the cap mid-day took effect and lowering it
+// did not, for the lines already open. The newest row carries the setting
+// as it stood when the last line opened, either way.
 export function voiceCapMs(rows, fallbackMin = 60) {
-  const caps = rows.map((r) => r.cap_sec).filter((c) => Number.isFinite(c) && c > 0);
-  return (caps.length ? Math.max(...caps) : fallbackMin * 60) * 1000;
+  const capped = rows.filter((r) => Number.isFinite(r.cap_sec) && r.cap_sec > 0);
+  const newest = capped.reduce((a, r) => (!a || (r.created_at ?? 0) >= (a.created_at ?? 0) ? r : a), null);
+  return (newest ? newest.cap_sec : fallbackMin * 60) * 1000;
 }
+export const VOICE_LINES_MAX = 2;
 // Live: open, and beaten within the grace.
 export function voiceLive(row, now) {
   return !!row && row.settled_at == null && now <= voiceDeadAt(row);
@@ -835,6 +839,11 @@ export function voiceDecide(op, args = {}, dayRows = [], row = null, now = Date.
     if (!CAP_SHAPE.test(String(args.cap ?? ""))) return { ok: false, code: "bad-cap" };
     if (!DAY_SHAPE.test(String(args.day ?? ""))) return { ok: false, code: "bad-day" };
     if (row) return { ok: false, code: "exists" };
+    // TWO LINES AT ONCE, NO MORE (the review, 2026-11-19): any number could
+    // be opened side by side, and twenty-five of them spent a day's minutes
+    // in about one. A phone and the TV can each hold a line; a third waits
+    // for one to end (a line left behind ends within its ninety seconds).
+    if (dayRows.filter((r) => voiceLive(r, now)).length >= VOICE_LINES_MAX) return { ok: false, code: "lines" };
     const capSec = Math.max(1, Math.round(capMin)) * 60;
     const usedMs = voiceUsedMs(dayRows, now);
     if (capSec * 1000 - usedMs < 60_000) {
@@ -914,6 +923,7 @@ export function voiceDecide(op, args = {}, dayRows = [], row = null, now = Date.
 // up at the day's cap, long after the request is gone, still can. Without
 // it a house on a given key could open calls its cap could not close.
 export const VOICE_KEY_AT = "voice:close-key";
+export const VOICE_KEY_FORGET = "voice:close-key-forget";
 export const voiceCloseKey = (env, kept) => env?.OPENAI_API_KEY || (typeof kept === "string" && kept ? kept : null);
 export async function closeLiveSession(env, sessionId, { fetcher = fetch, timeoutMs = 8000 } = {}) {
   const key = env?.OPENAI_API_KEY;
@@ -1150,6 +1160,16 @@ export class StationLedger {
   // day's cap is spent, every failed close whose retry is due — the charge's
   // end written FIRST, then OpenAI told, a few at a time, then the outcome
   // applied to the row as it is by then. The page's word is never needed.
+  // The kept key deleted, when it was asked to go and no call is left that
+  // the house has yet to hang up. True when it is gone.
+  async #voiceKeyGo() {
+    if (!(await this.state.storage.get(VOICE_KEY_FORGET))) return false;
+    const open = this.sql.exec("SELECT COUNT(*) AS n FROM voice_sessions WHERE closed_by IS NULL").toArray()[0]?.n ?? 0;
+    if (open > 0) return false;
+    await this.state.storage.delete(VOICE_KEY_AT);
+    await this.state.storage.delete(VOICE_KEY_FORGET);
+    return true;
+  }
   async #voiceSweep(now) {
     const closed = [];
     for (const [day, { pending, totals }] of this.#voiceDays(now)) {
@@ -1176,6 +1196,7 @@ export class StationLedger {
   }
   async alarm() {
     await this.#voiceSweep(Date.now());
+    await this.#voiceKeyGo();
   }
 
   #save(row) {
@@ -1508,6 +1529,18 @@ export class StationLedger {
         JSON.stringify(doc).slice(0, 20_000));
       return Response.json({ ok: true });
     }
+    // ONE SPEAKER'S READ-BACK, MERGED HERE (the review, 2026-11-19). A press
+    // read the document, added its speaker and wrote the whole back as two
+    // calls; a reading the helper posted between them was overwritten, and
+    // the other speaker's fresher word lost for up to a minute. Merged in
+    // one call, nothing can come between.
+    if (op === "helper-merge") {
+      const had = this.#stateDoc("helper");
+      const doc = helperPutDoc(had, { at: now, speakers: { ...(had?.speakers ?? {}), ...(args.speakers ?? {}) } }, now);
+      this.sql.exec("INSERT OR REPLACE INTO endless_state (k, doc) VALUES ('helper', ?)",
+        JSON.stringify(doc).slice(0, 20_000));
+      return Response.json({ ok: true });
+    }
     // The helper's word, and with it the house's kept Spotify answer (MC-29),
     // so a page's poll asks the ledger once for both.
     if (op === "helper-get") {
@@ -1575,8 +1608,13 @@ export class StationLedger {
         return Response.json({ ok: false, conflict: true, rev: had });
       }
       const doc = { ...(args.doc ?? {}), rev: had + 1 };
-      this.sql.exec("INSERT OR REPLACE INTO endless_state (k, doc) VALUES ('watch', ?)",
-        JSON.stringify(doc).slice(0, 1_500_000));
+      // TOO LARGE IS REFUSED, NOT CUT (the review, 2026-11-19): a document
+      // cut at the cap is no longer JSON, reads back as nothing, and every
+      // endless DJ's state would start again without a word. The state as
+      // it was is kept, and the caller is told.
+      const text = JSON.stringify(doc);
+      if (text.length > 1_500_000) return Response.json({ ok: false, tooLarge: true, rev: had });
+      this.sql.exec("INSERT OR REPLACE INTO endless_state (k, doc) VALUES ('watch', ?)", text);
       return Response.json({ ok: true, rev: had + 1 });
     }
     if (op === "endless-log") {
@@ -1607,7 +1645,19 @@ export class StationLedger {
 
     // The Talk ledger: reserve, bind, check, settle, sweep, and the day's
     // total. One row per session; nothing here touches a request row.
-    if (op === "voice-sweep") return Response.json(await this.#voiceSweep(now));
+    // TALK'S KEY, LET GO (the audit of 2026-11-15, the review of 2026-11-19):
+    // the key kept here to hang calls up stayed after Talk was removed on the
+    // setup page. Removal asks for this: the key goes at once when no call
+    // still needs hanging up, else as soon as the last one has been.
+    if (op === "voice-forget-key") {
+      await this.state.storage.put(VOICE_KEY_FORGET, 1);
+      return Response.json({ ok: true, gone: await this.#voiceKeyGo() });
+    }
+    if (op === "voice-sweep") {
+      const swept = await this.#voiceSweep(now);
+      await this.#voiceKeyGo();
+      return Response.json(swept);
+    }
     if (op === "voice-reserve" || op === "voice-bind" || op === "voice-beat" || op === "voice-check" ||
         op === "voice-settle" || op === "voice-void" || op === "voice-day" ||
         op === "voice-list" || op === "voice-relabel") {
@@ -1615,6 +1665,7 @@ export class StationLedger {
       // Kept for the close (voiceCloseKey), and never part of any answer.
       if (op === "voice-reserve" && typeof args.close_key === "string" && args.close_key && args.close_key.length <= 300) {
         await this.state.storage.put(VOICE_KEY_AT, args.close_key);
+        await this.state.storage.delete(VOICE_KEY_FORGET);
       }
       const cap = String(args.cap ?? "");
       const row = cap

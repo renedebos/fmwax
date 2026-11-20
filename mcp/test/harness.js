@@ -493,6 +493,11 @@ export function makeStation() {
       endless.helper = JSON.stringify(helperPutDoc(endless.helper ? JSON.parse(endless.helper) : null, args.doc, now));
       return { ok: true };
     }
+    if (op === "helper-merge") {
+      const had = endless.helper ? JSON.parse(endless.helper) : null;
+      endless.helper = JSON.stringify(helperPutDoc(had, { at: now, speakers: { ...(had?.speakers ?? {}), ...(args.speakers ?? {}) } }, now));
+      return { ok: true };
+    }
     if (op === "helper-get") return { ok: true, doc: endless.helper ? JSON.parse(endless.helper) : null, hands: !!endless.hands,
       player: keptPlayerOut(endless.player ? JSON.parse(endless.player) : null) };
     if (op === "helper-forget") { delete endless.helper; return { ok: true }; }
@@ -634,6 +639,7 @@ export function makeStation() {
       }
       return { ok: true, closed, next: null };
     }
+    if (op === "voice-forget-key") return { ok: true, gone: true };
     if (op === "voice-reserve" || op === "voice-bind" || op === "voice-beat" || op === "voice-check" ||
         op === "voice-settle" || op === "voice-closing" || op === "voice-void" || op === "voice-day" ||
         op === "voice-list" || op === "voice-relabel") {

@@ -639,6 +639,12 @@ describe("the kept player answer against the real binding", () => {
     expect((await call("helper-get", {})).doc).toMatchObject({ at: 2000, changedAt: 1000 });
     await call("helper-put", { doc: { at: 3000, speakers: { "Pro Plus": { ...sp["Pro Plus"], track: "Mother Popcorn" } } }, now: 3000 });
     expect((await call("helper-get", {})).doc.changedAt).toBe(3000);
+    // A press's read-back is merged in one call: the other speaker's reading stays.
+    await call("helper-merge", { speakers: { Ultra: { name: "Ultra", state: "play", source: "Tidal" } }, now: 3500 });
+    const merged = (await call("helper-get", {})).doc;
+    expect(Object.keys(merged.speakers).sort()).toEqual(["Pro Plus", "Ultra"]);
+    expect(merged.speakers["Pro Plus"].track).toBe("Mother Popcorn");
+    expect(merged.at).toBe(3500);
     expect((await call("player-put", { at: 4000, st: { is_playing: true, item: { name: "Mother Popcorn" } } })).kept).toBe(true);
     expect((await call("helper-get", {})).player).toEqual({ at: 4000, st: { is_playing: true, item: { name: "Mother Popcorn" } } });
     expect((await call("player-put", { at: 3500, st: {} })).kept).toBe(false);
@@ -728,5 +734,17 @@ describe("maple crate's requests, once each, against the real binding", () => {
     const call = ledger();
     const both = await Promise.all(["a", "b"].map((by) => call("alexa-once", { id: "amzn1.echo-api.request.9", by, now: T0 })));
     expect(both.map((r) => r.first).sort()).toEqual([false, true]);
+  });
+
+  // TALK'S KEY, LET GO (the review, 2026-11-19).
+  test("the kept Talk key goes when asked and no call is left to hang up; a new line's key is kept again", async () => {
+    const stub = env.STATION.get(env.STATION.idFromName("voice-key-test"));
+    const call = async (op, args) => (await stub.fetch("https://station/", { method: "POST", body: JSON.stringify({ op, args }) })).json();
+    const cap = "c".repeat(32);
+    expect((await call("voice-reserve", { cap, day: "2026-11-19", cap_minutes: 60, close_key: "sk-test-key" })).ok).toBe(true);
+    expect((await call("voice-forget-key", {})).gone).toBe(false);
+    await call("voice-void", { cap });
+    expect((await call("voice-forget-key", {})).gone).toBe(true);
+    expect((await call("voice-forget-key", {})).gone).toBe(true);
   });
 });

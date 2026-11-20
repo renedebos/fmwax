@@ -143,6 +143,24 @@ export function wiimNames(env) {
     return Array.isArray(said) ? rooms.filter((r) => said.includes(r)) : rooms;
   } catch { return rooms; }
 }
+// A SPEAKER'S ADDRESS IS ONE AT HOME (the audit of 2026-11-15, the review of
+// 2026-11-19): 10.x, 172.16-31.x or 192.168.x, nothing else. The house took
+// any four numbers from the helper and handed them back, and the helper
+// then asked that address its questions, on the internet if that is where it
+// was.
+export function homeAddress(a) {
+  if (typeof a !== "string" || !/^\d{1,3}(\.\d{1,3}){3}$/.test(a)) return false;
+  const p = a.split(".").map(Number);
+  if (p.some((n) => n > 255)) return false;
+  return p[0] === 10 || (p[0] === 192 && p[1] === 168) || (p[0] === 172 && p[1] >= 16 && p[1] <= 31);
+}
+// ONE WAY TO COMPARE A SPEAKER'S NAME (the review, 2026-11-19). Four copies
+// of this kept only a-z and 0-9, so any two names in another script (Greek,
+// Cyrillic, Chinese, Hebrew) both folded to nothing and counted as the same
+// speaker: the "only on the speaker named" guards of pause, skip and move
+// stopped guarding. Letters and digits of every script are kept, accents
+// aside, case aside.
+export const foldName = (x) => String(x ?? "").normalize("NFKD").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
 export function parseRoomDevices(env) {
   // A house with no default names no speaker (the trial, 2026-10-17: a
   // blank house's bar said "Pro Plus", the code's old stand-in).

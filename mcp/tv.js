@@ -353,6 +353,25 @@ export const TV_ARROWS_JS = `
       if (s < score) { score = s; best = el; }
     });
     best = best || last;
+    /* A DJ's SCREEN (the review, 2026-11-19): right from the first idea
+       reached the options beside it, from the second and third nothing,
+       because the panel is shorter than the list and "the row" was empty.
+       From an idea or the foot's buttons, with nothing in the row, the
+       nearest control lying wholly that way is taken. Tiles elsewhere keep to their row,
+       so an edge stays an edge. */
+    if (!best && flat && cur.closest && cur.closest(".idea, .steer")) {
+      all.forEach(function (el) {
+        if (el === cur) return;
+        var b = el.getBoundingClientRect(), dx = b.left + b.width / 2 - cx, dy = b.top + b.height / 2 - cy;
+        var along = dir === "left" ? -dx : dx;
+        if (along < 4) return;
+        /* Wholly on that side: not a button above or below that only
+           reaches further that way. */
+        if (dir === "right" ? b.left < r.right - 2 : b.right > r.left + 2) return;
+        var s = along + Math.abs(dy) * 2;
+        if (s < score) { score = s; best = el; }
+      });
+    }
     if (best) best.focus();
   }
   /* ONE PRESS, ONE ACT (the review, 2026-11-16): OK held down, or pressed

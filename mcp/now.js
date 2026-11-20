@@ -7,7 +7,7 @@ import { station } from "./station.js";
 import {
   atWords, endlessNamed, findDj, guestFor, guestHolders, houseClockWords, ownPresetKeys, playingFromWords, speakerPresetFor,
 } from "./house.js";
-import { parseRoomDevices, parseSpeakers, readReadings, roomRoster, speakerSlug, wiimNames } from "./room.js";
+import { foldName, parseRoomDevices, parseSpeakers, readReadings, roomRoster, speakerSlug, wiimNames } from "./room.js";
 import {
   PLAYER_SAVED, SIGNED_OUT_WORDS, fold, forgetPlayer, minutesLeft, parseAliases, playerState, programsKV, recalledPlayer,
   rememberPlayer, currentSignedOut, spotifyLogin,
@@ -274,8 +274,7 @@ export async function helperCommand(env, cmd) {
     const one = out?.reading ? parseHelperReading(env, { speakers: [out.reading] }) : null;
     if (one) {
       heard = one[cmd.speaker] ?? null;
-      const doc = (await station(env, "helper-get", {}))?.doc ?? {};
-      await station(env, "helper-put", { doc: { at: Date.now(), speakers: { ...(doc.speakers ?? {}), ...one } } });
+      await station(env, "helper-merge", { speakers: one });
     }
   } catch { code = "failed"; }
   return { code, heard };
@@ -564,7 +563,7 @@ export async function pauseNoteBeside(env, p) {
     // Spotify's read lags the pause it just accepted by a second or so: the
     // same record on the same speaker, moments after, is that lag and not a
     // new play.
-    const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+    const fold = foldName;
     const lag = Date.now() - Number(note.at) < 15_000 && p.uri && p.uri === note.uri && fold(p.device) === fold(note.device);
     if (!lag) await dropPauseNote(env);
     return null;

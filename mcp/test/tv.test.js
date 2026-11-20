@@ -1269,3 +1269,13 @@ test("About fmwax: the version, what is connected, the remote's keys, more help;
   assert.ok(script.includes("fmwaxTV\\/([0-9]"), "the app's version from its user agent");
   assert.doesNotThrow(() => new vm.Script(script));
 });
+
+// A SONG'S FACTS, NOT WITHOUT END (the review, 2026-11-19).
+test("the TV's song lookups are counted by the hour: ninety, then none until the next hour", async () => {
+  const { songLookupAllowed } = await import("../routes.js");
+  const T = 5_000 * 3_600_000 + 1;
+  let yes = 0;
+  for (let i = 0; i < 200; i++) if (songLookupAllowed(T + i)) yes += 1;
+  assert.equal(yes, 90);
+  assert.equal(songLookupAllowed(T + 3_600_000), true, "a new hour begins again");
+});

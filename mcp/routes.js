@@ -61,6 +61,7 @@ import {
   catalogAvailable, driftOf, fallbackDevice, keepReading, parseM3uEntries, parseRoomDevices, parseSpeakers,
   readReadings, readTiles, readingWords, readingsShown, roomRoster, speakerSlug, tileFor, wiimNames,
   writeTiles,
+  foldName, homeAddress,
 } from "./room.js";
 import {
   PLAYER_DEADLINE_MS, PLAYER_PENDING, WALL_PLAYER_WAIT_MS, catalogFor,
@@ -174,6 +175,22 @@ export function talkErrorWords(err) {
 const talkArchive = (env) => (house(env).archive?.btn
   ? { btn: house(env).archive.btn, wiims: parseSpeakers(env).map((b) => b.name) } : null);
 
+// A SONG'S FACTS, NOT WITHOUT END (the review, 2026-11-19). Each new song
+// asked of the TV's About door is two lookups outside and two KV writes, and
+// the door took any title: five hundred made-up ones would use a free
+// house's thousand writes for the day. A room changes song about twenty
+// times an hour; ninety lookups an hour, counted where this code runs, is
+// far above that and far below harm. Past it the page gets the song without
+// its facts, and asks again later.
+const SONG_LOOKUPS_AN_HOUR = 90;
+const songLookups = { hour: 0, n: 0 };
+export function songLookupAllowed(now = Date.now()) {
+  const hour = Math.floor(now / 3_600_000);
+  if (songLookups.hour !== hour) { songLookups.hour = hour; songLookups.n = 0; }
+  songLookups.n += 1;
+  return songLookups.n <= SONG_LOOKUPS_AN_HOUR;
+}
+
 export async function handleRequest(request, env, ctx) {
     const url = new URL(request.url);
 
@@ -276,7 +293,7 @@ export async function handleRequest(request, env, ctx) {
       const given = body?.speakers && typeof body.speakers === "object" && !Array.isArray(body.speakers) ? body.speakers : {};
       const kept = {};
       for (const [n, ip] of Object.entries(given).slice(0, 8)) {
-        if (typeof n !== "string" || !n.trim() || n.length > 60 || typeof ip !== "string" || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) continue;
+        if (typeof n !== "string" || !n.trim() || n.length > 60 || !homeAddress(ip)) continue;
         const name = wanted.length ? wanted.find((w) => fold(w) === fold(n)) : n.trim();
         if (name) kept[name] = ip;
       }
@@ -1014,6 +1031,8 @@ export async function handleRequest(request, env, ctx) {
         if (talkInfo().fromSecret) return again("This house's key is set as a Worker secret, so it is not changed here.", 409);
         if (what === "remove") {
           try { await giveHouseKey(env, "OPENAI_API_KEY", null); } catch { return again("That could not be done just now. Nothing was changed; try again in a moment.", 503); }
+          // And the copy the ledger keeps for hanging calls up (station.js).
+          try { await station(env, "voice-forget-key", {}); } catch { /* it goes at the ledger's next sweep */ }
           return done("off");
         }
         if (what !== "key") return again("Nothing was changed.", 400);
@@ -1866,11 +1885,7 @@ export async function handleRequest(request, env, ctx) {
               // Its read-back is the freshest word on that speaker: kept, so the
               // bar's next look says paused or playing at once.
               const one = out?.reading ? parseHelperReading(env, { speakers: [out.reading] }) : null;
-              if (one) {
-                const got = await station(env, "helper-get", {});
-                const doc = got?.doc ?? {};
-                await station(env, "helper-put", { doc: { at: Date.now(), speakers: { ...(doc.speakers ?? {}), ...one } } });
-              }
+              if (one) await station(env, "helper-merge", { speakers: one });
             } catch { hcode = "failed"; }
           }
           return new Response(JSON.stringify({ ok: hcode === "ok", code: hcode }), { status: 200, headers: {
@@ -1996,7 +2011,7 @@ export async function handleRequest(request, env, ctx) {
           // Spotify did not pause after all, the truth shows in three
           // seconds and not sixty.
           const justPaused = tp && tp.code === "ok" && tp.verb === "pause" ? tp.box : null;
-          const fold = (x) => String(x ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+          const fold = foldName;
           const p = justPaused && pRead && !pRead.unknown && pRead.device && fold(pRead.device) === fold(justPaused.name)
             ? null : pRead;
           // The flash names the key as that speaker holds it; failing a
@@ -2394,6 +2409,9 @@ export async function handleRequest(request, env, ctx) {
             return say(429, { error: `The house has talked its ${reserved.cap_minutes} minutes today. Tomorrow is a new day.`,
               used: reserved.used, cap_minutes: reserved.cap_minutes });
           }
+          if (reserved.code === "lines") {
+            return say(429, { error: "Talk is open on two screens already. Hang up on one, or try again in a minute or two." });
+          }
           return say(500, { error: `The ledger refused the session (${reserved.code}).` });
         }
         // Give the reservation back — only on an UNAMBIGUOUS refusal (Codex,
@@ -2649,7 +2667,7 @@ export async function handleRequest(request, env, ctx) {
         // And Genius (genius.js, 2026-11-16): producers, samples, covers, and
         // its About text, asked beside the facts, by title and artist.
         let genius = null;
-        if (isrc || (q.get("t") && q.get("a"))) {
+        if ((isrc || (q.get("t") && q.get("a"))) && songLookupAllowed()) {
           const t = String(q.get("t") ?? ""), a = String(q.get("a") ?? "");
           [facts, genius] = await Promise.all([
             songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a, album: String(q.get("al") ?? "").slice(0, 200) }).catch(() => null),
@@ -5594,14 +5612,23 @@ export async function handleRequest(request, env, ctx) {
       return new Response("method not allowed", { status: 405 });
     }
 
+    // BOUNDED, AND EVERY ENTRY A MESSAGE (the audit of 2026-11-15, the review
+    // of 2026-11-19): the body was read whole whatever its size, and a batch
+    // of `[null]` threw, a 500 where a refusal belongs. Two megabytes is far
+    // above a long read with its notes; a batch holds fifty calls at most.
     let msg;
     try {
-      msg = await request.json();
+      const text = await request.text();
+      if (text.length > 2_000_000) return Response.json(rpcError(null, -32600, "request too large"), { status: 413 });
+      msg = JSON.parse(text);
     } catch {
       return Response.json(rpcError(null, -32700, "parse error"), { status: 400 });
     }
 
     const batch = Array.isArray(msg) ? msg : [msg];
+    if (!batch.length || batch.length > 50 || batch.some((m) => !m || typeof m !== "object" || Array.isArray(m))) {
+      return Response.json(rpcError(null, -32600, "invalid request"), { status: 400 });
+    }
     // The setup checklist ticks "Claude app" and the curator from this.
     noteSeen(env, ctx, role === "owner" ? "connector" : "curator");
     // Which app fetched the tool list, and which list it was handed
