@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import worker from "../worker.js";
 import { station } from "../station.js";
 import { startPlaylistOnDevice } from "../playback.js";
-import { coldSession, playingOneOf } from "../lossless.js";
+import { LIFT, coldSession, fallenToLossy, playingOneOf } from "../lossless.js";
 import { makeEnv, makeHouseStore, TWO_REQUESTS } from "./harness.js";
 
 const KEY = "abcdefabcdefabcdefabcdef";
@@ -56,7 +56,7 @@ function spotify({ cold = [], items = [uri(1)] } = {}) {
     if (m !== "GET" && path.startsWith("/me/player")) return new Response(null, { status: 204 });
     return Response.json({});
   };
-  fake = { calls, plays: () => plays, restore() { globalThis.fetch = original; } };
+  fake = { calls, plays: () => plays, at(ms) { if (st) st.progress_ms = ms; }, restore() { globalThis.fetch = original; } };
   return fake;
 }
 afterEach(() => { fake?.restore(); fake = null; });
@@ -317,4 +317,92 @@ test("a DJ's page fetches itself again when the bar says twice that the DJ start
     p = run(busy); p.say(playing); p.say(playing);
     assert.deepEqual(p.went, [], JSON.stringify(busy));
   }
+});
+
+// A SET THAT FELL TO 320 (2026-11-20): the helper's readings are the watch.
+const sp = (kbps, track = "Legs", more = {}) => ({ "Pro Plus": { state: "play", source: "Spotify", playlist: pid(4), track,
+  quality: { rate: 44100, bits: 16, kbps }, ...more } });
+const T0 = 1_800_000_000_000;
+
+test("fallen to 320: only a speaker known to play lossless, on a reading where something just changed", () => {
+  // Never read lossless: never looked at.
+  let out = fallenToLossy({ speakers: sp(320, "Before") }, sp(320), T0);
+  assert.deepEqual(out.look, []);
+  // A lossless reading is remembered.
+  out = fallenToLossy(null, sp(963), T0);
+  assert.equal(out.marks["Pro Plus"].lossless, T0);
+  // The bitrate fell on the same song (a restart): looked at.
+  const known = { marks: out.marks, speakers: sp(963) };
+  out = fallenToLossy(known, sp(320), T0 + 10_000);
+  assert.deepEqual(out.look, [{ name: "Pro Plus", playlist: pid(4), kbps: 320 }]);
+  assert.equal(out.marks["Pro Plus"].tried, T0 + 10_000);
+  // A new song at 320: looked at. The same song at 320 again: not.
+  assert.equal(fallenToLossy({ marks: known.marks, speakers: sp(320, "Before") }, sp(320), T0 + 60_000).look.length, 1);
+  assert.equal(fallenToLossy({ marks: known.marks, speakers: sp(320) }, sp(320), T0 + 60_000).look.length, 0);
+  // Not twice within half a minute.
+  assert.equal(fallenToLossy({ marks: out.marks, speakers: sp(320, "Before") }, sp(320), T0 + 20_000).look.length, 0);
+  // Not Spotify, not playing, on no playlist, or no bitrate said: left alone.
+  for (const more of [{ source: "Tidal" }, { state: "pause" }, { playlist: undefined }, { quality: { rate: 44100, kbps: 0 } }]) {
+    assert.equal(fallenToLossy({ marks: known.marks, speakers: sp(320, "Before") }, sp(320, "Legs", more), T0 + 60_000).look.length, 0, JSON.stringify(more));
+  }
+  // Lossless last heard more than a week ago: not known any more.
+  assert.equal(fallenToLossy({ marks: known.marks, speakers: sp(320, "Before") }, sp(320), T0 + LIFT.knownMs + 1).look.length, 0);
+});
+
+test("fallen to 320: a press is not repeated for ten minutes, nor for six hours when it did not help", () => {
+  const prev = (marks) => ({ marks: { "Pro Plus": marks }, speakers: sp(320, "Before") });
+  // Pressed, lossless heard since: again after ten minutes, not before.
+  const helped = { lossless: T0 + 5000, pressed: T0 };
+  assert.equal(fallenToLossy(prev(helped), sp(320), T0 + LIFT.pressedMs - 1).look.length, 0);
+  assert.equal(fallenToLossy(prev(helped), sp(320), T0 + LIFT.pressedMs).look.length, 1);
+  // Pressed, and no lossless reading since: six hours.
+  const noHelp = { lossless: T0 - 5000, pressed: T0 };
+  assert.equal(fallenToLossy(prev(noHelp), sp(320), T0 + LIFT.pressedMs).look.length, 0);
+  assert.equal(fallenToLossy(prev(noHelp), sp(320), T0 + LIFT.noHelpMs).look.length, 1);
+});
+
+const reading = (e, kbps, track = "A song") => worker.fetch(new Request("https://x.test/helper/reading", { method: "POST",
+  headers: { authorization: "Bearer home-key", "content-type": "application/json" },
+  body: JSON.stringify({ speakers: [{ name: "Pro Plus", state: "play", source: "Spotify", playlist: pid(4), track,
+    quality: { rate: 44100, bits: 16, kbps } }] }) }), e);
+
+test("fallen to 320: the reading that shows it presses the playing list's key, in a song's first seconds only", async () => {
+  const { e, asked } = await house();
+  spotify();
+  await start(e, 4);
+  assert.deepEqual(asked, [], "a warm start presses nothing");
+  assert.equal((await reading(e, 963)).status, 200);
+  assert.deepEqual(asked, []);
+  // Mid-song: nothing pressed, the song is not sent back to its start.
+  fake.at(90_000);
+  await reading(e, 320);
+  assert.deepEqual(asked, []);
+  // The next song begins at 320: pressed, once, and the log says so.
+  fake.at(6000);
+  await new Promise((r) => setTimeout(r, 5));
+  const realNow = Date.now;
+  try {
+    Date.now = () => realNow() + LIFT.triedMs + 1000;
+    await reading(e, 320, "The next song");
+    assert.deepEqual(asked, [{ cmd: "key", n: 4, speaker: "Pro Plus" }]);
+    Date.now = () => realNow() + 2 * LIFT.triedMs + 2000;
+    await reading(e, 320, "Another song");
+    assert.equal(asked.length, 1, "not again inside ten minutes");
+  } finally { Date.now = realNow; }
+  const rows = (await station(e, "endless-list", { limit: 20 })).rows;
+  assert.ok(rows.some((r) => r.event === "lift" && /Pro Plus read 320 kbps.*key 4 pressed.*\(ok\)/.test(r.detail)), JSON.stringify(rows));
+});
+
+test("fallen to 320: no press with the helper's hands off, or for a list on none of the speaker's keys", async () => {
+  let h = await house({ hands: false });
+  spotify();
+  await start(h.e, 4);
+  await reading(h.e, 963); await reading(h.e, 320);
+  assert.deepEqual(h.asked, []);
+  fake.restore();
+  h = await house({ table: TABLE.filter((r) => r.btn !== 4) });
+  spotify();
+  await start(h.e, 4);
+  await reading(h.e, 963); await reading(h.e, 320);
+  assert.deepEqual(h.asked, []);
 });

@@ -498,6 +498,14 @@ export function makeStation() {
       endless.helper = JSON.stringify(helperPutDoc(had, { at: now, speakers: { ...(had?.speakers ?? {}), ...(args.speakers ?? {}) } }, now));
       return { ok: true };
     }
+    if (op === "helper-mark") {
+      const had = endless.helper ? JSON.parse(endless.helper) : null;
+      if (had && args.speaker) {
+        had.marks = { ...(had.marks ?? {}), [args.speaker]: { ...(had.marks?.[args.speaker] ?? {}), ...(args.mark ?? {}) } };
+        endless.helper = JSON.stringify(had);
+      }
+      return { ok: true };
+    }
     if (op === "helper-get") return { ok: true, doc: endless.helper ? JSON.parse(endless.helper) : null, hands: !!endless.hands,
       player: keptPlayerOut(endless.player ? JSON.parse(endless.player) : null) };
     if (op === "helper-forget") { delete endless.helper; return { ok: true }; }

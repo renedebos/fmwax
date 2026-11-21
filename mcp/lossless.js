@@ -26,6 +26,8 @@
 import { speakerPresetFor } from "./house.js";
 import { helperCommand, helperView } from "./now.js";
 import { parseSpeakers, readReadings } from "./room.js";
+import { playerState, withBudget } from "./services.js";
+import { station } from "./station.js";
 
 const HEX_ID = /^[0-9a-f]{40}$/i;
 
@@ -54,6 +56,82 @@ export async function liftToLossless(env, pl, deviceName, st, deviceId) {
     return { cold: true, pressed: key.btn, code: out.code };
   } catch (e) {
     return { cold: true, pressed: null, why: String(e?.message ?? e).slice(0, 80) };
+  }
+}
+
+// A SET THAT FELL TO 320 (2026-11-20, measured on the Pro Plus with a watch
+// on its own numbers). A speaker playing lossless (963 kbps) had its song
+// started again through Spotify, by nothing this file knew of and with no
+// key pressed, and read 320 from that second on; the evening before, a
+// steer's jump did the same. A press of the playing list's own key through
+// the helper lifted it (320 to 929, the same song). The house cannot know
+// every call that starts a song again, but the helper reads the speaker's
+// bitrate every few seconds. So the reading is the watch:
+//
+//   a WiiM playing a Spotify playlist that sits on one of its keys reads
+//   320 or less, on a reading where the song or the bitrate has just
+//   changed, and Spotify says the song is in its first seconds: the helper
+//   presses that key. The song begins again, lossless.
+//
+// Kept honest by three marks a speaker (the helper's document, `marks`):
+// `lossless`, the last time it read above 320 on Spotify, since a house or a
+// speaker that never plays lossless must never be pressed for it; `tried`,
+// so two readings a second apart make one look; `pressed`, so a press is
+// not repeated within ten minutes, nor for six hours when the speaker has
+// not read lossless since the last one (a press that does not help).
+export const LIFT = { kbps: 320, knownMs: 7 * 24 * 3600e3, triedMs: 30e3, pressedMs: 600e3, noHelpMs: 6 * 3600e3, earlyMs: 25e3 };
+
+// Pure: the marks as they stand after this reading, and the speakers to
+// look at. `prev` is the helper's document before the reading.
+export function fallenToLossy(prev, speakers, now) {
+  const marks = { ...(prev?.marks ?? {}) };
+  const look = [];
+  for (const [name, r] of Object.entries(speakers ?? {})) {
+    const m = { ...(marks[name] ?? {}) };
+    const kbps = r?.source === "Spotify" && r.state === "play" ? Number(r.quality?.kbps) || 0 : 0;
+    if (kbps > LIFT.kbps) { m.lossless = now; marks[name] = m; continue; }
+    const was = prev?.speakers?.[name] ?? null;
+    const changed = !!was && (was.track !== r?.track || (Number(was.quality?.kbps) || 0) > LIFT.kbps);
+    const known = now - (Number(m.lossless) || 0) < LIFT.knownMs;
+    const pressed = Number(m.pressed) || 0;
+    const rested = now - pressed >= ((Number(m.lossless) || 0) > pressed ? LIFT.pressedMs : LIFT.noHelpMs);
+    if (kbps > 0 && r.playlist && changed && known && rested && now - (Number(m.tried) || 0) >= LIFT.triedMs) {
+      m.tried = now;
+      look.push({ name, playlist: r.playlist, kbps });
+    }
+    if (Object.keys(m).length) marks[name] = m;
+  }
+  return { marks, look };
+}
+
+// The look and the press, for one speaker `fallenToLossy` named. Answers
+// what happened in a word, for the log; never throws.
+export async function liftFallen(env, { name, playlist, kbps }, now = Date.now()) {
+  try {
+    const box = parseSpeakers(env).find((b) => b.name === name) ?? null;
+    if (!box) return "not-a-wiim";
+    const hv = await helperView(env);
+    if (!hv.lan?.hands) return "helper-off";
+    const key = speakerPresetFor(env, await readReadings(env, [box]), { pid: playlist, device: name });
+    if (!key) return "on-no-key";
+    // Spotify's word on where the song is: a press sends it back to its
+    // start, which is only nothing to lose in its first seconds.
+    const st = await playerState(withBudget(env, { remaining: 4 }));
+    const here = st?.is_playing === true && String(st?.context?.uri ?? "") === `spotify:playlist:${playlist}`
+      && String(st?.device?.name ?? "") === name;
+    if (!here) return "not-seen-by-spotify";
+    if ((Number(st.progress_ms) || 0) > LIFT.earlyMs) return "mid-song";
+    const out = await helperCommand(env, { cmd: "key", n: key.btn, speaker: name });
+    if (out.code === "ok" || out.code === "timeout") {
+      await station(env, "helper-mark", { speaker: name, mark: { pressed: now } }).catch(() => {});
+    }
+    try {
+      await station(env, "endless-log", { events: [{ at: now, btn: key.btn, event: "lift",
+        detail: `${name} read ${kbps} kbps at a song's start: key ${key.btn} pressed for lossless (${out.code})` }] });
+    } catch { /* a lost line */ }
+    return `pressed-${out.code}`;
+  } catch (e) {
+    return `failed: ${String(e?.message ?? e).slice(0, 60)}`;
   }
 }
 

@@ -1052,6 +1052,9 @@ export function helperPutDoc(prev, doc, now) {
     [k, sp[k]?.state ?? null, sp[k]?.source ?? null, sp[k]?.track ?? null, sp[k]?.artists ?? null]));
   next.changedAt = prev && said(prev.speakers) === said(next.speakers)
     ? (Number(prev.changedAt) || Number(prev.at) || now) : (Number(next.at) || now);
+  // What the house remembers of each speaker's stream quality (lossless.js,
+  // 2026-11-20): kept across every write that does not bring its own.
+  if (!next.marks && prev?.marks) next.marks = prev.marks;
   return next;
 }
 // THE KEPT SPOTIFY ANSWER (MC-29, tasks/done/mc29-helper-first-player.md): the
@@ -1539,6 +1542,17 @@ export class StationLedger {
       const doc = helperPutDoc(had, { at: now, speakers: { ...(had?.speakers ?? {}), ...(args.speakers ?? {}) } }, now);
       this.sql.exec("INSERT OR REPLACE INTO endless_state (k, doc) VALUES ('helper', ?)",
         JSON.stringify(doc).slice(0, 20_000));
+      return Response.json({ ok: true });
+    }
+    // One speaker's quality mark (lossless.js), merged here so a reading
+    // landing beside it loses nothing.
+    if (op === "helper-mark") {
+      const had = this.#stateDoc("helper");
+      if (had && args.speaker) {
+        const name = String(args.speaker).slice(0, 60);
+        had.marks = { ...(had.marks ?? {}), [name]: { ...(had.marks?.[name] ?? {}), ...(args.mark ?? {}) } };
+        this.sql.exec("INSERT OR REPLACE INTO endless_state (k, doc) VALUES ('helper', ?)", JSON.stringify(had).slice(0, 20_000));
+      }
       return Response.json({ ok: true });
     }
     // The helper's word, and with it the house's kept Spotify answer (MC-29),

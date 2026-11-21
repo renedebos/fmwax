@@ -90,6 +90,7 @@ import { TV_DJ_COOKIE, cookieOf, tvDjAct, tvDjClear, tvDjCookie, tvDjFacts, tvDj
 import { ARCHIVE } from "./archive-identity.js";
 import { ALEXA_BODY_MAX, alexaBox, alexaDoor, alexaHeard, alexaPlayNow } from "./alexa.js";
 import { playNowMode } from "./playnow.js";
+import { fallenToLossy, liftFallen } from "./lossless.js";
 // The Requests playlist's first songs (the setup page's maker, below): Green
 // Onions (Booker T. & the M.G.'s), Lovely Day (Bill Withers) and Roxette
 // (Dr. Feelgood), by their Spotify ids, checked 2026-11-09.
@@ -240,7 +241,18 @@ export async function handleRequest(request, env, ctx) {
       try { body = await request.json(); } catch { body = null; }
       const speakers = parseHelperReading(env, body);
       if (!speakers) return Response.json({ ok: false, code: "no-speakers" }, { status: 400 });
-      await station(env, "helper-put", { doc: { at: Date.now(), speakers } });
+      // A SET THAT FELL TO 320 (lossless.js, 2026-11-20): the reading before
+      // this one says whether a song or its bitrate has just changed; the
+      // marks go in with the reading, the look and the press come after the
+      // helper has its answer.
+      const now = Date.now();
+      let fallen = { marks: null, look: [] };
+      try { fallen = fallenToLossy((await station(env, "helper-get", {}, { unbudgeted: true }))?.doc ?? null, speakers, now); } catch { /* no watch this time */ }
+      await station(env, "helper-put", { doc: { at: now, speakers, ...(fallen.marks ? { marks: fallen.marks } : {}) } });
+      if (fallen.look.length) {
+        const lifts = Promise.all(fallen.look.map((one) => liftFallen(env, one, now))).catch(() => {});
+        if (ctx?.waitUntil) ctx.waitUntil(lifts); else await lifts;
+      }
       // A WiiM playing an endless preset the watch has not seen: it looks on
       // its next run (endless.js nudgeOnPlay).
       try { await nudgeOnPlay(env, speakers); } catch { /* the half-hourly look finds it */ }
