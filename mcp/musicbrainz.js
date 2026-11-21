@@ -379,6 +379,37 @@ async function albumArticle(env, rg, spotifyAlbum, artist, deadline, cap) {
   return null;
 }
 
+// THE ARTIST'S ARTICLE (2026-11-20, the owner: "some of the about songs are
+// very simple and one line... we need to beef that up"; songextra.js). For a
+// song whose own text is thin: the opening of the English Wikipedia article
+// MusicBrainz names for the artist. The artist is found by name, at a score
+// of 90 or more as the DJs' lookup does it, and the article is kept only
+// when its opening reads as music, since a name alone can be someone else.
+// Four requests as a rule (MusicBrainz twice, Wikidata, Wikipedia), seven
+// when MusicBrainz is busy and is asked again. Null when
+// there is none; undefined when MusicBrainz did not answer (ask again later).
+const MUSIC_WORDS = /\b(band|singer|musician|group|rapper|songwriter|composer|duo|trio|quartet|quintet|orchestra|ensemble|producer|dj|guitarist|bassist|pianist|organist|drummer|saxophonist|trumpeter|vocalist|instrumentalist|collective|project)\b/i;
+export async function artistArticle(env, name, { deadlineMs = env?.__mbDeadlineMs ?? 8000 } = {}) {
+  if (!artistLookupOn(env)) return null;
+  const asked = String(name ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
+  if (!asked) return null;
+  const deadline = Date.now() + deadlineMs;
+  const cap = { left: 5 };
+  const found = await ask(env, `/artist?query=${encodeURIComponent(`artist:"${asked.replace(/"/g, "")}"`)}&fmt=json&limit=3`, 0, deadline, cap);
+  if (!found) return undefined;
+  const artist = found === MB_NONE ? null : (found.artists ?? []).find((a) => Number(a?.score) >= 90);
+  if (!artist?.id) return null;
+  const full = await ask(env, `/artist/${encodeURIComponent(artist.id)}?inc=url-rels&fmt=json`, SPACING_MS, deadline, cap);
+  if (!full) return undefined;
+  const urls = full === MB_NONE ? [] : (Array.isArray(full.relations) ? full.relations : []).map((r) => String(r?.url?.resource ?? ""));
+  const q = urls.map((u) => u.match(/^https:\/\/www\.wikidata\.org\/wiki\/(Q\d{1,12})$/)?.[1]).find(Boolean);
+  let w = q ? await wikiOpening(env, q, deadline) : null;
+  const en = w ? null : urls.map((u) => u.match(/^https:\/\/en\.wikipedia\.org\/wiki\/([^?#]+)$/)?.[1]).find(Boolean);
+  if (en) { try { w = await wikiSummary(env, decodeURIComponent(en).replace(/_/g, " "), deadline); } catch (e) { if (e?.budgetExhausted) throw e; } }
+  if (!w || !MUSIC_WORDS.test(w.text)) return null;
+  return { ...w, artist: mbText(artist.name, 120) };
+}
+
 // WHEN THE CODE IS NOT KNOWN (a remaster or a compilation files the song
 // under a code of its own, which MusicBrainz may not have): the song by its
 // title and artist, as one search, a match only at a score of 90 or more and

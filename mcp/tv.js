@@ -608,6 +608,7 @@ html.scroll main.tv{width:100%;height:auto;min-height:100vh}
 .adl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.5rem 1.25rem;margin:0 0 1.25rem;font-size:1.125rem}
 .adl dt{color:var(--ink-3)}.adl dd{margin:0;color:var(--ink)}
 .awiki{margin-bottom:1rem}
+.axp{white-space:pre-line}
 .awmore h3{margin:1.25rem 0 .5rem;font-size:1.125rem;font-weight:800;letter-spacing:.02em;color:var(--ink)}
 .awmore .ap+.ap{margin-top:.75rem}
 .asrc{margin:0;font-size:.875rem;color:var(--ink-3)}`;
@@ -708,7 +709,9 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
       <div class="aside"><div class="acover" data-note="${esc(I_NOTE)}">${I_NOTE}</div><p class="a1"></p><p class="a2"></p><p class="a3"></p></div>
       <div class="ascroll"><div class="awords"><p class="albl"></p><h2 class="ah"></h2><p class="ap"></p></div>
         <div class="afacts" hidden><p class="albl afl">Song facts</p><dl class="adl"></dl>
-          <div class="awiki" hidden><p class="albl afl awlbl">From Wikipedia</p><p class="ap awp"></p><div class="awmore"></div></div><p class="asrc"></p></div></div>
+          <div class="awiki" hidden><p class="albl afl awlbl">From Wikipedia</p><p class="ap awp"></p><div class="awmore"></div></div>` +
+    `<div class="awiki axsong" hidden><p class="albl afl">About the song, from Last.fm</p><p class="ap axp axsp"></p></div>` +
+    `<div class="awiki axart" hidden><p class="albl afl axalbl"></p><p class="ap axp axap"></p></div><p class="asrc"></p></div></div>
     </div>
   </div>`;
 }
@@ -981,7 +984,7 @@ const TV_SCRIPT = `<script>
       var n = song.next[i]; show(el, !!n);
       if (n) { set(el.querySelector("b"), n.t); set(el.querySelector("i"), n.a ? " \\u00b7 " + n.a : ""); }
     });
-    var has = !!(song.about || song.facts || song.genius);
+    var has = !!(song.about || song.facts || song.genius || song.extra);
     show(q(".babout"), has); show(q(".dabout"), has);
     show(q(".bicons"), !!(b.move || b.tune || has));
     /* Not for the next song: the article open is the last song's, and stays. */
@@ -1001,7 +1004,7 @@ const TV_SCRIPT = `<script>
     var s = band && band.tone !== "off" ? band.song : null;
     var key = s && s.uri ? s.uri + "|" + (s.slug || "") + "|" + (s.btn || "") : "";
     if (key === song.key) return;
-    song = { key: key, next: [], about: null, facts: null, genius: null, more: null };
+    song = { key: key, next: [], about: null, facts: null, genius: null, extra: null, more: null };
     if (!key || !(s.slug || s.btn || s.isrc || band.artist)) return;
     /* Two asks: what comes next and the DJ's words (the house's own records,
        at once), and the song facts (open databases, a few seconds the first
@@ -1017,8 +1020,8 @@ const TV_SCRIPT = `<script>
     /* By the song's code when the answer carries one, else by its title and
        artist (the house finds it by name). */
     if (s.isrc || band.artist) fetch(at + "&isrc=" + enc(s.isrc || "") + "&ms=" + enc(s.ms || "") + "&a=" + enc(band.artist || "") + "&al=" + enc(band.album || ""), { cache: "no-store" }).then(got()).then(function (a) {
-      if (!a || song.key !== key || !(a.facts || a.genius)) return;
-      song.facts = a.facts || null; song.genius = a.genius || null; drawSong();
+      if (!a || song.key !== key || !(a.facts || a.genius || a.extra)) return;
+      song.facts = a.facts || null; song.genius = a.genius || null; song.extra = a.extra || null; drawSong();
     }).catch(function () {});
   }
   /* The band and the display, from the one answer. */
@@ -1069,8 +1072,8 @@ const TV_SCRIPT = `<script>
     }
     /* SONG FACTS (the owner's choice A): what open databases say of the
        song, for any Spotify song; under the DJ's words where there are some. */
-    var g = song.genius;
-    show(q(".afacts"), !!(f || g)); q(".afacts").classList.toggle("after", !!a);
+    var g = song.genius, x = song.extra;
+    show(q(".afacts"), !!(f || g || x)); q(".afacts").classList.toggle("after", !!a);
     var dl = q(".adl"); dl.textContent = "";
     function row(k, v) {
       if (!v) return;
@@ -1084,7 +1087,7 @@ const TV_SCRIPT = `<script>
       var s = r.top.map(function (x) { return "\u201c" + x.t + "\u201d, " + x.a + (x.y ? " (" + x.y + ")" : ""); }).join("; ");
       return s + (r.n > r.top.length ? " \u00b7 " + (r.n - r.top.length) + " more" : "");
     }
-    if (f || g) {
+    if (f || g || x) {
       row("Written by", ((f && f.writers && f.writers.length ? f.writers : g && g.writers) || []).join(", "));
       if (f) {
         /* "1985-04-27 to 1986-02-10" said as years: "1985 to 1986". */
@@ -1110,9 +1113,18 @@ const TV_SCRIPT = `<script>
       set(q(".awp"), w ? w.text : gw);
       /* MORE FROM WIKIPEDIA (the owner, 2026-11-16): the rest of the article's
          story, asked for only when the button is pressed. */
+      /* LITTLE SAID OF THE SONG (the owner, 2026-11-20: "we need to beef that
+         up"): Last.fm's words on the song, and the artist's story, each under
+         a label saying whose words and about whom (songextra.js). */
+      var xs = x && x.song && x.song.text ? x.song : null, xa = x && x.artist && x.artist.text ? x.artist : null;
+      show(q(".axsong"), !!xs); set(q(".axsp"), xs ? xs.text : "");
+      show(q(".axart"), !!xa); set(q(".axap"), xa ? xa.text : "");
+      if (xa) set(q(".axalbl"), "About the artist" + (xa.name ? " " + xa.name : "") + ", from " + (xa.from === "wikipedia" ? "Wikipedia" : "Last.fm"));
       drawMore();
-      var dbs = [f ? "MusicBrainz" : "", w ? "Wikipedia" : ""].filter(Boolean).join(" and ");
-      set(q(".asrc"), (dbs ? "From " + dbs + ", open databases anyone can edit." : "") + (g ? (dbs ? " " : "") + "From Genius, written by its readers." : ""));
+      var xw = !!(xa && xa.from === "wikipedia"), xl = !!(xs || (xa && xa.from === "lastfm"));
+      var dbs = [f ? "MusicBrainz" : "", w || xw ? "Wikipedia" : ""].filter(Boolean).join(" and ");
+      set(q(".asrc"), [dbs ? "From " + dbs + ", open databases anyone can edit." : "", g ? "From Genius, written by its readers." : "",
+        xl ? "From Last.fm, written by its listeners." : ""].filter(Boolean).join(" "));
     }
     /* The whole page the DJ wrote, on a page of its own (the owner,
        2026-11-15: "maybe have button for full program notes"). */
@@ -1123,9 +1135,17 @@ const TV_SCRIPT = `<script>
   function wikiOf(f) {
     return f && f.wiki && f.wiki.text ? f.wiki : f && f.albumWiki && f.albumWiki.text ? f.albumWiki : null;
   }
+  /* The article "More from Wikipedia" reads on: the song's or its album's,
+     else the artist's (2026-11-20). */
+  function moreOf() {
+    var w = wikiOf(song.facts), xa = song.extra && song.extra.artist;
+    return w || (xa && xa.wiki && xa.text ? { title: xa.wiki, text: xa.from === "wikipedia" ? xa.text : "" } : null);
+  }
   function drawMore() {
-    var f = song.facts, w = wikiOf(f), box = q(".awmore"), btn = q(".awbtn");
+    var f = song.facts, w = moreOf(), box = q(".awmore"), btn = q(".awbtn");
     box.textContent = "";
+    /* Under the text it goes on from. */
+    var under = q(wikiOf(f) ? ".awiki" : ".axart"); if (box.parentNode !== under) under.appendChild(box);
     var m = song.more;
     if (m && m.sections) {
       m.sections.forEach(function (sec) {
@@ -1133,11 +1153,11 @@ const TV_SCRIPT = `<script>
         (sec.p || []).forEach(function (t) { var p = document.createElement("p"); p.className = "ap"; p.textContent = t; box.appendChild(p); });
       });
     }
-    show(btn, !!(w && w.title && w.text) && !(m && m.sections));
+    show(btn, !!(w && w.title) && !(m && m.sections));
     if (btn && !btn.getAttribute("aria-busy")) set(btn, m && m.none ? "No more on Wikipedia" : "More from Wikipedia");
   }
   function askMore(btn) {
-    var f = song.facts, w = wikiOf(f), key = song.key;
+    var w = moreOf(), key = song.key;
     if (!w || !w.title || btn.getAttribute("aria-busy") === "true") return;
     btn.setAttribute("aria-busy", "true"); set(btn, "Loading\u2026");
     fetch(base + "/tv/song?more=1&w=" + enc(w.title) + "&s=" + enc(String(w.text || "").slice(0, 80)), { cache: "no-store" })

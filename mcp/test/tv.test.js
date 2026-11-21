@@ -444,8 +444,8 @@ test("once a song: /tv/song answers from the Shelf page or the endless list, and
     const a = await r.json();
     assert.deepEqual(a.next, [{ t: "Surfin' Bird", a: "The Cramps" }]);
     assert.equal(a.about.text, "‘Human Fly’ is theirs."); assert.equal(a.about.dj, "The Librarian");
-    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=${encodeURIComponent(U(1))}&slug=nothing-here`)).json(), { next: [], about: null, facts: null, genius: null });
-    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=x`)).json(), { next: [], about: null, facts: null, genius: null });
+    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=${encodeURIComponent(U(1))}&slug=nothing-here`)).json(), { next: [], about: null, facts: null, genius: null, extra: null });
+    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=x`)).json(), { next: [], about: null, facts: null, genius: null, extra: null });
     assert.equal((await call(e, `wrongkey123456/tv/song?uri=x`)).status, 404);
     assert.equal((await call(e, `${KEY}/tv/song`, { method: "POST", body: "x" })).status, 405);
   } finally { f.restore(); }
@@ -1278,4 +1278,87 @@ test("the TV's song lookups are counted by the hour: ninety, then none until the
   for (let i = 0; i < 200; i++) if (songLookupAllowed(T + i)) yes += 1;
   assert.equal(yes, 90);
   assert.equal(songLookupAllowed(T + 3_600_000), true, "a new hour begins again");
+});
+
+test("a song with little said of it: Last.fm's words on the song and the artist's story are added, once, and never under a full article", async () => {
+  const { tidyLastfm, mainTextOf, THIN } = await import("../songextra.js");
+  const bio = "Darondo, who sang Legs, was a soul singer from the San Francisco Bay Area, who made three singles in the early 1970s and then left music for decades. " +
+    "He opened for James Brown, drove a white Rolls-Royce, and was found again by collectors in the 2000s.";
+  assert.equal(tidyLastfm(`${bio} <a href="https://www.last.fm/music/Darondo">Read more on Last.fm</a>. User-contributed text is available under the Creative Commons By-SA License; additional terms may apply.`), bio);
+  assert.equal(tidyLastfm("There are at least three artists with this name: 1) a band from Leeds that made one single in 1979 and then stopped playing altogether for good. 2) another band."), "", "a list of acts of one name is no story");
+  assert.equal(tidyLastfm("A short line."), "", "too short to be a block");
+  assert.equal(tidyLastfm("At least four artists exist by this name on last.fm: 1) Madness are a British pop and ska band from Camden Town, who formed in 1976 and had a long run of hit singles through the early eighties and after."), "");
+  assert.ok(tidyLastfm("Breakestra is a band whose name comes from breaks, formed in Los Angeles by Miles Tackett in 1996 as a ten-piece funk orchestra that played the records hip-hop sampled, live and in one long set."), "a band telling of its own name is a story");
+  assert.ok(tidyLastfm(`${bio}\n\n${bio} ${bio} ${bio}`, 400).length <= 401, "held to a length");
+  assert.equal(mainTextOf({ albumWiki: { text: "about the album" } }, { about: "genius" }), "about the album");
+  assert.equal(mainTextOf(null, { about: "genius" }), "genius");
+
+  const e = { ...env(), ARTIST_LOOKUP: "on", LASTFM_KEY: "0123456789abcdef0123", __mbSleep: async () => {} };
+  const original = globalThis.fetch;
+  const asked = [];
+  let songArticle = null;
+  globalThis.fetch = async (u) => {
+    const url = String(u);
+    asked.push(url);
+    if (url.includes("musicbrainz.org/ws/2/recording?")) return Response.json({ recordings: songArticle ? [{ id: "rec-1", score: 100 }] : [] });
+    if (url.includes("musicbrainz.org/ws/2/recording/rec-1")) return Response.json({ id: "rec-1", relations: [{ "target-type": "work", type: "performance",
+      work: { title: "Legs", relations: [{ "target-type": "url", url: { resource: "https://www.wikidata.org/wiki/Q7" } }] } }] });
+    if (url.includes("musicbrainz.org/ws/2/artist?")) return Response.json({ artists: [{ id: "art-1", score: 100, name: "Darondo" }] });
+    if (url.includes("musicbrainz.org/ws/2/artist/art-1")) return Response.json({ relations: [{ url: { resource: "https://www.wikidata.org/wiki/Q1" } }] });
+    if (url.includes("wikidata.org") && url.includes("ids=Q1")) return Response.json({ entities: { Q1: { sitelinks: { enwiki: { title: "Darondo" } } } } });
+    if (url.includes("wikidata.org") && url.includes("ids=Q7")) return Response.json({ entities: { Q7: { sitelinks: { enwiki: { title: "Legs (song)" } } } } });
+    if (url.includes("wikipedia.org/api/rest_v1/page/summary/Darondo")) return Response.json({ type: "standard", title: "Darondo",
+      extract: "William Daron Pulliam, known as Darondo, was an American funk and soul singer from the San Francisco Bay Area.", content_urls: { desktop: { page: "https://en.wikipedia.org/wiki/Darondo" } } });
+    if (url.includes("wikipedia.org/api/rest_v1/page/summary/Legs")) return Response.json({ type: "standard", title: "Legs (song)", extract: songArticle,
+      content_urls: { desktop: { page: "https://en.wikipedia.org/wiki/Legs_(song)" } } });
+    if (url.includes("audioscrobbler.com") && url.includes("track.getInfo")) return Response.json({ track: { wiki: { content: `${bio} <a href="https://www.last.fm/music/Darondo/_/Legs">Read more on Last.fm</a>.` } } });
+    if (url.includes("audioscrobbler.com") && url.includes("artist.getInfo")) return Response.json({ artist: { name: "Darondo", bio: { content: bio } } });
+    return new Response("{}", { status: 404 });
+  };
+  try {
+    const at = (t) => `${KEY}/tv/song?uri=x&t=${encodeURIComponent(t)}&a=Darondo`;
+    const a = await (await call(e, at("Legs"))).json();
+    assert.equal(a.facts, null, "nothing known of the song itself");
+    assert.equal(a.extra.song.text, bio, "Last.fm's words on the song");
+    assert.deepEqual({ name: a.extra.artist.name, from: a.extra.artist.from, wiki: a.extra.artist.wiki }, { name: "Darondo", from: "lastfm", wiki: "Darondo" });
+    assert.equal(a.extra.artist.text, bio, "Wikipedia's opening is one line: Last.fm's longer story, the article kept for More");
+    // Another song of the artist: the artist is not asked for again.
+    await call(e, at("Didn't I"));
+    assert.equal(asked.filter((x) => /musicbrainz\.org\/ws\/2\/artist|artist\.getInfo/.test(x)).length, 3, "the artist's story is kept");
+    assert.equal(asked.filter((x) => x.includes("track.getInfo")).length, 2, "each song's own text is asked once");
+    // A song with an article of its own gets nothing added.
+    songArticle = `"Legs" is a song. ${"It has a long article of its own on Wikipedia, with a full opening paragraph. ".repeat(6)}`;
+    assert.ok(songArticle.length >= THIN);
+    const full = await (await call(e, at("Legs Again"))).json();
+    assert.ok(full.facts?.wiki?.text, "the song's own article");
+    assert.equal(full.extra, null, "nothing added under a full text");
+  } finally { globalThis.fetch = original; }
+});
+
+test("the artist's story is Last.fm's when Wikipedia has none, and a house with no Last.fm key asks it nothing", async () => {
+  const { artistNote, songExtra } = await import("../songextra.js");
+  const bio = "The Vibrettes were a girl group from Los Angeles who cut one two-part single for Lujon Records in 1973, a funk 45 that became a favourite of crate diggers and breakbeat collectors.";
+  const original = globalThis.fetch;
+  const asked = [];
+  globalThis.fetch = async (u) => {
+    const url = String(u); asked.push(url);
+    if (url.includes("musicbrainz.org/ws/2/artist?")) return Response.json({ artists: [{ id: "art-2", score: 60, name: "Vibrators" }] });
+    if (url.includes("artist.getInfo")) return Response.json({ artist: { name: "The Vibrettes", bio: { content: bio } } });
+    if (url.includes("track.getInfo")) return Response.json({ error: 6, message: "Track not found" });
+    return new Response("{}", { status: 404 });
+  };
+  try {
+    const e = { ...env(), ARTIST_LOOKUP: "on", LASTFM_KEY: "0123456789abcdef0123", __mbSleep: async () => {} };
+    assert.deepEqual(await artistNote(e, "The Vibrettes"), { name: "The Vibrettes", text: bio, from: "lastfm" });
+    const none = { ...env(), ARTIST_LOOKUP: "on", __mbSleep: async () => {} };
+    asked.length = 0;
+    assert.equal(await songExtra(none, { title: "Humpty Dump", artist: "The Vibrettes" }), null);
+    assert.ok(!asked.some((x) => x.includes("audioscrobbler")), "no key, no call");
+  } finally { globalThis.fetch = original; }
+});
+
+test("the TV's About this song draws the added blocks under their own labels", async () => {
+  const src = await (await import("node:fs/promises")).readFile(new URL("../tv.js", import.meta.url), "utf8");
+  assert.ok(src.includes('"About the artist"') && src.includes("About the song, from Last.fm"));
+  assert.ok(src.includes("From Last.fm, written by its listeners."));
 });

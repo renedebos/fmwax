@@ -85,6 +85,7 @@ import { inTvApp, renderTv, tvAnswer, tvFlashWords, tvReadSig, tvSong } from "./
 import { renderTvAbout, renderTvDj, renderTvDjs, renderTvNotes, renderTvShelf, renderTvTalk, renderTvTune } from "./tvpages.js";
 import { songFacts, wikiMore } from "./musicbrainz.js";
 import { geniusForTv, geniusSong } from "./genius.js";
+import { THIN, mainTextOf, songExtra } from "./songextra.js";
 import { TV_NOT_CAUGHT, tvIntent, tvLine } from "./tvsay.js";
 import { TV_DJ_COOKIE, cookieOf, tvDjAct, tvDjClear, tvDjCookie, tvDjFacts, tvDjList, tvDjSettings } from "./tvdj.js";
 import { ARCHIVE } from "./archive-identity.js";
@@ -2718,15 +2719,21 @@ export async function handleRequest(request, env, ctx) {
         let facts = null;
         // And Genius (genius.js, 2026-11-16): producers, samples, covers, and
         // its About text, asked beside the facts, by title and artist.
-        let genius = null;
+        let genius = null, extra = null;
         if ((isrc || (q.get("t") && q.get("a"))) && songLookupAllowed()) {
           const t = String(q.get("t") ?? ""), a = String(q.get("a") ?? "");
           [facts, genius] = await Promise.all([
             songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a, album: String(q.get("al") ?? "").slice(0, 200) }).catch(() => null),
             t && a ? geniusSong(env, { title: t, artist: a }).then(geniusForTv).catch(() => null) : null,
           ]);
+          // Little said of the song itself: Last.fm's words on it and the
+          // artist's story are added (songextra.js, 2026-11-20). After the
+          // facts, never beside them: both ask MusicBrainz, a call a second.
+          if (t && a && mainTextOf(facts, genius).length < THIN) {
+            try { extra = await songExtra(env, { title: t.slice(0, 300), artist: a.slice(0, 200) }); } catch { extra = null; }
+          }
         }
-        return new Response(JSON.stringify({ ...tvSong({ uri: q.get("uri"), title: String(q.get("t") ?? "").slice(0, 300), rec, session, dj }), facts, genius }), {
+        return new Response(JSON.stringify({ ...tvSong({ uri: q.get("uri"), title: String(q.get("t") ?? "").slice(0, 300), rec, session, dj }), facts, genius, extra }), {
           headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
             "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow" } });
       }
