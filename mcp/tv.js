@@ -229,7 +229,7 @@ export function tvSong({ uri, title = "", rec = null, session = null, dj = null 
 // One look, as the page's script takes it (GET …/tv/now?room=<slug>).
 export function tvAnswer(o, room, { readAt = 0, readSig = null, now = Date.now(), canTune = false, tz = null } = {}) {
   const lit = litKey(o);
-  return { band: tvBand(o, room, now, { canTune }), clock: tvClock(tz, now), build: TV_BUILD, lit: lit && norm(lit.speaker) === norm(room.name) ? lit.btn : null,
+  return { band: tvBand(o, room, now, { canTune }), ...(o?.news ? { news: o.news } : {}), clock: tvClock(tz, now), build: TV_BUILD, lit: lit && norm(lit.speaker) === norm(room.name) ? lit.btn : null,
     rooms: tvRoomsOn(o), sig: tvSig(readSig ?? readAt, o?.lan?.hands),
     // A LOOK THAT COSTS SPOTIFY NOTHING: Spotify playing on a WiiM while the
     // home helper reads the speakers (the house keeps its answer until the
@@ -530,6 +530,8 @@ main.tv[data-tone=off] .b1{font-size:1.5rem}
    button like Back and Skip; the words stay in their labels for a reader. */
 .iconbtn{box-sizing:border-box;width:3rem;height:3rem;border-radius:50%;border:.125rem solid var(--rule);padding:0;background:transparent;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;text-decoration:none;cursor:pointer}
 .iconbtn .pi{width:1.5rem;height:1.5rem}
+/* A web search for this song came back (readfind.js): a dot on the i. */
+.iconbtn.news{position:relative}.iconbtn.news::after{content:"";position:absolute;top:-.1875rem;right:-.1875rem;width:.875rem;height:.875rem;border-radius:50%;background:var(--focus);border:.1875rem solid var(--ground)}
 .bicons{display:flex;align-items:center;gap:.5rem;flex:0 0 auto}
 .vdis{position:relative;overflow:hidden;background:#0B0C0E}
 .dbg{position:absolute;left:-12%;top:-22%;width:124%;height:144%;opacity:.36;transform:translateZ(0)}
@@ -704,7 +706,7 @@ function viewsHtml(b, rooms, room = null, on = {}, base = "", version = null) {
   </div>
   <div class="view vabout" aria-label="About this song">
     <div class="vhead"><button type="button" class="pill aback" data-open="back">${TV_I_BACK}Back</button><h1>About this song</h1>` +
-    `<a class="pill anotes" data-f="a-notes" href="#" hidden>Program notes</a><button type="button" class="pill awbtn" data-f="a-wiki" data-more hidden>More from Wikipedia</button><button type="button" class="pill apage" data-page="-1">Page up</button><button type="button" class="pill apage" data-page="1">Page down</button></div>
+    `<a class="pill aread" data-f="a-read" href="#" hidden>Read more</a><a class="pill anotes" data-f="a-notes" href="#" hidden>Program notes</a><button type="button" class="pill awbtn" data-f="a-wiki" data-more hidden>More from Wikipedia</button><button type="button" class="pill apage" data-page="-1">Page up</button><button type="button" class="pill apage" data-page="1">Page down</button></div>
     <div class="abody">
       <div class="aside"><div class="acover" data-note="${esc(I_NOTE)}">${I_NOTE}</div><p class="a1"></p><p class="a2"></p><p class="a3"></p></div>
       <div class="ascroll"><div class="awords"><p class="albl"></p><h2 class="ah"></h2><p class="ap"></p></div>
@@ -984,8 +986,14 @@ const TV_SCRIPT = `<script>
       var n = song.next[i]; show(el, !!n);
       if (n) { set(el.querySelector("b"), n.t); set(el.querySelector("i"), n.a ? " \\u00b7 " + n.a : ""); }
     });
-    var has = !!(song.about || song.facts || song.genius || song.extra);
+    var has = !!(song.about || song.facts || song.genius || song.extra || song.read || song.find);
     show(q(".babout"), has); show(q(".dabout"), has);
+    /* THE RESULTS ARE IN (the owner, 2026-11-22): a dot on the i while a
+       web search for THIS song has come back and About was not opened since. */
+    /* Also for a search that found nothing (Codex, 2026-11-23): it came
+       back, and the page behind the i says so, as the phone's line does. */
+    var dot = !!(news && song.find && song.find.slug === news.slug && newsSeen() !== news.at);
+    all(".babout,.dabout").forEach(function (el) { el.classList.toggle("news", dot); });
     show(q(".bicons"), !!(b.move || b.tune || has));
     /* Not for the next song: the article open is the last song's, and stays. */
     if (view === "about" && !has && aboutKey === song.key) open("back");
@@ -1005,6 +1013,7 @@ const TV_SCRIPT = `<script>
     var key = s && s.uri ? s.uri + "|" + (s.slug || "") + "|" + (s.btn || "") : "";
     if (key === song.key) return;
     song = { key: key, next: [], about: null, facts: null, genius: null, extra: null, more: null };
+    song.readAt = "";
     if (!key || !(s.slug || s.btn || s.isrc || band.artist)) return;
     /* Two asks: what comes next and the DJ's words (the house's own records,
        at once), and the song facts (open databases, a few seconds the first
@@ -1019,9 +1028,13 @@ const TV_SCRIPT = `<script>
     }).catch(function () {});
     /* By the song's code when the answer carries one, else by its title and
        artist (the house finds it by name). */
+    if (s.isrc || band.artist) song.readAt = at + "&isrc=" + enc(s.isrc || "") + "&ms=" + enc(s.ms || "") + "&a=" + enc(band.artist || "") + "&al=" + enc(band.album || "");
+    song.readGot = Date.now();
     if (s.isrc || band.artist) fetch(at + "&isrc=" + enc(s.isrc || "") + "&ms=" + enc(s.ms || "") + "&a=" + enc(band.artist || "") + "&al=" + enc(band.album || ""), { cache: "no-store" }).then(got()).then(function (a) {
-      if (!a || song.key !== key || !(a.facts || a.genius || a.extra)) return;
-      song.facts = a.facts || null; song.genius = a.genius || null; song.extra = a.extra || null; drawSong();
+      /* Reading alone is an answer too (Codex, 2026-11-22): a song with no
+         facts still has its Guardian pieces or its web search. */
+      if (!a || song.key !== key || !(a.facts || a.genius || a.extra || a.read || a.find)) return;
+      song.facts = a.facts || null; song.genius = a.genius || null; song.extra = a.extra || null; song.read = a.read || null; song.find = a.find || null; drawSong();
     }).catch(function () {});
   }
   /* The band and the display, from the one answer. */
@@ -1128,9 +1141,46 @@ const TV_SCRIPT = `<script>
     }
     /* The whole page the DJ wrote, on a page of its own (the owner,
        2026-11-15: "maybe have button for full program notes"). */
+    /* READ MORE (the owner, 2026-11-22): the Guardian's pieces about the
+       artist, on a page of their own; only when some were found, with how
+       many (readmore.js). */
+    /* AND FIND MORE (readfind.js): the web's pieces the curator found for
+       this song count too; with none yet, the button says a search can be
+       asked for, or that one is under way. */
+    var rd = song.read, fd = song.find, rl = q(".aread");
+    var rn = (rd && rd.n ? rd.n : 0) + (fd && fd.state === "found" ? fd.n || 0 : 0);
+    /* "none" shows too (Codex): the page is where "the curator found
+       nothing" is said. */
+    var rshow = !!(rn || (fd && (fd.state === "ask" || fd.state === "asked" || fd.state === "none")));
+    show(rl, rshow);
+    if (rshow) {
+      set(rl, rn ? "Read more \u00b7 " + rn : fd.state === "asked" ? "Searching\u2026" : fd.state === "none" ? "Read more" : "Find articles");
+      rl.setAttribute("href", base + "/tv/read?room=" + enc(room) + "&a=" + enc(b.artist || (rd && rd.name) || "") + "&t=" + enc(b.title || "") + "&al=" + enc(b.album || ""));
+    }
     var s = b.song || {}, nl = q(".anotes");
     show(nl, !!s.slug);
     if (s.slug) nl.setAttribute("href", base + "/tv/notes/" + enc(s.slug) + "?room=" + enc(room) + "&uri=" + enc(s.uri || ""));
+  }
+  /* THE READING, ASKED AGAIN for the song showing: when a web search came
+     back (the look's news), and each minute while one is under way, so
+     "Searching\u2026" becomes "Read more" by itself. The facts are kept by the
+     house, so this costs it its own records only. */
+  var news = null;
+  function newsSeen() { try { return localStorage.getItem("tv:news") || ""; } catch (e) { return ""; } }
+  function readAgain() {
+    var key = song.key, at = song.readAt; if (!key || !at) return;
+    song.readGot = Date.now();
+    fetch(at, { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (a) {
+      if (!a || song.key !== key) return;
+      song.read = a.read || null; song.find = a.find || null; drawSong();
+      if (view === "about" && aboutKey === song.key) fillAbout();
+    }).catch(function () {});
+  }
+  function newsTake(nw) {
+    var was = news ? news.at : ""; news = nw || null;
+    if (news && news.at !== was) readAgain();
+    else if (song.find && song.find.state === "asked" && Date.now() - (song.readGot || 0) > 60000) readAgain();
+    else if ((news ? news.at : "") !== was) drawSong();
   }
   function wikiOf(f) {
     return f && f.wiki && f.wiki.text ? f.wiki : f && f.albumWiki && f.albumWiki.text ? f.albumWiki : null;
@@ -1204,7 +1254,9 @@ const TV_SCRIPT = `<script>
     /* Opens for whatever knows the song: the DJ's words, the open databases,
        or Genius alone (2026-11-16, the owner: the i did nothing for a song
        only Genius knew). */
-    if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout(); aboutKey = song.key; aboutTouch = Date.now(); }
+    if (v === "about") { if (!(song.about || song.facts || song.genius || song.read || song.find)) return;
+      if (news && song.find && song.find.slug === news.slug) { try { localStorage.setItem("tv:news", news.at); } catch (e) {} drawSong(); }
+      fillAbout(); aboutKey = song.key; aboutTouch = Date.now(); }
     if (v === "move") { if (!band || !band.move) return; fillMove(); }
     if (view === "ctl") { var a = document.activeElement; lastCtl = a && a !== document.body && main.contains(a) ? a : null; }
     backTo = v === "about" || v === "move" || v === "rooms" || v === "voice" ? view : "ctl";
@@ -1239,6 +1291,7 @@ const TV_SCRIPT = `<script>
     if (!inView && a.build && a.build !== build && again("tv:build", a.build)) return;
     if (!inView && a.sig && a.sig !== sig && again("tv:reloaded", a.sig)) return;
     cheap = !!a.cheap; rest = !!a.rest;
+    newsTake(a.news);
     if (a.clock != null) clock = { s: Number(a.clock), got: Date.now() };
     var b = a.band;
     /* A PAUSE OR A PLAY THE HOUSE ACCEPTED, NOT YET IN SPOTIFY'S ANSWER:

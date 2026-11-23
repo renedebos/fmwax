@@ -2,7 +2,7 @@
 // Split out of worker.js on 2026-09-26 (consolidation).
 import { RULES_MD } from "./rules.js";
 import {
-  APP_CSS, APP_CSS_PATH, TEMPLATE_VERSION, clock, renderProgram, standfirst, renderLibrary, renderRoom,
+  APP_CSS, APP_CSS_PATH, TEMPLATE_VERSION, clock, renderProgram, standfirst, renderLibrary, renderReading, renderRoom,
   PAUSED_WORDS, renderDjRoom, tuneForm, renderRefusal, renderSpeakersNow, shutWords, helperKeyWords, renderUse, renderRules, renderSay, renderSpotify,
   renderReadings, renderDeck, renderTalk, plural, waitWords, serviceLink, sameName, renderWhichDj, renderSetup,
 } from "./programs.js";
@@ -82,10 +82,14 @@ import { activateProgram, emitRequestEvent, fireRoutine } from "./writes.js";
 import { aboutStop, aboutView, askLink, assistantOf } from "./about.js";
 import { LISTEN_CALLS, dropListen, listenId, listenable, makeListen, removeListen } from "./listen.js";
 import { inTvApp, renderTv, tvAnswer, tvFlashWords, tvReadSig, tvSong } from "./tv.js";
-import { renderTvAbout, renderTvDj, renderTvDjs, renderTvNotes, renderTvShelf, renderTvTalk, renderTvTune } from "./tvpages.js";
+import { renderTvAbout, renderTvCode, renderTvDj, renderTvDjs, renderTvNotes, renderTvPiece, renderTvRead, renderTvShelf, renderTvTalk, renderTvTune } from "./tvpages.js";
 import { songFacts, wikiMore } from "./musicbrainz.js";
 import { geniusForTv, geniusSong } from "./genius.js";
 import { THIN, mainTextOf, songExtra } from "./songextra.js";
+import { guardianId, guardianOn, guardianPiece, readMore, readName } from "./readmore.js";
+import { FIND_SAY, fileFind, findItem, findLine, findOn, findSlugOk, findState } from "./readfind.js";
+import { readingCount, readingIndex } from "./readindex.js";
+import { qrSvg } from "./qr.js";
 import { TV_NOT_CAUGHT, tvIntent, tvLine } from "./tvsay.js";
 import { TV_DJ_COOKIE, cookieOf, tvDjAct, tvDjClear, tvDjCookie, tvDjFacts, tvDjList, tvDjSettings } from "./tvdj.js";
 import { ARCHIVE } from "./archive-identity.js";
@@ -2673,12 +2677,14 @@ export async function handleRequest(request, env, ctx) {
     //   …/tv/tune/<dj>  a DJ's dials as sliders; Apply is the Tune route's own
     //               POST (/<dj>/tune, `back=tv`)
     //   …/tv/notes/<slug>  a program's whole notes, for reading (tvpages.js)
+    //   …/tv/read?a=<artist>[&id=<piece>]  Read more: the Guardian's pieces
+    //               about an artist, and one of them to read (readmore.js)
     //   …/tv/say?q=<words>  what was said to TV Bro's voice search, done as
     //               maple crate does it, then back to the TV page (tvsay.js)
     //   …/tv/djs     every DJ, in three groups (tvdj.js, tvpages.js)
     //   …/tv/dj/<dj> one DJ's screen; a POST is a press on it
     //   …/tv/face/<dj>.jpg  a DJ's sleeve (art/covers, the COVERS binding)
-    const tvMore = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/tv\/(song|shelf|say|djs|talk|about|tune\/([a-z0-9-]{1,40})|notes\/([a-z0-9-]{1,64})|dj\/([a-z0-9-]{1,40})|face\/([a-z0-9-]{1,40})\.jpg)$/);
+    const tvMore = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/tv\/(song|shelf|say|djs|talk|about|read|tune\/([a-z0-9-]{1,40})|notes\/([a-z0-9-]{1,64})|dj\/([a-z0-9-]{1,40})|face\/([a-z0-9-]{1,40})\.jpg)$/);
     if (tvMore) {
       const key = env.PROGRAM_LIBRARY_KEY;
       if (!key || !sameSecret(tvMore[1], key)) return notFound();
@@ -2719,13 +2725,22 @@ export async function handleRequest(request, env, ctx) {
         let facts = null;
         // And Genius (genius.js, 2026-11-16): producers, samples, covers, and
         // its About text, asked beside the facts, by title and artist.
-        let genius = null, extra = null;
+        let genius = null, extra = null, read = null, find = null;
         if ((isrc || (q.get("t") && q.get("a"))) && songLookupAllowed()) {
           const t = String(q.get("t") ?? ""), a = String(q.get("a") ?? "");
-          [facts, genius] = await Promise.all([
+          // READ MORE (readmore.js): how many pieces the Guardian has about
+          // the artist, asked beside the facts and kept by artist, so the
+          // button shows with its count and its list opens at once.
+          [facts, genius, read] = await Promise.all([
             songFacts(env, isrc, Number(q.get("ms")) || 0, { title: t, artist: a, album: String(q.get("al") ?? "").slice(0, 200) }).catch(() => null),
             t && a ? geniusSong(env, { title: t, artist: a }).then(geniusForTv).catch(() => null) : null,
+            a && guardianOn(env) ? readMore(env, a).then((v) => (v ? { name: v.name, n: v.items.length } : null)).catch(() => null) : null,
           ]);
+          // FIND MORE (readfind.js): where the song stands with the curator's
+          // web search: pieces kept, a search waiting, or free to ask.
+          if (t && a) {
+            try { const fs = await findState(env, { title: t, artist: a }); find = fs ? { state: fs.state, n: fs.items?.length ?? 0, slug: fs.slug } : null; } catch { find = null; }
+          }
           // Little said of the song itself: Last.fm's words on it and the
           // artist's story are added (songextra.js, 2026-11-20). After the
           // facts, never beside them: both ask MusicBrainz, a call a second.
@@ -2733,7 +2748,7 @@ export async function handleRequest(request, env, ctx) {
             try { extra = await songExtra(env, { title: t.slice(0, 300), artist: a.slice(0, 200) }); } catch { extra = null; }
           }
         }
-        return new Response(JSON.stringify({ ...tvSong({ uri: q.get("uri"), title: String(q.get("t") ?? "").slice(0, 300), rec, session, dj }), facts, genius, extra }), {
+        return new Response(JSON.stringify({ ...tvSong({ uri: q.get("uri"), title: String(q.get("t") ?? "").slice(0, 300), rec, session, dj }), facts, genius, extra, read, find }), {
           headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
             "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow" } });
       }
@@ -2755,6 +2770,42 @@ export async function handleRequest(request, env, ctx) {
       // answer shows on the TV page. The DJ's screen names the DJ for what is
       // said to TV Bro's voice search while it is open (a cookie the other
       // screens clear).
+      // READ MORE: the list for an artist, or one piece of it. A piece is
+      // only read from an artist's own list, so the page cannot be made to
+      // fetch any Guardian address at all.
+      if (tvMore[2] === "read") {
+        const artist = String(q.get("a") ?? "").replace(/\s+/g, " ").trim().slice(0, 200);
+        const name = readName(artist);
+        // The song the list was opened from rides along, so the web's pieces
+        // (readfind.js) are the ones for the song that was playing then.
+        const song = { title: String(q.get("t") ?? "").slice(0, 300), artist, album: String(q.get("al") ?? "").slice(0, 200) };
+        const songQ = `a=${encodeURIComponent(artist)}${song.title ? `&t=${encodeURIComponent(song.title)}` : ""}${song.album ? `&al=${encodeURIComponent(song.album)}` : ""}`;
+        const listAt = `${base}/tv/read?${room ? `room=${room.slug}&` : ""}${songQ}`;
+        const gone = () => new Response(null, { status: 303, headers: { location: `${base}/tv?${room ? `room=${room.slug}&` : ""}v=dis`, "cache-control": "no-store" } });
+        const toList = () => new Response(null, { status: 303, headers: { location: listAt, "cache-control": "no-store" } });
+        // A PIECE ON ANOTHER SITE: its code for a phone's camera. Only a kept
+        // piece, by its place in the song's own list.
+        const xs = findSlugOk(q.get("s"));
+        if (xs && /^[0-5]$/.test(q.get("x") ?? "")) {
+          const it = await findItem(env, xs, Number(q.get("x")));
+          if (!it) return toList();
+          return roomPage(renderTvCode({ back: listAt, item: it, line: findLine(it), svg: qrSvg(it.url, { label: `A code that opens ${it.source}` }) }));
+        }
+        let list = null, find = null;
+        try { list = name && guardianOn(env) ? await readMore(env, name) : null; } catch { list = null; }
+        try { find = song.title ? await findState(env, song) : null; } catch { find = null; }
+        if (!list && !find) return gone();
+        const id = guardianId(q.get("id"));
+        if (!id) {
+          const fc = /^(asked|already|found|full|cap|no-curator|no-song|failed)$/.exec(q.get("fc") ?? "")?.[0] ?? null;
+          return roomPage(renderTvRead({ base, room, name: list?.name ?? name, items: list?.items ?? [], song, songQ,
+            find: find ? { ...find, items: (find.items ?? []).map((it) => ({ ...it, line: findLine(it) })) } : null, said: fc ? FIND_SAY[fc] : "" }));
+        }
+        let piece = null;
+        try { piece = list?.items.some((it) => it.id === id) ? await guardianPiece(env, id) : null; } catch { piece = null; }
+        if (!piece) return toList();
+        return roomPage(renderTvPiece({ back: listAt, piece: { ...piece, kind: list.items.find((it) => it.id === id)?.kind ?? "" } }));
+      }
       // ABOUT FMWAX (the owner, 2026-11-19): the house's version and what is
       // connected, from its own records (no Spotify call), and the remote's keys.
       if (tvMore[2] === "about") {
@@ -3155,6 +3206,35 @@ export async function handleRequest(request, env, ctx) {
     // the program record when the song comes from a Shelf page; no Spotify
     // call. The title and artist come from the bar, which read them from
     // Spotify; they are escaped into the view and encoded into the link.
+    // FIND MORE (readfind.js): a press on the button, from the bar's panel
+    // (a fetch, answered as JSON) or the TV's Read more page (a form, sent
+    // back to that page). It files a job for the curator and rings it; no
+    // Spotify call. Only from the house's own pages.
+    const roomFind = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/readfind$/);
+    if (roomFind) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      if (!key || !sameSecret(roomFind[1], key)) return notFound();
+      if (request.method !== "POST") return roomRefuse(405, "Find more takes a POST, from the house's own pages.");
+      const json = /\bapplication\/json\b/.test(request.headers.get("accept") ?? "");
+      const origin = request.headers.get("origin");
+      if (json ? origin !== url.origin : origin && origin !== "null" && origin !== url.origin) {
+        return roomRefuse(403, `This was sent from ${origin ?? "nowhere"}, not from ${url.origin}.`);
+      }
+      let form = null;
+      try { form = await request.formData(); } catch { form = null; }
+      const song = { title: String(form?.get("t") ?? "").slice(0, 300), artist: String(form?.get("a") ?? "").replace(/\s+/g, " ").trim().slice(0, 200),
+        album: String(form?.get("al") ?? "").slice(0, 200) };
+      let out;
+      try { out = await fileFind(env, song, { ring: (id) => emitRequestEvent(env, id) }); } catch { out = { code: "failed" }; }
+      if (json) {
+        return new Response(JSON.stringify({ ok: out.code === "asked", code: out.code, say: FIND_SAY[out.code] ?? FIND_SAY.failed }), { headers: {
+          "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff" } });
+      }
+      const rs = /^[a-z0-9-]{1,40}$/.exec(String(form?.get("room") ?? ""))?.[0] ?? "";
+      return new Response(null, { status: 303, headers: { "cache-control": "no-store", location:
+        `/buttons/${key}/tv/read?${rs ? `room=${rs}&` : ""}a=${encodeURIComponent(song.artist)}&t=${encodeURIComponent(song.title)}` +
+        `${song.album ? `&al=${encodeURIComponent(song.album)}` : ""}&fc=${out.code}` } });
+    }
     const roomAbout = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/about$/);
     if (roomAbout) {
       const key = env.PROGRAM_LIBRARY_KEY;
@@ -3177,7 +3257,16 @@ export async function handleRequest(request, env, ctx) {
       }
       let kind = curatorKind(env);
       if (!kind) { try { kind = assistantOf(await readToolList(env)); } catch { kind = null; } }
-      return new Response(aboutView({ title, artist, stop, page, dj, ask: askLink(kind, title, artist) }),
+      // READ MORE (readmore.js): the Guardian's pieces about the artist, kept
+      // by artist, so only the first look at an artist waits for it.
+      let read = null;
+      if (artist && guardianOn(env)) { try { read = await readMore(env, artist); } catch { read = null; } }
+      // FIND MORE (readfind.js): the web's pieces for this song, or the button.
+      let find = null;
+      try { find = await findState(env, { title, artist }); } catch { find = null; }
+      if (find?.items) find = { ...find, items: find.items.map((it) => ({ ...it, line: findLine(it) })) };
+      return new Response(aboutView({ title, artist, stop, page, dj, ask: askLink(kind, title, artist), read,
+        find: find ? { ...find, album: String(q.get("al") ?? "").slice(0, 200) } : null }),
         { headers: roomHeaders });
     }
     const roomDj = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/([a-z0-9-]{1,40})$/);
@@ -5203,6 +5292,23 @@ export async function handleRequest(request, env, ctx) {
       });
     }
 
+    // THE SHELF'S READING (readindex.js): every piece the house holds, by
+    // artist. The house's own lists only: no Spotify call, no script.
+    const libRead = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})\/reading$/);
+    if (libRead) {
+      const key = env.PROGRAM_LIBRARY_KEY;
+      if (!key || !sameSecret(libRead[2], key)) return notFound();
+      if (request.method !== "GET" && request.method !== "HEAD") return new Response("This page only answers GET.", { status: 405, headers: { "cache-control": "no-store" } });
+      let ix = { groups: [], n: 0, unreadable: true };
+      try { ix = await readingIndex(env); } catch { /* said as unreadable */ }
+      const groups = ix.groups.map((g) => ({ ...g, blocks: g.blocks.map((b) => (b.kind === "web" ? { ...b, items: b.items.map((it) => ({ ...it, line: findLine(it) })) } : b)) }));
+      return new Response(renderReading(groups, { self: `/notes/${key}`, room: `/buttons/${key}`, n: ix.n, unreadable: ix.unreadable,
+        canAsk: findOn(env), ...(await tabState(env)), hmark: await helperView(env) }), { headers: {
+        "content-type": "text/html; charset=utf-8", "cache-control": "no-store", "x-content-type-options": "nosniff",
+        "referrer-policy": "no-referrer", "x-robots-tag": "noindex, nofollow",
+        "content-security-policy": "default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+          "font-src https://fonts.gstatic.com; img-src 'self'; manifest-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'" } });
+    }
     const lib = url.pathname.match(/^\/(notes)\/([A-Za-z0-9_-]{8,128})$/);
     if (lib) {
       const key = env.PROGRAM_LIBRARY_KEY;
@@ -5264,6 +5370,13 @@ export async function handleRequest(request, env, ctx) {
         // everything rather than being refused.
         dj: url.searchParams.get("dj"), svc: url.searchParams.get("svc"), q: url.searchParams.get("q"), self: base,
         room: `/buttons/${key}`, unreadable, asksOn: env.REQUESTS_ENABLED === "true", ...(await tabState(env)),
+        // The Shelf's other list (readindex.js): shown where there is reading, or a way to ask for some.
+        reading: await (async () => {
+          if (!findOn(env) && !guardianOn(env)) return null;
+          let rn = null;
+          try { rn = await readingCount(env); } catch { rn = null; }
+          return { href: `${base}/reading`, n: rn };
+        })(),
         // The house mark beside the "?" (2026-10-22): no script here to ask.
         hmark: await helperView(env),
       }), {

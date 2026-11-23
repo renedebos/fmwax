@@ -47,7 +47,7 @@ test("a modern tools/list and tools/call: resultType, the server's name, a cache
   assert.equal(list.body.result.resultType, "complete");
   assert.equal(list.body.result.cacheScope, "private");
   assert.ok(list.body.result.ttlMs > 0);
-  assert.deepEqual(new Set(list.body.result.tools.map((t) => t.name)), new Set([...AGENT_TOOLS].filter((n) => n !== "look_up_artist" && n !== "look_up_song")));
+  assert.deepEqual(new Set(list.body.result.tools.map((t) => t.name)), new Set([...AGENT_TOOLS].filter((n) => n !== "look_up_artist" && n !== "look_up_song" && n !== "save_reading")));
   const f = installFetch();
   try {
     const got = await call(e, AGENT, "tools/call", { version: "2026-07-28", params: { name: "list_requests", arguments: {} } });

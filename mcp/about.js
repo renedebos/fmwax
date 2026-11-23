@@ -86,7 +86,12 @@ const ON = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><
 // The view the panel shows, as HTML for the bar's script to put in the panel
 // (as Tune's form is). `stop` from aboutStop, or null; `page` the Shelf
 // page's address with the stop's anchor; `dj` the writer's name.
-export function aboutView({ title, artist, stop = null, page = null, dj = null, ask }) {
+// `read` (readmore.js, 2026-11-22): the Guardian's pieces about the artist,
+// { name, items }. On a phone each opens on the Guardian's own site, which is
+// free to read and built for a phone; the TV reads them in place.
+// `find` (readfind.js): where the song stands with the curator's web search:
+// its pieces (each with its `line`), a search waiting, or the button.
+export function aboutView({ title, artist, stop = null, page = null, dj = null, ask, read = null, find = null }) {
   const song = cleanSongTitle(title) || "This song";
   const words = stop ? `
   <section class="nbabw">
@@ -95,9 +100,45 @@ export function aboutView({ title, artist, stop = null, page = null, dj = null, 
     <p class="nbabp">${esc(stop.text)}</p>${page ? `
     <a class="nbabpage" href="${esc(page)}">Read the whole page on the Shelf${ON}</a>` : ""}
   </section>` : "";
-  return `<div class="nbabhead"><button type="button" class="nbabback" data-ab-back aria-label="Back to the song">${BACK}</button>` +
+  const items = Array.isArray(read?.items) ? read.items.filter((it) => /^[a-z0-9-]+(\/[a-z0-9-]+){2,8}$/.test(String(it?.id ?? ""))) : [];
+  const more = items.length ? `
+  <section class="nbabr">
+    <p class="nbablbl">Read more about ${esc(read.name)}</p>
+    <ul class="nbabrl">${items.map((it) => `
+      <li><a class="nbabri" href="https://www.theguardian.com/${esc(it.id)}" target="_blank" rel="noopener noreferrer">` +
+    `<span class="nbabrt">${esc(it.title)}</span>` +
+    `<span class="nbabrm">${esc([it.kind, "The Guardian", it.year, it.min ? `${it.min} min` : ""].filter(Boolean).join(" · "))}</span></a></li>`).join("")}
+    </ul>
+  </section>` : "";
+  const pieces = find?.state === "found" ? (find.items ?? []).filter((it) => /^https:\/\/[a-z0-9.-]+\//i.test(String(it?.url ?? ""))) : [];
+  const web = pieces.length ? `
+  <section class="nbabr">
+    <p class="nbablbl">More on the web</p>
+    <ul class="nbabrl">${pieces.map((it) => `
+      <li><a class="nbabri" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">` +
+    `<span class="nbabrt">${esc(it.title)}</span><span class="nbabrm">${esc(it.line ?? it.source ?? "")}</span></a></li>`).join("")}
+    </ul>
+    <p class="nbabnote">Found by the house's curator searching the web. Each opens on its own site.</p>
+  </section>` : find?.state === "asked" ? `
+  <section class="nbabr">
+    <p class="nbablbl">More on the web</p>
+    <p class="nbabnote" role="status">The curator is searching the web for this song. A few minutes: open About this song again.</p>
+  </section>` : find?.state === "none" ? `
+  <section class="nbabr">
+    <p class="nbablbl">More on the web</p>
+    <p class="nbabnote">The curator searched the web for this song and found nothing more worth listing.</p>
+  </section>` : find?.state === "ask" ? `
+  <section class="nbabr">
+    <p class="nbablbl">More on the web</p>
+    <button type="button" class="nbabfind" data-readfind data-t="${esc(title)}" data-a="${esc(artist)}" data-al="${esc(find.album ?? "")}">Find articles and interviews</button>
+    <p class="nbabnote" data-readfind-say role="status">The curator searches the web for this song. It takes a few minutes, once.</p>
+  </section>` : "";
+  // The song's key for the web search rides the view, so the panel knows
+  // which search this view has shown (the dot, readfind.js).
+  const mark = /^[a-z0-9][a-z0-9-]{2,79}$/.test(String(find?.slug ?? "")) ? `<span hidden data-find-slug="${esc(find.slug)}"></span>` : "";
+  return `${mark}<div class="nbabhead"><button type="button" class="nbabback" data-ab-back aria-label="Back to the song">${BACK}</button>` +
     `<h2 class="nbabt">About this song</h2></div>
-  <div class="nbabsong"><p class="nbabs1">${esc(song)}</p>${artist ? `<p class="nbabs2">${esc(artist)}</p>` : ""}</div>${words}
+  <div class="nbabsong"><p class="nbabs1">${esc(song)}</p>${artist ? `<p class="nbabs2">${esc(artist)}</p>` : ""}</div>${words}${more}${web}
   <div class="nbabask">
     <a class="nbabgo" href="${esc(ask.href)}" target="_blank" rel="noopener noreferrer">${ASK}Ask ${esc(ask.name)} about this song${OUT}</a>
     <p class="nbabnote">${esc(ask.name)} opens with the question typed, for you to send.${ask.name === "Claude"

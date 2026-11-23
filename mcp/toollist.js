@@ -7,6 +7,7 @@ import { PERSONAS } from "./djs.js";
 import { ARCHIVE } from "./archive-identity.js";
 import { artistLookupOn, geniusOn, houseCatalogNames, lastfmOn } from "./services.js";
 import { parseSpeakers } from "./room.js";
+import { curatorKind } from "./curator-events.js";
 
 // Last.fm's one verb (lastfm.js), for a house with the key: here, not
 // imported from there, which would bring this file in a loop.
@@ -444,6 +445,43 @@ export const TOOLS = [
         discography: DISCOGRAPHY,
       },
       required: ["request_id", "uris"],
+    },
+  },
+  {
+    // FIND MORE (readfind.js, 2026-11-22): the pieces for a reading job, the
+    // curator's web search handed in. The house checks and keeps them.
+    name: "save_reading",
+    description:
+      "Hand in the reading for one reading job from list_requests (reading_jobs): in-depth pieces about the song a " +
+      "listener was hearing, found by your own web search as reading_note says. Each piece: what it is mostly about " +
+      "(song, album or artist: be honest, an artist interview is not about the song), its kind (interview, feature, " +
+      "video, audio), its language, the site's name, the piece's own title and its address. Only an address you saw " +
+      "in a search result or opened; the house asks each one and drops any that is gone, and tells you. Five at most, " +
+      "the best first. If you found nothing worth a listener's time, call it with an empty items list: that is an " +
+      "answer, and the listener is told. One call settles the job.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        job_id: { type: "string", description: "The reading job's job_id, exactly as list_requests gave it." },
+        items: {
+          type: "array",
+          description: "The pieces, best first, five at most. Empty when nothing was found.",
+          items: {
+            type: "object",
+            properties: {
+              about: { type: "string", enum: ["song", "album", "artist"], description: "What the piece is mostly about." },
+              kind: { type: "string", enum: ["interview", "feature", "video", "audio"] },
+              lang: { type: "string", description: "The piece's language, two letters: en, nl, fr." },
+              source: { type: "string", description: "The site or publication's name, as a reader knows it." },
+              title: { type: "string", description: "The piece's own title." },
+              url: { type: "string", description: "Its https address, as you saw it." },
+              paywalled: { type: "boolean", description: "True when the site asks for a subscription to read it." },
+            },
+            required: ["about", "kind", "source", "title", "url"],
+          },
+        },
+      },
+      required: ["job_id", "items"],
     },
   },
   {
@@ -2198,6 +2236,10 @@ export const AGENT_TOOLS = new Set([
   "look_up_artist",
   // Added with Genius (2026-11-16): a read, and a KV copy of what it read.
   "look_up_song",
+  // Added with Find more (2026-11-22): writes a list of links for a job the
+  // house itself opened at a listener's press, each address checked by the
+  // house and drawn as text. Nothing plays, nothing is published.
+  "save_reading",
   // Added with the recording finder (MC-41 stage 0, 2026-11-12): a read, as
   // search_tracks is, and a KV copy of what it found. The curator makes the
   // asked sets, so it is offered wherever search_tracks is.
@@ -2338,6 +2380,10 @@ export const TOOL_META = {
   // the same job is refused, so it is idempotent in effect.
   // A fresh set or a steer replaces songs nobody has heard yet; a fresh set
   // takes a backup first. A second call on the same job is refused.
+  // Keeps a short list of links for a job the house opened; a second call
+  // on the same job is refused.
+  save_reading: ["Hand In Reading for a Song", {
+    readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true }],
   extend_endless: ["Add Songs to an Endless DJ", {
     readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: true }],
   // Replaces what is queued after the playing song, or nothing at all (the
@@ -2405,8 +2451,11 @@ function listedTools(env) {
   const genius = geniusOn(env);
   // Play now, only where it is not off (house.json `playNow`, MC-47).
   const playNow = env?.PLAY_NOW === "dry" || env?.PLAY_NOW === "on";
+  const reading = !!curatorKind(env);
   return TOOLS.filter((t) => (archive || !ARCHIVE_TOOLS.has(t.name)) && (lastfm || !LASTFM_TOOLS.has(t.name))
-    && (genius || !GENIUS_TOOLS.has(t.name)) && (playNow || t.name !== "play_now")).map((t) => {
+    && (genius || !GENIUS_TOOLS.has(t.name)) && (playNow || t.name !== "play_now")
+    // Reading jobs are only filed in a house with a curator to ring (readfind.js).
+    && (reading || t.name !== "save_reading")).map((t) => {
     const meta = TOOL_META[t.name];
     if (!meta) return t;
     const [title, annotations] = meta;

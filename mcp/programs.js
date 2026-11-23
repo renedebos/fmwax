@@ -640,6 +640,19 @@ li.entry .open:hover{color:var(--mvt-1);text-decoration-color:var(--mvt-1)}
 .notes .shelfhead{display:flex;flex-direction:column;gap:.5rem;padding-bottom:.2rem;border:0}
 .notes .shtop{position:relative;display:flex;align-items:flex-end;justify-content:space-between;gap:.8rem}
 .notes .shtop h1{margin:0}
+/* PROGRAMS | READING (the owner, 2026-11-23, option A): the Shelf's two
+   lists, as two chips under its name. */
+.notes .shswitch{display:flex;gap:.5rem;margin:.7rem 0 0}
+.notes .shswitch .chip{min-height:2.75rem;padding:0 1.1rem;display:inline-flex;align-items:center;gap:.4rem}
+.notes .shswitch .chip[aria-current]{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep)}
+.notes .rdnote{margin:.2rem 0 0;font-size:var(--fs-14);line-height:1.45;color:var(--ink-2)}
+.notes .rdgroups{display:flex;flex-direction:column;gap:1.1rem;margin:1rem 0 0}
+.notes .rdblock{display:flex;flex-direction:column;gap:.4rem}
+.notes .rdlbl{margin:0;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.notes .rdlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
+.notes a.rditem{display:flex;flex-direction:column;gap:.2rem;justify-content:center;min-height:2.75rem;padding:.6rem .75rem;border-radius:12px;background:var(--q-tint);text-decoration:none;font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.notes .rdt{font-size:.9375rem;font-weight:600;line-height:1.3;color:var(--ink)}
+.notes .rdm{font-size:var(--fs-12);color:var(--ink-2)}
 .notes .shtop details.filter{position:static}
 .notes .shtop .filter>summary{height:36px;padding:0 .8rem 0 .95rem;border-width:1.5px;border-color:var(--rule);font-size:var(--fs-14)}
 .notes .shtop .filterlist{position:absolute;left:0;right:0;top:calc(100% + .5rem);z-index:30;padding:.8rem;
@@ -859,11 +872,68 @@ export function shelfControls(r, { live = false, play = null, open = null, archi
   return { playBtn, put, removeForm, onair };
 }
 
+// The Shelf's two lists, as two chips: Programs and Reading.
+function shelfSwitch({ programs, reading, n = null, on }) {
+  const chip = (id, href, label) => (on === id ? `<span class="chip" aria-current="page">${label}</span>` : `<a class="chip" href="${esc(href)}">${label}</a>`);
+  return `
+    <nav class="shswitch" aria-label="The Shelf's lists">${chip("programs", programs, "Programs")}${
+      chip("reading", reading, `Reading${n ? `<b class="n">${n}</b>` : ""}`)}</nav>`;
+}
+
+// THE SHELF'S READING (readindex.js; option A of the canvas "A place for all
+// the reading", the owner, 2026-11-23): every piece the house holds, by
+// artist, the newest first: the Guardian's about the artist, and what the
+// curator found on the web for a song. Each opens on its own site. No
+// script, as the Shelf has none. `groups` come with each web piece's line
+// made (readfind.js findLine).
+export function renderReading(groups, { self, room = null, n = 0, unreadable = false, owed = 0, talk = false, loaded = true, hmark = null, canAsk = false } = {}) {
+  const item = (href, title, line) => `
+        <li><a class="rditem" href="${esc(href)}" target="_blank" rel="noopener noreferrer"><span class="rdt">${esc(title)}</span><span class="rdm">${esc(line)}</span></a></li>`;
+  const block = (g, b) => {
+    const rows = b.kind === "guardian"
+      ? b.items.filter((it) => /^[a-z0-9-]+(\/[a-z0-9-]+){2,8}$/.test(String(it?.id ?? ""))).map((it) => item(`https://www.theguardian.com/${it.id}`, it.title,
+        [it.kind, "The Guardian", it.year, it.min ? `${it.min} min` : ""].filter(Boolean).join(" · ")))
+      : b.items.filter((it) => /^https:\/\/[a-z0-9.-]+\//i.test(String(it?.url ?? ""))).map((it) => item(it.url, it.title, it.line ?? it.source ?? ""));
+    return rows.length ? `
+    <section class="rdblock">
+      <p class="rdlbl">${esc([g.artist, b.kind === "guardian" ? "The Guardian" : b.song].filter(Boolean).join(" · "))}</p>
+      <ul class="rdlist">${rows.join("")}
+      </ul>
+    </section>` : "";
+  };
+  const body = groups.map((g) => g.blocks.map((b) => block(g, b)).join("")).join("");
+  return `${head("Shelf: Reading", "Every article and interview the house holds, newest first.",
+    ROOM_CSS, WALL_FONTS + (room ? appMeta(room) : ""))}
+<article class="page notes${room ? " tabbed nobar" : ""}">
+  <header class="masthead shelfhead">
+    <div class="shtop pagehead"><h1>Shelf</h1><span class="shtools">${room ? helperMark(hmark ?? {}) : ""}${pageHelp("the Shelf's Reading", `
+      <p>Every article and interview the house holds, newest first, by artist.</p>
+      <p><b>The Guardian's</b> pieces are found by themselves when an artist plays, and kept a month.</p>
+      <p><b>The rest</b> are what the curator found on the web for a song, after a press on <b>Find articles and
+        interviews</b> in About this song. They are kept about six months.</p>
+      <p>A tap opens a piece on its own site.</p>
+    `)}</span></div>${shelfSwitch({ programs: self, reading: `${self}/reading`, n, on: "reading" })}
+    <p class="rdnote">${n ? "Articles and interviews for what this house played, newest first. A tap opens a piece on its own site."
+      : ""}</p>
+  </header>
+  ${body ? `<div class="rdgroups">${body}
+  </div>` : unreadable ? `<p class="standfirst" role="status">The reading could not be read just now. Reload in a moment.</p>`
+    : `<p class="standfirst">Nothing to read yet. ${canAsk ? "While a song plays, open About this song and tap Find articles and interviews: the curator searches the web, and what it finds is kept here."
+      : "Pieces about the artists this house plays are kept here as they are found."}</p>`}
+  ${room ? tabBar({ base: room, active: "shelf", owed, shelfHref: self, talk, loaded, now: false }) : ""}
+</article>
+</body>
+</html>
+`;
+}
+
 export function renderLibrary(rows, {
   onAir = null, action = null, flash = null, dj = null, svc = null, q = null, self = null, undo = null,
   // How long Spotify's block has left, in words: this page has no bar to say it.
   blocked = null,
   room = null, unreadable = false, remove = null,
+  // THE READING (readindex.js): { href, n } draws the switch under the name.
+  reading = null,
   // The house mark's answer (helperView): this page runs no script, so the
   // route says whether the home helper is on (2026-10-22).
   hmark = null,
@@ -1087,6 +1157,7 @@ export function renderLibrary(rows, {
       <p><b>Tap a cover</b> for its page: the tracklist and notes, <b>Load</b>,
         which puts it back on its preset, and <b>Delete</b>.</p>
     `)}</span></div>
+${reading ? shelfSwitch({ programs: self, reading: reading.href, n: reading.n, on: "programs" }) : ""}
     <div class="shsub"><span><b>${n}</b> ${n === 1 ? "program" : "programs"}${
       activeSvc ? ` on ${svcWord[activeSvc]}` : ""}${active ? ` by ${esc(active.name)}` : ""}${
       find ? ` matching “${esc(find)}”` : ""}</span>${playBar}</div>${self && (rows.length > 12 || find) ? `
@@ -1697,6 +1768,13 @@ const TAB_CSS = `
   width:44px;height:44px;border-radius:999px;display:flex;align-items:center;justify-content:center;
   color:var(--ink-2);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .nowbar .nbmore:focus-visible{outline:2px solid var(--q-ink);outline-offset:2px}
+/* THE RESULTS ARE IN (readfind.js, 2026-11-22): a dot on the bar's menu
+   while a web search has come back and its line was not opened. */
+.nowbar .nbmore{position:relative}
+.nowbar.hasnews .nbmore::after{content:"";position:absolute;top:8px;right:8px;width:9px;height:9px;border-radius:50%;background:var(--mvt-1);box-shadow:0 0 0 2px var(--raised)}
+.nbsheet .nbnews{appearance:none;-webkit-appearance:none;display:flex;align-items:center;gap:8px;width:calc(100% - 36px);margin:0 18px 12px;padding:10px 14px;min-height:44px;
+  border:1.5px solid var(--q-ink);border-radius:14px;background:transparent;color:var(--q-ink);font:inherit;font-size:var(--fs-14);font-weight:600;text-align:left;cursor:pointer}
+.nbsheet .nbnews[hidden]{display:none}
 .nowbar .noring:focus-visible,.nowbar .noring:focus{outline:none}
 /* THE PANEL (2026-09-23; design A, 2026-09-25): what the bar opens. The
    sleeve and the song, skip and pause, the DJ and where the set is from,
@@ -1927,6 +2005,17 @@ body:has(textarea:focus, input[type="text"]:focus, input[type="search"]:focus, i
 .nbab .nbabp{margin:0;font-size:.9375rem;line-height:1.5;color:var(--ink-2)}
 .nbab .nbabpage{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;min-height:40px;font-size:var(--fs-14);
   font-weight:600;color:var(--q-ink);text-decoration:none}
+/* READ MORE (2026-11-22): the Guardian's pieces about the artist, each a
+   link to its own site. */
+.nbab .nbabr{padding:16px 18px 6px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--rule-soft)}
+.nbab .nbabw+.nbabr{margin-top:10px}
+.nbab .nbabrl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.nbab .nbabri{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:12px;background:var(--q-tint);text-decoration:none;min-height:44px;justify-content:center}
+.nbab .nbabrt{font-size:.9375rem;font-weight:600;line-height:1.3;color:var(--ink)}
+.nbab .nbabrm{font-size:var(--fs-12);color:var(--ink-3)}
+.nbab .nbabfind{appearance:none;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 16px;border-radius:999px;
+  border:1.5px solid var(--q-ink);background:transparent;color:var(--q-ink);font:inherit;font-size:.9375rem;font-weight:600;cursor:pointer}
+.nbab .nbabfind:disabled{opacity:.55;cursor:default}
 .nbab .nbabask{padding:10px 18px 22px;display:flex;flex-direction:column;gap:8px}
 .nbab .nbabgo{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:999px;
   background:var(--q-deep);color:var(--q-on-deep);font-size:.9375rem;font-weight:600;text-decoration:none}
@@ -3814,6 +3903,7 @@ const nbSheet = (base) => `<div class="nbsheet" id="nbsheet" hidden><div class="
   // TUNE (MC-32 2b): the DJ's dials, opened in this panel from here.
   `<button type="button" class="nbtune" data-tune>${TV_SLIDERS}Tune</button>` +
   `<p class="nbsrest" hidden></p></div><div class="nbnear" hidden><p class="nbnlbl"></p><div class="nbnchips" role="group"></div></div><p class="nbwhy" hidden></p>` +
+  `<button type="button" class="nbnews" data-news hidden></button>` +
   `<p class="nbnote" role="status" hidden></p>` +
   `</div></div>`;
 // A FUNCTION INLINED INTO A PAGE'S SCRIPT BY ITS SOURCE goes through here
@@ -4270,8 +4360,27 @@ ${SHEET_JS}(function () {
   }
   var last = null;
   try { last = JSON.parse(bar.getAttribute("data-o") || "null"); } catch (e) {}
+  /* THE RESULTS ARE IN (the owner, 2026-11-22): the look carries the last
+     web search that came back, for half an hour. A dot on the bar, and a
+     line in the panel that opens that song's About view, whatever plays
+     now. Opened once, it is seen on this phone. */
+  function newsSeen() { try { return localStorage.getItem("house:news") || ""; } catch (e) { return ""; } }
+  function newsDraw() {
+    var nw = last && last.news, fresh = !!(nw && nw.at && nw.at !== newsSeen());
+    bar.classList.toggle("hasnews", fresh);
+    var b = sheet && sheet.querySelector("[data-news]"); if (!b) return;
+    b.hidden = !fresh;
+    if (!fresh) return;
+    b.textContent = nw.n ? "Articles are in for \u201c" + nw.title + "\u201d \u00b7 " + nw.n : "The search for \u201c" + nw.title + "\u201d found nothing more";
+    b.setAttribute("data-t", nw.title || ""); b.setAttribute("data-a", nw.artist || ""); b.setAttribute("data-al", nw.album || ""); b.setAttribute("data-at", nw.at);
+  }
+  function newsOpen(e) {
+    var b = e.currentTarget;
+    try { localStorage.setItem("house:news", b.getAttribute("data-at") || ""); } catch (x) {}
+    aboutOpen(e); newsDraw();
+  }
   function paint(raw) {
-    last = raw;
+    last = raw; newsDraw();
     /* THE PICK FOLLOWS THE MUSIC (MC-28): a speaker the server followed the
        music to is written to the phone unstamped, so every picker on the
        page follows and a tap still outranks it. */
@@ -4439,7 +4548,7 @@ ${SHEET_JS}(function () {
     var ab = sheet.querySelector("[data-about]"), abOn = w.tone === "live" && o.state === "playing" && !!o.track;
     ab.hidden = !abOn;
     if (abOn) {
-      ab.setAttribute("data-t", o.track); ab.setAttribute("data-a", o.artists || ""); ab.setAttribute("data-uri", o.uri || "");
+      ab.setAttribute("data-t", o.track); ab.setAttribute("data-a", o.artists || ""); ab.setAttribute("data-uri", o.uri || ""); ab.setAttribute("data-al", o.album || "");
       ab.setAttribute("data-slug", o.who && o.who.program ? o.who.program.slug : "");
     }
     /* STEER: an endless set (house DJs and the guest DJ), and since
@@ -4541,7 +4650,10 @@ ${SHEET_JS}(function () {
   /* VOLUME (2026-11-19): − and + for the speaker the panel speaks for. A
      WiiM's own level or the receiver's behind it while the home helper is
      on; an Echo's by Spotify while it plays there. A WiiM locked at full
-     volume with no receiver named says where its volume is. */
+     volume with no receiver named says where its volume is. A WiiM with no
+     helper to step it shows no row at all (the owner, 2026-11-22): the
+     route sends a WiiM's step only to the helper, never to Spotify, so
+     Spotify's level there was a − and + that could only say "helper off". */
   var volFor = "";
   function volOf(name) {
     var sp = last && last.lan && last.lan.speakers ? last.lan.speakers[name] : null, v = sp && sp.vol ? sp.vol : null;
@@ -4550,6 +4662,7 @@ ${SHEET_JS}(function () {
     if (v && v.by === "denon" && hands) return v.on && typeof v.db === "number" ? { words: "Denon " + (v.db + 80).toFixed(v.db % 1 ? 1 : 0), can: true, low: v.db <= -80 }
       : { words: "The Denon is off", can: false };
     if (v && v.by === "fixed") return { words: "Volume is on your amplifier", can: false };
+    if (isWiim(name)) return null;
     if (last && last.state === "playing" && last.device === name && typeof last.devVol === "number") return { words: "Volume " + last.devVol, can: true, low: last.devVol <= 0, high: last.devVol >= 100 };
     return null;
   }
@@ -4583,7 +4696,12 @@ ${SHEET_JS}(function () {
         if (a && a.ok && a.vol) {
           var v = a.vol, sp = last && last.lan && last.lan.speakers ? last.lan.speakers[name] : null;
           if (sp && v.by !== "spotify") sp.vol = v; else if (last && v.by === "spotify") last.devVol = v.level;
-        } else if (!(a && a.ok)) say2(SAY_VOL[a && a.code] || SAY_VOL.failed);
+        } else if (!(a && a.ok)) {
+          /* The helper went off between the last poll and the tap: said
+             once, and the row goes until the helper is back. */
+          if (a && a.code === "helper-off" && last && last.lan) last.lan.hands = false;
+          say2(SAY_VOL[a && a.code] || SAY_VOL.failed);
+        }
         done();
       })
       .catch(function () { say2("The volume didn't reach the house — try again"); done(); });
@@ -4705,7 +4823,7 @@ ${SHEET_JS}(function () {
   function aboutOpen(e) {
     var c = e.currentTarget, panel = sheet && sheet.querySelector(".nbpanel"); if (!panel) return;
     var q = "?t=" + encodeURIComponent(c.getAttribute("data-t") || "") + "&a=" + encodeURIComponent(c.getAttribute("data-a") || "") +
-      "&uri=" + encodeURIComponent(c.getAttribute("data-uri") || "") + "&slug=" + encodeURIComponent(c.getAttribute("data-slug") || "");
+      "&uri=" + encodeURIComponent(c.getAttribute("data-uri") || "") + "&slug=" + encodeURIComponent(c.getAttribute("data-slug") || "") + "&al=" + encodeURIComponent(c.getAttribute("data-al") || "");
     note("");
     fetch(bar.getAttribute("data-base") + "/about" + q, { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("no view"); return r.text(); })
@@ -4717,6 +4835,26 @@ ${SHEET_JS}(function () {
         var back = box.querySelector("[data-ab-back]");
         back.addEventListener("click", function () { if (aboutShut) aboutShut(); c.focus({ preventScroll: true }); });
         back.focus({ preventScroll: true });
+        /* SEEN BY EITHER WAY IN (the owner, 2026-11-23: the dot stayed after
+           the pieces were read from the About chip): this view is the
+           song's whose search came back, so its dot goes. */
+        var fm = box.querySelector("[data-find-slug]"), nw = last && last.news;
+        if (fm && nw && nw.slug === fm.getAttribute("data-find-slug")) { try { localStorage.setItem("house:news", nw.at); } catch (x) {} newsDraw(); }
+        /* FIND MORE (the owner, 2026-11-22): the curator searches the web
+           for this song; the answer is said in place, and the pieces are
+           here the next time the view is opened. */
+        var fb = box.querySelector("[data-readfind]"), fsay = box.querySelector("[data-readfind-say]");
+        if (fb) fb.addEventListener("click", function () {
+          if (fb.disabled) return; fb.disabled = true;
+          var body = new URLSearchParams(); body.set("t", fb.getAttribute("data-t") || ""); body.set("a", fb.getAttribute("data-a") || ""); body.set("al", fb.getAttribute("data-al") || "");
+          fetch(bar.getAttribute("data-base") + "/readfind", { method: "POST", body: body, cache: "no-store", headers: { accept: "application/json" } })
+            .then(function (r) { return r.json().catch(function () { return null; }); })
+            .then(function (a) {
+              if (fsay) fsay.textContent = (a && a.say) || "That did not reach the house. Try again.";
+              if (a && (a.code === "asked" || a.code === "already" || a.code === "found")) fb.hidden = true; else fb.disabled = false;
+            })
+            .catch(function () { if (fsay) fsay.textContent = "That did not reach the house. Try again."; fb.disabled = false; });
+        });
       })
       .catch(function () { note("That did not load \u2014 try again"); });
   }
@@ -4770,6 +4908,7 @@ ${SHEET_JS}(function () {
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-steer]"), function (b) { b.addEventListener("click", steer); });
     Array.prototype.forEach.call(sheet.querySelectorAll("[data-tune]"), function (b) { b.addEventListener("click", tuneOpen); });
     sheet.querySelector("[data-about]").addEventListener("click", aboutOpen);
+    sheet.querySelector("[data-news]").addEventListener("click", newsOpen); newsDraw();
     sheet.querySelector(".nbmain").addEventListener("click", function () { if (disc && !disc.disabled) disc.click(); });
     sheet.querySelector(".nbspk").addEventListener("click", function () { pickOpen = !pickOpen; fill(); });
   }

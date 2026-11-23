@@ -169,7 +169,7 @@ test("the page: rooms, twelve tiles and the band; every control a button or a li
       assert.ok(!new RegExp(`\\bvar\\s+${name}\\b`).test(script), `"${name}" is a function and a variable`);
     }
     // About this song opens for a song only Genius knows (the owner, 2026-11-16).
-    assert.ok(script.includes('if (v === "about") { if (!(song.about || song.facts || song.genius)) return; fillAbout();'));
+    assert.ok(script.includes('if (v === "about") { if (!(song.about || song.facts || song.genius || song.read || song.find)) return;'));
     // Without the helper's hands: Spotify keys start through Spotify, the rest are the remote's.
     delete e.STATION.endless.hands;
     const off = await (await call(e, `${KEY}/tv`)).text();
@@ -444,8 +444,8 @@ test("once a song: /tv/song answers from the Shelf page or the endless list, and
     const a = await r.json();
     assert.deepEqual(a.next, [{ t: "Surfin' Bird", a: "The Cramps" }]);
     assert.equal(a.about.text, "‘Human Fly’ is theirs."); assert.equal(a.about.dj, "The Librarian");
-    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=${encodeURIComponent(U(1))}&slug=nothing-here`)).json(), { next: [], about: null, facts: null, genius: null, extra: null });
-    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=x`)).json(), { next: [], about: null, facts: null, genius: null, extra: null });
+    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=${encodeURIComponent(U(1))}&slug=nothing-here`)).json(), { next: [], about: null, facts: null, genius: null, extra: null, read: null, find: null });
+    assert.deepEqual(await (await call(e, `${KEY}/tv/song?uri=x`)).json(), { next: [], about: null, facts: null, genius: null, extra: null, read: null, find: null });
     assert.equal((await call(e, `wrongkey123456/tv/song?uri=x`)).status, 404);
     assert.equal((await call(e, `${KEY}/tv/song`, { method: "POST", body: "x" })).status, 405);
   } finally { f.restore(); }

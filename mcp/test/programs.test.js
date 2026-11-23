@@ -2426,10 +2426,10 @@ test("activate_program is not idempotent, and that is deliberate", () => {
 
 test("tools/list carries the title in both places a client might look", async () => {
   const listed = toolsWithMeta(withArchive);
-  assert.equal(listed.length, TOOLS.length - 3, "all but Last.fm's verb, Genius's and play now, in a house with neither key and play now off (2026-10-18, 2026-11-16, 2026-11-18)");
-  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00" }).length, TOOLS.length - 2);
-  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40) }).length, TOOLS.length - 1);
-  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40), PLAY_NOW: "on" }).length, TOOLS.length);
+  assert.equal(listed.length, TOOLS.length - 4, "all but Last.fm's verb, Genius's, play now and save_reading, in a house with neither key, play now off and no curator (2026-10-18, 2026-11-16, 2026-11-18, 2026-11-22)");
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00" }).length, TOOLS.length - 3);
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40) }).length, TOOLS.length - 2);
+  assert.equal(toolsWithMeta({ ...withArchive, LASTFM_KEY: "c0ffeec0ffeec0ffeec0ffeec0ffee00", GENIUS_TOKEN: "g".repeat(40), PLAY_NOW: "on", REQUEST_ROUTINE_ID: "trig_test" }).length, TOOLS.length);
   assert.ok(toolsWithMeta({ ...withArchive, PLAY_NOW: "dry" }).some((t) => t.name === "play_now"), "dry lists it too");
   const one = listed.find((t) => t.name === "replace_playlist");
   assert.equal(one.title, "Replace What a Button Plays");

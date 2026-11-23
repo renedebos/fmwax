@@ -57,6 +57,7 @@ import { logWeek, repeatsField, weekBreak, weekField } from "./week.js";
 import { LASTFM_NOTE, lastfmFor } from "./lastfm.js";
 import { lookUpAndKeep } from "./musicbrainz.js";
 import { geniusOn, geniusSong } from "./genius.js";
+import { FIND_NOTE, findJobs, findOn, saveFind } from "./readfind.js";
 import { findRecording } from "./recordings.js";
 import { longReadSentBack, weighLongRead } from "./longread.js";
 import { ARCHIVE } from "./archive-identity.js";
@@ -442,6 +443,8 @@ export async function callTool(env, name, args, budget) {
       // Sets the house sent back in the last day, by path (MC-33).
       let sentBack = null;
       try { sentBack = await station(env, "sent-back-day", {}, { unbudgeted: true }); } catch { sentBack = null; }
+      // Reading asked for from About this song (readfind.js): a web search each.
+      const readingJobs = findOn(env) ? await findJobs(env) : [];
       // THE HOUSE'S WEEK (week.js) is not here: it rides in get_dj, which the
       // curator calls before every request and job, and once is enough (the
       // owner, 2026-11-07: it doubled what a curator reads).
@@ -459,6 +462,7 @@ export async function callTool(env, name, args, budget) {
         // used in the last day, as far as this server has counted.
         ...(calls ? { spotify_calls_24h: calls.last.total } : {}),
         ...(calls?.last.saved ? { player_answers_saved_24h: calls.last.saved } : {}),
+        ...(readingJobs.length ? { reading_jobs: readingJobs, reading_note: FIND_NOTE } : {}),
         // The endless DJ's watch (MC-22): its mode, sessions and log.
         ...(endless ? { endless } : {}),
         // And its work for the curator (MC-22 stage 2): a top-up per job.
@@ -1952,6 +1956,13 @@ export async function callTool(env, name, args, budget) {
             ". The slot is free for their next ask. Nothing was written to " +
             "any playlist.",
       };
+    }
+
+    // FIND MORE (readfind.js): the curator hands in a reading job's pieces.
+    case "save_reading": {
+      let ownHost = "";
+      try { ownHost = new URL(String(env.PROGRAM_BASE_URL ?? "")).hostname; } catch { ownHost = ""; }
+      return saveFind(env, { job_id: args.job_id, items: args.items }, { ownHost });
     }
 
     case "look_up_song": {

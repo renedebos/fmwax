@@ -427,6 +427,189 @@ export function renderTvNotes({ base, room = null, rec, uri = "", dj = null, fro
 `;
 }
 
+// READ MORE (readmore.js; the owner's canvas "Read more on the TV",
+// 2026-11-22). Two pages from About this song: the short list of the
+// Guardian's pieces about the artist, and one piece, read as the program
+// notes are read. Back from the piece is the list; back from the list is
+// the song. Every piece says whose it is and where it lives.
+const READ_CSS = `
+html,body{height:auto;overflow:visible}
+html{overflow-y:auto;overflow-x:hidden;scroll-padding:5.5rem 0 1rem}
+main.tvr{box-sizing:border-box;min-height:100vh;padding:5.25rem 3rem 2rem}
+.rhead{position:fixed;top:0;left:0;right:0;z-index:1;display:flex;align-items:center;gap:.875rem;padding:1.125rem 3rem .875rem;background:var(--ground)}
+.rhead h1{margin:0;font-size:1.75rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rhead .gap{flex:1}.rhead .rhint{margin:0;font-size:.9375rem;color:var(--ink-3);white-space:nowrap}
+.rlbl{margin:.25rem 0 .625rem;font-size:.875rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--q-ink)}
+.rlist{display:flex;flex-direction:column;gap:.5rem}
+a.ritem{display:flex;align-items:center;gap:1.25rem;padding:.875rem 1.25rem;border-radius:.75rem;border:.125rem solid var(--raised);background:var(--raised);color:var(--ink);text-decoration:none}
+.ritem .rk{flex:0 0 6.5rem;font-size:.8125rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--q-ink)}
+.ritem .rw{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1875rem}
+.ritem .rt{font-size:1.25rem;font-weight:600;line-height:1.25}
+.ritem .rm{font-size:.9375rem;color:var(--ink-2)}
+.ritem .rgo{font-size:.9375rem;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.rfoot{margin:1.25rem 0 0;font-size:.875rem;color:var(--ink-3)}
+.rlist+.rlbl,.rlist+.rfoot+.rlbl{margin-top:1.5rem}
+.ritem.rweb{background:transparent;border-color:var(--rule)}
+.rwait{margin:0;font-size:1.125rem;line-height:1.45;color:var(--ink-2)}
+.rsaid{margin:0 0 1rem;padding:.625rem .875rem;border-radius:.75rem;border:.125rem solid var(--focus);color:var(--focus);font-size:1rem;line-height:1.35}
+.rask{margin:0;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.rask .rhint{font-size:.9375rem;color:var(--ink-3)}
+.rcode{display:flex;align-items:center;justify-content:center;gap:4rem;min-height:calc(100vh - 9rem)}
+.rqr{flex:0 0 auto;width:20rem;height:20rem;border-radius:1rem;overflow:hidden;background:#fff}
+.rqr svg{display:block;width:100%;height:100%}
+.rcw{max-width:32rem}
+.rct{margin:0 0 1rem;font-size:1.875rem;font-weight:800;line-height:1.2}
+.rcp{margin:0;font-size:1.25rem;line-height:1.5;color:var(--ink-2)}`;
+
+// `song` and `songQ` (its query words) ride every link, so the list stays
+// the one for the song it was opened from. `find` is where the song stands
+// with the curator's web search (readfind.js): its pieces, each opening as a
+// code for a phone; a search waiting; or the button that asks.
+export function renderTvRead({ base, room = null, name = "", items = [], song = null, songQ = "", find = null, said = "" }) {
+  const rq = room ? `room=${encodeURIComponent(room.slug)}&` : "";
+  const back = `${base}/tv?${rq}v=dis`;
+  const at = `${base}/tv/read?${rq}${songQ || `a=${encodeURIComponent(name)}`}`;
+  let n = 0;
+  const f = (extra = "") => `data-f="r${n}"${n++ === 0 ? " data-home" : ""}${extra}`;
+  const row = (it) => `
+    <a class="ritem" ${f()} href="${esc(`${at}&id=${encodeURIComponent(it.id)}`)}">` +
+    `<span class="rk">${esc(it.kind)}</span><span class="rw"><span class="rt">${esc(it.title)}</span>` +
+    `<span class="rm">${esc(["The Guardian", it.year, it.min ? `${it.min} min` : ""].filter(Boolean).join(" · "))}</span></span><span class="rgo">Read ›</span></a>`;
+  const web = (it, i) => `
+    <a class="ritem rweb" ${f()} href="${esc(`${at}&s=${encodeURIComponent(find.slug)}&x=${i}`)}">` +
+    `<span class="rk">${esc(it.kind)}</span><span class="rw"><span class="rt">${esc(it.title)}</span>` +
+    `<span class="rm">${esc(it.line)}</span></span><span class="rgo">Phone ›</span></a>`;
+  const guardian = items.length ? `
+  <p class="rlbl">Read here on the TV</p>
+  <div class="rlist">${items.map(row).join("")}
+  </div>` : "";
+  const found = find?.state === "found" ? `
+  <p class="rlbl">On other sites · opens on your phone</p>
+  <div class="rlist">${find.items.map(web).join("")}
+  </div>` : "";
+  const asked = find?.state === "asked" ? `
+  <p class="rlbl">On other sites</p>
+  <p class="rwait" data-wait>The curator is searching the web for ${esc(song?.title ? `“${song.title}”` : name)}. A few minutes: this page looks again by itself.</p>` : "";
+  const none = find?.state === "none" ? `
+  <p class="rfoot">The curator searched the web for this song and found nothing more worth listing.</p>` : "";
+  const ask = find?.state === "ask" && song?.title ? `
+  <p class="rlbl">On other sites</p>
+  <form class="rask" method="post" action="${esc(base)}/readfind"><input type="hidden" name="t" value="${esc(song.title)}">` +
+    `<input type="hidden" name="a" value="${esc(song.artist)}"><input type="hidden" name="al" value="${esc(song.album ?? "")}">` +
+    `<input type="hidden" name="room" value="${esc(room?.slug ?? "")}">` +
+    `<button type="submit" class="pill" ${f()}>Find articles and interviews</button>` +
+    `<span class="rhint">The curator searches the web for this song. It takes a few minutes, once.</span></form>` : "";
+  return `${HEAD(`Read more about ${name}, on the TV`, READ_CSS)}
+<main class="tvr">
+  <header class="rhead"><a class="pill" data-f="back" href="${esc(back)}">${TV_I_BACK}Back</a><h1>Read more about ${esc(name)}</h1><span class="gap"></span>` +
+    `<p class="rhint">Up and down to choose · OK to open</p></header>${said ? `
+  <p class="rsaid" role="status">${esc(said)}</p>` : ""}${guardian}${found}${asked}${ask}${none}${items.length ? `
+  <p class="rfoot">Guardian articles courtesy of Guardian News &amp; Media Ltd. The music keeps playing while you read.</p>` : ""}
+</main>
+<script>
+(function () {
+  var main = document.querySelector("main.tvr"); if (!main) return;
+  ${TV_ARROWS_JS}
+  function home() { return main.querySelector("[data-home]") || main.querySelector("a.pill"); }
+  document.addEventListener("keydown", function (ev) {
+    var dir = TV_DIRS[ev.key]; if (!dir || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    var was = document.activeElement;
+    setTimeout(function () { if (document.activeElement === was) tvMove(main, dir, home); }, 0);
+  });
+  var form = main.querySelector("form.rask");
+  if (form) form.addEventListener("submit", function (ev) {
+    if (form.getAttribute("data-sent")) { ev.preventDefault(); return; }
+    form.setAttribute("data-sent", "1"); form.querySelector("button").textContent = "Asking…";
+  });
+  /* A search is waiting: the page asks for itself again each minute, without
+     the answer's words, until the pieces are here. */
+  if (main.querySelector("[data-wait]")) setTimeout(function () { location.replace(location.href.replace(/&fc=[a-z-]+/, "")); }, 60000);
+  var el = home(); if (el) el.focus();
+})();
+</script>
+</body>
+</html>
+`;
+}
+
+// A PIECE ON ANOTHER SITE, AS A CODE (qr.js): the TV app opens the house's
+// own pages only, so a phone's camera opens the piece.
+export function renderTvCode({ back, item, line = "", svg = "" }) {
+  let host = "";
+  try { host = new URL(item.url).hostname.replace(/^www\./, ""); } catch { host = ""; }
+  return `${HEAD(`${item.title}, on your phone`, READ_CSS)}
+<main class="tvr">
+  <header class="rhead"><a class="pill" data-f="back" data-home href="${esc(back)}">${TV_I_BACK}Back</a><h1>Read it on your phone</h1></header>
+  <div class="rcode">${svg ? `<div class="rqr">${svg}</div>` : ""}
+    <div class="rcw"><p class="rlbl">${esc(line)}</p>
+      <p class="rct">${esc(item.title)}</p>
+      <p class="rcp">${svg ? "Point your phone's camera at the code. The piece opens on its own site, in your phone's browser."
+        : "This piece's address is too long for a code. It is in About this song on the phone."}</p>
+      <p class="rfoot">${esc(host)}${item.paywalled ? " · this site may ask for a subscription" : ""}</p></div>
+  </div>
+</main>
+<script>
+(function () {
+  var main = document.querySelector("main.tvr"); if (!main) return;
+  var b = main.querySelector("[data-home]"); if (b) b.focus();
+})();
+</script>
+</body>
+</html>
+`;
+}
+
+export function renderTvPiece({ back, piece }) {
+  const line = ["The Guardian", piece.by, piece.year, piece.min ? `${piece.min} min` : ""].filter(Boolean).join(" · ");
+  return `${HEAD(`${piece.title}, on the TV`, NOTES_CSS).replace("family=Archivo:wght@400;600;700;800&display=swap", "family=Archivo:wght@400;600;700;800&family=Newsreader:opsz,wght@6..72,400&display=swap")}
+<main class="tvn">
+  <header class="nhead" data-bar><a class="pill" data-f="back" href="${esc(back)}">${TV_I_BACK}Back</a>` +
+    `<p class="nt">${esc(line)}</p><span class="gap"></span>` +
+    `<button type="button" class="pill" data-page="-1">Page up</button><button type="button" class="pill" data-page="1" data-home>Page down</button></header>
+  <article class="nbody">
+    <p class="nk">${esc(piece.kind || "From the Guardian")}</p>
+    <h1 class="n1">${esc(piece.title)}</h1>${piece.stand ? `
+    <p class="nstand">${esc(piece.stand)}</p>` : ""}${piece.body.map((b) => b.h ? `
+    <h2 class="nh">${esc(b.h)}</h2>` : `
+    <p class="np">${esc(b.p)}</p>`).join("")}
+    <p class="nend">Courtesy of Guardian News &amp; Media Ltd. Read it on the Guardian: ${esc(piece.url.replace(/^https:\/\/www\./, ""))}</p>
+  </article>
+</main>
+<script>
+(function () {
+  var main = document.querySelector("main.tvn"); if (!main) return;
+  var root = document.documentElement;
+  ${TV_ARROWS_JS}
+  function btn(d) { return main.querySelector('[data-page="' + d + '"]'); }
+  function pages() {
+    var y = window.pageYOffset || root.scrollTop || 0;
+    btn(-1).disabled = y < 4;
+    btn(1).disabled = y + window.innerHeight >= root.scrollHeight - 4;
+    var a = document.activeElement;
+    if (!a || a === document.body || a.disabled) { var n = !btn(1).disabled ? btn(1) : !btn(-1).disabled ? btn(-1) : main.querySelector("a.pill"); if (n) n.focus(); }
+  }
+  function turn(d) { tvTurn(main.querySelector(".nbody"), main.querySelector(".nhead"), d); setTimeout(pages, 300); }
+  main.addEventListener("click", function (ev) {
+    var b = ev.target && ev.target.closest ? ev.target.closest("[data-page]") : null;
+    if (b && !b.disabled) turn(Number(b.getAttribute("data-page")));
+  });
+  window.addEventListener("scroll", pages, { passive: true });
+  window.addEventListener("resize", pages);
+  function home() { return btn(1); }
+  document.addEventListener("keydown", function (ev) {
+    var dir = TV_DIRS[ev.key]; if (!dir || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (dir === "up" || dir === "down") { tvScroll(dir === "down" ? 1 : -1, !!ev.repeat); ev.preventDefault(); return; }
+    var was = document.activeElement;
+    setTimeout(function () { if (document.activeElement === was) tvMove(main, dir, home); }, 0);
+  });
+  btn(1).focus(); pages();
+})();
+</script>
+</body>
+</html>
+`;
+}
+
 // THE DJS ON THE TV (tvdj.js; the owner's canvas "fmwax on the TV, the DJs",
 // 2026-11-16; redrawn that evening, boards 6 and 8, the owner: "1. A 2. yes").
 // The list: every DJ as their own sleeve (art/covers, the cover their

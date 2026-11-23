@@ -4,6 +4,7 @@
 // Split out of worker.js on 2026-09-26 (consolidation).
 import { BLOCK_WORDS, waitWords, serviceLink, PICK_FIRM_S } from "./programs.js";
 import { station } from "./station.js";
+import { findNews } from "./readfind.js";
 import {
   atWords, endlessNamed, findDj, guestFor, guestHolders, houseClockWords, ownPresetKeys, playingFromWords, speakerPresetFor,
 } from "./house.js";
@@ -481,7 +482,10 @@ export async function nowAnswer(env, request, p, { recs = {}, holders = null, no
   hv = await lanNamed(env, hv ?? await helperView(env), recs);
   if (hv.lan && !holders) holders = await guestHolders(env);
   const lanBand = hv.lan ? await lanOnGuest(env, hv.lan, holders) : null;
-  const also = { ...barSpeakers(env), ...hv, ...(lanBand ? { lanBand } : {}),
+  // A web search that came back in the last half hour (readfind.js): the dot.
+  let news = null;
+  try { news = await findNews(env); } catch { news = null; }
+  const also = { ...barSpeakers(env), ...hv, ...(lanBand ? { lanBand } : {}), ...(news ? { news } : {}),
     ...(request ? { pick: pickFor(env, request, throttle ? { unknown: true } : p, hv.lan) } : {}) };
   if (throttle) {
     const mins = minutesLeft(throttle);

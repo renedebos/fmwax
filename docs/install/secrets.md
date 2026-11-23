@@ -201,6 +201,25 @@ website address), then **Generate Access Token**. Free, no billing. Push it
 with `wrangler secret put GENIUS_TOKEN`. Without it, About this song shows
 MusicBrainz and Wikipedia only, and the DJs have no `look_up_song`.
 
+**The Guardian for reading** (2026-11-22, `mcp/readmore.js`): in-depth
+pieces about the artist that is playing, from the Guardian's open API:
+interviews first, then features, profiles and obituaries, six at most. About
+this song shows them: on the [TV page](tv.md) a **Read more** button opens the
+list and a piece is read on the TV; on the phone each opens on the Guardian's
+site. The Shelf's **Reading** list keeps them together. Read by the Worker
+and kept 30 days in KV (`readmore:<artist>`), an artist with nothing for 14.
+Needs `GUARDIAN_KEY`: register for the free developer key at
+open-platform.theguardian.com/access (it comes by email; 500 calls a day,
+for non-commercial use, and an artist costs two or three calls, once). Push
+it with `wrangler secret put GUARDIAN_KEY`. Without it there is no Read more.
+
+**Find articles and interviews** (2026-11-22, `mcp/readfind.js`) needs no
+key, only a curator: a button in About this song asks the curator to search
+the web for the song playing, and it hands the pieces in with
+`save_reading`. A search takes a few minutes of the curator's plan; twelve
+a day at most. On the TV a piece on another site opens as a QR code for a
+phone, since the TV app opens the house's own pages only.
+
 **The house's own MusicBrainz lookup** (2026-10-24, `mcp/musicbrainz.js`):
 `look_up_artist` makes the artist's folder when the house has none: the
 studio albums with their years, and the names the artist recorded under.

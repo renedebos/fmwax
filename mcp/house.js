@@ -527,6 +527,8 @@ export async function rulesFacts(env) {
       lastfm: lastfmOn(env),
       // Genius's samples, covers and credits (genius.js, 2026-11-16).
       genius: geniusOn(env),
+      // The Guardian's pieces in About this song on the TV (readmore.js, 2026-11-22).
+      guardian: typeof env?.GUARDIAN_KEY === "string" && env.GUARDIAN_KEY.trim().length >= 16,
       // ChatGPT is the house's curator (MC-31 6b): its rules page says so.
       chatgpt: curatorKind(env) === "chatgpt",
       // Talk files a DJ's set for the curator (MC-36).
