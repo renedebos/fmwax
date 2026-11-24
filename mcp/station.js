@@ -1605,7 +1605,10 @@ export class StationLedger {
         // The key's number rides along for "key" (MC-25 stage 3: it was
         // dropped here at first, and the helper rightly refused a key with
         // no number).
-        try { ws.send(JSON.stringify({ id, cmd: args.cmd, speaker: args.speaker, ...(Number.isInteger(args.n) ? { n: args.n } : {}) })); }
+        // And the volume's direction for "vol" (2026-11-23: dropped here since
+        // volume was built on 2026-11-19, so every − and + was "refused").
+        try { ws.send(JSON.stringify({ id, cmd: args.cmd, speaker: args.speaker, ...(Number.isInteger(args.n) ? { n: args.n } : {}),
+          ...(args.dir === "up" || args.dir === "down" ? { dir: args.dir } : {}) })); }
         catch { this.#waiting.delete(id); this.#dropLine(ws); resolve({ ok: false, code: "helper-off" }); return; }
         setTimeout(() => { if (this.#waiting.delete(id)) resolve({ ok: false, code: "timeout" }); }, 10000);
       });

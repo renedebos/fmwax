@@ -389,15 +389,42 @@ async function albumArticle(env, rg, spotifyAlbum, artist, deadline, cap) {
 // when MusicBrainz is busy and is asked again. Null when
 // there is none; undefined when MusicBrainz did not answer (ask again later).
 const MUSIC_WORDS = /\b(band|singer|musician|group|rapper|songwriter|composer|duo|trio|quartet|quintet|orchestra|ensemble|producer|dj|guitarist|bassist|pianist|organist|drummer|saxophonist|trumpeter|vocalist|instrumentalist|collective|project)\b/i;
-export async function artistArticle(env, name, { deadlineMs = env?.__mbDeadlineMs ?? 8000 } = {}) {
+// THE ARTIST BY NAME, EXACTLY (2026-11-23, the owner: Ace's "Time Ain't
+// Long" showed Ace of Base). MusicBrainz's search scores a name that CONTAINS
+// the words as high as the name itself: for "Ace", Ace of Base scored 100
+// and Ace, the 1970s band, 88. So only an artist whose name, or one of its
+// names, is the asked name is taken; and when several are (there are many
+// Aces), the one with a recording of the song playing. None, or no telling
+// them apart: no article, rather than another act's.
+const nameKey = (s) => String(s ?? "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+  .replace(/&/g, " and ").replace(/^the\s+/, "").replace(/[^a-z0-9]+/g, "");
+export function sameNamed(artists, asked) {
+  const k = nameKey(asked);
+  if (!k) return [];
+  return (Array.isArray(artists) ? artists : []).filter((a) => a?.id && Number(a?.score) >= 60 &&
+    [a.name, a["sort-name"], ...(Array.isArray(a.aliases) ? a.aliases.map((x) => x?.name) : [])].some((n) => nameKey(n) === k));
+}
+// More time and calls than one name needs: telling acts apart asks a
+// recording search each, a second apart, and the answer is kept 90 days.
+export async function artistArticle(env, name, { title = "", deadlineMs = env?.__mbDeadlineMs ?? 14000 } = {}) {
   if (!artistLookupOn(env)) return null;
   const asked = String(name ?? "").replace(/\s+/g, " ").trim().slice(0, 120);
   if (!asked) return null;
   const deadline = Date.now() + deadlineMs;
-  const cap = { left: 5 };
-  const found = await ask(env, `/artist?query=${encodeURIComponent(`artist:"${asked.replace(/"/g, "")}"`)}&fmt=json&limit=3`, 0, deadline, cap);
+  const cap = { left: 8 };
+  const found = await ask(env, `/artist?query=${encodeURIComponent(`artist:"${asked.replace(/"/g, "")}"`)}&fmt=json&limit=10`, 0, deadline, cap);
   if (!found) return undefined;
-  const artist = found === MB_NONE ? null : (found.artists ?? []).find((a) => Number(a?.score) >= 90);
+  const named = found === MB_NONE ? [] : sameNamed(found.artists, asked);
+  let artist = named.length === 1 ? named[0] : null;
+  if (named.length > 1) {
+    const t = luceneWords(bareTitle(title));
+    if (!t) return null;
+    for (const a of named.slice(0, 3)) {
+      const got = await ask(env, `/recording?query=${encodeURIComponent(`recording:"${t}" AND arid:${a.id}`)}&fmt=json&limit=1`, SPACING_MS, deadline, cap);
+      if (!got) return undefined;
+      if (got !== MB_NONE && Number(got.count) > 0) { artist = a; break; }
+    }
+  }
   if (!artist?.id) return null;
   const full = await ask(env, `/artist/${encodeURIComponent(artist.id)}?inc=url-rels&fmt=json`, SPACING_MS, deadline, cap);
   if (!full) return undefined;

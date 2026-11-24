@@ -109,14 +109,17 @@ export async function lastfmSongText(env, { title, artist }) {
 // shown is Last.fm's: Wikipedia's opening is often one line (Darondo's 134
 // characters, Orgone's 56, measured), so under THIN characters the longer
 // of the two is shown.
-export async function artistNote(env, artist) {
+// `title`, the song playing, tells apart acts of one name (artistArticle).
+// Kept as `artistnote2:` since that rule (2026-11-23): what was kept under
+// the old key could be another act of the name.
+export async function artistNote(env, artist, { title = "" } = {}) {
   const names = namesOf(artist);
   if (!names.length) return null;
-  return kept(env, `artistnote:${researchSlug(names[0]).slice(0, 120)}`, async () => {
+  return kept(env, `artistnote2:${researchSlug(names[0]).slice(0, 120)}`, async () => {
     let unanswered = false, w = null, lf = null;
     if (artistLookupOn(env)) {
       for (const n of names) {
-        const got = await artistArticle(env, n);
+        const got = await artistArticle(env, n, { title });
         if (got === undefined) { unanswered = true; break; }
         if (got) { w = { name: got.artist || n, text: got.text, from: "wikipedia", wiki: got.title }; break; }
       }
@@ -140,7 +143,7 @@ export async function artistNote(env, artist) {
 export async function songExtra(env, { title, artist }) {
   const [song, about] = await Promise.all([
     lastfmSongText(env, { title, artist }).catch((e) => { if (e?.budgetExhausted) throw e; return null; }),
-    artistNote(env, artist).catch((e) => { if (e?.budgetExhausted) throw e; return null; }),
+    artistNote(env, artist, { title }).catch((e) => { if (e?.budgetExhausted) throw e; return null; }),
   ]);
   return song || about ? { song: song ?? null, artist: about ?? null } : null;
 }

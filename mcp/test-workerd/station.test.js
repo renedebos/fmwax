@@ -586,6 +586,12 @@ describe("the home helper's line against the real binding", () => {
     expect(out.ok).toBe(true);
     expect(out.reading.source).toBe("Tidal");
     expect(seen[0]).toMatchObject({ cmd: "key", n: 2, speaker: "Pro Plus" });
+    // And a volume step's direction (2026-11-23: it was dropped here too, and
+    // every − and + on the panel came back "refused").
+    expect((await call("helper-command", { cmd: "vol", dir: "up", speaker: "Pro Plus" })).ok).toBe(true);
+    expect(seen[1]).toMatchObject({ cmd: "vol", dir: "up", speaker: "Pro Plus" });
+    await call("helper-command", { cmd: "vol", dir: "sideways", speaker: "Pro Plus" });
+    expect(seen[2].dir).toBeUndefined();
     ws.close();
   });
 
