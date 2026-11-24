@@ -623,7 +623,11 @@ export async function endlessNamed(env, p, preset) {
   if (!e) return preset;
   const out = preset ? { ...preset } : { btn: e.button, name: findDj(env, e.dj)?.name ?? e.dj };
   try {
-    const state = await endlessLoad(env);
+    // The thin view (endlessPeekOf), not the whole state: this runs on every
+    // look while an endless set plays (2026-11-23, the TV's CPU).
+    const got = await station(env, "endless-peek", { btn: e.button, uri: String(p.uri ?? "") });
+    const state = got?.ok && got.peek ? got.peek : null;
+    if (!state) throw new Error("no peek");
     const slot = endlessSlots(env, cfg, state).find((x) => x.button === e.button);
     if (slot) { out.name = slot.name; out.dj = slot.dj; }
     // An endless set, a house DJ's or the guest DJ's: the now panel offers
@@ -641,7 +645,7 @@ export async function endlessNamed(env, p, preset) {
       const near = state.lane?.nearby;
       if (near?.list?.length && near.words === state.lane.words) out.nearby = { label: near.label, list: near.list };
     }
-    if (pastTheList(state, e.button, p.uri)) out.autoplay = true;
+    if (state.past) out.autoplay = true;
   } catch { /* the name found stands */ }
   return out;
 }
@@ -820,14 +824,17 @@ export async function dropOn(env, id) {
 // platform, whose "Sept" and "Sep" differ between versions. Null for a stamp
 // that does not parse: absent beats wrong.
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+// One formatter a zone, kept (2026-11-23): building one is the dear part.
+const CLOCK_WORDS = new Map();
 export function houseClockWords(env, iso, now = Date.now()) {
   const d = new Date(typeof iso === "string" && iso ? iso : NaN);
   if (!Number.isFinite(d.getTime())) return null;
   let tz;
   try { tz = houseTz(env); } catch { tz = "UTC"; }
-  const parts = (t) => Object.fromEntries(new Intl.DateTimeFormat("en-US", { timeZone: tz,
-    year: "numeric", month: "numeric", day: "numeric", weekday: "short",
-    hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(t).map((p) => [p.type, p.value]));
+  let f = CLOCK_WORDS.get(tz);
+  if (!f) { f = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "numeric", day: "numeric", weekday: "short",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23" }); if (CLOCK_WORDS.size < 8) CLOCK_WORDS.set(tz, f); }
+  const parts = (t) => Object.fromEntries(f.formatToParts(t).map((p) => [p.type, p.value]));
   const a = parts(d), b = parts(new Date(now));
   const dayOf = (p) => Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day));
   const ago = Math.round((dayOf(b) - dayOf(a)) / 86400000);

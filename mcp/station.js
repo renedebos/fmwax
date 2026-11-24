@@ -1,4 +1,5 @@
 import { timed } from "./timing.js";
+import { endlessPeekOf } from "./endless.js";
 
 // The station ledger: who may touch a request, and what is true of it.
 //
@@ -1609,6 +1610,14 @@ export class StationLedger {
         setTimeout(() => { if (this.#waiting.delete(id)) resolve({ ok: false, code: "timeout" }); }, 10000);
       });
       return Response.json({ ok: !!reply?.ok, code: reply?.code ?? (reply?.ok ? "ok" : "failed"), reading: reply?.reading ?? null });
+    }
+    // The thin view a look needs (endless.js endlessPeekOf): the Worker parses
+    // a few hundred bytes, not the whole state.
+    if (op === "endless-peek") {
+      const row = this.sql.exec("SELECT doc FROM endless_state WHERE k = 'watch'").toArray()[0];
+      let doc = null;
+      try { doc = row ? JSON.parse(row.doc) : null; } catch { doc = null; }
+      return Response.json({ ok: true, peek: endlessPeekOf(doc, { btn: Number.isInteger(args.btn) ? args.btn : null, uri: String(args.uri ?? "").slice(0, 80) }) });
     }
     if (op === "endless-get") {
       const row = this.sql.exec("SELECT doc FROM endless_state WHERE k = 'watch'").toArray()[0];

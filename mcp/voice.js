@@ -82,20 +82,27 @@ const TZ_BY_COUNTRY = { NL: "Europe/Amsterdam", BE: "Europe/Brussels", DE: "Euro
 // misspelt zone silently moving the day boundary to UTC would move the cap's
 // accounting without anyone knowing (Codex, MC15S-7R2). Optional, env-only;
 // the house's config has no line for it today.
+// A zone checked once an isolate, and its day formatter kept: building a
+// formatter is the dear part, and pages ask often (2026-11-23).
+const ZONES_OK = new Set();
+const DAYS = new Map();
 export function houseTz(env) {
   const set = String(env?.HOUSE_TZ ?? "").trim();
   if (set) {
+    if (ZONES_OK.has(set)) return set;
     try { new Intl.DateTimeFormat("en-CA", { timeZone: set }); }
     catch { throw new Error(`HOUSE_TZ is not a timezone: "${set.slice(0, 40)}"`); }
+    if (ZONES_OK.size < 8) ZONES_OK.add(set);
     return set;
   }
   return TZ_BY_COUNTRY[String(env?.TIDAL_COUNTRY ?? "").toUpperCase()] ?? "UTC";
 }
 export function houseDay(env, now = Date.now()) {
   // en-CA formats as YYYY-MM-DD, which sorts and compares as a string.
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: houseTz(env), year: "numeric", month: "2-digit", day: "2-digit",
-  }).format(new Date(now));
+  const tz = houseTz(env);
+  let f = DAYS.get(tz);
+  if (!f) { f = new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }); if (DAYS.size < 8) DAYS.set(tz, f); }
+  return f.format(new Date(now));
 }
 
 // ------------------------------------------------------------ the checks

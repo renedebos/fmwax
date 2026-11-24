@@ -11,6 +11,7 @@ import { advance, decideSubmit, prunable, decideClaim, destinationHolder, waitin
   helperPutDoc, playerPutDoc, playerForgetDoc, keptPlayerOut, weekRepeats, weekList, WEEK_MS,
   alexaOnceAnswer, ALEXA_SEEN_KEEP_MS, alexaHeardRow, ALEXA_HEARD_KEEP } from "../station.js";
 import { APP_CSS } from "../programs.js";
+import { endlessPeekOf } from "../endless.js";
 
 export function makeKV(initial = {}) {
   const store = new Map(Object.entries(initial));
@@ -528,6 +529,7 @@ export function makeStation() {
       return { ok: !!r?.ok, code: r?.code ?? (r?.ok ? "ok" : "failed"), reading: r?.reading ?? null };
     }
     if (op === "endless-get") return { ok: true, doc: endless.doc ? JSON.parse(endless.doc) : null };
+    if (op === "endless-peek") return { ok: true, peek: endlessPeekOf(endless.doc ? JSON.parse(endless.doc) : null, { btn: Number.isInteger(args.btn) ? args.btn : null, uri: String(args.uri ?? "") }) };
     if (op === "endless-put") {
       const had = Number(endless.doc ? JSON.parse(endless.doc).rev : 0) || 0;
       if (args.ifRev !== undefined && args.ifRev !== null && Number(args.ifRev) !== had) return { ok: false, conflict: true, rev: had };

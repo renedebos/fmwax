@@ -3073,53 +3073,8 @@ export async function handleRequest(request, env, ctx) {
     // "playing" is never read as a DJ.
     // AND THE TV PAGE'S LOOK (MC-46, tv.js): `/tv/now?room=<slug>` is the same
     // answer, said for one room in the words its band shows.
-    const nowRoute = url.pathname.match(/^\/buttons\/([A-Za-z0-9_-]{8,128})\/(playing|tv\/now)$/);
-    if (nowRoute) {
-      const key = env.PROGRAM_LIBRARY_KEY;
-      if (!key || !sameSecret(nowRoute[1], key)) return notFound();
-      const say = (status, body) => new Response(JSON.stringify(body), {
-        status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store",
-          "x-content-type-options": "nosniff", "x-robots-tag": "noindex, nofollow" } });
-      if (request.method !== "GET") return say(405, { error: "This answers GET only." });
-      // Who is on the guests, as one time (2026-09-13): a page left open
-      // reloads when this is newer than what it drew. So does the newest
-      // reading of the speakers, which is how Read again comes back to a page
-      // that shows it. KV only, never Spotify.
-      const [holders, recs] = await Promise.all([guestHolders(env), readReadings(env, parseSpeakers(env))]);
-      env.__watch?.lap("guests");
-      const newest = newestOn(Object.values(holders).filter((h) => !h.failed).map((h) => h.on));
-      const readAt = newestOn(Object.values(recs).filter(Boolean));
-      // And the asks under the guests' bands, only for a page showing one in
-      // flight (?asks=1): a ledger read a poll is worth it only then.
-      const askSig = url.searchParams.get("asks") === "1" ? (await guestAsks(env, holders)).sig : null;
-      if (askSig !== null) env.__watch?.lap("asks");
-      const extra = { ...(newest ? { guestsAt: newest } : {}), ...(readAt ? { readAt } : {}),
-        ...(askSig !== null ? { asks: askSig } : {}) };
-      const throttle = await throttledUntil(env);
-      env.__watch?.lap("throttle");
-      // THE HOUSE'S KEPT ANSWER FIRST (MC-29): one ledger call brings the
-      // helper's reading and the kept Spotify answer, and a read happens only
-      // when the helper says something changed or a cap ran out. ?fresh=1 is
-      // the now bar's re-check after its own pause, and always reads.
-      const got = await helperGot(env);
-      env.__watch?.lap("helper");
-      const p = throttle ? null : await housePlayer(withBudget(env, { remaining: 4 }),
-        { fresh: url.searchParams.get("fresh") === "1", deadlineMs: PLAYER_DEADLINE_MS, got })
-        .then(roomPlaying).catch(() => ({ unknown: true }));
-      env.__watch?.lap("player");
-      const answer = await nowAnswer(env, request, p, { recs, holders, throttle, hv: helperViewOf(env, got),
-        note: throttle ? null : await pauseNoteBeside(env, p) });
-      env.__watch?.lap("answer");
-      if (nowRoute[2] !== "playing") {
-        const names = [...new Set([...(answer.speakers ?? []).map((sp) => sp.name), ...parseRoomDevices(env)])];
-        const name = names.find((n) => speakerSlug(n) === String(url.searchParams.get("room") ?? "")) ?? null;
-        if (!name) return say(400, { error: "That is not one of this house's rooms." });
-        const wiim = (answer.speakers ?? []).some((sp) => sp.name === name);
-        return say(200, tvAnswer(answer, { name, slug: speakerSlug(name), wiim, other: !wiim },
-          { readAt, readSig: tvReadSig(recs), canTune: !!env.HOUSE, tz: env.HOUSE_TZ ?? null }));
-      }
-      return say(200, { ...extra, ...answer });
-    }
+    // THE LOOKS (…/playing and …/tv/now) are answered in looks.js, before
+    // this function: worker.js sends them there.
 
     // WHICH DJ? (the owner, 2026-10-01: "replace every dj on one map with
     // this"), behind the DJs tab's "?" where the 2026-09-30 map was, at the

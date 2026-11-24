@@ -95,6 +95,22 @@ export const ENDLESS_LEASE_MS = 10 * 60 * 1000;
 // The document, read and made whole. The recent-songs list moved from the
 // slot to the DJ (MC-24): a list still keyed by a number goes to the DJ the
 // config started that slot with, which is who played it.
+// WHAT NAMING A PLAYING ENDLESS SET NEEDS (endlessNamed), and nothing else
+// (2026-11-23: every look from the TV was cut off at the free plan's 10 ms
+// CPU while the guest DJ played, and each look read the whole endless state,
+// every DJ's history and every session's list, to name one preset). Made by
+// the ledger from its own copy: who is on each preset and in the lane, what
+// is queued, each session's program, and whether `uri` is past the list of
+// the session on `btn` (pastTheList). Pure, so the test ledger shares it.
+export function endlessPeekOf(doc, { btn = null, uri = "" } = {}) {
+  const d = doc && typeof doc === "object" ? doc : {};
+  const obj = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {});
+  const sessions = Object.fromEntries(Object.entries(obj(d.sessions)).map(([k, s]) => [k, s?.program ? { program: s.program } : {}]));
+  const tracks = btn != null ? obj(d.sessions)[String(btn)]?.tracks : null;
+  const past = !!uri && Array.isArray(tracks) && tracks.length > 0 && !tracks.some((t) => t?.[0] === uri);
+  return { lane: d.lane ?? null, assign: obj(d.assign), queued: obj(d.queued), sessions, past };
+}
+
 export async function endlessLoad(env) {
   const got = await station(env, "endless-get", {});
   const state = got?.doc && typeof got.doc === "object" ? got.doc : {};

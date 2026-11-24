@@ -191,10 +191,15 @@ export function tvReadSig(recs) {
 
 // THE HOUSE'S CLOCK, for the display: the seconds of the house's own day
 // (HOUSE_TZ), which the page counts on from. Null where no zone is set.
+// One formatter a zone, kept: building one is the dear part, and every look
+// from the TV asks (2026-11-23, the free plan's 10 ms CPU).
+const CLOCKS = new Map();
 export function tvClock(tz, now = Date.now()) {
   if (!tz) return null;
   try {
-    const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }).formatToParts(new Date(now));
+    let f = CLOCKS.get(tz);
+    if (!f) { f = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "numeric", second: "numeric", hourCycle: "h23" }); if (CLOCKS.size < 8) CLOCKS.set(tz, f); }
+    const parts = f.formatToParts(new Date(now));
     const n = (t) => Number(parts.find((x) => x.type === t)?.value);
     const s = (n("hour") % 24) * 3600 + n("minute") * 60 + n("second");
     return Number.isFinite(s) ? s : null;

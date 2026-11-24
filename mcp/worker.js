@@ -28,6 +28,7 @@ import {
 import { parseRoomDevices } from "./room.js";
 import { ringFailedAgain } from "./asks.js";
 import { handleRequest } from "./routes.js";
+import { LOOK_PATH, answerLook } from "./looks.js";
 import {
   THROTTLE_KEY, cachedAccess, refusedAccess, deviceDisplayName, flushKvTally, flushSpotifyTally,
   getAccessToken, parseAliases, placeOf, reachableDj, resolveDevice, setService,
@@ -118,6 +119,10 @@ export default {
       const bare = path === "/health" || /^\/app\.[0-9a-f]{8}\.css$/.test(path);
       if (!bare && await houseClaimed(env)) env = await withSettings(env, ctx, kept ? { keepMs: SETTINGS_KEEP_MS } : undefined);
       watch.lap("settings");
+      // A LOOK (looks.js): the now bar's and the TV's, every few seconds,
+      // answered without routes.js's one large request function.
+      const look = LOOK_PATH.exec(path);
+      if (look) return withTimings(inPage(request, await answerLook(request, env, new URL(request.url), look)), watch, path);
       return withTimings(inPage(request, await handleRequest(request, env, ctx)), watch, path);
     } finally {
       // After the response, never in front of it. A counter that adds latency
