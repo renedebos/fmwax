@@ -1428,6 +1428,14 @@ export class StationLedger {
       this.sql.exec("DELETE FROM played_week WHERE at < ?", now - WEEK_MS);
       return Response.json({ ok: true, repeats, write_id: writeId, logged: rows.length });
     }
+    // WHO PLAYED WHOM (readindex.js, the Shelf's Reading by DJ): each song's
+    // label with the DJ whose set it was, the week's, once each.
+    if (op === "played-by") {
+      const rows = this.sql.exec(
+        "SELECT DISTINCT label, dj FROM played_week WHERE at >= ? AND dj IS NOT NULL AND label IS NOT NULL LIMIT 3000",
+        now - WEEK_MS).toArray();
+      return Response.json({ ok: true, rows });
+    }
     if (op === "played-list") {
       const got = this.sql.exec(
         "SELECT seq, uri, label, at FROM played_week WHERE at >= ? ORDER BY at DESC, seq ASC LIMIT 5000",

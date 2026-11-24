@@ -651,6 +651,34 @@ li.entry .open:hover{color:var(--mvt-1);text-decoration-color:var(--mvt-1)}
 .notes .rdlbl{margin:0;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-12);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
 .notes .rdlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.4rem}
 .notes a.rditem{display:flex;flex-direction:column;gap:.2rem;justify-content:center;min-height:2.75rem;padding:.6rem .75rem;border-radius:12px;background:var(--q-tint);text-decoration:none;font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.notes .rdchips{display:flex;gap:.5rem;overflow-x:auto;margin:.9rem 0 0;padding-bottom:.2rem;scrollbar-width:none}
+.notes .rdchips .chip{flex:none;min-height:2.5rem;padding:0 .9rem;display:inline-flex;align-items:center;gap:.4rem}
+.notes .rdchips .chip[aria-current]{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep)}
+.notes .rdarts{display:flex;flex-direction:column;gap:.5rem;margin:.8rem 0 0}
+.notes a.rdart{display:flex;flex-direction:column;gap:.2rem;min-height:3.5rem;padding:.75rem .9rem;border-radius:14px;background:var(--raised);border:1px solid var(--rule);text-decoration:none;color:var(--ink);font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.notes .rdan{font-size:var(--fs-16);font-weight:800}
+.notes .rdm2{font-size:var(--fs-12);color:var(--ink-3)}
+.notes .rdback{display:inline-flex;align-items:center;gap:.25rem;min-height:2.75rem;margin:.6rem 0 0;color:var(--q-ink);font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-weight:600;text-decoration:none}
+.notes h2.rdh{margin:.2rem 0 .4rem;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:1.6rem;font-weight:800;line-height:1.15}
+.notes .rdby{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin:0;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);color:var(--ink-2)}
+.notes .rdby .chip{min-height:2.25rem;padding:0 .8rem;display:inline-flex;align-items:center}
+.notes .rdsaid{margin:.8rem 0 0;padding:.6rem .8rem;border-radius:12px;border:1.5px solid var(--q-ink);color:var(--q-ink);font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14)}
+.notes .rdrow{display:flex;align-items:flex-start;gap:.35rem}
+.notes .rdrow>a.rditem{flex:1;min-width:0}
+.notes details.rdmenu{flex:none}
+.notes details.rdmenu>summary{list-style:none;width:2.75rem;height:2.75rem;display:flex;align-items:center;justify-content:center;border-radius:12px;color:var(--ink-2);cursor:pointer}
+.notes details.rdmenu>summary::-webkit-details-marker{display:none}
+/* Open, the summary becomes the dim backdrop behind the sheet: a tap on it
+   closes the menu, with no script. */
+.notes details.rdmenu[open]>summary{position:fixed;inset:0;z-index:39;width:auto;height:auto;border-radius:0;background:rgba(0,0,0,.35)}
+.notes details.rdmenu[open]>summary svg{display:none}
+.notes .rdsheet{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;flex-direction:column;gap:.6rem;padding:1rem 1.1rem calc(1.4rem + env(safe-area-inset-bottom));border-radius:22px 22px 0 0;background:var(--raised);box-shadow:0 -8px 30px rgba(0,0,0,.25);font-family:"Archivo","Helvetica Neue",Arial,sans-serif}
+.notes .rdsh{margin:0;font-size:var(--fs-16);font-weight:800;line-height:1.3}
+.notes .rdsheet form{margin:0}
+.notes .rdsheet a.rdgo,.notes .rdsheet button{display:flex;align-items:center;width:100%;min-height:3rem;padding:0 .9rem;border-radius:12px;border:1.5px solid var(--q-ink);background:transparent;color:var(--q-ink);font:inherit;font-size:.9375rem;font-weight:600;text-align:left;text-decoration:none;cursor:pointer}
+.notes .rdsheet button.rdkeep{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep)}
+.notes .rdsheet button.rdrm,.notes button.rdrmall{border-color:var(--mvt-1);color:var(--mvt-1)}
+.notes button.rdrmall{appearance:none;-webkit-appearance:none;margin:.4rem 0 0;min-height:2.75rem;padding:0;border:0;background:transparent;font-family:"Archivo","Helvetica Neue",Arial,sans-serif;font-size:var(--fs-14);font-weight:600;text-align:left;cursor:pointer}
 .notes .rdt{font-size:.9375rem;font-weight:600;line-height:1.3;color:var(--ink)}
 .notes .rdm{font-size:var(--fs-12);color:var(--ink-2)}
 .notes .shtop details.filter{position:static}
@@ -880,46 +908,93 @@ function shelfSwitch({ programs, reading, n = null, on }) {
       chip("reading", reading, `Reading${n ? `<b class="n">${n}</b>` : ""}`)}</nav>`;
 }
 
-// THE SHELF'S READING (readindex.js; option A of the canvas "A place for all
-// the reading", the owner, 2026-11-23): every piece the house holds, by
-// artist, the newest first: the Guardian's about the artist, and what the
-// curator found on the web for a song. Each opens on its own site. No
-// script, as the Shelf has none. `groups` come with each web piece's line
-// made (readfind.js findLine).
-export function renderReading(groups, { self, room = null, n = 0, unreadable = false, owed = 0, talk = false, loaded = true, hmark = null, canAsk = false } = {}) {
-  const item = (href, title, line) => `
-        <li><a class="rditem" href="${esc(href)}" target="_blank" rel="noopener noreferrer"><span class="rdt">${esc(title)}</span><span class="rdm">${esc(line)}</span></a></li>`;
-  const block = (g, b) => {
-    const rows = b.kind === "guardian"
-      ? b.items.filter((it) => /^[a-z0-9-]+(\/[a-z0-9-]+){2,8}$/.test(String(it?.id ?? ""))).map((it) => item(`https://www.theguardian.com/${it.id}`, it.title,
-        [it.kind, "The Guardian", it.year, it.min ? `${it.min} min` : ""].filter(Boolean).join(" · ")))
-      : b.items.filter((it) => /^https:\/\/[a-z0-9.-]+\//i.test(String(it?.url ?? ""))).map((it) => item(it.url, it.title, it.line ?? it.source ?? ""));
-    return rows.length ? `
-    <section class="rdblock">
-      <p class="rdlbl">${esc([g.artist, b.kind === "guardian" ? "The Guardian" : b.song].filter(Boolean).join(" · "))}</p>
-      <ul class="rdlist">${rows.join("")}
-      </ul>
-    </section>` : "";
-  };
-  const body = groups.map((g) => g.blocks.map((b) => block(g, b)).join("")).join("");
-  return `${head("Shelf: Reading", "Every article and interview the house holds, newest first.",
+// THE SHELF'S READING, BY DJ (readindex.js; the owner, 2026-11-23, the
+// canvas "Reading by DJ"). Three views on one page, no script, as the Shelf
+// has none:
+//   the list   DJ chips (All, each DJ who played an artist here, Not from a
+//              DJ) and one row per artist, newest first;
+//   a search   (q) every matching piece across every DJ, by artist;
+//   an artist  (a) its pieces by song and source, each with a menu (a
+//              <details>) to open it, keep it or remove it, and a way to
+//              remove a song's whole search.
+// `view` is readingView's answer with names and lines made by the route;
+// `artist` an artist the same way. Keep and remove are forms to …/reading/act.
+const READ_SAY = { kept: "Kept: it stays after its source runs out.", unkept: "No longer kept.",
+  removed: "Removed. It won't come back, here or in About this song.",
+  unsearched: "The search was removed. The song can be searched again from About this song.",
+  gone: "That piece is no longer here.", failed: "That did not reach the house. Try again.",
+  full: "The house holds as many kept or removed pieces as it can: nothing was changed. Stop keeping some first." };
+export function renderReading({ self, room = null, view = null, artist = null, dj = "", q = "", said = "", n = 0, unreadable = false,
+  owed = 0, talk = false, loaded = true, hmark = null, canAsk = false, djName = (k) => k } = {}) {
+  const at = `${self}/reading`;
+  const qs = (o) => { const p = new URLSearchParams(); for (const [k, v] of Object.entries(o)) if (v) p.set(k, v); const s = p.toString(); return s ? `?${s}` : ""; };
+  const open = (it) => `<a class="rditem" href="${esc(it.href)}" target="_blank" rel="noopener noreferrer"><span class="rdt">${esc(it.title)}</span><span class="rdm">${esc(it.line)}</span></a>`;
+  const MORE = `<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.8" fill="currentColor"></circle><circle cx="12" cy="12" r="1.8" fill="currentColor"></circle><circle cx="19" cy="12" r="1.8" fill="currentColor"></circle></svg>`;
+  const act = (fields, label, cls = "") => `<form method="post" action="${esc(at)}/act">${Object.entries(fields).map(([k, v]) =>
+    `<input type="hidden" name="${esc(k)}" value="${esc(v)}">`).join("")}<button type="submit"${cls ? ` class="${cls}"` : ""}>${label}</button></form>`;
+  const piece = (it, a) => `
+        <li class="rdrow">${open(it)}<details class="rdmenu"><summary aria-label="More for this piece: open, keep or remove">${MORE}</summary>
+          <div class="rdsheet"><p class="rdsh">${esc(it.title)}</p><p class="rdm">${esc(it.line)}${it.host ? ` · ${esc(it.host)}` : ""}</p>
+            <a class="rdgo" href="${esc(it.href)}" target="_blank" rel="noopener noreferrer">Open${it.host ? ` on ${esc(it.host)}` : ""}</a>
+            ${it.kept ? act({ do: "unkeep", pk: it.pk, a: a.key, dj }, "Stop keeping it") : act({ do: "keep", pk: it.pk, a: a.key, dj }, "Keep it: it won't run out", "rdkeep")}
+            ${act({ do: "remove", pk: it.pk, a: a.key, dj }, "Remove it", "rdrm")}
+            <p class="rdm">A removed piece stays gone, even when the house looks the artist up again. Tap outside to close.</p></div></details></li>`;
+  const blockLabel = (b) => (b.source === "web" ? `${b.song || "A song"} · your search` : b.source === "guardian" ? "The Guardian · found by itself" : "Kept");
+  const scope = dj === "none" ? "Not from a DJ" : dj ? djName(dj) : "All";
+  let body = "";
+  if (artist) {
+    const played = artist.djs.length ? `<p class="rdby"><span>Played by</span>${artist.djs.map((d) =>
+      `<a class="chip" href="${esc(at + qs({ dj: d }))}">${esc(djName(d))}</a>`).join("")}</p>` : `<p class="rdnote">Not from a DJ: an album, the Spotify app or Talk.</p>`;
+    body = `
+  <a class="rdback" href="${esc(at + qs({ dj }))}">${icon("chevronLeft", 18)}${esc(scope)}</a>
+  <h2 class="rdh">${esc(artist.name)}</h2>${played}${said ? `
+  <p class="rdsaid" role="status">${esc(READ_SAY[said] ?? "")}</p>` : ""}${artist.blocks.map((b) => `
+  <section class="rdblock">
+    <p class="rdlbl">${esc(blockLabel(b))}</p>
+    <ul class="rdlist">${b.items.map((it) => piece(it, artist)).join("")}
+    </ul>${b.source === "web" && b.slug ? act({ do: "unsearch", slug: b.slug, a: artist.key, dj }, "Remove this search, so the song can be searched again", "rdrmall") : ""}
+  </section>`).join("")}`;
+  } else if (view && q) {
+    body = `
+  <p class="rdnote"><b>${view.n} piece${view.n === 1 ? "" : "s"}</b> match “${esc(q)}”, across every DJ. <a href="${esc(at)}">Clear the search</a></p>${view.artists.map((a) => `
+  <section class="rdblock">
+    <p class="rdlbl"><a href="${esc(at + qs({ a: a.key }))}">${esc([a.name, a.djs.length ? a.djs.map(djName).join(", ") : "not from a DJ"].join(" · "))}</a></p>
+    <ul class="rdlist">${a.blocks.flatMap((b) => b.items).map((it) => `<li>${open(it)}</li>`).join("")}
+    </ul>
+  </section>`).join("")}`;
+  } else if (view) {
+    const chip = (key, label, count) => {
+      const on = key === dj;
+      const inner = `${esc(label)}<b class="n">${count}</b>`;
+      return on ? `<span class="chip" aria-current="page">${inner}</span>` : `<a class="chip" href="${esc(at + qs({ dj: key }))}">${inner}</a>`;
+    };
+    const note = dj === "none" ? "Songs the house can't tie to a DJ: an album, the Spotify app or Talk."
+      : dj ? `Artists ${djName(dj)} played, with something to read. Newest first.` : "Every artist with something to read, newest first.";
+    body = `
+  <nav class="rdchips" aria-label="DJs">${chip("", "All", view.all)}${view.chips.map((c) => chip(c.key, djName(c.key), c.n)).join("")}${
+      view.none ? chip("none", "Not from a DJ", view.none) : ""}</nav>
+  <p class="rdnote">${note}</p>
+  <div class="rdarts">${view.artists.map((a) => `
+    <a class="rdart" href="${esc(at + qs({ a: a.key, dj }))}"><span class="rdan">${esc(a.name)}</span><span class="rdm">${esc(a.summary)}</span>${a.sub ? `<span class="rdm2">${esc(a.sub)}</span>` : ""}</a>`).join("")}
+  </div>`;
+  }
+  const empty = !n ? (unreadable ? `<p class="standfirst" role="status">The reading could not be read just now. Reload in a moment.</p>`
+    : `<p class="standfirst">Nothing to read yet. ${canAsk ? "While a song plays, open About this song and tap Find articles and interviews: the curator searches the web, and what it finds is kept here."
+      : "Pieces about the artists this house plays are kept here as they are found."}</p>`) : "";
+  return `${head("Shelf: Reading", "Every article and interview the house holds, by DJ.",
     ROOM_CSS, WALL_FONTS + (room ? appMeta(room) : ""))}
 <article class="page notes${room ? " tabbed nobar" : ""}">
   <header class="masthead shelfhead">
     <div class="shtop pagehead"><h1>Shelf</h1><span class="shtools">${room ? helperMark(hmark ?? {}) : ""}${pageHelp("the Shelf's Reading", `
-      <p>Every article and interview the house holds, newest first, by artist.</p>
-      <p><b>The Guardian's</b> pieces are found by themselves when an artist plays, and kept a month.</p>
-      <p><b>The rest</b> are what the curator found on the web for a song, after a press on <b>Find articles and
-        interviews</b> in About this song. They are kept about six months.</p>
-      <p>A tap opens a piece on its own site.</p>
-    `)}</span></div>${shelfSwitch({ programs: self, reading: `${self}/reading`, n, on: "reading" })}
-    <p class="rdnote">${n ? "Articles and interviews for what this house played, newest first. A tap opens a piece on its own site."
-      : ""}</p>
+      <p>Every article and interview the house holds, by the DJ who played the artist. An artist two DJs played is under both; one no DJ played (an album, the Spotify app, Talk) is under <b>Not from a DJ</b>.</p>
+      <p><b>The Guardian's</b> pieces are found by themselves when an artist plays, and kept a month. <b>Your searches</b> come from <b>Find articles and interviews</b> in About this song, and are kept about six months.</p>
+      <p>The <b>…</b> beside a piece keeps it (it stays after its source runs out) or removes it (it won't come back).</p>
+    `)}</span></div>${shelfSwitch({ programs: self, reading: at, n, on: "reading" })}${n && !artist ? `
+    <form class="shfind" role="search" method="get" action="${esc(at)}">
+      <input type="search" name="q" value="${esc(q)}" placeholder="Search artists, songs, titles, sites" aria-label="Search the reading" enterkeyhint="search" autocomplete="off">
+    </form>` : ""}
   </header>
-  ${body ? `<div class="rdgroups">${body}
-  </div>` : unreadable ? `<p class="standfirst" role="status">The reading could not be read just now. Reload in a moment.</p>`
-    : `<p class="standfirst">Nothing to read yet. ${canAsk ? "While a song plays, open About this song and tap Find articles and interviews: the curator searches the web, and what it finds is kept here."
-      : "Pieces about the artists this house plays are kept here as they are found."}</p>`}
+  ${empty || body}
   ${room ? tabBar({ base: room, active: "shelf", owed, shelfHref: self, talk, loaded, now: false }) : ""}
 </article>
 </body>

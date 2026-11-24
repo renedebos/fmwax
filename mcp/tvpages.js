@@ -68,7 +68,7 @@ div.prog{cursor:default;opacity:.5}
 // OPENS the program (its notes, with Play on them: the owner, 2026-11-16,
 // "what if I want to listen to other music while reading programs?"), so
 // nothing on the Shelf starts music. `action` is unused since then.
-export function renderTvShelf({ base, room = null, rows = [], unreadable = false }) {
+export function renderTvShelf({ base, room = null, rows = [], unreadable = false, reading = null }) {
   const back = `${base}/tv${room ? `?room=${encodeURIComponent(room.slug)}` : ""}`;
   // Every cover is asked for at once, none "lazy": on the Bravia the lazy
   // ones stayed blank (the owner's photo, 2026-11-15; not seen in a desktop
@@ -85,7 +85,9 @@ export function renderTvShelf({ base, room = null, rows = [], unreadable = false
   return `${HEAD("The Shelf, on the TV", SHELF_CSS)}
 <main class="tvs">
   <header class="shead" data-bar><a class="pill" data-f="back" href="${esc(back)}">${TV_I_BACK}Home</a><h1>The Shelf</h1><span class="gap"></span>` +
-    `<p class="snote">${n} program${n === 1 ? "" : "s"}, newest first · a press opens one</p></header>
+    `<p class="snote">${n} program${n === 1 ? "" : "s"}, newest first · a press opens one</p>` +
+    // THE READING (readindex.js): the Shelf's other list, as on the phone.
+    `${reading ? `<a class="pill" data-f="reading" href="${esc(base)}/tv/reading${room ? `?room=${esc(encodeURIComponent(room.slug))}` : ""}">Reading${reading.n ? ` · ${reading.n}` : ""}</a>` : ""}</header>
   ${unreadable ? `<p class="gnote">The Shelf could not be read just now. Try again in a moment.</p>`
     : n ? `<section class="sgrid" aria-label="Programs">${rows.map(tile).join("")}
   </section>` : `<p class="gnote">Nothing is on the Shelf yet. A set a DJ makes and you keep lands here.</p>`}
@@ -449,6 +451,12 @@ a.ritem{display:flex;align-items:center;gap:1.25rem;padding:.875rem 1.25rem;bord
 .ritem .rgo{font-size:.9375rem;font-weight:600;color:var(--ink-2);white-space:nowrap}
 .rfoot{margin:1.25rem 0 0;font-size:.875rem;color:var(--ink-3)}
 .rlist+.rlbl,.rlist+.rfoot+.rlbl{margin-top:1.5rem}
+.tvr a.ritem:focus{scroll-margin:7rem 0 2rem}
+.rchips{display:flex;flex-wrap:wrap;gap:.75rem;margin:0 0 1rem}
+.rchip b{font-weight:800;margin-left:.25rem}
+.rchip.on{background:var(--q-deep);border-color:var(--q-deep);color:var(--q-on-deep)}
+.rnote{margin:0 0 1rem;font-size:1.0625rem;color:var(--ink-2)}
+.ritem.rart .rta{font-size:1.5rem;font-weight:800}
 .ritem.rweb{background:transparent;border-color:var(--rule)}
 .rwait{margin:0;font-size:1.125rem;line-height:1.45;color:var(--ink-2)}
 .rsaid{margin:0 0 1rem;padding:.625rem .875rem;border-radius:.75rem;border:.125rem solid var(--focus);color:var(--focus);font-size:1rem;line-height:1.35}
@@ -476,7 +484,7 @@ export function renderTvRead({ base, room = null, name = "", items = [], song = 
     `<span class="rk">${esc(it.kind)}</span><span class="rw"><span class="rt">${esc(it.title)}</span>` +
     `<span class="rm">${esc(["The Guardian", it.year, it.min ? `${it.min} min` : ""].filter(Boolean).join(" · "))}</span></span><span class="rgo">Read ›</span></a>`;
   const web = (it, i) => `
-    <a class="ritem rweb" ${f()} href="${esc(`${at}&s=${encodeURIComponent(find.slug)}&x=${i}`)}">` +
+    <a class="ritem rweb" ${f()} href="${esc(`${at}&s=${encodeURIComponent(find.slug)}&x=${it.ix ?? i}`)}">` +
     `<span class="rk">${esc(it.kind)}</span><span class="rw"><span class="rt">${esc(it.title)}</span>` +
     `<span class="rm">${esc(it.line)}</span></span><span class="rgo">Phone ›</span></a>`;
   const guardian = items.length ? `
@@ -530,6 +538,86 @@ export function renderTvRead({ base, room = null, name = "", items = [], song = 
 </body>
 </html>
 `;
+}
+
+// ALL THE READING, ON THE TV, BY DJ (readindex.js; the canvas "Reading by
+// DJ", its TV row): the phone's list, read only. The DJ chips across the top,
+// one row per artist; an artist opens to its pieces. A Guardian piece is read
+// on the TV, a piece on another site opens as a code for a phone; both come
+// back to the artist. No search (the remote has no keyboard), no keep or
+// remove: those are the phone's.
+const TVR_JS = (main) => `
+<script>
+(function () {
+  var main = document.querySelector("${main}"); if (!main) return;
+  ${TV_ARROWS_JS}
+  function home() { return main.querySelector("[data-home]") || main.querySelector("a.pill"); }
+  document.addEventListener("keydown", function (ev) {
+    var dir = TV_DIRS[ev.key]; if (!dir || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    var was = document.activeElement;
+    setTimeout(function () { if (document.activeElement === was) tvMove(main, dir, home); }, 0);
+  });
+  /* Back from what a row opened: that row, so a long list is not walked again. */
+  var el = null, k = null, page = main.getAttribute("data-page") || "";
+  try { k = sessionStorage.getItem("tv:reading"); sessionStorage.removeItem("tv:reading"); } catch (e) {}
+  if (k && k.indexOf(page + "|") === 0) { var f = k.slice(page.length + 1); el = main.querySelector('[data-f="' + f.replace(/["\\\\]/g, "") + '"]'); }
+  main.addEventListener("click", function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest("a.ritem") : null;
+    if (a) { try { sessionStorage.setItem("tv:reading", page + "|" + a.getAttribute("data-f")); } catch (e) {} }
+  });
+  el = el || home(); if (el) el.focus();
+})();
+</script>
+</body>
+</html>
+`;
+
+export function renderTvReading({ base, room = null, dj = "", view = null, n = 0, unreadable = false, djName = (k) => k }) {
+  const rq = room ? `room=${encodeURIComponent(room.slug)}` : "";
+  const at = (o) => `${base}/tv/reading?${[rq, ...Object.entries(o).filter(([, v]) => v).map(([k, v]) => `${k}=${encodeURIComponent(v)}`)].filter(Boolean).join("&")}`;
+  const back = `${base}/tv/shelf${room ? `?room=${encodeURIComponent(room.slug)}` : ""}`;
+  const chip = (key, label, count) => `<a class="pill rchip${key === dj ? " on" : ""}" data-f="c:${esc(key || "all")}" href="${esc(at({ dj: key }))}"${key === dj ? ` aria-current="page"` : ""}>${esc(label)} <b>${count}</b></a>`;
+  const note = dj === "none" ? "Songs the house can't tie to a DJ: an album, the Spotify app or Talk." : dj ? `Artists ${djName(dj)} played, with something to read. Newest first.` : "Every artist with something to read, newest first.";
+  const rows = (view?.artists ?? []).map((a, i) => `
+    <a class="ritem rart" data-f="a:${esc(a.key)}"${i === 0 ? " data-home" : ""} href="${esc(at({ dj, a: a.key }))}"><span class="rw"><span class="rt rta">${esc(a.name)}</span>` +
+    `<span class="rm">${esc([a.summary, a.sub].filter(Boolean).join(" · "))}</span></span><span class="rgo">Open ›</span></a>`).join("");
+  return `${HEAD("Reading, on the TV", READ_CSS)}
+<main class="tvr" data-page="list:${esc(dj)}">
+  <header class="rhead"><a class="pill" data-f="back" href="${esc(back)}">${TV_I_BACK}Shelf</a><h1>Reading</h1><span class="gap"></span>` +
+    `<p class="rhint">Left and right: the DJs · Down: their artists · OK to open</p></header>${n && view ? `
+  <nav class="rchips" aria-label="DJs">${chip("", "All", view.all)}${view.chips.map((c) => chip(c.key, djName(c.key), c.n)).join("")}${view.none ? chip("none", "Not from a DJ", view.none) : ""}</nav>
+  <p class="rnote">${esc(note)}</p>
+  <div class="rlist">${rows}
+  </div>
+  <p class="rfoot">To search, keep or remove pieces, use the Shelf's Reading on the phone.</p>` : unreadable ? `
+  <p class="rfoot" role="status">The reading could not be read just now. Try again in a moment.</p>` : `
+  <p class="rfoot">Nothing to read yet. Pieces about the artists this house plays are kept here as they are found; a search is asked for from About this song.</p>`}
+</main>${TVR_JS("main.tvr")}`;
+}
+
+export function renderTvReadingArtist({ base, room = null, dj = "", artist, djName = (k) => k }) {
+  const rq = room ? `room=${encodeURIComponent(room.slug)}&` : "";
+  const scope = dj === "none" ? "Not from a DJ" : dj ? djName(dj) : "All";
+  const back = `${base}/tv/reading?${rq}${dj ? `dj=${encodeURIComponent(dj)}` : ""}`.replace(/[?&]$/, "");
+  let i = 0;
+  const row = (it) => {
+    const g = (it.from ?? it.source) === "guardian";
+    return `
+    <a class="ritem${g ? "" : " rweb"}" data-f="p:${i}"${i++ === 0 ? " data-home" : ""} href="${esc(`${base}/tv/read?${rq}from=reading${dj ? `&rd=${encodeURIComponent(dj)}` : ""}&ra=${encodeURIComponent(artist.key)}&k=${encodeURIComponent(it.pk)}`)}">` +
+      `<span class="rk">${esc(it.kind ?? "")}</span><span class="rw"><span class="rt">${esc(it.title)}</span><span class="rm">${esc(it.line)}</span></span>` +
+      `<span class="rgo">${g ? "Read ›" : "Phone ›"}</span></a>`;
+  };
+  const label = (b) => (b.source === "web" ? `${b.song || "A song"} · your search · opens on your phone` : b.source === "guardian" ? "The Guardian · read here" : "Kept");
+  const played = artist.djs.length ? `Played by ${artist.djs.map(djName).join(" and ")}.` : "Not from a DJ: an album, the Spotify app or Talk.";
+  return `${HEAD(`${artist.name}, on the TV`, READ_CSS)}
+<main class="tvr" data-page="artist:${esc(artist.key)}">
+  <header class="rhead"><a class="pill" data-f="back" href="${esc(back)}">${TV_I_BACK}${esc(scope)}</a><h1>${esc(artist.name)}</h1><span class="gap"></span>` +
+    `<p class="rhint">Up and down to choose · OK to open</p></header>
+  <p class="rnote">${esc(played)}</p>${artist.blocks.map((b) => `
+  <p class="rlbl">${esc(label(b))}</p>
+  <div class="rlist">${b.items.map(row).join("")}
+  </div>`).join("")}
+</main>${TVR_JS("main.tvr")}`;
 }
 
 // A PIECE ON ANOTHER SITE, AS A CODE (qr.js): the TV app opens the house's

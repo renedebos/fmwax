@@ -592,6 +592,11 @@ export function makeStation() {
       for (let i = week.length - 1; i >= 0; i--) if (week[i].at < now - WEEK_MS) week.splice(i, 1);
       return { ok: true, repeats, write_id, logged: rows.length };
     }
+    if (op === "played-by") {
+      const seenBy = new Set(), out = [];
+      for (const r of week) if (r.at >= now - WEEK_MS && r.dj && r.label && !seenBy.has(`${r.label}|${r.dj}`)) { seenBy.add(`${r.label}|${r.dj}`); out.push({ label: r.label, dj: r.dj }); }
+      return { ok: true, rows: out };
+    }
     if (op === "played-list") return { ok: true, ...weekList(week, { now, ...(Number(args.max) > 0 ? { max: Number(args.max) } : {}) }) };
     if (op === "sent-back") { if (args.key) sentBack.set(args.key, now); return { ok: true }; }
     if (op === "sent-used") {
