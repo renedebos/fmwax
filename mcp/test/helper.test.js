@@ -44,6 +44,51 @@ test("a song on Tidal: its cover, album, place and track id ride along (2026-11-
   assert.equal(sp.art, undefined); assert.equal(sp.pos, undefined); assert.equal(sp.album, undefined);
 });
 
+// A SPOTIFY SONG THE SPEAKER HOLDS (2026-11-25, the owner: "Summer Breeze,
+// Pro Plus" on the TV with no cover and no info, while Spotify played on
+// Sound1). As the Pro Plus answered that evening, stopped.
+test("a Spotify song stopped or paused on a WiiM: its cover, album, place and track id ride along; playing, Spotify says them", async () => {
+  const st = { mode: "31", vendor: "spotify:playlist:SAMPLEPLAYLIST00000027", status: "stop", curpos: "14327", totlen: "205480",
+    Title: hex("Summer Breeze"), Artist: hex("Seals and Crofts"),
+    meta: { metaData: { album: "Summer Breeze", title: "Summer Breeze", subtitle: "unknow", artist: "Seals and Crofts",
+      albumArtURI: "https://i.scdn.co/image/ab67616d0000b273e13b56ae3e9e99abf2c2026c", sampleRate: "44100", bitDepth: "16", bitRate: "914", trackId: "3B0ms7Xlxl16tRztKHpcu9" } } };
+  const r = readingOf("Pro Plus", st);
+  assert.equal(r.state, "stop"); assert.equal(r.source, "Spotify");
+  assert.equal(r.album, "Summer Breeze");
+  assert.equal(r.art, "https://i.scdn.co/image/ab67616d0000b273e13b56ae3e9e99abf2c2026c");
+  assert.deepEqual(r.pos, { ms: 14327, of: 205480 });
+  assert.equal(r.trackId, "3B0ms7Xlxl16tRztKHpcu9");
+  assert.equal(r.quality, undefined, "a stopped song streams nothing");
+  assert.equal(readingOf("Pro Plus", { ...st, status: "pause" }).trackId, "3B0ms7Xlxl16tRztKHpcu9");
+  // Words for another song than the status names, a cover from elsewhere, a Tidal id: not passed on.
+  const other = readingOf("Pro Plus", { ...st, meta: { metaData: { ...st.meta.metaData, title: "Diamond Girl" } } });
+  assert.equal(other.art, undefined); assert.equal(other.trackId, undefined); assert.equal(other.album, undefined);
+  assert.equal(readingOf("Pro Plus", { ...st, meta: { metaData: { ...st.meta.metaData, albumArtURI: "https://evil.test/x.jpg" } } }).art, undefined);
+  assert.equal(readingOf("Pro Plus", { ...st, meta: { metaData: { ...st.meta.metaData, trackId: "195651662" } } }).trackId, undefined);
+  // Playing, Spotify itself says them.
+  const on = readingOf("Pro Plus", { ...st, status: "play" });
+  assert.equal(on.art, undefined); assert.equal(on.pos, undefined); assert.equal(on.trackId, undefined);
+
+  // The house keeps them, Spotify's from Spotify's host only, and hands them on.
+  const e = env();
+  const f = installFetch();
+  try {
+    const body = { name: "Pro Plus", state: "stop", source: "Spotify", playlist: "SAMPLEPLAYLIST00000027", track: "Summer Breeze", artists: "Seals and Crofts",
+      album: "Summer Breeze", art: r.art, pos: r.pos, trackId: r.trackId };
+    await send(e, { speakers: [body, { name: "Ultra", state: "stop", source: "Spotify", track: "x",
+      art: "https://resources.tidal.com/images/bf9427b5/985b/4e6d/b6d4/6258713a1fa8/640x640.jpg", trackId: "195651662" }] });
+    const got = await (await worker.fetch(new Request(`https://x.test/buttons/${KEY}/playing`), e)).json();
+    const pro = got.lan.speakers["Pro Plus"];
+    assert.equal(pro.art, r.art); assert.equal(pro.trackId, r.trackId); assert.equal(pro.album, "Summer Breeze");
+    assert.deepEqual(pro.pos, r.pos);
+    assert.equal(got.lan.speakers.Ultra.art, undefined, "a Tidal cover on a Spotify song is not kept");
+    assert.equal(got.lan.speakers.Ultra.trackId, undefined, "nor a Tidal id");
+    const rest = spotifyRest(pro, "Pro Plus");
+    assert.equal(rest.art, r.art); assert.equal(rest.album, "Summer Breeze"); assert.equal(rest.trackId, r.trackId);
+    assert.deepEqual(rest.pos, { ms: 14327, of: 205480 });
+  } finally { f.restore(); }
+});
+
 test("the helper reads getPlayerStatus into the house's words: source, state, the hex-coded title and artist", () => {
   // As the Pro Plus answered on 2026-09-24, playing preset 2.
   assert.deepEqual(readingOf("Pro Plus", { mode: "10", vendor: "Tidal", status: "play",

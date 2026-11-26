@@ -4074,9 +4074,11 @@ export function spotifyRest(r, speaker) {
   if (!r || (r.state !== "pause" && r.state !== "stop") || !/^spotify/i.test(String(r.source || ""))) return null;
   const p = r.preset || null;
   // "· endless" as the bar says it of a playing endless preset (2026-10-13).
+  // Its album, cover, place and track id as the speaker holds them (2026-11-25).
   return { state: "lan", speaker: speaker, source: "Spotify", lanState: r.state, track: r.track || "", artists: r.artists || "",
     lanFrom: p ? (p.lane ? p.name : "preset " + p.btn + (p.name ? ", " + p.name : "")) + (p.endless ? " · endless" : "") : "", preset: p,
-    list: r.list || "", who: r.who || null };
+    list: r.list || "", who: r.who || null,
+    album: r.album || "", art: r.art || "", trackId: r.trackId || "", pos: r.pos && Number(r.pos.of) > 0 ? { ms: Number(r.pos.ms) || 0, of: Number(r.pos.of) } : null };
 }
 // And steering: More like this and Change it up for an endless set, and
 // since 2026-09-27 for a DJ's request set on the Spotify requests preset,

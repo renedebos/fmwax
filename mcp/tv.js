@@ -114,11 +114,15 @@ export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
     // its cover, album and place, Skip and one back through the home helper,
     // and About this song by its title and artist (2026-11-16, the owner).
     const songs = !spot && TRACKED.test(String(v.source || ""));
-    if (songs) {
+    // AND A SPOTIFY SONG THE SPEAKER HOLDS, PAUSED OR STOPPED (2026-11-25, the
+    // owner: "Summer Breeze, Pro Plus" with no cover and no info, while
+    // Spotify played on Sound1): the same, from the speaker's own words.
+    const held = spot && v.lanState !== "play";
+    if (songs || held) {
       band.art = String(v.art || "");
       band.album = String(v.album || "");
       if (v.pos && v.pos.of > 0) band.pos = { ms: v.pos.ms, of: v.pos.of, age: Math.max(0, now - (v.pos.at || now)) };
-      if (v.track) band.song = { uri: v.trackId ? `tidal:track:${v.trackId}` : `lan:${String(v.track).slice(0, 80)}`, slug: "", btn: 0, isrc: "", ms: Number(v.pos?.of) || 0 };
+      if (v.track) band.song = { uri: v.trackId ? `${spot ? "spotify" : "tidal"}:track:${v.trackId}` : `lan:${String(v.track).slice(0, 80)}`, slug: "", btn: 0, isrc: "", ms: Number(v.pos?.of) || 0 };
     }
     if (v.lanState === "play") {
       band.title = v.track || w.one;
@@ -129,9 +133,11 @@ export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
       if (v.hands && !spot) band.ctl = { do: "hpause", device: who, label: `Pause the ${who}` };
       if (v.hands && songs) { band.skip = who; band.skipH = true; }
     } else {
-      if (songs) band.pos = band.pos ? { ...band.pos, age: 0 } : null;
+      if (songs || held) band.pos = band.pos ? { ...band.pos, age: 0 } : null;
       band.title = v.track || stillWord;
       band.line2 = v.artists || "";
+      // By which About this song finds it by name (2026-11-25).
+      if (v.track) band.artist = String(v.artists || "");
       band.line3 = `${stillWord} · ${w.two}`;
       // A SONG THAT STOPPED OR PAUSED is still shown (the owner, 2026-11-19:
       // "I miss the now playing icon"): the note and the bar's cover open its
@@ -1014,7 +1020,8 @@ const TV_SCRIPT = `<script>
     /* Paused: the song is still the one it was, with its words (the owner,
        2026-11-15: About this song went away on a pause). */
     if (band && band.tone === "held" && !band.song && song.key) return;
-    var s = band && band.tone !== "off" ? band.song : null;
+    /* A song that stopped is asked about too (2026-11-25). */
+    var s = band && (band.tone !== "off" || band.still) ? band.song : null;
     var key = s && s.uri ? s.uri + "|" + (s.slug || "") + "|" + (s.btn || "") : "";
     if (key === song.key) return;
     song = { key: key, next: [], about: null, facts: null, genius: null, extra: null, more: null };

@@ -107,10 +107,13 @@ export function parseHelperReading(env, body) {
       ...(clip(r.eq, 40) && /^[\w .&'’+#()-]+$/.test(clip(r.eq, 40)) ? { eq: clip(r.eq, 40) } : {}),
       // A song on a service that is not Spotify (2026-11-16): its album, its
       // cover from the service's own address, its place, and its track id.
+      // And a Spotify song the speaker holds paused or stopped (2026-11-25),
+      // with Spotify's own image host and track id: Spotify says nothing of
+      // a speaker it left.
       ...(clip(r.album, 200) ? { album: clip(r.album, 200) } : {}),
-      ...(/^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(r.art ?? "")) ? { art: String(r.art) } : {}),
+      ...(artIn(r.art, source) ? { art: artIn(r.art, source) } : {}),
       ...(posIn(r.pos) ? { pos: posIn(r.pos) } : {}),
-      ...(/^\d{1,15}$/.test(String(r.trackId ?? "")) ? { trackId: String(r.trackId) } : {}),
+      ...(trackIdIn(r.trackId, source) ? { trackId: trackIdIn(r.trackId, source) } : {}),
       // Its volume (2026-11-19): the WiiM's own, locked, or the receiver's.
       ...(volIn(r.vol) ? { vol: volIn(r.vol) } : {}) };
   }
@@ -132,6 +135,17 @@ export function volIn(v) {
     return { by: "denon", on: v.on === true, ...(v.on === true && Number.isFinite(db) && db >= -80 && db <= 18 && Math.round(db * 2) === db * 2 ? { db } : {}) };
   }
   return null;
+}
+// A song's cover and track id as the speaker read them: Spotify's own for a
+// Spotify song, Tidal's for any other.
+const spotifySource = (source) => /^spotify/i.test(String(source ?? ""));
+function artIn(a, source) {
+  const s = String(a ?? "");
+  return (spotifySource(source) ? /^https:\/\/i\.scdn\.co\/image\/[A-Za-z0-9]{16,64}$/ : /^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/).test(s) ? s : null;
+}
+function trackIdIn(id, source) {
+  const s = String(id ?? "");
+  return (spotifySource(source) ? /^[A-Za-z0-9]{22}$/ : /^\d{1,15}$/).test(s) ? s : null;
 }
 // A place in a song, in milliseconds, as the speaker read it.
 function posIn(p) {

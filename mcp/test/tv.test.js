@@ -363,6 +363,24 @@ test("the band's new buttons: Move while Spotify plays here, Tune for a DJ who c
   assert.equal(tt.song.uri, "tidal:track:195651662");
   const radio = tvBand({ state: "quiet", lan: { hands: true, speakers: { "Pro Plus": { state: "play", source: "newTuneIn", station: "KQED-FM", track: "News" } } } }, PRO, 0);
   assert.equal(radio.song, null); assert.equal(radio.skip, "");
+  // A Spotify song the speaker holds, stopped, while Spotify plays elsewhere
+  // (2026-11-25, "Summer Breeze" on the Pro Plus): its cover, album, place,
+  // and About this song by its Spotify id, its title and artist.
+  const sb = tvBand({ state: "quiet", lan: { hands: true, at: 1000, speakers: { "Pro Plus": { state: "stop", source: "Spotify", track: "Summer Breeze", artists: "Seals and Crofts",
+    album: "Summer Breeze", art: "https://i.scdn.co/image/ab67616d0000b273e13b56ae3e9e99abf2c2026c", pos: { ms: 14327, of: 205480 }, trackId: "3B0ms7Xlxl16tRztKHpcu9",
+    preset: { btn: 9, name: "Vibe", endless: true } } } } }, PRO, 3000);
+  assert.equal(sb.tone, "held"); assert.equal(sb.still, true);
+  assert.equal(sb.title, "Summer Breeze"); assert.equal(sb.artist, "Seals and Crofts"); assert.equal(sb.album, "Summer Breeze");
+  assert.equal(sb.art, "https://i.scdn.co/image/ab67616d0000b273e13b56ae3e9e99abf2c2026c");
+  assert.deepEqual(sb.pos, { ms: 14327, of: 205480, age: 0 });
+  assert.deepEqual(sb.song, { uri: "spotify:track:3B0ms7Xlxl16tRztKHpcu9", slug: "", btn: 0, isrc: "", ms: 205480 });
+  assert.equal(sb.move, "", "nothing to move: Spotify is not here");
+  // From a helper without the parts: the song by its title, no cover.
+  const bare = tvBand({ state: "quiet", lan: { hands: true, speakers: { "Pro Plus": { state: "stop", source: "Spotify", track: "Summer Breeze", artists: "Seals and Crofts" } } } }, PRO, 0);
+  assert.equal(bare.art, ""); assert.equal(bare.song.uri, "lan:Summer Breeze"); assert.equal(bare.artist, "Seals and Crofts");
+  // The page asks about a stopped song too.
+  const html = renderTv({ base: "/b/k", rooms: [PRO], room: PRO, now: { state: "quiet" }, readings: {} });
+  assert.ok(html.includes(`var s = band && (band.tone !== "off" || band.still) ? band.song : null;`));
 });
 
 test("the house's clock, what comes next and the DJ's words, and what the Shelf and the dials came to", () => {

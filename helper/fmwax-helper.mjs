@@ -194,10 +194,26 @@ function streaming(st) {
   return STREAMS.has(mode) || (mode >= 10 && mode <= 19 && !!vendor && !/^custom/i.test(vendor));
 }
 const PLAYING = /^(play|load|pause)$/;
+// A SPOTIFY SONG THAT STOPPED (2026-11-25, the owner: the TV showed "Summer
+// Breeze, Pro Plus" with no cover and no About this song, while Spotify
+// played on Sound1). Spotify lets go of a speaker it left, so the song's
+// parts can only come from the speaker, whose getMetaInfo still holds them
+// (measured on the Pro Plus that evening, stopped: album, cover, track id).
+// A stopped song does not change, so it is asked once a song, not each read.
+const spotifyMode = (st) => Number(st?.mode) === 31 || /^spotify/i.test(String(st?.vendor ?? ""));
+const STILL_META = new Map();
 async function readSpeaker(ip) {
   const st = await status(ip);
   if (st && (RADIO.test(String(st.vendor ?? "")) || streaming(st)) && PLAYING.test(String(st.status ?? ""))) {
     st.meta = await wiim(ip, "getMetaInfo", true, 2000);
+  } else if (st && spotifyMode(st) && String(st.status ?? "") === "stop" && st.Title) {
+    const key = `${st.vendor ?? ""}|${st.Title}|${st.Artist ?? ""}`;
+    const was = STILL_META.get(ip);
+    if (was?.key === key) st.meta = was.meta;
+    else {
+      st.meta = await wiim(ip, "getMetaInfo", true, 2000);
+      if (st.meta) STILL_META.set(ip, { key, meta: st.meta });
+    }
   }
   return st;
 }
@@ -263,16 +279,24 @@ export function readingOf(name, st, presets = null, eq = null, vol = null) {
   // track id, and getPlayerStatus's place in the song. Spotify's come from
   // Spotify itself, and a station has no song length.
   const song = source !== "Spotify" && streaming(st) && PLAYING.test(String(st.status ?? ""));
-  const art = song && /^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(meta.albumArtURI ?? "")) ? String(meta.albumArtURI) : null;
+  // And a Spotify song that is paused or stopped (2026-11-25): Spotify itself
+  // says nothing of a speaker it left. Its cover from Spotify's own image
+  // host, its Spotify track id; only when the speaker's words are for the
+  // song its status names.
+  const still = source === "Spotify" && (state === "pause" || state === "stop") && !!unhex(st.Title)
+    && String(meta.title ?? "").trim() === unhex(st.Title);
+  const art = song && /^https:\/\/resources\.tidal\.com\/images\/[\w/.-]{1,200}$/.test(String(meta.albumArtURI ?? "")) ? String(meta.albumArtURI)
+    : still && /^https:\/\/i\.scdn\.co\/image\/[A-Za-z0-9]{16,64}$/.test(String(meta.albumArtURI ?? "")) ? String(meta.albumArtURI) : null;
   const ms = Math.round(Number(st.curpos)), of = Math.round(Number(st.totlen));
-  const pos = song && Number.isFinite(ms) && Number.isFinite(of) && of > 0 && ms >= 0 && ms <= of ? { ms, of } : null;
-  const trackId = song && /^\d{1,15}$/.test(String(meta.trackId ?? "")) ? String(meta.trackId) : null;
+  const pos = (song || still) && Number.isFinite(ms) && Number.isFinite(of) && of > 0 && ms >= 0 && ms <= of ? { ms, of } : null;
+  const trackId = song && /^\d{1,15}$/.test(String(meta.trackId ?? "")) ? String(meta.trackId)
+    : still && /^[A-Za-z0-9]{22}$/.test(String(meta.trackId ?? "")) ? String(meta.trackId) : null;
   return { name, state, ...(source ? { source } : {}), ...(playlist ? { playlist } : {}),
     ...(station ? { station } : {}),
     ...(unhex(st.Title) ? { track: unhex(st.Title) } : {}),
     ...(unhex(st.Artist) ? { artists: unhex(st.Artist) } : {}),
     ...(quality ? { quality } : {}), ...(eq ? { eq } : {}),
-    ...(song && known(meta.album) ? { album: known(meta.album).slice(0, 200) } : {}),
+    ...((song || still) && known(meta.album) ? { album: known(meta.album).slice(0, 200) } : {}),
     ...(art ? { art } : {}), ...(pos ? { pos } : {}), ...(trackId ? { trackId } : {}),
     ...(vol ? { vol } : {}) };
 }
