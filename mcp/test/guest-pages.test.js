@@ -866,8 +866,14 @@ test("the pause note ends when Spotify is seen playing anything, but not on the 
 });
 
 test("the bar speaks for one speaker (2026-09-23): quiet is said of that speaker, and Spotify elsewhere is named", () => {
-  assert.deepEqual(barWords({ state: "quiet", speaker: "Pro Plus" }), { tone: "off",
+  // What else the WiiM may play, in the house's own words (unseenWords, 2026-11-25).
+  const TIDAL_ARCHIVE = { or: "Tidal, the radio or the archive", and: "Tidal, the radio and the archive", tidal: true };
+  assert.deepEqual(barWords({ state: "quiet", speaker: "Pro Plus", unseen: TIDAL_ARCHIVE }), { tone: "off",
     one: "Pro Plus · Not on Spotify", two: "Tidal, the radio or the archive — only the speaker knows" });
+  assert.equal(barWords({ state: "quiet", speaker: "Pro Plus" }, { or: "Tidal or the radio" }).two, "Tidal or the radio — only the speaker knows");
+  assert.equal(barWords({ state: "quiet", speaker: "Pro Plus" }).two, "The radio or another service — only the speaker knows",
+    "a house with Spotify alone, or no word given: no Tidal, no archive");
+  assert.equal(barWords({ state: "quiet" }, { or: "the radio or another service" }).two, "Quiet, or the radio or another service — only the speaker knows");
   assert.deepEqual(barWords({ state: "quiet", speaker: "Pro Plus", elsewhere: "Ultra" }), { tone: "off",
     one: "Pro Plus · Not on Spotify", two: "Spotify is playing on the Ultra" });
   // No speaker named: the house-wide words, as before.
@@ -938,6 +944,9 @@ test("/playing names a live guest's band by its number, and a quick player light
     // The one speaker (MC-28): nothing chosen, so where the music is.
     assert.deepEqual(got.pick, { name: "Pro Plus", slug: "pro-plus", why: "music" });
     delete got.pick;
+    // This house has Tidal and the archive (unseenWords).
+    assert.deepEqual(got.unseen, { or: "Tidal, the radio or the archive", and: "Tidal, the radio and the archive", tidal: true });
+    delete got.unseen;
     assert.deepEqual(got,
       { state: "playing", dj: null, btn: 1, guest: true,
         // MC-21: one preset field carrying the NAME too, so a page that knows

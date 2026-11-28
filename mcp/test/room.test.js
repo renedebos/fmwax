@@ -3798,6 +3798,8 @@ const HANK_PLAYING = {
 
 // The bar's other speakers (2026-09-23) in this suite's house, which names no
 // WiiMs: every room the play form may name.
+// This test house has the archive and no Tidal: the bar's words for what else a WiiM may play (unseenWords).
+const ROOM_UNSEEN = { or: "the radio or the archive", and: "the radio and the archive", tidal: false };
 const ROOM_OTHERS = ["Pro Plus", "Everywhere", "Master Bedroom"].map((name) =>
   ({ name, slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-") }));
 
@@ -3825,7 +3827,7 @@ test("a slow player: the wall goes out first, and /playing names the band, the t
     // read, and when; the album goes under the song.
     assert.equal(got.pos.ms, 1); assert.equal(got.pos.of, 1000); assert.ok(got.pos.at > 0);
     delete got.pos;
-    assert.deepEqual(got, { speakers: [], others: ROOM_OTHERS, pick: { name: "Pro Plus", slug: "pro-plus", why: "music" }, state: "playing", dj: "hank", btn: 2, track: "Cold Sweat", album: "A",
+    assert.deepEqual(got, { speakers: [], others: ROOM_OTHERS, unseen: ROOM_UNSEEN, pick: { name: "Pro Plus", slug: "pro-plus", why: "music" }, state: "playing", dj: "hank", btn: 2, track: "Cold Sweat", album: "A",
       // MC-21: the band's number AND its name in one field, for the now bar.
       preset: { btn: 2, name: "Hank" },
       // Design A (2026-09-25): the panel's DJ row.
@@ -3864,7 +3866,7 @@ test("/playing answers GET only, on the key, and says quiet, not ours, unknown a
     assert.equal((await worker.fetch(get(`/buttons/${KEY}x/playing`), e)).status, 404);
     const post = await worker.fetch(new Request(`https://x.test/buttons/${KEY}/playing`, { method: "POST" }), e);
     assert.equal(post.status, 405);
-    assert.deepEqual(await (await worker.fetch(get(`/buttons/${KEY}/playing`), e)).json(), { speakers: [], others: ROOM_OTHERS, pick: { name: "Pro Plus", slug: "pro-plus", why: "default" }, state: "quiet" });
+    assert.deepEqual(await (await worker.fetch(get(`/buttons/${KEY}/playing`), e)).json(), { speakers: [], others: ROOM_OTHERS, unseen: ROOM_UNSEEN, pick: { name: "Pro Plus", slug: "pro-plus", why: "default" }, state: "quiet" });
   } finally { f.restore(); }
   // An album on the Pro Plus: playing, on a speaker of the house, and no band.
   const e2 = env();
@@ -3877,7 +3879,7 @@ test("/playing answers GET only, on the key, and says quiet, not ours, unknown a
     assert.deepEqual(got2,
       // No band, no guest and no speaker preset: no `preset` field at all
       // (MC-21) — the bar prints the "from" words instead.
-      { speakers: [], others: ROOM_OTHERS, pick: { name: "Pro Plus", slug: "pro-plus", why: "music" }, state: "playing", dj: null, btn: null, from: "an album", track: "Cold Sweat", album: "A", artists: "James Brown", device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus",
+      { speakers: [], others: ROOM_OTHERS, unseen: ROOM_UNSEEN, pick: { name: "Pro Plus", slug: "pro-plus", why: "music" }, state: "playing", dj: null, btn: null, from: "an album", track: "Cold Sweat", album: "A", artists: "James Brown", device: "Pro Plus", live: "Pro Plus", pausable: "Pro Plus",
         });
   } finally { sp.restore(); f2.restore(); }
   // Spotify refusing the account: the throttle note speaks, and nothing is read.

@@ -83,7 +83,7 @@ export function tvNarrow(o, who, other = false) {
 export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
   const who = room?.name ?? "";
   const v = tvNarrow(o, who, !!room?.other) || {};
-  const w = barWords(v);
+  const w = barWords(v, o?.unseen);
   const band = { tone: w.tone === "live" ? "live" : "off", title: w.one, line2: w.two, line3: "", art: "", pos: null, quality: "", ctl: null, skip: "",
     artist: "", album: "", move: "", tune: null, song: null };
   const st = String(v.state ?? "");
@@ -161,9 +161,18 @@ export function tvBand(o, room, now = Date.now(), { canTune = false } = {}) {
     band.line2 = v.elsewhere ? `Spotify is playing on the ${v.elsewhere}.`
       : v.known ? "Press a preset above to start it here."
       : v.other ? "Press a preset above to start it here."
-      : "Tidal or the radio may be playing: only the speaker knows. Press a preset above to start one.";
+      // In the house's own words (unseenWords, 2026-11-25).
+      : `${unseenCap(o)} may be playing: only the speaker knows. Press a preset above to start one.`;
   }
   return band;
+}
+
+// What else a WiiM may play, said at the start of a line: the house's own
+// words (now.js barSpeakers, house.js unseenWords), "Tidal or the radio"
+// where it has Tidal, "The radio or another service" where it has Spotify alone.
+function unseenCap(o) {
+  const u = String(o?.unseen?.or || "the radio or another service");
+  return u.charAt(0).toUpperCase() + u.slice(1);
 }
 
 // The services whose music comes as songs, so a WiiM can skip them (the WiiM's
@@ -785,7 +794,7 @@ export function renderTv({ base, rooms = [], room = null, now = null, readings =
     label = `The house's Spotify presets, on the ${room.name}`;
     grid = ownKeys.length ? ownKeys.map((k) => form("/preset/play", k.btn, "Starting…", `Play preset ${k.btn}, ${k.name}, on the ${room.name}`,
       tileInner(k.btn, k.name, k.sub || "Spotify"))).join("") +
-      (room.wiim ? "" : `<p class="gnote side" style="grid-column:span ${6 - (ownKeys.length % 6)}">Tidal, the radio and other services are keys on a WiiM.</p>`)
+      (room.wiim ? "" : `<p class="gnote side" style="grid-column:span ${6 - (ownKeys.length % 6)}">${now?.unseen?.tidal ? "Tidal, the radio" : "The radio"} and other services are keys on a WiiM.</p>`)
       : `<p class="gnote">This house has no Spotify presets of its own yet. The setup page makes them.</p>`;
   } else {
     const rows = readings[room.slug]?.presets ?? null;

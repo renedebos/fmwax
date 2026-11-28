@@ -31,8 +31,9 @@ this page to every house, so a few marks make it fit the one reading it:
   `history` (house.json `rules.history`: this house keeps its own history).
 - `{default speaker}`, `{requests presets}`, `{guest preset}`, `{house
   presets}`, `{endless presets}`, `{archive preset}`, `{archive asks}`,
-  `{talk minutes}`, `{time zone}` and `{notes default}` are filled in from
-  the house's settings.
+  `{talk minutes}`, `{time zone}`, `{notes default}` and `{unseen}` (what a
+  WiiM plays besides Spotify: Tidal only in a house with Tidal) are filled in
+  from the house's settings.
 - `(since 2026-10-16)` shows as a small date where the house keeps its
   history, and nowhere else.
 - `## Questions` is the questions card: one `**question?** answer` per item.
@@ -431,7 +432,7 @@ Nothing the app sends can make a start quieter: a start plays at the volume the 
 
 {if tidal} A set asked for on Tidal goes ahead during a block: Tidal isn't behind Spotify's limit. A set asked for on Spotify waits, and is made after the block, without being asked again.
 
-{if helper} While Spotify is blocked and the home helper is on, the bar still shows Tidal, the radio and the archive, and still pauses and plays them. It can also restart a Spotify preset that has stopped. The preset keys on the Speakers tab all work. A Spotify preset that's playing shows as "not known" until the block lifts.
+{if helper} While Spotify is blocked and the home helper is on, the bar still shows {unseen}, and still pauses and plays them. It can also restart a Spotify preset that has stopped. The preset keys on the Speakers tab all work. A Spotify preset that's playing shows as "not known" until the block lifts.
 
 **The Spotify sign-in lasts six months** (Spotify's rule). Then Spotify signs the house out, and nothing on Spotify works until someone signs in again. The **Spotify** page (at the foot of the Speakers tab) says when it ends, and has **Reconnect Spotify**: sign in on Spotify's own page, and you're back. Only the house's own Spotify account is accepted, and **only the owner can reconnect**: a phone signed in on the setup page; anyone else sees the page but not the button (since 2026-10-17). The Speakers tab warns **3 weeks** before the end, and the bar on every tab says so once Spotify has signed the house out. Claude or ChatGPT hears it too (since 2026-10-16). Before a new house's first sign-in, the bar says Spotify isn't signed in yet (since 2026-10-19). [services.js `LOGIN_WARN_DAYS`]
 

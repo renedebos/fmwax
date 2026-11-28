@@ -6,7 +6,7 @@ import { BLOCK_WORDS, waitWords, serviceLink, PICK_FIRM_S } from "./programs.js"
 import { station } from "./station.js";
 import { findNews } from "./readfind.js";
 import {
-  atWords, endlessNamed, findDj, guestFor, guestHolders, houseClockWords, ownPresetKeys, playingFromWords, speakerPresetFor,
+  atWords, endlessNamed, findDj, guestFor, guestHolders, houseClockWords, ownPresetKeys, playingFromWords, speakerPresetFor, unseenWords,
 } from "./house.js";
 import { foldName, parseRoomDevices, parseSpeakers, readReadings, roomRoster, speakerSlug, wiimNames } from "./room.js";
 import {
@@ -187,7 +187,9 @@ export function helperViewOf(env, got, now = Date.now()) {
     const heard = at ? atWords(houseClockWords(env, new Date(at).toISOString(), now)) : null;
     return { helper: "off", ...(heard ? { helperHeard: heard } : {}) };
   }
-  return { helper: "on", lan: { at, speakers: doc.speakers, ...(got?.hands ? { hands: true } : {}) } };
+  // `unseen`: what the house mark says the helper shows, in the house's own
+  // words (unseenWords), for the pages that draw the mark from this alone.
+  return { helper: "on", lan: { at, speakers: doc.speakers, ...(got?.hands ? { hands: true } : {}) }, unseen: unseenWords(env) };
 }
 
 // ASK THE HELPER BEFORE ASKING SPOTIFY (MC-29, tasks/done/mc29-helper-first-player.md;
@@ -661,6 +663,8 @@ export function barSpeakers(env) {
   const ownKeys = !boxes.length && ownPresetKeys(env).length > 0;
   return { speakers, others: otherRooms(env).filter((n) => !speakers.some((sp) => sp.name === n))
     .map((name) => ({ name, slug: speakerSlug(name) })),
+    // What a WiiM may play that Spotify cannot see, as this house can say it.
+    unseen: unseenWords(env),
     ...(ownKeys ? { ownKeys: true } : {}),
     ...(tidal ? { tidal: { name: tg.name ?? "the Tidal guest", url: tidal.href } } : {}) };
 }

@@ -37,7 +37,10 @@ test("its words: which WiiMs answer while on, when it was last heard while off, 
   const on = (speakers) => helperSays({ helper: "on", lan: { at: 1, speakers } });
   assert.deepEqual(on({ "Pro Plus": { state: "play" }, Ultra: { state: "stop" } }),
     { on: true, label: "Home helper on", title: "Home helper on.", line: "The Pro Plus and the Ultra answer it.",
-      more: "Tidal, the radio and the archive show on Speakers and the bar." });
+      more: "The radio and other services show on Speakers and the bar." }, "no word of the house's services: neither Tidal nor the archive");
+  // In the house's own words (unseenWords, 2026-11-25).
+  assert.equal(helperSays({ helper: "on", lan: { at: 1, speakers: {} }, unseen: { and: "Tidal and the radio" } }).more,
+    "Tidal and the radio show on Speakers and the bar.");
   assert.equal(on({ "Pro Plus": { state: "idle" } }).line, "The Pro Plus answers it.");
   assert.equal(on({ "Pro Plus": { state: "play" }, Ultra: { state: "unreachable" } }).line,
     "The Pro Plus answers it; the Ultra does not.");

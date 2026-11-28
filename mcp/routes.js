@@ -40,7 +40,7 @@ import {
   askDay, askedTag, atWords, djPlaces, djSlotsExist, findDj, guestAlias,
   GUEST_ASK_WINDOW_MS, guestAsks, guestFor, guestForPlaylistId, guestHolders, laneKeyLine, ownPresetKeys, requestKeyLines, guestLabel, helperKeyFlash, house,
   houseClockWords, liveGuests, loadedWords, newestOn, parseButtons, pastTheList, playableKeys, presetFlash,
-  presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash,
+  presetOnFile, ownKeyName, ownPresetRows, programDj, rulesFacts, shelfFor, sinceWords, speakerPresetFor, transportFlash, unseenWords,
 } from "./house.js";
 import { SERVER_INFO, handleRpc, requestVersion, rpcError } from "./mcp.js";
 import { workWaiting } from "./waiting.js";
@@ -2353,7 +2353,7 @@ export async function handleRequest(request, env, ctx) {
       // Every house has the TV page, so every house has this page (its TV card).
       if (!key || !sameSecret(sayPage[1], key)) return notFound();
       if (request.method !== "GET") return roomRefuse(405, "The What to say page only answers GET.");
-      return roomPage(renderSay({ base: `/buttons/${key}`, ...(await tabState(env)), talk: talkOn(env),
+      return roomPage(renderSay({ base: `/buttons/${key}`, ...(await tabState(env)), talk: talkOn(env), unseen: unseenWords(env),
         tv: { address: `${url.origin}/buttons/${key}/tv/say?q=[query]`, page: `${url.origin}/buttons/${key}/tv`, djs: house(env).roster.map((d) => d.key),
           room: parseRoomDevices(env).find((n) => n !== fallbackDevice(env) && !/^everywhere$/i.test(n)) ?? null },
         alexa: crate ? { acts: alexaActs(env) } : null, examples: crate ? sayExamples(env) : null,

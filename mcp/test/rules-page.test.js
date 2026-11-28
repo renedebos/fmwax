@@ -93,7 +93,7 @@ test("the marks: a fold per section, its summary, {if} and {if no}, blanks, date
 test("docs/house-rules.md leaves no mark unread, in a house with everything and in one with nothing", () => {
   const blanks = { "default speaker": "Pro Plus", "requests presets": "1", "guest preset": "3", "house presets": "4, 5",
     "endless presets": "3, 4, 5", "daily runs": "12", "archive preset": "6", "archive asks": "a song or a show", "talk minutes": "60", "time zone": "Pacific Time",
-    "notes default": "short notes" };
+    "notes default": "short notes", unseen: "Tidal and the radio" };
   const words = ["requests", "tidal", "endless", "housedj", "guest", "newdj", "archive", "talk", "helper", "history", "lastfm", "chatgpt",
     "talkasks", "alexa", "waits"];
   for (const on of [true, false]) {

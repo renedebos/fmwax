@@ -322,6 +322,21 @@ export function presetOnFile(env, n) {
   }
   return null;
 }
+// WHAT A WIIM MAY PLAY THAT SPOTIFY CANNOT SEE, in this house's words
+// (2026-11-25, the owner: a house with Spotify alone read "Tidal, the radio
+// or the archive" on its bar). Tidal only where a preset of the house is on
+// Tidal, the archive only where the house has its preset; the radio any WiiM
+// can hold. `or` for "may be playing", `and` for "show here".
+export function unseenWords(env) {
+  let tidal = false, archive = false;
+  try { const h = house(env); tidal = h.buttons.some((b) => b.catalog === "tidal"); archive = !!h.archive; } catch { /* neither */ }
+  const or = tidal && archive ? "Tidal, the radio or the archive" : tidal ? "Tidal or the radio"
+    : archive ? "the radio or the archive" : "the radio or another service";
+  const and = tidal && archive ? "Tidal, the radio and the archive" : tidal ? "Tidal and the radio"
+    : archive ? "the radio and the archive" : "the radio and other services";
+  return { or, and, tidal };
+}
+
 // THE HOUSE'S OWN KEYS (MC-31, a door-made house with no WiiM addresses):
 // every number with a Spotify playlist on file — the Requests preset, the
 // DJ presets — named as the house names it, for the Speakers page to play
@@ -557,6 +572,8 @@ export async function rulesFacts(env) {
       "talk minutes": String(talkMinutes(env)),
       "time zone": zone,
       "notes default": env.REQUEST_NOTES === "long" ? "the long read" : "short notes",
+      // What the helper shows besides Spotify, in this house's words (unseenWords).
+      unseen: unseenWords(env).and,
     },
   };
 }
@@ -1157,6 +1174,14 @@ export function contextLabel(env, uri, names) {
     const kind = String(uri).split(":")[1];
     return kind ? `a Spotify ${kind}` : null;
   }
+  // A PRESET OF THE HOUSE FIRST, by its number and who is on it (2026-11-27:
+  // the DJs' endless lists were labelled by their legacy aliases, "was
+  // button 4", and the guest's and Sessions' by their Spotify names). Config
+  // only, no call.
+  const ep = (parseEndless(env)?.presets ?? []).find((p) => p && p.playlist === id);
+  if (ep) return ep.lane ? `button ${ep.button} (the guest DJ)` : `button ${ep.button} (${findDj(env, ep.dj)?.name ?? ep.dj})`;
+  const g = guestForPlaylistId(env, id);
+  if (g?.btn) return `button ${g.btn} (${g.name ?? "requests"})`;
   const alias = aliasForPlaylistId(env, id);
   const dj = djForPlaylistId(env, id);
   if (alias && dj) return `${alias} (${dj.name})`;

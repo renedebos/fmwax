@@ -3273,9 +3273,10 @@ export async function callTool(env, name, args, budget) {
       // Buying all of them is not worth it — cap the spend and let the rest stay
       // as ids rather than starve a later tool call of subrequests.
       const names = new Map();
+      // A preset of the house is named by its number already (contextLabel).
       const unaliased = [...new Set(items
         .map((it) => playlistIdFrom(it.context?.uri ?? ""))
-        .filter((id) => id && !aliasForPlaylistId(env, id)))];
+        .filter((id) => id && /^playlist /.test(contextLabel(env, `spotify:playlist:${id}`, null) ?? "")))];
       for (const id of unaliased.slice(0, 4)) {
         if (budget && budget.remaining <= 1) break;
             try {

@@ -4126,7 +4126,7 @@ const NB_NOTE = `<svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="tr
 // different things about one state. Since 2026-09-24 it is the only
 // sentence about the player on the Loaded tab: the line that sat above the
 // wall said the same thing twice (the owner).
-export function barWords(o) {
+export function barWords(o, unseen = null) {
   const st = String(o?.state ?? "");
   if (st === "playing") {
     const rec = `${o.track ?? ""}${o.artists ? ` · ${o.artists}` : ""}`;
@@ -4190,16 +4190,19 @@ export function barWords(o) {
   // the house when it is only true of this speaker.
   // A speaker that is not a WiiM (an Echo, 2026-09-23) has no presets, so
   // no Tidal key or archive to be quiet about: only "not Spotify".
+  // What else a WiiM may play, in the house's own words (unseenWords,
+  // 2026-11-25): a house with Spotify alone is not told of Tidal.
+  const un = String((unseen && unseen.or) || (o && o.unseen && o.unseen.or) || "the radio or another service");
   if (st === "quiet" && o.speaker) {
     return { tone: "off", one: `${o.speaker} · Not on Spotify`,
       two: o.elsewhere ? `Spotify is playing on the ${o.elsewhere}`
         : o.keys ? "Tap a preset on Speakers, or press play on the remote"
         : o.other ? "Quiet, or playing something that is not Spotify"
-        : "Tidal, the radio or the archive — only the speaker knows" };
+        : `${un.charAt(0).toUpperCase()}${un.slice(1)} — only the speaker knows` };
   }
   if (st === "quiet") {
     return { tone: "off", one: "Not on Spotify",
-      two: "Quiet, or Tidal, the radio or the archive — only the speaker knows" };
+      two: `Quiet, or ${un} — only the speaker knows` };
   }
   if (st === "throttled") {
     return { tone: "off",
@@ -4485,7 +4488,7 @@ ${SHEET_JS}(function () {
     try { document.dispatchEvent(new CustomEvent("house:now", { detail: raw })); } catch (e) {}
     hmark(raw);
     var o = view(raw);
-    var w = words(o || {});
+    var w = words(o || {}, raw && raw.unseen);
     one.textContent = w.one; two.textContent = w.two;
     if (sheet && !sheet.hidden) fill();
     if (w.tone === "off") bar.classList.add("off"); else bar.classList.remove("off");
@@ -4562,7 +4565,7 @@ ${SHEET_JS}(function () {
   function mmss(ms) { var s = Math.max(0, Math.floor(ms / 1000)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
   function progress() {
     var pr = sheet && sheet.querySelector(".nbprog"); if (!pr) return;
-    var o = view(last) || {}, w = words(o), ps = o.pos;
+    var o = view(last) || {}, w = words(o, last && last.unseen), ps = o.pos;
     var on = !sheet.hidden && w.tone === "live" && !!o.sleeve && !!ps && ps.of > 0;
     pr.hidden = !on;
     if (!on) { if (tick) { clearInterval(tick); tick = null; } return; }
@@ -4573,7 +4576,7 @@ ${SHEET_JS}(function () {
     if (!tick) tick = setInterval(progress, 1000);
   }
   function fill() {
-    var o = view(last) || {}, w = words(o), base = bar.getAttribute("data-base") || "";
+    var o = view(last) || {}, w = words(o, last && last.unseen), base = bar.getAttribute("data-base") || "";
     /* THE BIG SLEEVE (the owner, 2026-10-13: "more like the way WiiM
        shows", design A of docs/design/now-sleeve): while Spotify plays
        here, the 640 sleeve across the top and the song in two lines, track
@@ -5302,8 +5305,10 @@ export function helperSays(o) {
     : !hear.length ? "No WiiM answers it."
     : !deaf.length ? `${said} ${verb(hear, "answers", "answer")} it.`
     : `${said} ${verb(hear, "answers", "answer")} it; ${the(deaf)} ${verb(deaf, "does", "do")} not.`;
+  // What it shows, in the house's own words (unseenWords, 2026-11-25).
+  const un = String((o.unseen && o.unseen.and) || "the radio and other services");
   return { on: true, label: "Home helper on", title: "Home helper on.", line,
-    more: "Tidal, the radio and the archive show on Speakers and the bar." };
+    more: `${un.charAt(0).toUpperCase()}${un.slice(1)} show on Speakers and the bar.` };
 }
 const HOUSE_MARK = `<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 11 12 4.5l7.5 6.5v8.5h-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><rect class="hwin" x="9.6" y="12.4" width="4.8" height="4.8" rx="1" fill="currentColor"></rect></svg>`;
 // `o` is the page's answer when the route has one, which carries `helper` in
@@ -8133,7 +8138,7 @@ function tvSays(tv) {
     <p class="rsub">The volume (the house doesn't change it), a number on its own, and “put on” with words after a DJ's name. If the TV keeps not catching the words (“Didn't catch that”, or TV Bro's “can't recognize”), restarting the TV has helped.</p>
   </section>`;
 }
-export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false, tv = null }) {
+export function renderSay({ base, talk = false, alexa = null, examples = null, loaded = true, owed = 0, presses = false, tv = null, unseen = null }) {
   const row = (r) => `
       <li><span class="slab">${esc(r.label)}</span><q>${esc(r.said)}</q><span class="sres">${esc(r.result)}</span></li>`;
   const card = (s) => `
@@ -8166,10 +8171,10 @@ export function renderSay({ base, talk = false, alexa = null, examples = null, l
       <li><span class="slab">A set from a DJ</span><q>Ask Sessions for an hour of acoustic grunge on the Ultra</q><span class="sres">It's made after the call and starts by itself in about five minutes. You can hang up once Talk says it's on its way.</span></li>
       <li><span class="slab">A DJ put on</span><q>Put Hank on in the master bedroom</q><span class="sres">Hank's own preset starts there.</span></li>
       <li><span class="slab">Steer</span><q>Make it more upbeat</q><span class="sres">The DJ playing turns that way.</span></li>${presses ? `
-      <li><span class="slab">A preset</span><q>Press 12 on the Pro Plus</q><span class="sres">With the home helper on, the WiiM presses it as its remote would: a DJ, Tidal, the radio, with any settings saved with it.</span></li>
+      <li><span class="slab">A preset</span><q>Press 12 on the Pro Plus</q><span class="sres">With the home helper on, the WiiM presses it as its remote would: a DJ, ${unseen?.tidal ? "Tidal, " : ""}the radio, with any settings saved with it.</span></li>
       <li><span class="slab">A preset by name</span><q>Put on Radio Paradise</q><span class="sres">The preset saved under that name, pressed. Talk asks which if none or two match.</span></li>` : ""}
       <li><span class="slab">Move it</span><q>Move it to the Ultra</q><span class="sres">The same song carries on there. Spotify only.</span></li>${presses ? `
-      <li><span class="slab">The radio</span><q>What's playing on the Pro Plus?</q><span class="sres">With the home helper on: the station or the song on Tidal or the radio. “Pause” and “play again” work on them too.</span></li>
+      <li><span class="slab">The radio</span><q>What's playing on the Pro Plus?</q><span class="sres">With the home helper on: the station or the song on ${esc(unseen?.or ?? "the radio or another service")}. “Pause” and “play again” work on them too.</span></li>
       <li><span class="slab">The EQ</span><q>Which EQ is the Pro Plus on?</q><span class="sres">The EQ in use, as the WiiM names it. Talk never changes it.</span></li>` : ""}
       <li><span class="slab">The music</span><q>Skip this one</q><span class="sres">Pause, skip and what's playing happen at once.</span></li>
     </ul>
@@ -8851,8 +8856,8 @@ export function renderSpeakersNow({ base, speakers = [], playing = null, reading
       that speaker. <b>Save again</b> on a key means the speaker still has an old name for it: play it, then save
       that preset again in the WiiM app. A small dot means the other speaker holds that key differently.
       <b>Read again</b> reads the speakers, from a phone at home.</p>
-      <p><b>What is playing</b>: Spotify from the account, and Tidal, the radio and the archive from the home helper
-      on the Chromebook while it is on. Three small bars mark it. An Echo or the iPhone gets a block of its own
+      <p><b>What is playing</b>: Spotify from the account, and ${esc(now?.unseen?.and ?? "the radio and other services")} from the home helper
+      while its computer is on. Three small bars mark it. An Echo or the iPhone gets a block of its own
       while Spotify plays there; it has no keys.</p>
       <p><b>The bar above the tabs</b> shows what the picked speaker plays. Its round button pauses it, then plays it
       again. When the music is on another speaker, the bar's second line names it and the button pauses it there.
@@ -9296,7 +9301,7 @@ export function renderTalk({ base, devices = [], defaultDevice = "", used = 0, u
     <p><b>Before it rewrites a playlist on the call</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`
     : `<p><b>Before a playlist changes or a new set starts</b>, it says what it will do and waits for a yes. Volume, pause and skip happen at once.</p>`}
     ${presses ? `<p><b>A preset, as the remote presses it.</b> “Press 12 on the Pro Plus” or “Put on Radio Paradise” presses that WiiM's button, with whatever is saved on it, its EQ too. With the home helper off, a DJ's preset starts through Spotify without them, and anything else is “press it on the remote”.</p>
-    <p><b>What the WiiMs play.</b> With the home helper on, Talk hears Tidal and the radio on a WiiM, can pause them and play them again, and names the EQ each WiiM plays through. It never changes an EQ.</p>
+    <p><b>What the WiiMs play.</b> With the home helper on, Talk hears ${esc(hmark?.unseen?.and ?? "the radio and other services")} on a WiiM, can pause them and play them again, and names the EQ each WiiM plays through. It never changes an EQ.</p>
     ` : ""}<p><b>Move the music</b>: “Move it to the Ultra” carries on the same song there. Spotify only.</p>
     <p><b>The line under the button</b> says where music goes unless you name another speaker. Change it from the bar at the bottom: its sliders button opens the speakers. Every speaker in the house is equal.</p>
     <p><b>The line is on the clock while it is open</b>, talking or not, at ${Number(rateCents) || 5} cents a minute; the house has ${cap} minutes a day. The meter in the card counts this line and the day. <b>Hang up</b> when you are done, or the line hangs up by itself ${idleSec} seconds after it has finished answering — never while it is still working.</p>${crate ? `
